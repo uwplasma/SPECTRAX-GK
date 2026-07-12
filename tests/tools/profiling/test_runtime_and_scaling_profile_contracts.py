@@ -78,6 +78,7 @@ def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
         assert profile["diagnostics_stride"] == 10
         assert profile["software"] == cpu["software"]
         assert "result_summary" in profile
+        assert profile["memory_summary"]["host_peak_rss_bytes"] > 0
     assert cpu["backend"] == "cpu"
     assert gpu["backend"] == "gpu"
     assert cpu["run_median_s"] / gpu["run_median_s"] >= 5.0
@@ -93,6 +94,48 @@ def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
             rtol=1.0e-5,
             atol=1.0e-12,
         )
+
+
+def test_resolved_diagnostic_profiles_are_identity_gated_and_bounded() -> None:
+    for backend in ("cpu", "gpu"):
+        compact = json.loads(
+            (
+                REPO_ROOT
+                / f"docs/_static/prepared_nonlinear_runtime_{backend}_profile.json"
+            ).read_text(encoding="utf-8")
+        )
+        resolved = json.loads(
+            (
+                REPO_ROOT
+                / f"docs/_static/prepared_nonlinear_runtime_{backend}_resolved_profile.json"
+            ).read_text(encoding="utf-8")
+        )
+        assert compact["git_revision"] == resolved["git_revision"]
+        assert compact["software"] == resolved["software"]
+        assert compact["resolved_diagnostics"] is False
+        assert resolved["resolved_diagnostics"] is True
+        assert compact["steps"] == resolved["steps"] == 200
+        assert resolved["run_median_s"] / compact["run_median_s"] <= 1.25
+        assert (
+            resolved["memory_summary"]["host_peak_rss_bytes"]
+            / compact["memory_summary"]["host_peak_rss_bytes"]
+            <= 1.10
+        )
+        for name in ("final_state", "phi", "heat_flux", "dt"):
+            np.testing.assert_allclose(
+                compact["result_summary"][name]["l2_norm"],
+                resolved["result_summary"][name]["l2_norm"],
+                rtol=1.0e-7,
+                atol=1.0e-12,
+            )
+        if backend == "gpu":
+            compact_peak = compact["memory_summary"]["device_stats"][
+                "peak_bytes_in_use"
+            ]
+            resolved_peak = resolved["memory_summary"]["device_stats"][
+                "peak_bytes_in_use"
+            ]
+            assert resolved_peak / compact_peak <= 1.10
 
 
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:

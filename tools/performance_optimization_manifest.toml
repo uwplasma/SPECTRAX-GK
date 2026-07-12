@@ -181,16 +181,23 @@ cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
   "benchmarks/performance/benchmark_runtime_memory.py",
   "tools/profiling/profile_startup_and_cache.py",
+  "tools/profiling/profile_runtime_kernels.py",
 ]
 metrics = [
   "peak_rss_mb",
   "history_buffer_bytes",
   "diagnostic_buffer_bytes",
   "device_memory_profile",
+  "host_peak_rss_bytes",
+  "device_peak_bytes_in_use",
 ]
 artifact_paths = [
   "docs/_static/runtime_memory_benchmark.png",
   "docs/_static/runtime_memory_benchmark.pdf",
+  "docs/_static/prepared_nonlinear_runtime_cpu_profile.json",
+  "docs/_static/prepared_nonlinear_runtime_gpu_profile.json",
+  "docs/_static/prepared_nonlinear_runtime_cpu_resolved_profile.json",
+  "docs/_static/prepared_nonlinear_runtime_gpu_resolved_profile.json",
   "docs/outputs.rst",
 ]
 bottleneck_hypotheses = [

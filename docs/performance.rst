@@ -1128,16 +1128,27 @@ claim.
 
 The current controlled prepared profiles are tracked as
 ``prepared_nonlinear_runtime_cpu_profile.json`` and
-``prepared_nonlinear_runtime_gpu_profile.json``. Both use commit ``ec2029f8``,
+``prepared_nonlinear_runtime_gpu_profile.json``. Both use commit ``d3f3aef8``,
 Python 3.10.12, JAX 0.6.2, NumPy 2.2.4, adaptive RK3, 200 steps, diagnostic
 stride 10, and compact scalar diagnostics on the same office node. The CPU
-warm run takes ``108.864 s`` and one RTX A4000 takes ``9.557 s``, a measured
-``11.39x`` device-throughput ratio after separate compilation. This is not an
+warm run takes ``109.275 s`` and one RTX A4000 takes ``9.338 s``, a measured
+``11.70x`` device-throughput ratio after separate compilation. This is not an
 end-to-end executable or multi-GPU scaling claim. The final-state norm is
 identical at recorded precision; timestep, potential, and heat-flux norms
 agree within ``3.8e-6`` relative. The profiler and artifact gate now require
 these numerical fingerprints, matched software/configuration, and at least a
 ``5x`` ratio before the row can remain promoted.
+
+Matched resolved-diagnostic profiles use the same 200-step trajectory and
+produce exactly the same recorded final-state, potential, heat-flux, and
+timestep norms. On CPU, retaining mode-resolved histories adds ``0.62%`` warm
+time and ``1.18%`` peak host RSS. On the A4000, three-repeat medians show
+``2.36%`` warm-time overhead, ``2.78%`` peak device-memory overhead, ``5.38%``
+additional live device allocation, and ``2.61%`` peak host-RSS overhead. The
+artifact gate permits at most 25% runtime and 10% memory overhead. Compact
+diagnostics therefore remain the recommended optimization/UQ path, while
+resolved diagnostics are inexpensive enough to enable when spectral evidence
+is scientifically required.
 
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple

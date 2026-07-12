@@ -8,7 +8,12 @@
   "dt": 0.01,
   "fixed_dt": false,
   "git_dirty": false,
-  "git_revision": "ec2029f8aa8205053ea5d1ed70ae4494528ed1c1",
+  "git_revision": "d3f3aef8edfa4df33db960ea76799fa42a4aee66",
+  "memory_summary": {
+    "device": "TFRT_CPU_0",
+    "device_stats": {},
+    "host_peak_rss_bytes": 4467748864
+  },
   "method": "rk3",
   "nl": 4,
   "nm": 8,
@@ -63,9 +68,9 @@
     }
   },
   "reuse_prepared_simulation": true,
-  "run_median_s": 108.86422952899011,
+  "run_median_s": 109.27489167399472,
   "run_times_s": [
-    108.86422952899011
+    109.27489167399472
   ],
   "sample_stride": 10,
   "software": {
@@ -74,5 +79,5 @@
     "python": "3.10.12"
   },
   "steps": 200,
-  "warmup_time_s": 115.52286390500376
+  "warmup_time_s": 115.74483938602498
 }

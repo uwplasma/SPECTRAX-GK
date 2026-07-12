@@ -207,9 +207,9 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Structured solver ownership | 92% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
-| Nonlinear GPU performance | 92% | Add device-memory/diagnostic-streaming profiles for the admitted 200-step workload, then optimize only profiler-identified kernels. |
+| Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
-| Performance/release claims | 92% | Refresh the broader runtime/memory panel from matched-stack artifacts; keep cold executable, warm Python, and parallel scaling claims separate. |
+| Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
 
@@ -833,3 +833,9 @@ under 5 minutes.
   revision, software, configuration, finite outputs, numerical identity, and a
   conservative 5x throughput floor. This is a one-device warm-throughput
   result, not an executable or parallel-scaling claim.
+- 2026-07-12: Added machine-readable host peak RSS and JAX allocator metrics,
+  then profiled compact and resolved diagnostics on the same 200-step CPU/GPU
+  trajectory. Resolved histories preserve exact recorded output identity while
+  adding 0.62% CPU time/1.18% RSS and 2.36% A4000 time/2.78% device peak. The
+  four small JSON artifacts are now regression-gated at 25% runtime and 10%
+  memory overhead; opaque profiler traces remain untracked.

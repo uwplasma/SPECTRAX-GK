@@ -12,16 +12,16 @@
   "memory_summary": {
     "device": "cuda:0",
     "device_stats": {
-      "bytes_in_use": 88662272,
+      "bytes_in_use": 93430528,
       "bytes_limit": 12563152896,
-      "peak_bytes_in_use": 351376128
+      "peak_bytes_in_use": 361129728
     },
-    "host_peak_rss_bytes": 1906864128
+    "host_peak_rss_bytes": 1956540416
   },
   "method": "rk3",
   "nl": 4,
   "nm": 8,
-  "resolved_diagnostics": false,
+  "resolved_diagnostics": true,
   "result_summary": {
     "dt": {
       "finite_fraction": 1.0,
@@ -56,7 +56,7 @@
         21
       ],
       "sum_imag": 0.0,
-      "sum_real": 0.00042784617889424226
+      "sum_real": 0.00042784617710367456
     },
     "phi": {
       "finite_fraction": 1.0,
@@ -72,11 +72,11 @@
     }
   },
   "reuse_prepared_simulation": true,
-  "run_median_s": 9.33783835900249,
+  "run_median_s": 9.558318840980064,
   "run_times_s": [
-    9.231134155008476,
-    9.33783835900249,
-    9.391280523966998
+    10.296564214047976,
+    9.558318840980064,
+    9.008401078986935
   ],
   "sample_stride": 10,
   "software": {
@@ -85,5 +85,5 @@
     "python": "3.10.12"
   },
   "steps": 200,
-  "warmup_time_s": 20.240282515995204
+  "warmup_time_s": 23.82375715498347
 }

@@ -1,8 +1,8 @@
 {
-  "backend": "gpu",
+  "backend": "cpu",
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml",
   "devices": [
-    "cuda:0"
+    "TFRT_CPU_0"
   ],
   "diagnostics_stride": 10,
   "dt": 0.01,
@@ -10,23 +10,19 @@
   "git_dirty": false,
   "git_revision": "d3f3aef8edfa4df33db960ea76799fa42a4aee66",
   "memory_summary": {
-    "device": "cuda:0",
-    "device_stats": {
-      "bytes_in_use": 88662272,
-      "bytes_limit": 12563152896,
-      "peak_bytes_in_use": 351376128
-    },
-    "host_peak_rss_bytes": 1906864128
+    "device": "TFRT_CPU_0",
+    "device_stats": {},
+    "host_peak_rss_bytes": 4520312832
   },
   "method": "rk3",
   "nl": 4,
   "nm": 8,
-  "resolved_diagnostics": false,
+  "resolved_diagnostics": true,
   "result_summary": {
     "dt": {
       "finite_fraction": 1.0,
-      "l2_norm": 0.12653492391109467,
-      "max_abs": 0.0012508047511801124,
+      "l2_norm": 0.12653478980064392,
+      "max_abs": 0.001250803004950285,
       "shape": [
         1,
         4,
@@ -35,8 +31,8 @@
         64,
         24
       ],
-      "sum_imag": -1.2640645735001454e-10,
-      "sum_real": 0.3302218145230539
+      "sum_imag": -1.291814264066382e-10,
+      "sum_real": 0.330221522938571
     },
     "final_state": {
       "finite_fraction": 1.0,
@@ -50,33 +46,31 @@
     },
     "heat_flux": {
       "finite_fraction": 1.0,
-      "l2_norm": 0.00010248796024825424,
-      "max_abs": 3.0474828236037865e-05,
+      "l2_norm": 0.00010248759645037353,
+      "max_abs": 3.0474713639705442e-05,
       "shape": [
         21
       ],
       "sum_imag": 0.0,
-      "sum_real": 0.00042784617889424226
+      "sum_real": 0.0004278446473620079
     },
     "phi": {
       "finite_fraction": 1.0,
-      "l2_norm": 0.04132678359746933,
-      "max_abs": 0.0007708925404585898,
+      "l2_norm": 0.04132673516869545,
+      "max_abs": 0.0007708911434747279,
       "shape": [
         64,
         64,
         24
       ],
-      "sum_imag": -7.834669024653351e-11,
-      "sum_real": 0.33056667390279104
+      "sum_imag": 9.904022046924865e-13,
+      "sum_real": 0.33056641042311297
     }
   },
   "reuse_prepared_simulation": true,
-  "run_median_s": 9.33783835900249,
+  "run_median_s": 109.95106014900375,
   "run_times_s": [
-    9.231134155008476,
-    9.33783835900249,
-    9.391280523966998
+    109.95106014900375
   ],
   "sample_stride": 10,
   "software": {
@@ -85,5 +79,5 @@
     "python": "3.10.12"
   },
   "steps": 200,
-  "warmup_time_s": 20.240282515995204
+  "warmup_time_s": 117.8666490939795
 }
