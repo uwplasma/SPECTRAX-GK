@@ -12,7 +12,7 @@ from spectraxgk.config import (
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.runtime import run_nonlinear_case, run_runtime_nonlinear
+from spectraxgk import run_nonlinear_case, run_runtime_nonlinear
 from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,

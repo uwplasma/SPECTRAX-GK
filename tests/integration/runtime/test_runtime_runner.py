@@ -42,12 +42,11 @@ from spectraxgk.runtime import (
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
-    run_linear_case,
-    run_nonlinear_case,
     run_runtime_linear,
     run_runtime_nonlinear,
     run_runtime_scan,
 )
+from spectraxgk.workflows.cases import run_linear_case, run_nonlinear_case
 from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,

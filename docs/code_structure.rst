@@ -331,10 +331,9 @@ Completed extractions:
   ``run_runtime_scan``, and the combined-``ky`` batch wrapper share one private
   option bundle in the public ``runtime.py`` facade, keeping method, timestep,
   sample-stride, fit-window, mode-method, and fit-signal forwarding aligned.
-- runtime TOML case dependency defaults:
-  ``workflows/cases.py``. The public ``runtime.py`` facade owns the stable
-  ``run_linear_case`` and ``run_nonlinear_case`` signatures, while
-  ``workflows/cases.py`` owns default case-workflow wiring.
+- runtime TOML case workflows: ``workflows/cases.py`` owns the stable
+  ``run_linear_case`` and ``run_nonlinear_case`` signatures and their default
+  wiring; the package-level API exports them directly from that owner.
 - root benchmark drivers and result pointers:
   ``benchmarks/``. This directory is the canonical lightweight benchmark
   entry point at repository root. It stores drivers, TOML inputs, and

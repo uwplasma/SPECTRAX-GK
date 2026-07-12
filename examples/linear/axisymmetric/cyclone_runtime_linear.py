@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from spectraxgk.runtime import run_linear_case
+from spectraxgk import run_linear_case
 
 CONFIG = Path(__file__).resolve().parent / "cyclone.toml"
 

@@ -729,3 +729,9 @@ under 5 minutes.
   promoted runtime path. Coverage/refactor manifests and user documentation
   name ``benchmarking.shared``, runtime workflows, and diagnostics as the
   actual owners.
+- 2026-07-12: Closed the runtime-facade line target without adding another
+  module. Removed duplicate TOML case wrappers from ``runtime.py`` and routed
+  the stable package API directly to ``workflows.cases``; promoted examples now
+  import those workflows from ``spectraxgk``. The facade fell from 535 to 473
+  lines, its architecture exception was removed, and five executable case
+  workflow tests plus public lazy-import identity passed.

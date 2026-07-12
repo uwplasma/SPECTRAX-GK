@@ -147,9 +147,3 @@ path = "api/__init__.py"
 baseline_lines = 839
 target_lines = 500
 reason = "curate the stable public API and keep specialist report builders internal"
-
-[[complexity_policy.exceptions]]
-path = "runtime.py"
-baseline_lines = 535
-target_lines = 500
-reason = "finish moving executable orchestration details behind the workflow package"

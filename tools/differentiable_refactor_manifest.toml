@@ -2430,7 +2430,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[hotspots]]
 module = "spectraxgk.runtime"
 source_path = "src/spectraxgk/runtime.py"
-current_reason = "public runtime still contains scan dispatch, mode selection, output handoff, and solver orchestration facade code"
+current_reason = "closed: the facade owns only runtime dispatch and dependency seams; TOML cases resolve directly from workflows.cases"
 target_packages = [
   "spectraxgk.workflows.runtime.linear",
   "spectraxgk.workflows.runtime.nonlinear",
@@ -2439,8 +2439,8 @@ target_packages = [
   "spectraxgk.workflows.progress",
 ]
 public_facade = "spectraxgk.runtime"
-line_target = 700
-status = "planned"
+line_target = 500
+status = "closed"
 existing_fast_tests = ["tests/integration/runtime/test_runtime_config.py", "tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 planned_tests = [
   "default executable run contract tests",
