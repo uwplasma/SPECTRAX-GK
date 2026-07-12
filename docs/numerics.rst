@@ -71,7 +71,10 @@ The implementation leverages the following JAX primitives:
   dimensions are independent line-solve columns.
 - **Memory-bounded sensitivities**: ``solvax.chunked_jacfwd`` underlies the
   geometry gradient report when ``jacobian_chunk_size`` is set. Chunking
-  changes batching and peak memory, not the mathematical JVP columns.
+  changes batching and peak memory, not the mathematical JVP columns. Without
+  a chunk request, ``jacobian_mode="auto"`` uses forward mode for few controls
+  and reverse mode for few observables; the resolved mode is recorded and
+  checked against finite differences.
 - **Stencil operations**: ``jax.numpy.roll`` and ``jax.numpy.pad`` implement
   the centered ``z`` derivative and Hermite/Laguerre ladder couplings in
   :func:`spectraxgk.linear.grad_z_periodic`,

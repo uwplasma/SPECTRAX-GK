@@ -205,7 +205,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
-| Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
+| Differentiable API clarity | 80% | Define dynamic cache/geometry rebuild boundaries, then extend the now-explicit forward/reverse policy to checkpointed and implicit solver objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
@@ -793,3 +793,10 @@ under 5 minutes.
   CI's prior sole failure was a stale fast-coverage shard that omitted the
   benchmark metric-owner test; the owner test is restored without weakening
   the package-wide 95% gate.
+- 2026-07-12: Added an explicit geometry Jacobian direction policy without
+  growing the module past its architecture budget. ``jacobian_mode="auto"``
+  selects forward mode for few controls and reverse mode for few observables;
+  SOLVAX chunking remains an explicit forward-mode memory policy. Reports
+  record the resolved mode, explicit forward/reverse Jacobians agree, invalid
+  mode/chunk combinations fail early, and 60 differentiable-geometry tests,
+  package-wide mypy, and zero-exception architecture gates pass.

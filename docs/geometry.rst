@@ -298,6 +298,13 @@ VMEC/Boozer geometry sensitivity report uses ``"auto"`` and records that
 choice in its JSON output. Chunked and unchunked Jacobians are required to
 agree before a report can support an optimization claim.
 
+``jacobian_mode`` separately controls derivative direction. ``"forward"`` is
+appropriate for few design variables, ``"reverse"`` for few observables, and
+``"auto"`` selects between them from the input/output dimensions. Requesting
+chunking forces forward mode because the chunk size budgets simultaneous JVP
+directions. Reports record the resolved mode, and both explicit modes must
+agree with central finite differences before either is used in optimization.
+
 The bridge validates more than array shapes. Host-side mappings must contain
 finite scalar metadata such as ``q``, ``R0``, ``B0``, and ``theta_scale``,
 must provide at least one ``theta`` sample, and must use a positive integer

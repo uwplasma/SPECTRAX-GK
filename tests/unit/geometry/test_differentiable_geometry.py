@@ -86,6 +86,8 @@ def test_observable_gradient_chunking_preserves_jacobian_and_records_policy() ->
 
     assert full["jacobian_chunk_size"] is None
     assert chunked["jacobian_chunk_size"] == 2
+    assert full["jacobian_mode"] == "reverse"
+    assert chunked["jacobian_mode"] == "forward"
     assert full["passed"] is True and chunked["passed"] is True
     np.testing.assert_allclose(
         np.asarray(chunked["jacobian_ad"]),
@@ -93,6 +95,34 @@ def test_observable_gradient_chunking_preserves_jacobian_and_records_policy() ->
         rtol=1.0e-6,
         atol=1.0e-7,
     )
+
+    forward = observable_gradient_validation_report(
+        observables, params, jacobian_mode="forward", **common
+    )
+    reverse = observable_gradient_validation_report(
+        observables, params, jacobian_mode="reverse", **common
+    )
+    assert forward["jacobian_mode"] == "forward"
+    assert reverse["jacobian_mode"] == "reverse"
+    np.testing.assert_allclose(
+        np.asarray(forward["jacobian_ad"]),
+        np.asarray(reverse["jacobian_ad"]),
+        rtol=1.0e-6,
+        atol=1.0e-7,
+    )
+
+
+def test_observable_gradient_validation_rejects_invalid_mode_policy() -> None:
+    def fn(x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.asarray([jnp.sum(x)])
+
+    params = jnp.ones(3)
+    with pytest.raises(ValueError, match="jacobian_mode"):
+        observable_gradient_validation_report(fn, params, jacobian_mode="adjoint")
+    with pytest.raises(ValueError, match="only valid for forward"):
+        observable_gradient_validation_report(
+            fn, params, jacobian_mode="reverse", jacobian_chunk_size=1
+        )
 
 
 def test_observable_gradient_validation_report_fails_strict_json_on_nonfinite_data() -> (
