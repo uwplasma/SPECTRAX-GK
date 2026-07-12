@@ -717,8 +717,10 @@ The benchmark stack has two explicit roles:
   figures consume reviewed tables rather than launching a second hidden solve.
 
 ``spectraxgk.benchmarks`` remains a transitional facade only for KBM
-branch-continuation while its beta scan is migrated to a generic runtime
-parameter scan. TEM and kinetic-electron execution now use canonical runtime
+time-history branch selection while its fixed-beta ``k_y`` scan is migrated to
+generic runtime orchestration. The former ``kbm_beta_scan.py`` was removed
+after audit showed that it incorrectly interpreted a ``k_y`` reference table
+as beta values. TEM and kinetic-electron execution now use canonical runtime
 inputs and scan paths; their former named runners and case dataclasses have
 been removed. New examples must not add named-case execution APIs.
 External-code names and raw reference handling stay in root ``benchmarks/`` or
