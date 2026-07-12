@@ -7,14 +7,14 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+import spectraxgk.geometry.backend_discovery as vmec_backend_discovery
 import spectraxgk.geometry.imported_vmec as vmec_facade
-import spectraxgk.geometry.imported_vmec as vmec_backend_discovery
-import spectraxgk.geometry.imported_vmec as vmec_fieldline_numerics
+import spectraxgk.geometry.vmec_field_line_sampling as vmec_fieldline_numerics
 import spectraxgk.geometry.imported_vmec as vmec_fieldlines
 import spectraxgk.geometry.imported_vmec as vmec_io
 import spectraxgk.geometry.imported_vmec as vmec_pipeline
 import spectraxgk.geometry.imported_vmec as vmec_remap
-import spectraxgk.geometry.imported_vmec as vmec_splines
+import spectraxgk.geometry.vmec_field_line_sampling as vmec_splines
 from spectraxgk.geometry.imported_vmec import _Struct
 from spectraxgk.geometry.imported_vmec import (
     _apply_flux_tube_cut,
@@ -47,9 +47,6 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_facade._vmec_fieldlines is vmec_fieldlines._vmec_fieldlines
     assert vmec_fieldlines._boozer_trig_basis is (
         vmec_fieldline_numerics._boozer_trig_basis
-    )
-    assert vmec_fieldlines._flux_surface_hngc_averages is (
-        vmec_fieldline_numerics._flux_surface_hngc_averages
     )
     assert vmec_fieldlines._fieldline_boozer_tensors is (
         vmec_fieldline_numerics._fieldline_boozer_tensors
@@ -134,11 +131,11 @@ def test_import_module_with_search_paths_raises_on_missing(tmp_path: Path) -> No
 
 def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._booz_xform_jax_search_paths",
+        "spectraxgk.geometry.backend_discovery._booz_xform_jax_search_paths",
         lambda: [],
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_module_with_search_paths",
+        "spectraxgk.geometry.backend_discovery._import_module_with_search_paths",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             ImportError("jax backend missing")
         ),
@@ -152,7 +149,7 @@ def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
         raise ImportError(name)
 
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec.importlib.import_module",
+        "spectraxgk.geometry.backend_discovery.importlib.import_module",
         _import_module,
     )
     assert _import_booz_backend() is marker
@@ -162,11 +159,11 @@ def test_import_booz_backend_honors_fortran_override(monkeypatch) -> None:
     marker = SimpleNamespace(name="forced-fortran", Booz_xform=object)
     monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "fortran")
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_xform_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_xform_backend",
         lambda: marker,
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_xform_jax_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_xform_jax_backend",
         lambda: (_ for _ in ()).throw(
             AssertionError("jax backend should not be imported")
         ),
@@ -195,11 +192,11 @@ def test_import_booz_backend_honors_jax_override(monkeypatch) -> None:
     marker = SimpleNamespace(name="forced-jax", Booz_xform=object)
     monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "jax")
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_xform_jax_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_xform_jax_backend",
         lambda: marker,
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_xform_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_xform_backend",
         lambda: (_ for _ in ()).throw(
             AssertionError("booz_xform should not be imported")
         ),
@@ -218,11 +215,11 @@ def test_import_booz_backend_rejects_unknown_override(monkeypatch) -> None:
 def test_import_booz_backend_reports_missing_backends(monkeypatch) -> None:
     monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_xform_jax_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_xform_jax_backend",
         lambda: (_ for _ in ()).throw(ImportError("jax missing")),
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_xform_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_xform_backend",
         lambda: (_ for _ in ()).throw(ImportError("booz missing")),
     )
 
@@ -234,12 +231,12 @@ def test_import_booz_backend_reports_missing_backends(monkeypatch) -> None:
 
 def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_backend",
         lambda: object(),
     )
     assert internal_vmec_backend_available() is True
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_backend",
+        "spectraxgk.geometry.backend_discovery._import_booz_backend",
         lambda: (_ for _ in ()).throw(ImportError("missing")),
     )
     assert internal_vmec_backend_available() is False
@@ -247,7 +244,7 @@ def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None
 
 def test_nperiod_set_and_dermv(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec.nperiod_contract",
+        "spectraxgk.geometry.vmec_field_line_sampling.nperiod_contract",
         lambda values, theta, npol: (values[1:-1], theta[1:-1]),
     )
     values, theta = nperiod_set(
