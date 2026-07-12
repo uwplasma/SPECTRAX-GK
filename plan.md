@@ -742,3 +742,8 @@ under 5 minutes.
   Added an invariant against duplicate or divergent exports, removed the API
   architecture exception, and passed lazy-import, docs warnings-as-errors, and
   wheel/sdist builds.
+- 2026-07-12: Closed the VMEC/Boozer line-search complexity exception at the
+  1,000-line domain budget. Holdout-improvement validation now belongs to the
+  immutable holdout configuration itself, so direct and factory construction
+  enforce the same non-negative threshold. Focused scalar/aggregate holdout
+  tests and the architecture checker pass.
