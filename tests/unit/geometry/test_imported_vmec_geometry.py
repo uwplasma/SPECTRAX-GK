@@ -46,21 +46,6 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_facade._vmec_splines is vmec_fieldlines._vmec_splines
     assert vmec_fieldlines._vmec_splines is vmec_splines._vmec_splines
     assert vmec_facade._vmec_fieldlines is vmec_fieldlines._vmec_fieldlines
-    assert vmec_fieldlines._boozer_trig_basis is (
-        vmec_fieldline_numerics._boozer_trig_basis
-    )
-    assert vmec_fieldlines._fieldline_boozer_tensors is (
-        vmec_fieldline_numerics._fieldline_boozer_tensors
-    )
-    assert vmec_fieldlines._fieldline_alpha_gradients is (
-        vmec_fieldline_numerics._fieldline_alpha_gradients
-    )
-    assert vmec_fieldlines._fieldline_local_shear is (
-        vmec_fieldline_numerics._fieldline_local_shear
-    )
-    assert vmec_fieldlines._fieldline_metric_drifts is (
-        vmec_fieldline_numerics._fieldline_metric_drifts
-    )
     assert vmec_facade._apply_flux_tube_cut is vmec_remap._apply_flux_tube_cut
     assert vmec_facade._equal_arc_remap is vmec_remap._equal_arc_remap
     assert vmec_facade.write_vmec_eik_netcdf is vmec_io.write_vmec_eik_netcdf
@@ -685,15 +670,17 @@ def test_vmec_fieldline_helper_angle_and_denominator_policies() -> None:
     xm = np.array([1.0, 2.0])
     xn = np.array([0.0, 1.0])
 
-    angle = vmec_fieldlines._boozer_mode_angle(xm, xn, theta, phi, flipit=False)
+    angle = vmec_fieldline_numerics._boozer_mode_angle(xm, xn, theta, phi, flipit=False)
     np.testing.assert_allclose(angle[0, 0, 0], theta[0, 0])
     np.testing.assert_allclose(angle[1, 0, 0], 2.0 * theta[0, 0] - 0.25)
 
-    flipped = vmec_fieldlines._boozer_mode_angle(xm, xn, theta, phi, flipit=True)
+    flipped = vmec_fieldline_numerics._boozer_mode_angle(
+        xm, xn, theta, phi, flipit=True
+    )
     np.testing.assert_allclose(flipped[0] - angle[0], np.pi)
     np.testing.assert_allclose(flipped[1] - angle[1], 2.0 * np.pi)
 
-    safe = vmec_fieldlines._safe_mode_denominator(
+    safe = vmec_derivatives._safe_mode_denominator(
         np.array([0.0, 2.0, 3.0]), np.array([0.0, 1.0, 1.0]), np.array([0.5])
     )
     assert safe.shape == (1, 2)
@@ -705,7 +692,7 @@ def test_vmec_fieldline_boozer_mode_sum_preserves_surface_axis() -> None:
     coeff = np.array([[1.0, 2.0], [3.0, 4.0]])
     basis = np.arange(2 * 2 * 3 * 4, dtype=float).reshape(2, 2, 3, 4)
 
-    out = vmec_fieldlines._boozer_mode_sum(coeff, basis)
+    out = vmec_fieldline_numerics._boozer_mode_sum(coeff, basis)
 
     assert out.shape == (2, 3, 4)
     np.testing.assert_allclose(
@@ -721,8 +708,8 @@ def test_vmec_fieldline_boozer_trig_basis_preserves_mode_axis() -> None:
     xn = np.array([0.0, -1.0, 3.0])
     angle = np.linspace(0.0, 0.5, 3 * 2 * 4).reshape(3, 2, 4)
 
-    cosangle, sinangle, mcos, msin, ncos, nsin = vmec_fieldlines._boozer_trig_basis(
-        xm, xn, angle
+    cosangle, sinangle, mcos, msin, ncos, nsin = (
+        vmec_fieldline_numerics._boozer_trig_basis(xm, xn, angle)
     )
 
     assert cosangle.shape == angle.shape
@@ -1014,7 +1001,9 @@ def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
     )
 
     np.testing.assert_allclose(floored_pressure, np.array([drive]))
-    assert floored_pfac == pytest.approx(drive / (vmec_fieldline_numerics._MU_0 * 1.0e-8))
+    assert floored_pfac == pytest.approx(
+        drive / (vmec_fieldline_numerics._MU_0 * 1.0e-8)
+    )
 
     disabled_pressure, disabled_pfac = vmec_derivatives._hngc_pressure_correction(
         s_val=0.25,
@@ -1066,8 +1055,8 @@ def test_vmec_fieldline_helper_samples_boozer_mode_table() -> None:
         d_bmnc_b_d_s=_family(9.0),
     )
 
-    rmnc_b, zmns_b, *_, d_bmnc_b_d_s = vmec_fieldlines._sample_boozer_mode_table(
-        vs, s, ns=2
+    rmnc_b, zmns_b, *_, d_bmnc_b_d_s = (
+        vmec_fieldline_numerics._sample_boozer_mode_table(vs, s, ns=2)
     )
 
     assert rmnc_b.shape == (2, 3)
@@ -1088,11 +1077,11 @@ def test_vmec_fieldlines_respects_overrides_and_closes_dataset(
         SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_backend",
+        "spectraxgk.geometry.vmec_state_controls._import_booz_backend",
         lambda: fake_backend,
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._vmec_splines",
+        "spectraxgk.geometry.vmec_state_controls._vmec_splines",
         lambda _nc, _booz: _fake_vmec_spline_struct(),
     )
 
@@ -1152,11 +1141,11 @@ def test_vmec_fieldlines_falls_back_for_square_vmec_jax_wout(
         SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_backend",
+        "spectraxgk.geometry.vmec_state_controls._import_booz_backend",
         _fake_import_backend,
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._vmec_splines", _fake_splines
+        "spectraxgk.geometry.vmec_state_controls._vmec_splines", _fake_splines
     )
 
     out = _vmec_fieldlines(
@@ -1197,7 +1186,7 @@ def test_vmec_fieldlines_does_not_fallback_when_booz_backend_is_forced(
         SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_backend",
+        "spectraxgk.geometry.vmec_state_controls._import_booz_backend",
         _fake_import_backend,
     )
 
@@ -1233,11 +1222,11 @@ def test_vmec_fieldlines_rejects_degenerate_reference_length(
         SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._import_booz_backend",
+        "spectraxgk.geometry.vmec_state_controls._import_booz_backend",
         lambda: fake_backend,
     )
     monkeypatch.setattr(
-        "spectraxgk.geometry.imported_vmec._vmec_splines",
+        "spectraxgk.geometry.vmec_state_controls._vmec_splines",
         lambda _nc, _booz: bad_vs,
     )
 

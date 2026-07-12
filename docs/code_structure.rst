@@ -145,7 +145,7 @@ Physics / Numerics / IO Map
      - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/imported_miller.py``, ``geometry/kernels.py``, ``geometry/vmec_eik.py``, and ``geometry/imported_vmec.py``
+     - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/imported_miller.py``, ``geometry/imported_vmec.py``, ``geometry/vmec_field_line_sampling.py``, ``geometry/vmec_boozer_derivatives.py``, and ``geometry/vmec_state_controls.py``
      - parser, remap, normalization, geometry-response tests, Miller/VMEC finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py`` facade plus ``terms/assembly_*`` owner modules
@@ -200,8 +200,12 @@ Completed extractions:
   ``FluxTubeGeometryData`` packing as separate private stages so geometry-file
   variants can be tested without one large loader body.
 - focused imported-geometry owners. ``geometry.imported_miller`` owns the
-  complete Miller imported-geometry pipeline, ``geometry.imported_vmec`` owns
-  the VMEC/Boozer-to-EIK pipeline, and shared finite-difference and
+  complete Miller imported-geometry pipeline. ``geometry.imported_vmec`` is a
+  compact VMEC/Boozer-to-EIK orchestrator; backend loading, field-line
+  sampling, metric derivatives, and state construction live respectively in
+  ``geometry.backend_discovery``, ``geometry.vmec_field_line_sampling``,
+  ``geometry.vmec_boozer_derivatives``, and
+  ``geometry.vmec_state_controls``. Shared finite-difference and
   period-extension kernels live in ``geometry.kernels``. Imported Miller
   profile assembly keeps central-surface normalization, period extension,
   Bishop coefficients, metric coefficients, magnetic drifts, target-grid
@@ -791,16 +795,13 @@ The AD/FD validation owner stages parameter validation, observable flattening,
 Jacobian construction, tangent checks, conditioning gates, failure reasons, and
 strict JSON report assembly so differentiability tests can target each
 research-grade gate directly.
-Imported VMEC/Boozer geometry generation lives in
-``spectraxgk.geometry.imported_vmec``. That owner module stages optional
-Boozer backend discovery, radial spline construction, Boozer-mode table
-sampling, alpha-line coordinate construction, axisymmetric flip detection,
-resonant-denominator guarding, field-line tensor algebra, alpha/coordinate
-gradient construction, local shear, metric/drift coefficient assembly,
-flux-surface averaging, centered field-line integrals, flux-tube cuts,
-equal-arc remaps, and atomic EIK NetCDF writeout. Keeping those VMEC-specific
-formulas together avoids a second geometry namespace while still exposing
-small helper seams for physics and numerics tests.
+Imported VMEC/Boozer geometry generation enters through
+``spectraxgk.geometry.imported_vmec``. Its focused owners separate optional
+backend discovery, radial spline and Boozer-mode sampling, Hegna-Nakajima and
+metric derivatives, and VMEC field-line state construction. The orchestrator
+retains only flux-tube cutting, equal-arc remapping, atomic EIK output, and the
+high-level request path. This separation keeps the formulas discoverable and
+lets backend, sampling, derivative, and orchestration tests fail independently.
 Zero-shear boundary policy and analytic s-alpha/slab geometry models live in
 ``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic
 sampling, imported-NetCDF loading, and periodic mirror-term reconstruction live

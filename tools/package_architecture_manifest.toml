@@ -101,12 +101,6 @@ public_facades = [
 ]
 
 [[complexity_policy.exceptions]]
-path = "geometry/imported_vmec.py"
-baseline_lines = 2540
-target_lines = 1000
-reason = "split file parsing, convention mapping, and backend execution behind one geometry facade"
-
-[[complexity_policy.exceptions]]
 path = "diagnostics/nonlinear_gradient_evidence.py"
 baseline_lines = 2371
 target_lines = 1000

@@ -86,12 +86,12 @@ The remaining work should be closed in this order.
    extract only cohesive helpers. Keep public facades stable until examples,
    docs, and benchmark scripts use the new module boundaries.
 
-2. **Finish the high-priority refactor modules.**
-   The active blockers are ``runtime.py``, ``linear.py``, ``nonlinear.py``,
-   ``benchmarks.py``, ``diagnostics.py``, ``workflows/runtime/artifacts.py``,
-   ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``, and
-   ``geometry/imported_vmec.py``. Each slice should land with targeted tests and no
-   physics-model change.
+2. **Finish the remaining complexity exception.**
+   Runtime, linear, nonlinear, benchmark, validation, and imported-VMEC
+   ownership are now below their architecture budgets. The remaining named
+   exception is ``diagnostics/nonlinear_gradient_evidence.py``; its report and
+   campaign assembly should move behind focused diagnostics without changing
+   physics-model behavior.
 
 3. **Turn open or deferred physics lanes into explicit gates.**
    Literature-facing lanes should produce JSON/CSV/PNG/PDF artifacts with the

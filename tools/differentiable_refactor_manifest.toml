@@ -2604,8 +2604,8 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 module = "spectraxgk.geometry.imported_vmec"
 source_path = "src/spectraxgk/geometry/imported_vmec.py"
 facade_module = "spectraxgk.geometry.imported_vmec"
-status = "active"
-responsibility = "single imported VMEC/Boozer backend owner for optional Boozer discovery, radial spline construction, field-line sampling, Hegna-Nakajima corrections, flux-tube cuts, equal-arc remaps, atomic EIK NetCDF writeout, and high-level request orchestration"
+status = "closed"
+responsibility = "compact VMEC/Boozer-to-EIK orchestrator over focused backend-discovery, field-line sampling, derivative, and state-control owners"
 moved_exports = [
   "_MU_0",
   "_Struct",
