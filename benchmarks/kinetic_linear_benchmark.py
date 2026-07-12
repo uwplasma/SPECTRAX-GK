@@ -3,7 +3,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from spectraxgk.artifacts.plotting import scan_comparison_figure
-from spectraxgk.benchmarks import load_cyclone_reference_kinetic
+from spectraxgk.benchmarking.shared import load_cyclone_reference_kinetic
 from spectraxgk.runtime import run_runtime_scan
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 

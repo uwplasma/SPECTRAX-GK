@@ -51,7 +51,8 @@ from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
     infer_triple_dealiased_ny,
     late_time_window,
 )
-from spectraxgk.benchmarks import _apply_reference_hypercollisions, run_kbm_linear  # noqa: E402
+from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions  # noqa: E402
+from spectraxgk.benchmarks import run_kbm_linear  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
 from spectraxgk.core.grid import build_spectral_grid  # noqa: E402
 from spectraxgk.core.species import build_linear_params  # noqa: E402

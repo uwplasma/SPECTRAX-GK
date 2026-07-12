@@ -1895,7 +1895,7 @@ def test_case_specific_window_gates_expose_tighter_release_thresholds(
 from typing import Any
 
 
-from spectraxgk.benchmarks import CycloneScanResult
+from spectraxgk.benchmarking.shared import CycloneScanResult
 from spectraxgk.workflows.runtime.results import RuntimeLinearScanResult
 from tools.artifacts import generate_electrostatic_parallel_gates as electrostatic_gates
 from tools.artifacts import generate_linear_rhs_parallel_gates as linear_rhs_gates

@@ -19,7 +19,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -37,8 +37,8 @@ from spectraxgk.benchmarks import (
     load_kbm_reference,
     load_tem_reference,
     LinearScanResult,
-    run_kbm_beta_scan,
 )
+from spectraxgk.benchmarks import run_kbm_beta_scan
 from spectraxgk.config import (
     CycloneBaseCase,
     GridConfig,

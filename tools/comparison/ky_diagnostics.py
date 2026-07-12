@@ -24,7 +24,7 @@ from spectraxgk.diagnostics.analysis import (
     instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,

@@ -14,7 +14,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     load_cyclone_reference,
     load_etg_reference,
     load_kbm_reference,

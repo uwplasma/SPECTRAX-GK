@@ -31,7 +31,7 @@ from tools.comparison.compare_gx_runtime_diag_state import (
     _load_species_state,
     _maybe_load_field,
 )
-from spectraxgk.benchmarks import _apply_reference_hypercollisions
+from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid

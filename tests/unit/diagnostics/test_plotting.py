@@ -6,7 +6,7 @@ matplotlib.use("Agg")
 
 import numpy as np
 
-from spectraxgk.benchmarks import CycloneReference, CycloneScanResult
+from spectraxgk.benchmarking.shared import CycloneReference, CycloneScanResult
 import matplotlib.pyplot as plt
 import pytest
 import spectraxgk.artifacts.plotting as plotting

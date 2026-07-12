@@ -13,20 +13,18 @@ import jax.numpy as jnp
 import jax
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    CycloneBaseCase,
-    KBMBaseCase,
     _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
 )
-from spectraxgk.config import GeometryConfig, GridConfig
+from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, KBMBaseCase
 from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml

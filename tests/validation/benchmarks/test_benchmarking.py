@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.diagnostics.analysis import ModeSelection
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     LinearRunResult,
     LinearScanResult,
 )

@@ -13,7 +13,7 @@ from spectraxgk import (
     run_runtime_scan,
     scan_comparison_figure,
 )
-from spectraxgk.benchmarks import load_cyclone_reference
+from spectraxgk.benchmarking.shared import load_cyclone_reference
 
 
 CONFIG = Path("examples/linear/axisymmetric/cyclone.toml")

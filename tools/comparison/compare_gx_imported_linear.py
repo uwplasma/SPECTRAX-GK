@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import _apply_reference_hypercollisions
+from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
 from spectraxgk.geometry import (
     SlabGeometry,

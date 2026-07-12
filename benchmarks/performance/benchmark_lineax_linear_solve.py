@@ -13,7 +13,7 @@ import lineax as lx
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,

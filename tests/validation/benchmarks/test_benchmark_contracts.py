@@ -39,7 +39,7 @@ from spectraxgk.terms.linear_terms import (
     linked_streaming_contribution,
     streaming_contribution,
 )
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,

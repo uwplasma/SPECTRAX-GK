@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.diagnostics.analysis import ModeSelection
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     _is_array_like,
     _iter_ky_batches,
     _resolve_streaming_window,
@@ -18,11 +18,11 @@ from spectraxgk.diagnostics.growth_rates import (
     _select_fit_signal,
     _select_fit_signal_auto,
 )
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     _build_gaussian_profile,
     _build_initial_condition,
 )
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CycloneReference,
     CycloneRunResult,
     _load_reference_with_header,
@@ -33,12 +33,12 @@ from spectraxgk.benchmarks import (
     load_kbm_reference,
     load_tem_reference,
 )
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     _kbm_use_multi_target_krylov,
     _midplane_index,
     select_kbm_solver_auto,
 )
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     _apply_reference_hypercollisions,
     _electron_only_params,
     _linked_boundary_end_damping,

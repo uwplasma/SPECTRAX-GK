@@ -13,19 +13,17 @@ import numpy as np
 import jax.numpy as jnp
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    CycloneBaseCase,
     _apply_reference_hypercollisions,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    KBMBaseCase,
     _two_species_params,
 )
-from spectraxgk.config import GridConfig
+from spectraxgk.config import CycloneBaseCase, GridConfig, KBMBaseCase
 from spectraxgk.geometry import SAlphaGeometry, apply_imported_geometry_grid_defaults
 from spectraxgk.core.velocity import laguerre_quadrature_count
 from spectraxgk.core.grid import build_spectral_grid, twothirds_mask

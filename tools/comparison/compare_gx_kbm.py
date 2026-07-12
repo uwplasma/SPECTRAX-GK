@@ -23,7 +23,8 @@ from spectraxgk.diagnostics.analysis import (
     windowed_growth_rate_from_omega_series,
     select_ky_index,
 )
-from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
+from spectraxgk.benchmarking.shared import KBM_KRYLOV_DEFAULT
+from spectraxgk.benchmarks import run_kbm_linear
 from spectraxgk.diagnostics.validation_gates import (
     branch_continuity_gate_report,
     branch_continuity_metrics,

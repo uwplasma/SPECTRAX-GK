@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -22,13 +22,11 @@ from spectraxgk.benchmarks import (
     TEM_OMEGA_D_SCALE,
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
-    CycloneBaseCase,
-    KBMBaseCase,
     _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
 )
-from spectraxgk.config import GridConfig
+from spectraxgk.config import CycloneBaseCase, GridConfig, KBMBaseCase
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache

@@ -10,7 +10,8 @@ import spectraxgk.diagnostics.metadata as diagnostics_metadata
 import spectraxgk.diagnostics.weights as diagnostics_weights
 from types import SimpleNamespace
 
-from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
+from spectraxgk.config import CycloneBaseCase
+from spectraxgk.benchmarking.shared import _build_initial_condition
 from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
     ResolvedDiagnostics,

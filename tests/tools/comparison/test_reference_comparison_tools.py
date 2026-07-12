@@ -1872,7 +1872,7 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarks import LinearRunResult
+    from spectraxgk.benchmarking.shared import LinearRunResult
 
     captured: dict[str, object] = {}
 
@@ -1919,7 +1919,7 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_se
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarks import LinearRunResult
+    from spectraxgk.benchmarking.shared import LinearRunResult
 
     result = LinearRunResult(
         t=np.array([0.0, 1.0, 2.0], dtype=float),
@@ -1955,7 +1955,7 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarks import LinearRunResult
+    from spectraxgk.benchmarking.shared import LinearRunResult
 
     calls: dict[str, object] = {}
 
@@ -2013,7 +2013,7 @@ def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarks import LinearRunResult
+    from spectraxgk.benchmarking.shared import LinearRunResult
 
     calls: dict[str, object] = {}
 
@@ -2798,7 +2798,7 @@ from pathlib import Path
 
 import pytest
 
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
