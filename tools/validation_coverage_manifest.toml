@@ -1082,7 +1082,7 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.diagnostics.nonlinear_replicates"
 path = "src/spectraxgk/diagnostics/nonlinear_replicates.py"
-owner_lane = "replicated nonlinear-window spread diagnosis before follow-up GPU campaigns"
+owner_lane = "replicated nonlinear-window spread and ensemble artifact readiness"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
@@ -1093,6 +1093,7 @@ reference_anchors = [
 physics_contracts = [
   "a nonlinear-gradient claim stays blocked when any baseline/plus/minus state fails the replicate-spread gate",
   "mixed seed/timestep spread is classified as a campaign-design problem rather than hidden by adding blind replicas",
+  "ensemble promotion remains blocked until distinct seed and timestep artifacts pass late-window convergence gates",
 ]
 numerics_contracts = [
   "relative deviations are normalized by the finite ensemble mean with a positive value floor",
@@ -1100,6 +1101,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/nonlinear/test_nonlinear_replicate_diagnostics.py",
+  "tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py",
   "tests/tools/campaigns/test_campaign_manifest_reports.py",
 ]
 artifact_paths = [

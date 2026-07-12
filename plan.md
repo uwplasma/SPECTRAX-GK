@@ -752,3 +752,10 @@ under 5 minutes.
   declarations left by earlier assembly, retained one authoritative public
   contract, and passed all 13 production guard, replicated-window, reduction,
   uncertainty, and scope tests. The module now meets the 1,000-line budget.
+- 2026-07-12: Closed the transport-window complexity exception by moving the
+  complete seed/timestep ensemble-readiness manifest contract into the existing
+  ``diagnostics.nonlinear_replicates`` owner. ``transport_windows.py`` fell
+  from 1,237 to 938 lines and the replicate owner remains bounded at 742 lines;
+  no source file was added. Public API identities, 36 window/ensemble/tool/
+  release tests, all architecture/coverage/refactor manifests, Sphinx ``-W``,
+  and wheel/sdist builds pass.

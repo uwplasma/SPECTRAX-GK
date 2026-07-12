@@ -448,16 +448,19 @@ Completed extractions:
   conflated. Replicate-spread diagnostics now live in
   ``diagnostics/nonlinear_replicates.py`` and stage ensemble row normalization,
   high/low variant selection, state classification, replicate-row packing, and
-  summary assembly so seed/timestep spread decisions are testable without
-  rerunning nonlinear simulations. Follow-up launch planning is not runtime
+  summary assembly. The same owner builds seed/timestep artifact-readiness
+  manifests, while ``diagnostics/transport_windows.py`` owns individual-window
+  statistics and ensemble uncertainty gates. These decisions remain testable
+  without rerunning nonlinear simulations. Follow-up launch planning is not runtime
   package functionality; it lives in
   ``tools/campaigns/nonlinear_replicate_followup.py``, where report
   normalization, classification-specific cross-run selection, dedupe/limits,
   state-plan packing, and config serialization keep GPU follow-up campaigns
   deterministic and reviewable.
-- quasilinear nonlinear-window convergence metadata is split into focused
-  config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
-  modules under ``validation/quasilinear/window_*.py``. The public
+- quasilinear nonlinear-window convergence metadata is consolidated in
+  ``diagnostics/transport_windows.py`` for statistics, CSV/summary IO,
+  promotion readiness, and ensemble uncertainty; replicate readiness belongs
+  to ``diagnostics/nonlinear_replicates.py``. The public
   ``validation/quasilinear/window.py`` module remains the stable facade used by
   calibration and tool scripts. The statistics owner stages validated
   late-window selection, finite-sample counts, drift/terminal-window metrics,

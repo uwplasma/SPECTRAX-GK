@@ -18,18 +18,18 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+from spectraxgk.diagnostics.nonlinear_replicates import (  # noqa: E402
+    NonlinearWindowEnsembleManifestConfig,
+    nonlinear_window_ensemble_artifact_manifest,
+)
 from spectraxgk.diagnostics.transport_windows import (  # noqa: E402
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
-    NonlinearWindowEnsembleManifestConfig,
 )
 from spectraxgk.diagnostics.transport_windows import (  # noqa: E402
     nonlinear_window_convergence_from_summary,
 )
-from spectraxgk.diagnostics.transport_windows import (  # noqa: E402
-    nonlinear_window_ensemble_artifact_manifest,
-    nonlinear_window_ensemble_report,
-)
+from spectraxgk.diagnostics.transport_windows import nonlinear_window_ensemble_report  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:

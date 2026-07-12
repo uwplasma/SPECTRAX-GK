@@ -2355,15 +2355,13 @@ module = "spectraxgk.diagnostics.transport_windows"
 source_path = "src/spectraxgk/diagnostics/transport_windows.py"
 facade_module = "spectraxgk.api"
 status = "active"
-responsibility = "nonlinear transport-window convergence reports, CSV/summary readers, promotion-readiness checks, replicated ensemble uncertainty gates, and seed/timestep artifact-readiness manifests"
+responsibility = "nonlinear transport-window convergence reports, CSV/summary readers, promotion-readiness checks, and replicated ensemble uncertainty gates"
 moved_exports = [
   "NonlinearWindowConvergenceConfig",
   "NonlinearWindowEnsembleConfig",
-  "NonlinearWindowEnsembleManifestConfig",
   "nonlinear_window_convergence_from_csv",
   "nonlinear_window_convergence_from_summary",
   "nonlinear_window_convergence_report",
-  "nonlinear_window_ensemble_artifact_manifest",
   "nonlinear_window_ensemble_report",
   "nonlinear_window_stats_promotion_ready",
 ]
@@ -2373,6 +2371,24 @@ fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.nonlinear_replicates"
+source_path = "src/spectraxgk/diagnostics/nonlinear_replicates.py"
+facade_module = "spectraxgk.api"
+status = "active"
+responsibility = "replicate-spread diagnosis and seed/timestep ensemble artifact-readiness manifests"
+moved_exports = [
+  "NonlinearReplicateSpreadConfig",
+  "NonlinearWindowEnsembleManifestConfig",
+  "nonlinear_replicate_spread_report",
+  "nonlinear_window_ensemble_artifact_manifest",
+]
+fast_tests = [
+  "tests/unit/nonlinear/test_nonlinear_replicate_diagnostics.py",
+  "tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.diagnostics.quasilinear_model_selection"

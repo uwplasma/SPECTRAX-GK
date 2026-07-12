@@ -119,12 +119,6 @@ target_lines = 1000
 reason = "consolidate common gate algebra and move case policy to validation drivers"
 
 [[complexity_policy.exceptions]]
-path = "diagnostics/transport_windows.py"
-baseline_lines = 1237
-target_lines = 1000
-reason = "separate reusable window statistics from artifact policy"
-
-[[complexity_policy.exceptions]]
 path = "geometry/imported_miller.py"
 baseline_lines = 1173
 target_lines = 1000
