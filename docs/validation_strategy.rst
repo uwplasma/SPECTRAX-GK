@@ -86,12 +86,11 @@ The remaining work should be closed in this order.
    extract only cohesive helpers. Keep public facades stable until examples,
    docs, and benchmark scripts use the new module boundaries.
 
-2. **Finish the remaining complexity exception.**
-   Runtime, linear, nonlinear, benchmark, validation, and imported-VMEC
-   ownership are now below their architecture budgets. The remaining named
-   exception is ``diagnostics/nonlinear_gradient_evidence.py``; its report and
-   campaign assembly should move behind focused diagnostics without changing
-   physics-model behavior.
+2. **Keep the closed complexity budgets enforced.**
+   Runtime, linear, nonlinear, benchmark, validation, imported-VMEC, and
+   nonlinear-gradient ownership are below their architecture budgets with no
+   remaining named exceptions. New work must preserve those budgets and the
+   package/file-count no-regression gates.
 
 3. **Turn open or deferred physics lanes into explicit gates.**
    Literature-facing lanes should produce JSON/CSV/PNG/PDF artifacts with the

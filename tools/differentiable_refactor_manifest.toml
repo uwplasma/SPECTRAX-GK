@@ -999,8 +999,8 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 module = "spectraxgk.diagnostics.nonlinear_gradient_evidence"
 source_path = "src/spectraxgk/diagnostics/nonlinear_gradient_evidence.py"
 facade_module = "spectraxgk.diagnostics.nonlinear_gradient_evidence"
-status = "active"
-responsibility = "fail-closed nonlinear turbulence-gradient evidence diagnostics, including scope classification, replicated-window gates, central finite-difference conditioning, candidate ranking, bracket-sweep planning, and evidence-gap reports"
+status = "closed"
+responsibility = "compact fail-closed nonlinear-gradient report facade over metadata conditioning, replicate-window summaries, transport finite differences, bracket ranking, and evidence-gap orchestration"
 moved_exports = [
   "NON_PRODUCTION_SCOPE_MARKERS",
   "NonlinearTurbulenceGradientEvidenceConfig",

@@ -99,9 +99,4 @@ public_facades = [
   "quasilinear.py",
   "runtime.py",
 ]
-
-[[complexity_policy.exceptions]]
-path = "diagnostics/nonlinear_gradient_evidence.py"
-baseline_lines = 2371
-target_lines = 1000
-reason = "move campaign/report assembly out of installed diagnostics"
+exceptions = []

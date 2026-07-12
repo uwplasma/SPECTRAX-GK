@@ -604,15 +604,14 @@ Completed extractions:
   campaign design are all staged inside that single tools owner so they do not
   re-enter the installable package as validation-campaign code.
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
-  dataclasses, JSON-safe parsing, finite-difference conditioning gates,
-  artifact classification, replicated window summaries, central
-  finite-difference report assembly, candidate/bracket screening reports, and
-  production evidence-gap report orchestration now live in
-  ``diagnostics/nonlinear_gradient_evidence.py``. The central finite-difference
-  gate is staged as matched-window normalization, transport-response
-  extraction, uncertainty propagation, source/window quality gates,
-  gradient-resolution gates, and JSON-ready report packing. Candidate ranking
-  and evidence-gap reporting remain fail-closed so production
+  dataclasses, JSON-safe parsing, finite-difference conditioning gates, and
+  artifact classification live in ``diagnostics/metadata.py``. Replicated
+  window summaries live in ``diagnostics/nonlinear_replicates.py`` and central
+  finite-difference transport response/uncertainty lives in
+  ``diagnostics/transport.py``. The compact
+  ``diagnostics/nonlinear_gradient_evidence.py`` facade owns bracket and
+  candidate report orchestration plus production evidence-gap reports.
+  Candidate ranking and evidence-gap reporting remain fail-closed so production
   nonlinear-gradient promotion cannot be inferred from startup, pilot, reduced,
   or single-window artifacts.
 - runtime artifact read/write, generic I/O and finite-value validation helpers,
