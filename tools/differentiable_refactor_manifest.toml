@@ -456,8 +456,10 @@ module = "spectraxgk.geometry.analytic"
 source_path = "src/spectraxgk/geometry/analytic.py"
 facade_module = "spectraxgk.geometry.core"
 status = "active"
-responsibility = "zero-shear boundary promotion and closed-form s-alpha/slab flux-tube geometry models"
+responsibility = "zero-shear boundary promotion, closed-form s-alpha/slab models, and analytic Miller collocation surfaces"
 moved_exports = [
+  "MillerCoreParams",
+  "build_collocation_surfaces",
   "ZERO_SHAT_THRESHOLD",
   "effective_boundary",
   "zero_shear_enabled",
@@ -466,6 +468,29 @@ moved_exports = [
 ]
 fast_tests = ["tests/unit/geometry/test_geometry.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.kernels"
+source_path = "src/spectraxgk/geometry/kernels.py"
+facade_module = "spectraxgk.geometry.imported_miller"
+status = "active"
+responsibility = "shared JAX geometry differences, period extension, reflection, safe division, cumulative quadrature, and NumPy adapters"
+moved_exports = [
+  "_safe_denom",
+  "centered_reflected_difference",
+  "cumulative_trapezoid",
+  "derm",
+  "dermv",
+  "extend_nperiod_data",
+  "finite_diff_nonuniform",
+  "nperiod_data_extend",
+  "reflect_and_append",
+  "reflect_n_append",
+  "to_ballooning",
+  "weighted_centered_difference",
+]
+fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
+doc_pages = ["docs/code_structure.rst", "docs/numerics.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.geometry.flux_tube"
@@ -2561,23 +2586,15 @@ module = "spectraxgk.geometry.imported_miller"
 source_path = "src/spectraxgk/geometry/imported_miller.py"
 facade_module = "spectraxgk.geometry.imported_miller"
 status = "active"
-responsibility = "single imported Miller backend owning finite-difference numerics, surface/theta-grid construction, profile assembly, request normalization, and EIK NetCDF writeout"
+responsibility = "Miller theta-grid reconstruction, metric/drift profile assembly, request normalization, and EIK NetCDF writeout"
 moved_exports = [
-  "MillerCoreParams",
   "assemble_miller_profiles",
-  "build_collocation_surfaces",
   "compute_equal_arc_theta",
   "compute_primary_gradients",
   "compute_straight_field_theta",
-  "cumulative_trapezoid",
-  "derm",
-  "dermv",
   "generate_miller_eik_internal",
   "internal_miller_backend_available",
-  "nperiod_data_extend",
   "rebuild_straight_theta_state",
-  "reflect_n_append",
-  "to_ballooning",
   "write_miller_eik_netcdf",
 ]
 fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]

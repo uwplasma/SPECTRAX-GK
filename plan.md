@@ -768,3 +768,11 @@ under 5 minutes.
   fell from 1,418 to 540 lines; every destination remains below 700 lines.
   The complete 175-test benchmark/physics/analysis/artifact suite, architecture
   and refactor manifests, Sphinx ``-W``, and wheel/sdist builds pass.
+- 2026-07-12: Closed the imported-Miller complexity exception and removed the
+  obsolete 284-line ``geometry.miller`` stub, which intentionally wrote an
+  incomplete NetCDF file and duplicated production kernels. Generic JAX/NumPy
+  differences, quadrature, period extension, reflection, and safe division now
+  live in ``geometry.kernels``; analytic Miller parameters/collocation live in
+  ``geometry.analytic``; the production EIK backend remains in
+  ``geometry.imported_miller`` at 956 lines. Source count fell to 226 and 68
+  Miller/analytic/runtime geometry tests plus all architecture manifests pass.
