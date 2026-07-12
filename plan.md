@@ -54,14 +54,14 @@ Date: 2026-07-12.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 227 | reviewed domain ownership | active |
-| Source modules above 1000 lines | 8, led by the 3549-line benchmark facade | 0 unreviewed | active |
-| Public/compatibility facade maximum | 3549 lines | <=500 lines | active |
+| Installable source Python files | 226 | reviewed domain ownership | closed |
+| Source modules above 1000 lines | 0 | 0 unreviewed | closed |
+| Public/compatibility facade maximum | 472 lines | <=500 lines | closed |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
-| Fast release-surface coverage | local pass | pass | closed for current tranche |
+| Fast release-surface coverage | owner test restored; CI rerun in progress | pass | active pending CI |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
 | Public API facade | compact lazy registry | compact registry | closed |
 | Runtime/plot executable path | implemented and tested | stable | closed |
@@ -203,15 +203,15 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 95% | Add a generic runtime parameter scan for KBM beta, preserve branch-continuation gates, then delete the final named benchmark engine. |
+| Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 88% | Repeat prepared CPU/GPU rows on a matched software stack before refreshing the panel; keep cold executable and warm Python claims separate. |
-| Docs/readme release pass | 94% | Keep README concise and complete the developer/API updates as source owners move. |
-| CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
+| Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
+| CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
 
 ## Prioritized Implementation Steps
 
@@ -776,3 +776,20 @@ under 5 minutes.
   ``geometry.analytic``; the production EIK backend remains in
   ``geometry.imported_miller`` at 956 lines. Source count fell to 226 and 68
   Miller/analytic/runtime geometry tests plus all architecture manifests pass.
+- 2026-07-12: Closed the imported-VMEC complexity exception without adding a
+  source file. Optional-backend discovery, Boozer field-line sampling,
+  Hegna--Nakajima/metric derivatives, and VMEC state construction now live in
+  their existing focused owners; ``imported_vmec.py`` fell from 2,540 to 699
+  lines. The broader geometry/objective suite passed 263 tests, package-wide
+  mypy passed, and an intentionally dynamic optional-backend record now has an
+  explicit typed boundary.
+- 2026-07-12: Closed the final package complexity exception. Nonlinear-gradient
+  artifact conditioning now belongs to diagnostic metadata, replicated window
+  evidence to replicate diagnostics, and central finite-difference transport
+  response to transport diagnostics; the report facade fell from 2,339 to 956
+  lines. The architecture manifest now has zero exceptions, all 226 source
+  files satisfy the domain budget, 118 nonlinear validation tests and 91
+  release tests pass, warning-strict docs build, and wheel/sdist checks pass.
+  CI's prior sole failure was a stale fast-coverage shard that omitted the
+  benchmark metric-owner test; the owner test is restored without weakening
+  the package-wide 95% gate.
