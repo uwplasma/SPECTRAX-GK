@@ -293,6 +293,13 @@ finite differences, and records local covariance diagnostics. High-fidelity
 ``vmec_jax`` / ``booz_xform_jax`` optimization examples should use the same
 contract once their in-memory field-line mapping is available.
 
+The gradient-report API accepts ``jacobian_chunk_size``. ``None`` evaluates
+all forward directions in one ``vmap``; an integer bounds the simultaneous
+directions; and ``"auto"`` delegates the memory policy to SOLVAX. The standard
+VMEC/Boozer geometry sensitivity report uses ``"auto"`` and records that
+choice in its JSON output. Chunked and unchunked Jacobians are required to
+agree before a report can support an optimization claim.
+
 The bridge validates more than array shapes. Host-side mappings must contain
 finite scalar metadata such as ``q``, ``R0``, ``B0``, and ``theta_scale``,
 must provide at least one ``theta`` sample, and must use a positive integer

@@ -22,7 +22,11 @@ available:
   (cv/gb/bgrad) accelerates convergence for higher-order scans. For
   streaming-dominated stiffness, ``implicit_preconditioner="hermite-line"``
   applies a Hermite streaming line solve (tridiagonal in ``m`` at fixed
-  :math:`k_z`) and can substantially reduce GMRES iterations.
+  :math:`k_z`) and can substantially reduce GMRES iterations. The reusable
+  tridiagonal algebra is provided by SOLVAX; SPECTRAX-GK constructs the
+  gyrokinetic coefficients and linked-chain layout. CPU execution uses a
+  deterministic Thomas recurrence, while accelerator execution uses the fused
+  backend selected by SOLVAX.
 
 Optional damping
 ----------------

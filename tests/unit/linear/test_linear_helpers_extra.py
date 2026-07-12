@@ -105,6 +105,40 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
     assert _resolve_implicit_preconditioner(fn) is fn
 
 
+def test_structured_tridiagonal_last_axis_matches_fused_reference_and_jvp() -> None:
+    dtype = jnp.complex128 if jax.config.read("jax_enable_x64") else jnp.complex64
+    real_dtype = jnp.float64 if jax.config.read("jax_enable_x64") else jnp.float32
+    shape = (2, 3, 7)
+    phase = jnp.arange(np.prod(shape), dtype=real_dtype).reshape(shape)
+    lower = (0.03 + 0.01j) * jnp.cos(phase).astype(dtype)
+    upper = (-0.02 + 0.015j) * jnp.sin(phase + 0.2).astype(dtype)
+    lower = lower.at[..., 0].set(0.0)
+    upper = upper.at[..., -1].set(0.0)
+    diagonal = jnp.full(shape, 2.5 + 0.1j, dtype=dtype)
+    rhs = (jnp.cos(phase) + 1j * jnp.sin(0.3 * phase)).astype(dtype)
+
+    solve = jax.jit(
+        lambda value: linear_implicit._solve_tridiagonal_last_axis(
+            lower, diagonal, upper, value
+        )
+    )
+    actual = solve(rhs)
+    reference = jax.lax.linalg.tridiagonal_solve(
+        lower, diagonal, upper, rhs[..., None]
+    )[..., 0]
+    tolerance = 2.0e-6 if dtype == jnp.complex64 else 1.0e-12
+    np.testing.assert_allclose(actual, reference, rtol=tolerance, atol=tolerance)
+
+    tangent = jnp.full(shape, 0.2 - 0.1j, dtype=dtype)
+    _, tangent_out = jax.jvp(solve, (rhs,), (tangent,))
+    np.testing.assert_allclose(
+        tangent_out,
+        solve(tangent),
+        rtol=tolerance,
+        atol=tolerance,
+    )
+
+
 def test_linear_linked_helpers_preserve_public_exports() -> None:
     for name in linear_linked.__all__:
         assert getattr(linear_mod, name) is getattr(linear_linked, name)

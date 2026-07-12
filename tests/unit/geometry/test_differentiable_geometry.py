@@ -62,6 +62,39 @@ def test_observable_gradient_validation_report_passes_with_conditioning_metadata
     json.dumps(report, allow_nan=False)
 
 
+def test_observable_gradient_chunking_preserves_jacobian_and_records_policy() -> None:
+    dtype = jnp.float64 if _x64_enabled() else jnp.float32
+    params = jnp.linspace(0.1, 0.6, 6, dtype=dtype)
+
+    def observables(x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.asarray(
+            [jnp.sum(jnp.sin(x)), jnp.dot(x, x), jnp.prod(1.0 + 0.1 * x)]
+        )
+
+    common = {
+        "fd_step": 2.0e-4 if _x64_enabled() else 2.0e-3,
+        "rtol": 2.0e-3 if _x64_enabled() else 2.0e-2,
+        "atol": 2.0e-5 if _x64_enabled() else 2.0e-3,
+        "condition_number_max": None,
+    }
+    full = observable_gradient_validation_report(
+        observables, params, jacobian_chunk_size=None, **common
+    )
+    chunked = observable_gradient_validation_report(
+        observables, params, jacobian_chunk_size=2, **common
+    )
+
+    assert full["jacobian_chunk_size"] is None
+    assert chunked["jacobian_chunk_size"] == 2
+    assert full["passed"] is True and chunked["passed"] is True
+    np.testing.assert_allclose(
+        np.asarray(chunked["jacobian_ad"]),
+        np.asarray(full["jacobian_ad"]),
+        rtol=1.0e-6,
+        atol=1.0e-7,
+    )
+
+
 def test_observable_gradient_validation_report_fails_strict_json_on_nonfinite_data() -> (
     None
 ):

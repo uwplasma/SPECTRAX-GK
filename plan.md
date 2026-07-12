@@ -116,13 +116,12 @@ convergence policy, and physical diagnostics. This boundary is intended to
 delete generic solver code from SPECTRAX-GK, not add a second abstraction layer.
 
 The integration is pinned to reviewed releases, never an unversioned Git
-dependency. The 2026-07-11 audit used SOLVAX ``38bb094`` (source version
-``0.4.0``). PyPI still publishes ``0.2.0``, so no production dependency is
-added until a compatible release exists. The local source suite passes 192
-tests on JAX 0.9.2, with two known compatibility failures in block-Thomas
-linear transpose and mixed-precision block Jacobi. Complex tridiagonal solves
-work; complex GMRES and complex Aitken do not. Those are release blockers for
-the corresponding SPECTRAX-GK paths, not tolerances to hide locally.
+dependency. SOLVAX 0.6.0 was reviewed in PR 2, passed its minimum/current JAX
+matrix plus office GPU compatibility gates, and was published to PyPI on
+2026-07-11. SPECTRAX-GK therefore requires ``solvax>=0.6,<0.7``. The first
+downstream tranche owns only the Hermite-line tridiagonal layout conversion and
+the geometry-Jacobian chunk policy; local physics coefficients, diagnostics,
+and Krylov policy remain unchanged until their separate gates pass.
 
 | Owner | Retained responsibility | Candidate SOLVAX primitive | Admission gate |
 | --- | --- | --- | --- |
@@ -204,7 +203,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
-| Structured solver ownership | 45% | Complete SOLVAX PR 2 CI/review and publish the reviewed release, then migrate tridiagonal and chunked-Jacobian paths before Krylov. |
+| Structured solver ownership | 70% | Run the physical implicit-line GPU gate, then evaluate complex Krylov replacement before deleting local generic solver code. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -282,6 +281,26 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Merged SOLVAX PR 2 at ``89f95ba``, tagged/published version
+  0.6.0 through trusted PyPI publishing, and admitted the bounded dependency
+  ``solvax>=0.6,<0.7``. SPECTRAX-GK now delegates its two Hermite-line
+  tridiagonal paths through one last-axis layout helper and exposes SOLVAX
+  forward-Jacobian chunking in the existing geometry derivative-report owner;
+  no fallback algorithm or new package was added. Direct fused-reference and
+  JVP identity tests pass, chunked/unchunked Jacobians agree, 173 focused
+  implicit/geometry tests pass against the installed PyPI wheel, docs build
+  with warnings as errors, and the wheel metadata contains the bounded
+  dependency. Krylov migration and local-code deletion remain separately gated.
+- 2026-07-11: Measured the first downstream performance gates rather than
+  inferring them from unit tests. On a CPU SPECTRAX-shaped complex Hermite-line
+  batch ``(1,4,8,8,32,24)``, the SOLVAX automatic backend agreed with the
+  prior fused solve to ``1.15e-16`` relative norm and reduced warm time from
+  9.43 ms to 2.16 ms, while cold compile increased from 137 ms to 172 ms. A
+  large hidden-state forward Jacobian produced identical values with peak RSS
+  reduced from 1.71 GB to 1.35 GB (21%) at a 4.7% runtime cost when chunked;
+  an output-dominated Jacobian showed no memory reduction. Chunking therefore
+  remains an explicit memory policy with recorded metadata, not a universal
+  speed claim.
 - 2026-07-11: Completed the first office GPU gate for SOLVAX PR 2 on one
   RTX A4000. Complex matrix-free GMRES at ``n=1024`` converged in eight
   iterations with ``7.24e-11`` relative residual and 17.7 ms warm runtime;

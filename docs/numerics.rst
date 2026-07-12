@@ -43,6 +43,10 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.solvers.time.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
   :func:`spectraxgk.linear.integrate_linear`.
+- **Structured Hermite-line solves and bounded-memory Jacobians**:
+  `SOLVAX <https://github.com/uwplasma/SOLVAX>`_ provides the reusable
+  tridiagonal and autodiff primitives; SPECTRAX-GK retains physical layout,
+  coefficients, tolerances, and acceptance policy.
 - **Nonlinear IMEX (implicit linear + explicit nonlinear)**:
   :func:`spectraxgk.nonlinear.integrate_nonlinear`.
 
@@ -59,6 +63,13 @@ The implementation leverages the following JAX primitives:
   :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Sparse Krylov solver**: ``jax.scipy.sparse.linalg.gmres`` is used for the
   implicit linear solve in :func:`spectraxgk.linear.integrate_linear`.
+- **Backend-aware Hermite line solve**: ``solvax.tridiagonal_solve`` uses a
+  deterministic Thomas recurrence on CPU and the fused JAX/vendor path on
+  accelerators. SPECTRAX-GK moves only the Hermite system axis; all remaining
+  dimensions are independent line-solve columns.
+- **Memory-bounded sensitivities**: ``solvax.chunked_jacfwd`` underlies the
+  geometry gradient report when ``jacobian_chunk_size`` is set. Chunking
+  changes batching and peak memory, not the mathematical JVP columns.
 - **Stencil operations**: ``jax.numpy.roll`` and ``jax.numpy.pad`` implement
   the centered ``z`` derivative and Hermite/Laguerre ladder couplings in
   :func:`spectraxgk.linear.grad_z_periodic`,
@@ -67,6 +78,23 @@ The implementation leverages the following JAX primitives:
   :func:`spectraxgk.linear.apply_laguerre_x`.
 
 These links are clickable in the HTML docs via the ``viewcode`` extension.
+
+Structured solver dependency contract
+-------------------------------------
+
+SPECTRAX-GK requires ``solvax>=0.6,<0.7``. Version 0.6 is the first admitted
+release because it includes complex Krylov/fixed-point support, current-JAX
+linear-transpose compatibility, complex CPU/GPU tridiagonal identity gates,
+and a supported-minimum/current dependency matrix. Generic numerical algebra
+lives in SOLVAX; gyrokinetic state layout, linked-boundary assembly,
+preconditioner coefficients, eigenbranch tracking, transport windows, and
+physics gates remain in SPECTRAX-GK.
+
+The initial migration intentionally covers only the Hermite-line tridiagonal
+solve and memory-chunked geometry Jacobians. GMRES/GCROT replacement remains a
+separate gate because it must preserve iteration policy, branch selection,
+electromagnetic complex-state behavior, and long-window observables before the
+local implementation can be deleted.
 
 Time integration algorithms
 ---------------------------
