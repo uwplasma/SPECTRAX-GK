@@ -204,8 +204,8 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
-| Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
-| Differentiable API clarity | 88% | Extend the admitted fixed-step geometry/cache/parameter VJP boundary to checkpointed and implicit objectives, then add adaptive-controller derivative policy gates. |
+| Structured solver ownership | 92% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
+| Differentiable API clarity | 90% | Extend the admitted explicit and IMEX reverse paths to parameter-dependent implicit operators, then add adaptive-controller derivative policy gates. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 88% | Profile long-window memory and diagnostic streaming through the admitted prepared geometry/cache/parameter boundary on a matched CPU/GPU software stack. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
@@ -810,3 +810,11 @@ under 5 minutes.
   adaptive execution remains on its static CFL path. Five explicitly collected
   prepared-run tests pass in 20 seconds; the repository integration marker is
   overridden for this evidence rather than silently deselecting the file.
+- 2026-07-12: Routed nonlinear IMEX time-step solves through SOLVAX's
+  ``linear_solve`` implicit-differentiation primitive. Reverse mode now
+  differentiates the converged matrix-free system with one transposed solve
+  instead of tracing tolerance-driven GMRES loops, which JAX rejects. Physical
+  two-step state objectives agree with centered finite differences both with
+  and without scan checkpointing. Explicit geometry VJPs likewise pass in both
+  checkpoint policies, while adaptive model-parameter derivatives remain
+  deliberately unpromoted.

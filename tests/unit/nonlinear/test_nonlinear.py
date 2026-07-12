@@ -124,6 +124,56 @@ def test_nonlinear_imex_reuses_prebuilt_operator():
     assert fields_t.phi.shape[0] == 2
 
 
+@pytest.mark.parametrize("checkpoint", [False, True])
+def test_nonlinear_imex_state_gradient_matches_finite_difference(
+    checkpoint: bool,
+) -> None:
+    """Implicit GMRES VJPs should differentiate the solved system, not iterations."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    direction = jnp.ones(
+        (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64
+    ) * jnp.asarray(1.0e-7, dtype=jnp.complex64)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    terms = TermConfig(nonlinear=0.0)
+    operator = build_nonlinear_imex_operator(
+        direction,
+        cache,
+        params,
+        dt=0.05,
+        terms=terms,
+        implicit_preconditioner="damping",
+    )
+
+    def final_energy(scale: jnp.ndarray) -> jnp.ndarray:
+        final_state, _fields = integrate_nonlinear_imex_cached(
+            scale * direction,
+            cache,
+            params,
+            dt=0.05,
+            steps=2,
+            terms=terms,
+            implicit_operator=operator,
+            implicit_maxiter=20,
+            checkpoint=checkpoint,
+        )
+        return jnp.real(jnp.vdot(final_state, final_state))
+
+    value, gradient = jax.value_and_grad(final_energy)(jnp.asarray(1.0))
+    step = jnp.asarray(1.0e-2)
+    centered_fd = (final_energy(1.0 + step) - final_energy(1.0 - step)) / (2 * step)
+    assert bool(jnp.isfinite(value))
+    assert bool(jnp.isfinite(gradient))
+    assert float(gradient) != 0.0
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(centered_fd), rtol=5.0e-2, atol=1.0e-16
+    )
+
+
 def test_integrate_nonlinear_explicit_diagnostics_shapes():
     """Nonlinear diagnostics should return time-series arrays."""
 
@@ -314,7 +364,10 @@ def test_prepared_nonlinear_arrays_accept_matched_dynamic_cache_and_params():
         prepared.run_arrays(params=base_params)
 
 
-def test_prepared_nonlinear_arrays_differentiate_dynamic_geometry() -> None:
+@pytest.mark.parametrize("checkpoint", [False, True])
+def test_prepared_nonlinear_arrays_differentiate_dynamic_geometry(
+    checkpoint: bool,
+) -> None:
     """Curvature-profile derivatives should cross the prepared scan boundary."""
 
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
@@ -337,6 +390,7 @@ def test_prepared_nonlinear_arrays_differentiate_dynamic_geometry() -> None:
         dt=0.02,
         steps=3,
         method="rk2",
+        checkpoint=checkpoint,
         terms=TermConfig(nonlinear=0.0),
         resolved_diagnostics=False,
     )
