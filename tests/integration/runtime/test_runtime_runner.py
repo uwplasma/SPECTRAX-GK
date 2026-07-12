@@ -39,6 +39,7 @@ from spectraxgk.runtime import (
     _infer_runtime_nonlinear_steps,
     RuntimeLinearResult,
     RuntimeLinearScanResult,
+    RuntimeParameterScanResult,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -46,6 +47,7 @@ from spectraxgk.runtime import (
     run_nonlinear_case,
     run_runtime_linear,
     run_runtime_nonlinear,
+    run_runtime_parameter_scan,
     run_runtime_scan,
 )
 from spectraxgk.workflows.runtime.config import (
@@ -4268,3 +4270,89 @@ def test_direct_linear_and_nonlinear_integrators_fast_smoke() -> None:
 
     assert jnp.isfinite(phi_t).all()
     assert jnp.isfinite(fields.phi).all()
+
+
+def test_runtime_parameter_scan_updates_config_and_continues_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        physics=RuntimePhysicsConfig(beta=0.0),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+    )
+    states = [np.full((1, 1), value) for value in (1.0, 2.0, 3.0)]
+    calls: list[tuple[float, dict[str, object]]] = []
+
+    def fake_run(point_cfg, **kwargs):
+        index = len(calls)
+        calls.append((point_cfg.physics.beta, kwargs))
+        return RuntimeLinearResult(
+            ky=float(kwargs["ky_target"]),
+            gamma=float(point_cfg.physics.beta + 1.0),
+            omega=float(-point_cfg.physics.beta),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            state=states[index],
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", fake_run)
+    result = run_runtime_parameter_scan(
+        cfg, [0.01, 0.02, 0.04], parameter_name="beta",
+        update_config=lambda base, value, _index: replace(
+            base, physics=replace(base.physics, beta=value)
+        ),
+        ky_target=0.25, linear_options={"solver": "krylov"}, continuation=True,
+    )
+
+    assert isinstance(result, RuntimeParameterScanResult)
+    np.testing.assert_allclose(result.gamma, [1.01, 1.02, 1.04])
+    np.testing.assert_allclose(result.omega, [-0.01, -0.02, -0.04])
+    assert "initial_state" not in calls[0][1]
+    assert calls[1][1]["initial_state"] is states[0]
+    assert calls[2][1]["initial_state"] is states[1]
+
+
+def test_runtime_parameter_scan_rejects_invalid_contracts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = _base_runtime_cfg()
+
+    def identity(base, _value, _index):
+        return base
+
+    with pytest.raises(ValueError, match="parameter_name"):
+        run_runtime_parameter_scan(cfg, [1.0], parameter_name=" ", update_config=identity)
+    with pytest.raises(ValueError, match="one-dimensional"):
+        run_runtime_parameter_scan(cfg, [], parameter_name="beta", update_config=identity)
+    with pytest.raises(TypeError, match="RuntimeConfig"):
+        run_runtime_parameter_scan(
+            cfg, [1.0], parameter_name="beta", update_config=lambda *_args: object()
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(
+        runtime, "run_runtime_linear",
+        lambda *_args, **_kwargs: RuntimeLinearResult(
+            ky=0.3, gamma=0.0, omega=0.0,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        ),
+    )
+    with pytest.raises(ValueError, match="return state"):
+        run_runtime_parameter_scan(
+            cfg, [1.0, 2.0], parameter_name="beta",
+            update_config=identity, continuation=True,
+        )
+
+
+def test_runtime_linear_rejects_incompatible_initial_state_shape() -> None:
+    cfg = replace(
+        _base_runtime_cfg(), species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+    )
+    with pytest.raises(ValueError, match="initial_state shape"):
+        run_runtime_linear(
+            cfg, ky_target=0.3, Nl=2, Nm=2, solver="time", steps=1,
+            initial_state=np.zeros((1, 2, 2, 1, 1, 1)),
+        )

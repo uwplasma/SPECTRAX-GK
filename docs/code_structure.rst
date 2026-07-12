@@ -724,6 +724,14 @@ been removed. New examples must not add named-case execution APIs.
 External-code names and raw reference handling stay in root ``benchmarks/`` or
 ``tools/comparison``; reusable source modules use physics and numerical names.
 
+Ordered continuation scans use ``run_runtime_parameter_scan``. The caller
+supplies a named scalar axis and a pure ``RuntimeConfig`` update callback; the
+runtime records one ``RuntimeLinearResult`` per point and can pass the previous
+state into the next solve. Case-specific branch targets and acceptance rules
+remain callback policy rather than hidden runtime behavior. Continuation scans
+are intentionally sequential because adjacent points depend on one another;
+independent parameter ensembles should instead use the parallel batch APIs.
+
 
 Quasilinear calibration now lives in
 ``spectraxgk.diagnostics.quasilinear_calibration``. It owns calibration-point
