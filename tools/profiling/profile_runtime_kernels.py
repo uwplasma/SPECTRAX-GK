@@ -158,6 +158,34 @@ def _field_norm(value: jnp.ndarray | None) -> float:
     return float(np.asarray(jnp.linalg.norm(value)))
 
 
+def _array_fingerprint(value: Any) -> dict[str, Any]:
+    """Return compact numerical identity metadata for one profiled array."""
+
+    array = np.asarray(value)
+    finite = np.isfinite(array)
+    finite_values = array[finite]
+    return {
+        "shape": list(array.shape),
+        "finite_fraction": float(np.mean(finite)) if array.size else 1.0,
+        "l2_norm": float(np.linalg.norm(finite_values)) if finite_values.size else 0.0,
+        "max_abs": float(np.max(np.abs(finite_values))) if finite_values.size else 0.0,
+        "sum_real": float(np.sum(np.real(finite_values), dtype=np.float64)),
+        "sum_imag": float(np.sum(np.imag(finite_values), dtype=np.float64)),
+    }
+
+
+def _prepared_result_summary(result: Any) -> dict[str, Any]:
+    """Fingerprint the state and diagnostics paired with prepared timings."""
+
+    final_state, diagnostics, dt_series, fields = result
+    return {
+        "final_state": _array_fingerprint(final_state),
+        "phi": _array_fingerprint(fields.phi),
+        "heat_flux": _array_fingerprint(diagnostics.heat_flux_t),
+        "dt": _array_fingerprint(dt_series),
+    }
+
+
 def _configure_xla(args: argparse.Namespace) -> None:
     if getattr(args, "xla_dump_dir", None) is None:
         return
@@ -232,7 +260,9 @@ def main_cyclone(argv: list[str] | None = None) -> int:
         if args.steps is None:
             raise ValueError("--reuse-prepared-simulation requires --steps")
         geom = build_runtime_geometry(cfg)
-        grid = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, cfg.grid))
+        grid = build_spectral_grid(
+            apply_imported_geometry_grid_defaults(geom, cfg.grid)
+        )
         params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
         terms = build_runtime_term_config(cfg)
         ky_index, kx_index = _select_nonlinear_mode_indices(
@@ -307,7 +337,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
 
     t0 = time.perf_counter()
     with profiler.TraceAnnotation("spectrax_warmup"):
-        _run()
+        last_result = _run()
     t1 = time.perf_counter()
 
     if args.warmup_only:
@@ -329,7 +359,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
     try:
         with profiler.TraceAnnotation("spectrax_profiled_run"):
             for _ in range(args.repeats):
-                elapsed, _result = _time_call(_run)
+                elapsed, last_result = _time_call(_run)
                 run_times.append(elapsed)
     finally:
         if args.trace_dir is not None:
@@ -369,6 +399,8 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             "run_times_s": run_times,
             "run_median_s": run_median,
         }
+        if args.reuse_prepared_simulation:
+            payload["result_summary"] = _prepared_result_summary(last_result)
         _write_summary_json(payload, args.out)
     return 0
 

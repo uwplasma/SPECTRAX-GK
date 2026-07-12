@@ -32,16 +32,33 @@ def test_cyclone_runtime_profiler_default_config_exists() -> None:
     assert args.out is None
 
 
+def test_prepared_profile_summary_fingerprints_numerical_outputs() -> None:
+    result = (
+        jnp.asarray([1.0 + 2.0j, 3.0 - 1.0j]),
+        SimpleNamespace(heat_flux_t=jnp.asarray([2.0, 4.0])),
+        jnp.asarray([0.1, 0.2]),
+        SimpleNamespace(phi=jnp.asarray([3.0j, 4.0])),
+    )
+
+    summary = runtime_kernels._prepared_result_summary(result)
+
+    assert summary["final_state"]["shape"] == [2]
+    assert summary["final_state"]["finite_fraction"] == 1.0
+    np.testing.assert_allclose(summary["phi"]["l2_norm"], 5.0)
+    np.testing.assert_allclose(summary["heat_flux"]["sum_real"], 6.0)
+    np.testing.assert_allclose(summary["dt"]["max_abs"], 0.2)
+
+
 def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
     cpu = json.loads(
-        (REPO_ROOT / "docs/_static/prepared_nonlinear_runtime_cpu_profile.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            REPO_ROOT / "docs/_static/prepared_nonlinear_runtime_cpu_profile.json"
+        ).read_text(encoding="utf-8")
     )
     gpu = json.loads(
-        (REPO_ROOT / "docs/_static/prepared_nonlinear_runtime_gpu_profile.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            REPO_ROOT / "docs/_static/prepared_nonlinear_runtime_gpu_profile.json"
+        ).read_text(encoding="utf-8")
     )
 
     for profile in (cpu, gpu):
