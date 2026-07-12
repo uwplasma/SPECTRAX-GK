@@ -16,7 +16,6 @@ from spectraxgk.config import (
     KBMBaseCase,
     KineticElectronBaseCase,
     ModelConfig,
-    TEMBaseCase,
     TimeConfig,
     explicit_method_default_cfl_fac,
     resolve_cfl_fac,
@@ -561,8 +560,6 @@ def test_benchmark_case_presets_keep_stable_public_exports() -> None:
         "KineticElectronModelConfig",
         "KineticElectronBaseCase",
         "KBMBaseCase",
-        "TEMModelConfig",
-        "TEMBaseCase",
     ):
         assert hasattr(public_config, name)
         assert name in public_config.__all__
@@ -602,15 +599,6 @@ def test_kbm_config_to_dict():
     cfg = KBMBaseCase()
     d = cfg.to_dict()
     assert d["model"]["beta"] == cfg.model.beta
-
-
-def test_tem_config_to_dict():
-    """TEM configuration should serialize to dictionaries."""
-    cfg = TEMBaseCase()
-    d = cfg.to_dict()
-    assert d["geometry"]["q"] == cfg.geometry.q
-
-
 def test_explicit_method_default_cfl_fac_is_method_resolved() -> None:
     assert explicit_method_default_cfl_fac("rk2") == pytest.approx(1.0)
     assert explicit_method_default_cfl_fac("rk3") == pytest.approx(1.73)

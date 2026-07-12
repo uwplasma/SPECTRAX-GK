@@ -102,9 +102,9 @@ public_facades = [
 
 [[complexity_policy.exceptions]]
 path = "benchmarks.py"
-baseline_lines = 13209
+baseline_lines = 5029
 target_lines = 500
-reason = "legacy public benchmark facade; move case policy to root benchmarks and keep result contracts only"
+reason = "transitional KBM and kinetic-electron facade; migrate case policy to canonical runtime inputs and keep result contracts only"
 
 [[complexity_policy.exceptions]]
 path = "geometry/imported_vmec.py"

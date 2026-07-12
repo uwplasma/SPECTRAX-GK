@@ -716,9 +716,11 @@ The benchmark stack has two explicit roles:
   own promoted solver execution. ETG and Cyclone use only this path; artifact
   figures consume reviewed tables rather than launching a second hidden solve.
 
-``spectraxgk.benchmarks`` remains a transitional facade for KBM, TEM, and
+``spectraxgk.benchmarks`` remains a transitional facade for KBM and
 kinetic-electron branch-following runners while those families are migrated to
-the canonical runtime. New examples must not add named-case execution APIs.
+the canonical runtime. TEM now uses the canonical runtime input and scan path;
+its former named runner and case dataclasses have been removed. New examples
+must not add named-case execution APIs.
 External-code names and raw reference handling stay in root ``benchmarks/`` or
 ``tools/comparison``; reusable source modules use physics and numerical names.
 

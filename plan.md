@@ -50,13 +50,13 @@ explicitly verified differentiable workflows for analysis and optimization.
 
 ## Current State
 
-Date: 2026-07-11.
+Date: 2026-07-12.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 227 | reviewed domain ownership | active |
-| Source modules above 1000 lines | 8, led by the 6306-line benchmark facade | 0 unreviewed | active |
-| Public/compatibility facade maximum | 6306 lines | <=500 lines | active |
+| Source modules above 1000 lines | 8, led by the 5029-line benchmark facade | 0 unreviewed | active |
+| Public/compatibility facade maximum | 5029 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
@@ -203,7 +203,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
+| Source consolidation | 93% | Add a generic parameter-scan runtime for KBM beta and migrate the kinetic-electron runner to its canonical TOML before deleting those transitional engines. |
 | Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
@@ -282,6 +282,14 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-12: Completed the TEM execution migration and deleted the named TEM
+  runner family, request/setup dataclasses, hook tables, public case dataclasses,
+  and implementation-only tests. The root benchmark and three maintainer tools
+  now load the canonical runtime TOML. This removes 1,654 net lines in the
+  deletion tranche and reduces ``spectraxgk.benchmarks`` from 6,306 to 5,029
+  lines while preserving the reference loader, normalization contract,
+  operator-identity gate, mismatch tables, and publication audit. The full
+  non-slow benchmark validation shards and focused tool contracts pass.
 - 2026-07-12: Added the canonical runtime-configured TEM stress case and moved
   the root TEM benchmark script onto the unified runtime scan. The audit found
   and fixed a runtime initializer discrepancy: single-mode Gaussian envelopes

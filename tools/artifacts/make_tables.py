@@ -39,7 +39,6 @@ from spectraxgk.benchmarks import (
     LinearScanResult,
     run_kinetic_linear,
     run_kbm_beta_scan,
-    run_tem_linear,
 )
 from spectraxgk.config import (
     CycloneBaseCase,
@@ -47,7 +46,6 @@ from spectraxgk.config import (
     KineticElectronBaseCase,
     KBMBaseCase,
     TimeConfig,
-    TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.runtime import run_runtime_linear, run_runtime_scan
@@ -388,6 +386,39 @@ def _window_value(val, idx: int) -> float | None:
     if isinstance(val, (list, tuple, np.ndarray)):
         return float(val[idx])
     return float(val)
+
+
+def _run_runtime_linear_adapter(
+    *,
+    cfg,
+    ky_target: float,
+    Nl: int,
+    Nm: int,
+    dt: float,
+    steps: int,
+    method: str,
+    solver: str,
+    krylov_cfg=None,
+    time_cfg: TimeConfig | None = None,
+    diagnostic_norm: str | None = None,
+    **fit_options,
+):
+    """Adapt table-scan controls to the canonical runtime linear API."""
+
+    del diagnostic_norm
+    cfg_use = replace(cfg, time=time_cfg) if time_cfg is not None else cfg
+    return run_runtime_linear(
+        cfg_use,
+        ky_target=ky_target,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps,
+        method=method,
+        solver=solver,
+        krylov_cfg=krylov_cfg,
+        **fit_options,
+    )
 
 
 def _scan_linear_verbose(
@@ -1266,10 +1297,12 @@ def _run_tem_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     tem_tmax = tem_dt * tem_steps
     tem_tmin = 0.4 * tem_tmax
     tem_tmax = 0.85 * tem_tmax
-    tem_cfg = TEMBaseCase()
+    tem_cfg, _raw = load_runtime_from_toml(
+        ROOT / "examples" / "linear" / "axisymmetric" / "runtime_tem.toml"
+    )
     tem_ky, tem_g, tem_w = _scan_linear_verbose(
         ky_values=tem_ref.ky,
-        run_linear_fn=run_tem_linear,
+        run_linear_fn=_run_runtime_linear_adapter,
         cfg=tem_cfg,
         Nl=48,
         Nm=16,

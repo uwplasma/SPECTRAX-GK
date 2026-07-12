@@ -11,7 +11,6 @@ import spectraxgk.diagnostics.growth_rates as growth_rate_diagnostics
 import spectraxgk.benchmarks as benchmark_kbm_beta
 import spectraxgk.benchmarks as benchmark_kbm_linear
 import spectraxgk.benchmarks as benchmark_kinetic
-import spectraxgk.benchmarks as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
@@ -25,8 +24,6 @@ from spectraxgk.benchmarks import (
     run_kbm_scan,
     run_kinetic_linear,
     run_kinetic_scan,
-    run_tem_linear,
-    run_tem_scan,
     select_kbm_solver_auto,
 )
 from spectraxgk.config import (
@@ -35,7 +32,6 @@ from spectraxgk.config import (
     InitializationConfig,
     KBMBaseCase,
     KineticElectronBaseCase,
-    TEMBaseCase,
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
@@ -597,25 +593,6 @@ def test_kinetic_scan_shapes():
     assert scan.gamma.shape == ky_values.shape
 
 
-def test_tem_linear_smoke():
-    """TEM benchmark should run and return finite outputs."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
-    cfg = TEMBaseCase(grid=grid)
-    result = run_tem_linear(
-        cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4"
-    )
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
-
-
-def test_tem_scan_shapes():
-    """TEM scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
-    cfg = TEMBaseCase(grid=grid)
-    ky_values = np.array([0.3, 0.4])
-    scan = run_tem_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
-    assert scan.ky.shape == ky_values.shape
-    assert scan.gamma.shape == ky_values.shape
 
 
 @pytest.mark.slow
@@ -1439,27 +1416,6 @@ def test_select_kbm_solver_auto_lock():
 
 
 
-def test_tem_run_density_fit():
-    """TEM run should support density-based fits without error."""
-    grid = GridConfig(Nx=1, Ny=6, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1)
-    cfg = TEMBaseCase(grid=grid)
-    result = run_tem_linear(
-        ky_target=0.3,
-        cfg=cfg,
-        Nl=4,
-        Nm=4,
-        dt=0.1,
-        steps=5,
-        method="euler",
-        solver="time",
-        fit_signal="density",
-        auto_window=False,
-        tmin=0.1,
-        tmax=0.4,
-    )
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
-
 
 def test_kinetic_linear_defaults_to_reference_aligned_contract(monkeypatch):
     """Kinetic benchmark defaults should keep the reference-aligned electrostatic contract."""
@@ -1573,29 +1529,6 @@ def test_kinetic_linear_respects_explicit_user_seed(monkeypatch):
     assert captured["init_cfg"] == custom_init
 
 
-def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):
-    """TEM benchmark defaults should disable bpar coupling by default."""
-    captured: dict[str, object] = {}
-
-    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
-        captured["terms"] = terms
-        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
-
-    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
-        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
-
-    monkeypatch.setattr(benchmark_tem, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(
-        benchmark_tem, "compute_fields_cached", _fake_compute_fields_cached
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
-    cfg = TEMBaseCase(grid=grid)
-    run_tem_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
-    terms = captured["terms"]
-    assert terms is not None
-    assert terms.bpar == 0.0
-
 
 @pytest.mark.slow
 def test_benchmark_krylov_smoke_finite():
@@ -1641,18 +1574,3 @@ def test_benchmark_krylov_smoke_finite():
     )
     assert np.isfinite(kbm_scan.gamma[0])
     assert np.isfinite(kbm_scan.omega[0])
-
-    tem_grid = GridConfig(
-        Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0
-    )
-    tem_cfg = TEMBaseCase(grid=tem_grid)
-    tem = run_tem_linear(
-        cfg=tem_cfg,
-        ky_target=0.3,
-        Nl=4,
-        Nm=4,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-    )
-    assert np.isfinite(tem.gamma)
-    assert np.isfinite(tem.omega)

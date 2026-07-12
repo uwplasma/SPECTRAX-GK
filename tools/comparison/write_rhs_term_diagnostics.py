@@ -25,7 +25,6 @@ from spectraxgk.benchmarks import (
     CycloneBaseCase,
     KBMBaseCase,
     KineticElectronBaseCase,
-    TEMBaseCase,
     _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
@@ -36,7 +35,10 @@ from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
 from spectraxgk.terms.config import TermConfig
-from spectraxgk.workflows.runtime.startup import build_runtime_linear_params
+from spectraxgk.workflows.runtime.startup import (
+    build_runtime_geometry,
+    build_runtime_linear_params,
+)
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 
@@ -148,7 +150,15 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             KINETIC_RHO_STAR,
         )
     if case == "tem":
-        cfg = TEMBaseCase(
+        cfg, _raw = load_runtime_from_toml(
+            Path(__file__).resolve().parents[2]
+            / "examples"
+            / "linear"
+            / "axisymmetric"
+            / "runtime_tem.toml"
+        )
+        cfg = replace(
+            cfg,
             grid=GridConfig(
                 Nx=args.Nx,
                 Ny=args.Ny,
@@ -159,21 +169,11 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 y0=args.y0,
                 ntheta=args.ntheta,
                 nperiod=args.nperiod,
-            )
+            ),
+            geometry=replace(cfg.geometry, drift_scale=args.drift_scale),
         )
-        geom = SAlphaGeometry.from_config(
-            replace(cfg.geometry, drift_scale=args.drift_scale)
-        )
-        params = _two_species_params(
-            cfg.model,
-            kpar_scale=float(geom.gradpar()),
-            omega_d_scale=TEM_OMEGA_D_SCALE,
-            omega_star_scale=TEM_OMEGA_STAR_SCALE,
-            rho_star=TEM_RHO_STAR,
-            damp_ends_amp=0.0,
-            damp_ends_widthfrac=0.0,
-            nhermite=args.Nm,
-        )
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
         return cfg, params, 1, TEM_OMEGA_D_SCALE, TEM_OMEGA_STAR_SCALE, TEM_RHO_STAR
     if case == "kbm":
         cfg = KBMBaseCase(

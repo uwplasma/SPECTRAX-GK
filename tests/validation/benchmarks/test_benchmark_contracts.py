@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 import subprocess
 import tomllib
+from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
@@ -54,7 +55,6 @@ from spectraxgk.benchmarks import (
     scan_window_valid,
     should_use_ky_batch,
 )
-from spectraxgk.config import TEMBaseCase
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.operators.linear.cache_builder import build_linear_cache
 from spectraxgk.operators.linear.rhs import linear_rhs_cached
@@ -79,7 +79,16 @@ def test_runtime_tem_case_matches_transitional_operator_contract() -> None:
     runtime_cfg, _raw = load_runtime_from_toml(
         ROOT / "examples" / "linear" / "axisymmetric" / "runtime_tem.toml"
     )
-    legacy_cfg = TEMBaseCase()
+    legacy_model = SimpleNamespace(
+        R_over_LTi=20.0,
+        R_over_LTe=20.0,
+        R_over_Ln=20.0,
+        Te_over_Ti=1.0,
+        mass_ratio=370.0,
+        nu_i=0.0,
+        nu_e=0.0,
+        beta=1.0e-4,
+    )
     n_laguerre, n_hermite = 2, 4
 
     geometry = build_runtime_geometry(runtime_cfg)
@@ -93,7 +102,7 @@ def test_runtime_tem_case_matches_transitional_operator_contract() -> None:
         geom=geometry,
     )
     legacy_params = _two_species_params(
-        legacy_cfg.model,
+        legacy_model,
         kpar_scale=float(geometry.gradpar()),
         omega_d_scale=TEM_OMEGA_D_SCALE,
         omega_star_scale=TEM_OMEGA_STAR_SCALE,
@@ -128,7 +137,7 @@ def test_runtime_tem_case_matches_transitional_operator_contract() -> None:
         kx_index=0,
         Nl=n_laguerre,
         Nm=n_hermite,
-        init_cfg=legacy_cfg.init,
+        init_cfg=runtime_cfg.init,
     )
     legacy_state = np.zeros_like(np.asarray(runtime_state))
     legacy_state[1] = np.asarray(legacy_single)

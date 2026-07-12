@@ -128,8 +128,6 @@ moved_exports = [
   "KineticElectronBaseCase",
   "KineticElectronModelConfig",
   "ModelConfig",
-  "TEMBaseCase",
-  "TEMModelConfig",
 ]
 fast_tests = ["tests/unit/core/test_core_contracts.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/inputs.rst"]

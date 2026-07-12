@@ -31,9 +31,6 @@ from spectraxgk.benchmarks import (
     KINETIC_OMEGA_D_SCALE,
     KINETIC_OMEGA_STAR_SCALE,
     KINETIC_RHO_STAR,
-    TEM_OMEGA_D_SCALE,
-    TEM_OMEGA_STAR_SCALE,
-    TEM_RHO_STAR,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
@@ -53,7 +50,6 @@ from spectraxgk.config import (
     InitializationConfig,
     KineticElectronBaseCase,
     KBMBaseCase,
-    TEMBaseCase,
 )
 from spectraxgk.solvers.time.diffrax_linear import integrate_linear_diffrax
 from spectraxgk.geometry import SAlphaGeometry
@@ -237,9 +233,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
         terms = LinearTerms()
         init_species_index = 1
     elif case == "etg":
-        cfg, _ = load_runtime_from_toml(
-            ROOT / "examples/linear/axisymmetric/etg.toml"
-        )
+        cfg, _ = load_runtime_from_toml(ROOT / "examples/linear/axisymmetric/etg.toml")
         grid_full = build_spectral_grid(cfg.grid)
         geom = build_runtime_geometry(cfg)
         params = build_runtime_linear_params(cfg, Nm=Nm, geom=geom)
@@ -264,20 +258,13 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
         terms = LinearTerms(bpar=0.0)
         init_species_index = 1
     elif case == "tem":
-        cfg = TEMBaseCase()
-        grid_full = build_spectral_grid(cfg.grid)
-        geom = SAlphaGeometry.from_config(cfg.geometry)
-        params = _two_species_params(
-            cfg.model,
-            kpar_scale=float(geom.gradpar()),
-            omega_d_scale=TEM_OMEGA_D_SCALE,
-            omega_star_scale=TEM_OMEGA_STAR_SCALE,
-            rho_star=TEM_RHO_STAR,
-            damp_ends_amp=0.0,
-            damp_ends_widthfrac=0.0,
-            nhermite=Nm,
+        cfg, _raw = load_runtime_from_toml(
+            ROOT / "examples" / "linear" / "axisymmetric" / "runtime_tem.toml"
         )
-        terms = LinearTerms(bpar=0.0)
+        grid_full = build_spectral_grid(cfg.grid)
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=Nm, geom=geom)
+        terms = build_runtime_linear_terms(cfg)
         init_species_index = 1
     else:
         raise ValueError(f"Unknown case '{case}'")
