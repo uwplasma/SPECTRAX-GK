@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
-| Structured solver ownership | 92% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
+| Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
@@ -839,3 +839,11 @@ under 5 minutes.
   adding 0.62% CPU time/1.18% RSS and 2.36% A4000 time/2.78% device peak. The
   four small JSON artifacts are now regression-gated at 25% runtime and 10%
   memory overhead; opaque profiler traces remain untracked.
+- 2026-07-12: Corrected complex Arnoldi Ritz reconstruction from
+  ``V @ conj(y)`` to ``V @ y`` in both shared and shift-invert restart paths,
+  and excluded zero Ritz values caused by Arnoldi breakdown from inverse
+  spectral mapping. Added a matrix-free outer residual gate for primary and
+  fallback pairs. The reviewed reduced KBM shift policy now fails honestly at
+  residual 0.99978 versus tolerance 0.1; a tighter 24-vector/three-restart
+  probe exceeded the five-minute cap and was terminated. Shift-invert remains
+  unpromoted, while validated time integration is unchanged.

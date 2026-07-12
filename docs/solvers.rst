@@ -33,7 +33,13 @@ Implicit time stepping has one supported complex unitary-Givens FGMRES
 algorithm. Users configure its tolerance, restart length, iteration limit,
 and physical preconditioner rather than selecting equivalent backend aliases.
 Shift-invert eigenmode extraction is separate and is not yet migrated because
-its branch-continuity gate remains open.
+its branch-continuity gate remains open. Complex Ritz vectors now use the
+mathematically correct ``V @ y`` reconstruction, exact Arnoldi-breakdown zeros
+are excluded from inverse spectral mapping, and an outer eigenpair-residual
+gate rejects both primary and fallback pairs. A reduced KBM audit reports
+residual ``0.99978`` against the ``0.1`` threshold, so this lane remains
+unpromoted rather than silently returning that branch; validated time
+integration remains the release path.
 
 Optional damping
 ----------------

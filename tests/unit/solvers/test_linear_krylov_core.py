@@ -15,6 +15,7 @@ from spectraxgk.linear import (
     linear_terms_to_term_config,
 )
 import spectraxgk.solvers.linear.krylov as lk
+import spectraxgk.solvers.linear.krylov_algorithms as ka
 
 
 def _tiny_krylov_setup(*, linked: bool = False):
@@ -102,6 +103,43 @@ def test_select_by_overlap_prefers_reference_branch() -> None:
     assert int(idx_fallback) == 1
 
 
+def test_ritz_vector_uses_complex_eigenvector_without_conjugation() -> None:
+    """Arnoldi Ritz vectors are ``V @ y``, not ``V @ conj(y)``."""
+
+    basis = jnp.asarray(
+        [
+            [1.0 + 0.0j, 0.0 + 0.0j],
+            [0.0 + 0.0j, 1.0 + 0.0j],
+            [0.0 + 0.0j, 0.0 + 0.0j],
+        ],
+        dtype=jnp.complex64,
+    )
+    eigvecs = jnp.asarray(
+        [[1.0 + 0.0j, 0.0 + 1.0j], [0.0 + 1.0j, 1.0 + 0.0j]],
+        dtype=jnp.complex64,
+    )
+
+    vector = ka._ritz_vector_from_index(basis, eigvecs, jnp.asarray(0), krylov_dim=2)
+    expected = jnp.asarray([1.0, 1.0j], dtype=jnp.complex64) / jnp.sqrt(2.0)
+
+    assert jnp.allclose(vector, expected)
+
+
+def test_shift_invert_spectrum_rejects_arnoldi_breakdown_values() -> None:
+    eigvals = jnp.asarray([0.0 + 0.0j, 0.5 - 0.25j], dtype=jnp.complex64)
+    sigma = jnp.asarray(0.1 - 0.2j, dtype=jnp.complex64)
+
+    transformed, real_part, imag_part, finite = ka._shift_invert_spectrum(
+        eigvals, sigma
+    )
+
+    assert not bool(finite[0])
+    assert not bool(jnp.isfinite(real_part[0]))
+    assert not bool(jnp.isfinite(imag_part[0]))
+    assert bool(finite[1])
+    assert jnp.allclose(transformed[1], sigma + 1.0 / eigvals[1])
+
+
 def test_normalize_handles_zero_and_tiny_vectors_without_nan() -> None:
     zero = jnp.zeros((3,), dtype=jnp.complex64)
     zero_normed = lk._normalize(zero)
@@ -183,6 +221,11 @@ def test_shift_invert_selection_key_controls_cached_branch_flags(
         return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
 
     monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+    monkeypatch.setattr(
+        lk,
+        "_apply_operator",
+        lambda vector, *_args: jnp.asarray(0.4 + 0.2j, vector.dtype) * vector,
+    )
 
     eig, vec = lk.dominant_eigenpair(
         v0,
@@ -276,27 +319,26 @@ def test_dominant_eigenpair_methods_produce_finite_values(method: str) -> None:
     assert jnp.isfinite(jnp.imag(eig))
 
 
-def test_dominant_eigenpair_shift_invert_sources_and_errors() -> None:
+def test_dominant_eigenpair_shift_invert_rejects_unconverged_sources() -> None:
     _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
     for source in ("propagator", "target", "power"):
-        eig, vec = lk.dominant_eigenpair(
-            v0,
-            cache,
-            params,
-            terms=terms,
-            method="shift_invert",
-            shift=None,
-            shift_source=source,
-            shift_preconditioner="damping",
-            krylov_dim=4,
-            restarts=1,
-            shift_maxiter=15,
-            shift_restart=10,
-            power_iters=4,
-            power_dt=0.05,
-        )
-        assert vec.shape == v0.shape
-        assert jnp.isfinite(jnp.real(eig))
+        with pytest.raises(RuntimeError, match="outer residual gate"):
+            lk.dominant_eigenpair(
+                v0,
+                cache,
+                params,
+                terms=terms,
+                method="shift_invert",
+                shift=None,
+                shift_source=source,
+                shift_preconditioner="damping",
+                krylov_dim=4,
+                restarts=1,
+                shift_maxiter=15,
+                shift_restart=10,
+                power_iters=4,
+                power_dt=0.05,
+            )
     with pytest.raises(ValueError):
         lk.dominant_eigenpair(v0, cache, params, terms=terms, method="bad")
 
@@ -317,6 +359,11 @@ def test_dominant_eigenpair_explicit_shift_uses_requested_seed_source(
         return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
 
     monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+    monkeypatch.setattr(
+        lk,
+        "_apply_operator",
+        lambda vector, *_args: jnp.asarray(0.4 + 0.2j, vector.dtype) * vector,
+    )
     if shift_source == "propagator":
         monkeypatch.setattr(
             lk,
@@ -367,6 +414,11 @@ def test_dominant_eigenpair_explicit_shift_defaults_to_reference_seed(
         return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
 
     monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+    monkeypatch.setattr(
+        lk,
+        "_apply_operator",
+        lambda vector, *_args: jnp.asarray(0.4 + 0.2j, vector.dtype) * vector,
+    )
 
     lk.dominant_eigenpair(
         v0,
@@ -402,6 +454,11 @@ def test_dominant_eigenpair_target_shift_uses_physical_omega_sign(
         return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
 
     monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+    monkeypatch.setattr(
+        lk,
+        "_apply_operator",
+        lambda vector, *_args: jnp.asarray(0.4 + 0.2j, vector.dtype) * vector,
+    )
     monkeypatch.setattr(lk, "_omega_scale", lambda *_args, **_kwargs: jnp.asarray(2.0))
 
     lk.dominant_eigenpair(
@@ -445,6 +502,7 @@ def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(lk, "dominant_eigenpair_cached", fake_arnoldi)
     monkeypatch.setattr(lk, "dominant_eigenpair_power", fake_power)
     monkeypatch.setattr(lk, "_omega_scale", lambda *_args, **_kwargs: jnp.asarray(1.0))
+    monkeypatch.setattr(lk, "_eigenpair_relative_residual", lambda *_args: 0.0)
 
     eig_p, vec_p = lk.dominant_eigenpair(
         v0,
@@ -482,17 +540,17 @@ def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     assert jnp.allclose(eig_w, jnp.asarray(0.2 + 0.05j, dtype=v0.dtype))
     assert jnp.allclose(vec_w, 4.0 + 0.0j)
 
-    # no fallback branch should return the (nan) shift-invert value directly.
-    eig_n, _vec_n = lk.dominant_eigenpair(
-        v0,
-        cache,
-        params,
-        terms=terms,
-        method="shift_invert",
-        fallback_method="none",
-        fallback_real_floor=0.0,
-    )
-    assert not jnp.isfinite(jnp.real(eig_n))
+    # A rejected pair without a fallback must fail rather than escape as NaN.
+    with pytest.raises(RuntimeError, match="outer residual gate"):
+        lk.dominant_eigenpair(
+            v0,
+            cache,
+            params,
+            terms=terms,
+            method="shift_invert",
+            fallback_method="none",
+            fallback_real_floor=0.0,
+        )
 
     # dominant_eigenvalue wrapper should reuse dominant_eigenpair.
     monkeypatch.setattr(
@@ -504,6 +562,49 @@ def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
         v0, cache, params, terms=terms, krylov_dim=4, restarts=1
     )
     assert jnp.allclose(eig_val, jnp.asarray(0.7 + 0.1j))
+
+
+def test_shift_invert_outer_residual_triggers_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
+    monkeypatch.setattr(
+        lk,
+        "dominant_eigenpair_shift_invert_cached",
+        lambda *args, **kwargs: (
+            jnp.asarray(0.4 + 0.2j, dtype=v0.dtype),
+            jnp.ones_like(v0),
+        ),
+    )
+    monkeypatch.setattr(
+        lk, "_apply_operator", lambda vector, *_args: jnp.zeros_like(vector)
+    )
+    monkeypatch.setattr(
+        lk,
+        "dominant_eigenpair_propagator_cached",
+        lambda *args, **kwargs: (
+            jnp.asarray(0.1 + 0.05j, dtype=v0.dtype),
+            jnp.full_like(v0, 2.0),
+        ),
+    )
+    monkeypatch.setattr(
+        lk,
+        "_eigenpair_relative_residual",
+        lambda eigenvalue, *_args: 1.0 if float(jnp.real(eigenvalue)) > 0.2 else 0.0,
+    )
+
+    eigenvalue, eigenvector = lk.dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms=terms,
+        method="shift_invert",
+        fallback_method="propagator",
+        shift_outer_residual_tol=0.1,
+    )
+
+    assert jnp.allclose(eigenvalue, jnp.asarray(0.1 + 0.05j, dtype=v0.dtype))
+    assert jnp.allclose(eigenvector, 2.0)
 
 
 def test_dominant_eigenpair_reports_shift_invert_status(
@@ -528,6 +629,11 @@ def test_dominant_eigenpair_reports_shift_invert_status(
             jnp.full_like(v0, 3.0 + 0.0j),
         ),
     )
+    monkeypatch.setattr(
+        lk,
+        "_apply_operator",
+        lambda vector, *_args: jnp.asarray(0.3 + 0.4j, vector.dtype) * vector,
+    )
 
     eig, vec = lk.dominant_eigenpair(
         v0,
@@ -550,3 +656,4 @@ def test_dominant_eigenpair_reports_shift_invert_status(
     assert any("estimating shift from propagator seed" in item for item in messages)
     assert any("running shift-invert Arnoldi" in item for item in messages)
     assert any("shift-invert solve finished" in item for item in messages)
+    assert any("residual=" in item for item in messages)

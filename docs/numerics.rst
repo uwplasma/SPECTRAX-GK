@@ -257,11 +257,18 @@ end-to-end JAX differentiability:
   tridiagonal solve in ``m``). The ``"-coarse"`` variants add a lightweight
   coarse correction in the kx direction (for linked boundaries this averages
   within linked chains; for periodic boundaries this reduces to a kx-mean).
+  Every returned pair is checked with the matrix-free relative residual
+  :math:`\lVert Av-\lambda v\rVert/
+  \max(\lVert Av\rVert,|\lambda|\lVert v\rVert)`. Configure the acceptance
+  threshold with ``KrylovConfig.shift_outer_residual_tol``; the default is
+  ``0.1``. Rejected primary and fallback pairs raise instead of returning a
+  plausible frequency with an unconverged eigenvector.
 - **Targeted shift-invert mode selection**: set ``KrylovConfig.mode_family``
   (for example ``"cyclone"``, ``"etg"``, ``"kbm"``) and
   ``KrylovConfig.shift_selection`` to stabilize branch selection in stiff
   spectra. ``KrylovConfig.fallback_method`` controls the automatic fallback
-  policy when shift-invert returns a non-finite or strongly damped mode.
+  policy when shift-invert returns a non-finite, strongly damped, or
+  high-residual mode.
 - **Reusable IMEX operators**: nonlinear IMEX runs can prebuild and reuse the
   matrix-free linear operator with
   :func:`spectraxgk.nonlinear.build_nonlinear_imex_operator` and pass it to
