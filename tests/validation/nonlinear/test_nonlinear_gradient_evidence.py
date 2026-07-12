@@ -10,8 +10,8 @@ import pytest
 
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_brackets
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_classification
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_core
+import spectraxgk.diagnostics.metadata as evidence_classification
+import spectraxgk.diagnostics.metadata as evidence_core
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_fd
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_gap
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_scoring
@@ -52,11 +52,8 @@ def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:
         evidence.NonlinearTurbulenceGradientFiniteDifferenceConfig
         is evidence_core.NonlinearTurbulenceGradientFiniteDifferenceConfig
     )
-    assert evidence._gate is evidence_core._gate
-    assert evidence._json_number is evidence_core._json_number
     assert (
-        evidence._gradient_conditioning_summary
-        is evidence_core._gradient_conditioning_summary
+        evidence.classify_gradient_artifact is evidence_core.classify_gradient_artifact
     )
 
 
