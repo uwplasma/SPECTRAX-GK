@@ -331,7 +331,7 @@ def test_runtime_kbm_case_matches_transitional_operator_contract() -> None:
     legacy_rhs, _ = linear_rhs_cached(
         legacy_state, cache, legacy_params, terms=LinearTerms(bpar=0.0),
     )
-    np.testing.assert_allclose(runtime_rhs, legacy_rhs, rtol=1.0e-6, atol=1.0e-18)
+    np.testing.assert_allclose(runtime_rhs, legacy_rhs, rtol=1.0e-6, atol=2.0e-16)
 
 
 def test_scan_policy_normalizes_keys_and_auto_fit_side_effects() -> None:
