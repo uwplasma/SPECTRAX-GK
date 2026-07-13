@@ -1215,6 +1215,14 @@ under 5 minutes.
   streaming case improves from ``0.0655`` to ``0.0472`` and passes a ``0.06``
   nearest-shift gate, while the deliberately under-resolved targeted case still
   fails closed. KBM remains unpromoted pending a stronger restart/preconditioner.
+- 2026-07-13: Corrected the KBM Krylov target direction. The tracked KBM
+  benchmark reports positive physical frequencies, so its matrix eigenvalue
+  target is on the negative imaginary axis; KBM had accidentally shared the
+  electron-branch sign policy and targeted the opposite half-plane. On the
+  full ``Nl=16, Nm=48, Nz=96`` physical probe the corrected target lowers the
+  outer residual from ``0.995`` to ``0.884``, but still fails the unchanged
+  ``0.1`` gate. This fixes branch semantics without promoting the unresolved
+  solver or weakening its acceptance policy.
 - 2026-07-13: Repaired the exact-state comparison orchestrator after its move
   into ``tools/campaigns``. It had still searched for comparison commands in
   the campaign directory and built ``PYTHONPATH`` from ``tools/``; checked

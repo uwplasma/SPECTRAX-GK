@@ -63,6 +63,7 @@ def _tiny_krylov_setup(*, linked: bool = False):
 
 def test_mode_family_and_target_selection_helpers() -> None:
     assert lk._mode_family_sign("cyclone") == 1
+    assert lk._mode_family_sign("kbm") == 1
     assert lk._mode_family_sign("etg") == -1
     assert lk._mode_family_sign("other") == 0
     real = jnp.asarray([-0.1, 0.05, 0.08])

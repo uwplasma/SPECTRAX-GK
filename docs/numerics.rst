@@ -287,8 +287,10 @@ end-to-end JAX differentiability:
 - **Targeted shift-invert mode selection**: set ``KrylovConfig.mode_family``
   (for example ``"cyclone"``, ``"etg"``, ``"kbm"``) and
   ``KrylovConfig.shift_selection`` to stabilize branch selection in stiff
-  spectra. ``KrylovConfig.fallback_method`` controls the automatic fallback
-  policy when shift-invert returns a non-finite, strongly damped, or
+  spectra. KBM uses the positive reported-frequency convention in the tracked
+  benchmark table, so its matrix eigenvalue target lies on the negative
+  imaginary axis. ``KrylovConfig.fallback_method`` controls the automatic
+  fallback policy when shift-invert returns a non-finite, strongly damped, or
   high-residual mode.
 - **Reusable IMEX operators**: nonlinear IMEX runs can prebuild and reuse the
   matrix-free linear operator with

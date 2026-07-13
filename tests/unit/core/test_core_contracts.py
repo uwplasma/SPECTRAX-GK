@@ -438,6 +438,7 @@ def test_normalization_and_benchmark_public_contracts() -> None:
     assert benchmarks.KINETIC_KRYLOV_REFERENCE_ALIGNED.shift_source == "history"
     assert benchmarks.KINETIC_KRYLOV_DEFAULT.shift_source == "target"
     assert benchmarks.KBM_KRYLOV_DEFAULT.mode_family == "kbm"
+    assert benchmarks.KBM_KRYLOV_DEFAULT.omega_sign == 1
     assert benchmarks.ETG_KRYLOV_DEFAULT.omega_sign == -1
 
 
