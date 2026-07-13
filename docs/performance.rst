@@ -1028,9 +1028,9 @@ the available timing samples but not their host-reduced identity checks.
 The mixed species--Hermite profile uses four logical CPU devices. On the
 periodic collision-free electrostatic ``2x4x16x64x1x64`` workload, the
 ``(species,m)=(2,2)`` mesh matches the serial RHS to ``5.6e-8`` relative and
-reaches a scoped ``2.93x`` warm-RHS speedup. It applies streaming, mirror,
+reaches a scoped ``3.11x`` warm-RHS speedup. It applies streaming, mirror,
 curvature, grad-:math:`B`, and diamagnetic terms. The same artifact advances
-100 Euler steps with exact state/field histories but only ``0.89x`` end-to-end
+100 Euler steps with exact state/field histories but only ``0.97x`` end-to-end
 throughput, so no integration-speedup claim is made. This is not evidence for
 general strong scaling, GPUs, linked boundaries, or collisions. The
 machine-readable evidence is
