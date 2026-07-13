@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 48% | Profile the new identity-gated two-species electrostatic linear route on matched CPU/GPU workloads, then add collision/EM and mixed species--Hermite routing only behind equivalent gates. |
+| Production parallelization | 50% | The two-species electrostatic fixed-step route is CPU/GPU identity-gated; next fuse species integration into one manual-axis program and add collision/EM or mixed Hermite routing only when large-workload profiles can plausibly beat one GPU. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -855,3 +855,11 @@ under 5 minutes.
   two-logical-CPU route agrees with the serial production field solve and RHS,
   while mixed species--Hermite, collisions, electromagnetic terms, and speedup
   remain fail-closed pending their own identity and profiler evidence.
+- 2026-07-12: Closed the species-route fixed-step identity gate on two office
+  A4000s. A one-time host staging boundary avoids a JAX 0.6.2 device-to-device
+  resharding defect, and a compiled host-controlled step loop avoids corruption
+  of the electron carry under nested ``lax.scan``/``shard_map``. Three Euler
+  steps agree with serial state/field histories to ``4.61e-8``/``1.59e-9``
+  relative. A reproducible ``2x4x16x64x1x64`` profile passes RHS identity at
+  ``5.16e-8`` relative but records only ``0.40x`` two-GPU throughput, so no
+  species-decomposition speedup is claimed.

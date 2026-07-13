@@ -985,6 +985,22 @@ than the single-GPU serial JIT path (``speedup=0.03x``). This keeps the GPU
 Hermite-sharding lane open: do not claim GPU speedup until the communication
 layout is redesigned or a larger production workload shows a real gain.
 
+The species-first kinetic-electron route uses the same profiler with
+``--axis species``. The tracked two-A4000, ``2x4x16x64x1x64`` state passes the
+host-reduced identity gate with ``max_rel_error=5.16e-8`` and
+``max_phi_abs_error=8.39e-10``. Its warm medians are ``2.56 ms`` on one GPU and
+``6.39 ms`` on two GPUs, or ``0.40x`` relative throughput. This negative result
+is retained in ``docs/_static/linear_rhs_species_profile_gpu.json``: species
+decomposition is now a correct fixed-step execution route, but this grid does
+not support a speedup claim. The profile is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profiling/profile_linear_rhs_parallel_slices.py \
+     --axis species --platform gpu --logical-devices 2 \
+     --nl 4 --nm 16 --ny 64 --nz 64 --warmups 2 --repeats 20 \
+     --out-prefix /tmp/linear_rhs_species_profile_gpu
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 

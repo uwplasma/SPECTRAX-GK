@@ -355,6 +355,14 @@ The serial and two-device RHS are identity-gated. Collisions, electromagnetic
 fields, mixed species--Hermite meshes, and a speedup claim remain out of scope
 until matched artifacts pass their own gates.
 
+On the office JAX 0.6.2/CUDA stack, device-to-device resharding of an existing
+single-GPU array did not preserve the second device's input. The production
+integrator therefore stages species-dependent state/cache arrays from host
+memory exactly once before JIT, then preserves that sharding across compiled
+steps. A three-step two-A4000 gate agrees with serial final state to
+``4.61e-8`` relative and field history to ``1.59e-9`` relative. The medium-grid
+profile is slower than one GPU, so correctness is promoted but speedup is not.
+
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate collisions, linked boundaries,
 electromagnetic terms, multi-species nonlinear field solves, nonlinear brackets,
