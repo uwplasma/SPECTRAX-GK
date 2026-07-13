@@ -1498,3 +1498,12 @@ under 5 minutes.
   rate and measured first-order convergence to the independent drift-kinetic
   equation, in addition to the existing equation, invariant, full-f, and AD
   gates.
+
+- 2026-07-13: Consolidated four duplicated single/multi-field, real/full FFT
+  nonlinear bracket implementations behind two shape-aware numerical cores.
+  The public/internal call surfaces and operation order remain unchanged, the
+  complete focused bracket/RHS shard passes, and a same-process realistic
+  ``1x4x8x64x96x24`` CPU A/B is bitwise identical with medians ``31.721 ms``
+  before and ``31.671 ms`` after. This removes 85 source lines without making
+  a speedup claim. A direct single-to-multi delegation was measured and
+  rejected first because it added about 1.6% overhead.
