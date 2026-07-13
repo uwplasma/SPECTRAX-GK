@@ -29,7 +29,7 @@ from spectraxgk.artifacts.plotting import (
 )
 
 
-def _parse_args() -> argparse.Namespace:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate validation figures.")
     parser.add_argument(
         "--case",
@@ -41,7 +41,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-progress", action="store_true", help="Disable tqdm progress bars."
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:

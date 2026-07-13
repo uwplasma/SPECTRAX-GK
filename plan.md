@@ -282,6 +282,13 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-13: Made the benchmark-refresh manifest's figure command executable
+  as written. It had passed a removed ``--reuse-cyclone-mismatch`` option even
+  though the current figure builder always consumes the reviewed mismatch CSV.
+  The stale flag is removed and the manifest test now parses the exact
+  configured figure arguments through the production parser, preventing future
+  command/API drift.
+
 - 2026-07-13: Consolidated zonal-response plotting and optimization-row
   generation under ``build_zonal_flow_artifacts.py``. The explicit
   ``response-csv``, ``response-output``, and ``objective-gate`` modes preserve

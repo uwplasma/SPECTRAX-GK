@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shlex
 import tomllib
 
+from tools.artifacts import make_figures
 from tools.campaigns import run_validation_campaigns as validation_campaigns
 from tools.campaigns.run_validation_campaigns import (
     _load_manifest,
@@ -118,6 +120,12 @@ def test_benchmark_refresh_manifest_loading_and_selection(tmp_path: Path) -> Non
     commands = {job.name: job.command for job in jobs}
     assert commands["imported-linear-w7x"].startswith("JAX_PLATFORMS=cpu ")
     assert commands["imported-linear-hsx"].startswith("JAX_PLATFORMS=cpu ")
+    figure_args = shlex.split(
+        commands["cyclone-core-assets"].split("make_figures.py", maxsplit=1)[1]
+    )
+    parsed_figure_args = make_figures._parse_args(figure_args)
+    assert parsed_figure_args.case == "cyclone"
+    assert parsed_figure_args.no_progress is True
     outputs = {job.name: job.outputs for job in jobs}
     assert "docs/_static/w7x_linear_t2_lastvalue.csv" in outputs["imported-linear-w7x"]
     assert "docs/_static/hsx_linear_t2_lastvalue.csv" in outputs["imported-linear-hsx"]
