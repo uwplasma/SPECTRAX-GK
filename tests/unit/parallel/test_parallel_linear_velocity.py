@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_linear_parallel_dispatch.py ----
 
 from types import SimpleNamespace
@@ -782,9 +781,9 @@ def test_velocity_field_reduce_rejects_invalid_axes_and_plans() -> None:
         velocity_field_reduce_shard_map(state, plan, axis="banana")
     with pytest.raises(ValueError, match="not present"):
         velocity_field_reduce_shard_map(state, plan, axis="species")
-    with pytest.raises(NotImplementedError, match="Hermite axis"):
+    with pytest.raises(NotImplementedError, match="one active reduction axis"):
         velocity_field_reduce_shard_map(state, plan, axis="laguerre")
-    with pytest.raises(NotImplementedError, match="active 'm'"):
+    with pytest.raises(NotImplementedError, match="one active reduction axis"):
         velocity_field_reduce_shard_map(state, laguerre_plan)
     with pytest.raises(ValueError, match="divide evenly"):
         velocity_field_reduce_shard_map(bad_shape, uneven, devices=[object(), object()])
@@ -1026,6 +1025,26 @@ def test_velocity_field_reduce_shard_map_matches_reference_when_logical_devices_
     np.testing.assert_allclose(np.asarray(reduced), np.asarray(expected))
 
 
+def test_species_field_reduce_shard_map_matches_reference_when_devices_available() -> (
+    None
+):
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires two logical CPU devices or two accelerators")
+    state = (
+        jnp.arange(2 * 2 * 3 * 2 * 1 * 4, dtype=jnp.float32).reshape((2, 2, 3, 2, 1, 4))
+        + 1j
+    ).astype(jnp.complex64)
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("species",))
+
+    reduced = velocity_field_reduce_shard_map(
+        state, plan, axis="species", devices=devices[:2], axis_name="species"
+    )
+    expected = velocity_field_reduce_reference(state, axis="species")
+
+    np.testing.assert_allclose(np.asarray(reduced), np.asarray(expected))
+
+
 def _small_periodic_field_problem():
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
@@ -1045,6 +1064,43 @@ def _small_periodic_field_problem():
     )
     state = state.at[0, 0, min(1, grid.ky.size - 1), 0, :].set(0.2 * jnp.exp(1j * z))
     state = state.at[1, 0, min(2, grid.ky.size - 1), 0, :].set(0.1 * jnp.exp(2j * z))
+    return state, cache, params
+
+
+def _small_kinetic_electron_problem():
+    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.geometry import SAlphaGeometry
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.linear import LinearParams, build_linear_cache
+
+    cfg = CycloneBaseCase(
+        grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0, -1.0]),
+        density=jnp.asarray([1.0, 1.0]),
+        mass=jnp.asarray([1.0, 1.0 / 1836.0]),
+        temp=jnp.asarray([1.0, 1.0]),
+        vth=jnp.asarray([1.0, 42.0]),
+        rho=jnp.asarray([1.0, 0.023]),
+        R_over_Ln=jnp.asarray([2.2, 2.2]),
+        R_over_LTi=jnp.asarray([6.9, 0.0]),
+        R_over_LTe=jnp.asarray([0.0, 6.9]),
+        tz=jnp.asarray([1.0, -1.0]),
+        tau_e=0.0,
+        beta=0.0,
+        fapar=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=6)
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
+    state = jnp.zeros(
+        (2, 2, 6, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
+    ky = min(1, grid.ky.size - 1)
+    state = state.at[0, 0, 0, ky, 0, :].set(0.2 * jnp.exp(1j * z))
+    state = state.at[1, 0, 0, ky, 0, :].set(0.07j * jnp.exp(2j * z))
     return state, cache, params
 
 
@@ -1153,6 +1209,104 @@ def test_electrostatic_phi_shard_map_matches_reference_when_logical_devices_avai
     )
 
 
+def test_species_sharded_phi_matches_production_quasineutrality() -> None:
+    from spectraxgk.operators.linear.moments import quasineutrality_phi
+
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires two logical CPU devices or two accelerators")
+    single_state, cache, _params = _small_periodic_field_problem()
+    state = jnp.stack((single_state, 0.35j * single_state), axis=0)
+    jl = jnp.concatenate((cache.Jl, 0.8 * cache.Jl), axis=0)
+    charge = jnp.asarray([1.0, -1.0], dtype=jnp.float32)
+    density = jnp.asarray([1.0, 0.9], dtype=jnp.float32)
+    tz = jnp.asarray([1.0, 0.5], dtype=jnp.float32)
+    tau_e = 0.0
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("species",))
+
+    observed = electrostatic_phi_shard_map(
+        state,
+        plan,
+        Jl=jl,
+        tau_e=tau_e,
+        charge=charge,
+        density=density,
+        tz=tz,
+        mask0=cache.mask0,
+        devices=devices[:2],
+        axis_name="species",
+    )
+    expected = quasineutrality_phi(state, jl, tau_e, charge, density, tz)
+    expected = jnp.where(cache.mask0, 0.0, expected)
+    reference = electrostatic_phi_reference(
+        state,
+        Jl=jl,
+        tau_e=tau_e,
+        charge=charge,
+        density=density,
+        tz=tz,
+        mask0=cache.mask0,
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(observed), np.asarray(expected), rtol=2e-6, atol=2e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(reference), np.asarray(expected), rtol=2e-6, atol=2e-6
+    )
+
+
+def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
+    from spectraxgk.linear import linear_rhs_cached
+
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires two logical CPU devices or two accelerators")
+    state, cache, params = _small_kinetic_electron_problem()
+    terms = _electrostatic_slice_terms()
+
+    expected_rhs, expected_phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    observed_rhs, observed_phi = (
+        linear_parallel_electrostatic.linear_rhs_electrostatic_species_sharded(
+            state,
+            cache,
+            params,
+            terms=terms,
+            devices=devices[:2],
+        )
+    )
+    routed_rhs, routed_phi = linear_parallel.linear_rhs_parallel_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        parallel=SimpleNamespace(
+            strategy="velocity", backend="auto", axis="species", num_devices=2
+        ),
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(observed_phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(observed_rhs), np.asarray(expected_rhs), rtol=3e-5, atol=3e-5
+    )
+    np.testing.assert_allclose(
+        np.asarray(routed_phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(routed_rhs), np.asarray(expected_rhs), rtol=3e-5, atol=3e-5
+    )
+
+
 def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
     state, cache, params = _small_periodic_field_problem()
     plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
@@ -1162,18 +1316,28 @@ def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
         state.shape, num_devices=2, axes=("laguerre",)
     )
 
-    with pytest.raises(NotImplementedError, match="single-species"):
-        electrostatic_phi_reference(state[None, ...], Jl=cache.Jl, tau_e=params.tau_e)
+    multi_reference = electrostatic_phi_reference(
+        state[None, ...], Jl=cache.Jl, tau_e=params.tau_e
+    )
+    single_reference = electrostatic_phi_reference(
+        state, Jl=cache.Jl, tau_e=params.tau_e
+    )
+    np.testing.assert_allclose(
+        np.asarray(multi_reference), np.asarray(single_reference)
+    )
     with pytest.raises(ValueError, match="Jl"):
         electrostatic_phi_reference(
             state,
             Jl=jnp.ones((state.shape[0], state.shape[2], state.shape[4])),
             tau_e=params.tau_e,
         )
-    with pytest.raises(NotImplementedError, match="single-species"):
-        electrostatic_phi_shard_map(
-            state[None, ...], plan, Jl=cache.Jl, tau_e=params.tau_e
-        )
+    species_plan = build_velocity_sharding_plan(
+        state[None, ...].shape, num_devices=1, axes=("species",)
+    )
+    multi_sharded = electrostatic_phi_shard_map(
+        state[None, ...], species_plan, Jl=cache.Jl, tau_e=params.tau_e
+    )
+    np.testing.assert_allclose(np.asarray(multi_sharded), np.asarray(single_reference))
     with pytest.raises(ValueError, match="state shape"):
         electrostatic_phi_shard_map(bad_shape, plan, Jl=cache.Jl, tau_e=params.tau_e)
     with pytest.raises(NotImplementedError, match="active 'm'"):

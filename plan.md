@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
+| Production parallelization | 48% | Profile the new identity-gated two-species electrostatic linear route on matched CPU/GPU workloads, then add collision/EM and mixed species--Hermite routing only behind equivalent gates. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -847,3 +847,11 @@ under 5 minutes.
   residual 0.99978 versus tolerance 0.1; a tighter 24-vector/three-restart
   probe exceeded the five-minute cap and was terminated. Shift-invert remains
   unpromoted, while validated time integration is unchanged.
+- 2026-07-12: Implemented the first production species-decomposed linear
+  route. Two-species electrostatic quasineutrality now reduces density and
+  polarization moments with ``shard_map``/``psum``; the complete local
+  streaming, mirror, curvature, grad-B, and diamagnetic RHS then executes on
+  one species per device without reconstructing the full distribution. The
+  two-logical-CPU route agrees with the serial production field solve and RHS,
+  while mixed species--Hermite, collisions, electromagnetic terms, and speedup
+  remain fail-closed pending their own identity and profiler evidence.

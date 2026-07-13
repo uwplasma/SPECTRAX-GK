@@ -339,10 +339,21 @@ The currently gated communication and call-graph layers are:
 - species/Hermite velocity-sharding planner metadata;
 - nearest-neighbor Hermite ghost exchange;
 - Hermite-sharded field reduction and electrostatic field reduction;
+- species-sharded kinetic-electron quasineutrality reduction;
 - Hermite streaming-ladder coefficients;
 - periodic streaming microkernel and streaming-only linear-RHS call graph;
 - electrostatic streaming, drift-slice, diamagnetic-drive, and composed
   single-species periodic electrostatic linear-slices gates.
+
+The opt-in species route now executes the complete electrostatic linear-slice
+RHS with one species per device. It performs the shared quasineutrality
+collective first, then evaluates streaming, mirror, curvature, grad-B, and
+diamagnetic terms on local species shards without reconstructing the global
+distribution. For a two-species explicit linear integration, pass
+``RuntimeParallelConfig(strategy="velocity", axis="species", num_devices=2)``.
+The serial and two-device RHS are identity-gated. Collisions, electromagnetic
+fields, mixed species--Hermite meshes, and a speedup claim remain out of scope
+until matched artifacts pass their own gates.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate collisions, linked boundaries,
@@ -362,8 +373,10 @@ Use the following rules when writing docs, release notes, or papers:
 - Call whole-state nonlinear sharding a diagnostic correctness/profiler gate,
   not production nonlinear parallelism unless the exact workload has passed its
   identity and profiler promotion gates.
-- Call velocity-space ``shard_map`` work communication-gated and opt-in until
-  the relevant full-RHS and workload gates are closed.
+- Call the electrostatic two-species linear route production-routed and
+  identity-gated, but do not claim speedup until its matched workload profile
+  passes. Other velocity-space ``shard_map`` work remains communication-gated
+  and opt-in.
 - Do not claim nonlinear speedup from sharding, velocity decomposition, spectral
   toggles, or linear-slice profiles without passing identity gates and fresh
   profiler artifacts for the exact workload, backend, device count, software
