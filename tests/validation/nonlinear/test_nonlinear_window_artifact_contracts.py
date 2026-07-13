@@ -11,11 +11,10 @@ import numpy as np
 
 from support.paths import REPO_ROOT, load_campaign_tool, load_release_tool
 from spectraxgk.diagnostics.transport_windows import (
-    MatchedTransportConfig,
     NonlinearWindowConvergenceConfig,
-    matched_nonlinear_transport_report,
     nonlinear_window_convergence_report,
 )
+from spectraxgk.diagnostics.validation_gates import matched_nonlinear_transport_report
 
 ROOT = REPO_ROOT
 OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_transport_gates.py"
@@ -132,10 +131,8 @@ def test_matched_transport_requires_converged_windows_and_resolved_reduction() -
         treatment,
         case="flow_shear_transport",
         treatment_name="gamma_e_0p01",
-        config=MatchedTransportConfig(
-            min_relative_reduction=0.05,
-            min_uncertainty_z_score=2.0,
-        ),
+        min_relative_reduction=0.05,
+        min_uncertainty_z_score=2.0,
     )
     assert report["passed"] is True
     assert report["statistics"]["relative_reduction"] > 0.1
@@ -161,6 +158,39 @@ def test_matched_transport_requires_converged_windows_and_resolved_reduction() -
     assert rejected["windows_ready"] is False
     failed = {gate["metric"] for gate in rejected["gates"] if not gate["passed"]}
     assert "treatment_window_passed" in failed
+
+
+def test_matched_transport_cli_writes_fail_closed_report(tmp_path: Path) -> None:
+    baseline = tmp_path / "baseline.json"
+    treatment = tmp_path / "treatment.json"
+    baseline.write_text(
+        json.dumps(_window_report(0.5, case="baseline")), encoding="utf-8"
+    )
+    treatment.write_text(
+        json.dumps(_window_report(0.0, case="flow_shear")), encoding="utf-8"
+    )
+    output = tmp_path / "matched.json"
+
+    rc = window_ensemble.main(
+        [
+            "matched-windows",
+            "--baseline",
+            str(baseline),
+            "--treatment",
+            str(treatment),
+            "--out-json",
+            str(output),
+            "--min-relative-reduction",
+            "0.05",
+            "--min-uncertainty-z-score",
+            "2.0",
+        ]
+    )
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert rc == 0
+    assert payload["kind"] == "matched_nonlinear_transport_comparison"
+    assert payload["passed"] is True
 
 
 def test_nonlinear_window_ensemble_tool_writes_json_png_and_fails_closed(

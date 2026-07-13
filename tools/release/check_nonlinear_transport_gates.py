@@ -35,6 +35,9 @@ from spectraxgk.diagnostics.nonlinear_replicates import (  # noqa: E402
     NonlinearWindowEnsembleManifestConfig,
     nonlinear_window_ensemble_artifact_manifest,
 )
+from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
+    matched_nonlinear_transport_report,
+)
 from spectraxgk.diagnostics.transport_windows import (  # noqa: E402
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
@@ -980,6 +983,21 @@ def build_convergence_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_matched_windows_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Compare two independently converged nonlinear transport windows."
+    )
+    parser.add_argument("--baseline", type=Path, required=True)
+    parser.add_argument("--treatment", type=Path, required=True)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--case", default="matched_nonlinear_transport")
+    parser.add_argument("--treatment-name", default="treatment")
+    parser.add_argument("--min-relative-reduction", type=float, default=0.0)
+    parser.add_argument("--min-uncertainty-z-score", type=float, default=0.0)
+    parser.add_argument("--value-floor", type=float, default=1.0e-12)
+    return parser
+
+
 def build_readiness_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Convert transport-window summaries into ensemble-readiness metadata."
@@ -1284,6 +1302,22 @@ def main_ensemble(argv: list[str] | None = None) -> int:
     return 0 if bool(summary["passed"]) else 1
 
 
+def main_matched_windows(argv: list[str] | None = None) -> int:
+    args = build_matched_windows_parser().parse_args(argv)
+    report = matched_nonlinear_transport_report(
+        _window_load_json_object(args.baseline),
+        _window_load_json_object(args.treatment),
+        case=args.case,
+        treatment_name=args.treatment_name,
+        min_relative_reduction=args.min_relative_reduction,
+        min_uncertainty_z_score=args.min_uncertainty_z_score,
+        value_floor=args.value_floor,
+    )
+    _write_window_json(args.out_json, report)
+    print(json.dumps(report["gate_report"], indent=2, sort_keys=True))
+    return 0 if bool(report["passed"]) else 1
+
+
 COMMANDS = {
     "convergence": main_convergence,
     "ensemble": main_ensemble,
@@ -1292,6 +1326,7 @@ COMMANDS = {
     "target-time": main_target_time,
     "matrix-progress": main_matrix_progress,
     "matrix-portfolio": main_matrix_portfolio,
+    "matched-windows": main_matched_windows,
 }
 
 

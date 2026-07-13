@@ -627,6 +627,13 @@ landscape scans may pass ``--allow-failed-gates`` to finish collecting all
 points, but the produced JSON still records the failed gates and those points
 remain excluded from promotion claims.
 
+For a matched intervention such as equilibrium flow shear, first build one
+``convergence`` report per trace and then run
+``tools/release/check_nonlinear_transport_gates.py matched-windows``. This final
+gate requires both windows to pass before evaluating relative reduction and its
+quadrature-SEM separation; it therefore cannot promote a lower but still
+drifting treatment mean.
+
 The first tracked external-VMEC replicate campaign applies that protocol to
 the admitted D-shaped nonlinear holdout. Six office-GPU runs were launched from
 the same ``n64`` configuration family: ``t=150`` startup runs and ``t=250``

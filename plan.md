@@ -1671,3 +1671,16 @@ under 5 minutes.
   suppression test was also corrected from a shear that removed its sole mode
   beyond the retained two-thirds band to a resolved ``gamma_E=0.5`` point; the
   latter is timestep-converged to 0.4% and suppresses amplitude by 22%.
+
+- 2026-07-13: Routed the matched-window API through the existing grouped
+  nonlinear transport release executable as ``matched-windows``. The command
+  consumes two convergence-report JSON files, writes the complete paired gate,
+  and exits nonzero when either source or the requested effect threshold fails.
+  This adds no new tool file; 22 transport release/contract tests pass.
+
+- 2026-07-13: Fixed the resulting CI architecture failure rather than raising
+  the complexity allowance. The paired treatment decision moved from the
+  1,055-line transport-statistics owner into the existing validation-gate
+  domain, leaving those modules at 943 and 642 lines. The architecture gate
+  again passes with zero exceptions and unchanged ``226/96/99`` source, test,
+  and tool inventories; the 57-test core/release/transport tranche passes.
