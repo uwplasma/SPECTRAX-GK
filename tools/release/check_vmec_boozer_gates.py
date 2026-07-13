@@ -21,12 +21,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
-    evaluate_scalar_gate,
-    gate_report,
-    gate_report_to_dict,
-)
-
 DEFAULT_OUT = (
     REPO_ROOT / "docs" / "_static" / "vmec_boozer_differentiability_claim_guard.json"
 )
@@ -1451,6 +1445,12 @@ def build_high_grid_admission_payload(
     min_replicates: int = DEFAULT_MIN_REPLICATES,
     value_floor: float = DEFAULT_VALUE_FLOOR,
 ) -> dict[str, Any]:
+    from spectraxgk.diagnostics.validation_gates import (
+        evaluate_scalar_gate,
+        gate_report,
+        gate_report_to_dict,
+    )
+
     """Return a JSON-ready scoped high-grid admission report."""
 
     if not high_grid_gate_paths:

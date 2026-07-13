@@ -1434,3 +1434,9 @@ under 5 minutes.
   into calibration serialization and plotting functions. Metadata-only release
   checks therefore remain lightweight, while docs jobs retain the same optional
   publication-plot path.
+
+- 2026-07-13: Applied the same dependency boundary to the consolidated
+  VMEC/Boozer owner: validation-gate imports now occur only when the scientific
+  ``high-grid-admission`` payload is built. Metadata-only differentiability and
+  portfolio checks therefore run in the pre-install repository-hygiene job
+  without importing JAX.
