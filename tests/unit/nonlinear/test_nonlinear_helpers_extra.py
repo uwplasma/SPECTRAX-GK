@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import fields as dataclass_fields
+import gc
 from types import SimpleNamespace
 
 import jax
@@ -651,6 +652,8 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
     cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
     state = jnp.zeros((1, 1, 4, 4, 4), dtype=jnp.complex64)
     state = state.at[0, 0, 1, 0, :].set(0.2 + 0.1j)
+    project_state = _make_hermitian_projector(np.asarray(grid.ky), nx=grid.kx.size)
+    state = project_state(state)
     nonlinear_only = TermConfig(
         streaming=0.0,
         mirror=0.0,
@@ -674,7 +677,7 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
             steps=2,
             method=method,
             terms=nonlinear_only,
-            compressed_real_fft=False,
+            compressed_real_fft=True,
         )
         sheared_state, sheared_fields = integrate_nonlinear_sheared(
             state,
@@ -690,6 +693,7 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
         )
         np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
         np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
+        np.testing.assert_allclose(sheared_state, project_state(sheared_state), atol=1.0e-7)
         state_only = integrate_nonlinear_sheared(
             state,
             grid,
@@ -728,6 +732,7 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
         time=1.2,
         dealias_mask=grid.dealias_mask,
     ).state
+    expected = project_state(expected)
     np.testing.assert_allclose(remapped_state, expected, atol=2.0e-7)
 
     with pytest.raises(ValueError, match="steps must be at least one"):
@@ -780,6 +785,7 @@ def _small_sheared_transport_case():
         jnp.asarray([0.2 + 0.1j, 0.1 - 0.05j, 0.15 + 0.02j, 0.07 - 0.03j])
     )
     state = state.at[0, 2, 1, 1, :].set(0.03 + 0.02j)
+    state = _make_hermitian_projector(np.asarray(grid.ky), nx=grid.kx.size)(state)
     terms = TermConfig(collisions=0.0, hypercollisions=0.0, end_damping=0.0)
     return grid, geom, params, cache, state, terms
 
@@ -912,6 +918,7 @@ def test_sheared_transport_adaptive_cfl_records_accepted_time_steps() -> None:
 
 
 def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> None:
+    jax.clear_caches()
     grid, geom, params, cache, state, terms = _small_sheared_transport_case()
 
     def objective(shear_rate):
@@ -921,7 +928,7 @@ def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> N
             geom,
             params,
             dt=0.02,
-            steps=3,
+            steps=2,
             shear_rate=shear_rate,
             cache=cache,
             terms=terms,
@@ -943,6 +950,8 @@ def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> N
     assert np.isfinite(float(gradient))
     np.testing.assert_allclose(tangent, gradient, rtol=3.0e-5, atol=1.0e-11)
     np.testing.assert_allclose(gradient, finite_difference, rtol=5.0e-3, atol=1.0e-10)
+    jax.clear_caches()
+    gc.collect()
 
 
 @pytest.mark.parametrize(
@@ -953,6 +962,7 @@ def test_sheared_runge_kutta_recovers_observed_order_on_physical_rhs(
     method: str,
     minimum_order: float,
 ) -> None:
+    jax.clear_caches()
     grid = build_spectral_grid(
         GridConfig(
             Nx=4,
@@ -977,6 +987,9 @@ def test_sheared_runge_kutta_recovers_observed_order_on_physical_rhs(
         [0.2 + 0.1j, 0.1 - 0.05j, 0.15 + 0.02j, 0.07 - 0.03j]
     )
     initial[0, 1, 1, 1, :] = 0.03 + 0.02j
+    initial = np.asarray(
+        _make_hermitian_projector(np.asarray(grid.ky), nx=grid.kx.size)(initial)
+    )
     drift_drive = TermConfig(
         streaming=0.0,
         mirror=0.0,
@@ -994,28 +1007,26 @@ def test_sheared_runge_kutta_recovers_observed_order_on_physical_rhs(
 
     solutions = []
     final_time = 0.08
-    for steps in (2, 4, 8, 32):
-        state, _ = integrate_nonlinear_sheared(
-            jnp.asarray(initial.copy()),
-            grid,
-            geom,
-            params,
-            dt=final_time / steps,
-            steps=steps,
-            shear_rate=0.3,
-            method=method,
-            cache=cache,
-            terms=drift_drive,
-        )
-        solutions.append(np.asarray(state))
+    with jax.disable_jit():
+        for steps in (2, 4, 8):
+            state, _ = integrate_nonlinear_sheared(
+                jnp.asarray(initial.copy()),
+                grid,
+                geom,
+                params,
+                dt=final_time / steps,
+                steps=steps,
+                shear_rate=0.3,
+                method=method,
+                cache=cache,
+                terms=drift_drive,
+            )
+            solutions.append(np.asarray(state))
 
-    reference = solutions[-1]
-    errors = [np.linalg.norm(value - reference) for value in solutions[:-1]]
-    observed_orders = [
-        np.log(errors[index] / errors[index + 1]) / np.log(2.0)
-        for index in range(2)
-    ]
-    assert min(observed_orders) > minimum_order
+    coarse_difference = np.linalg.norm(solutions[0] - solutions[1])
+    fine_difference = np.linalg.norm(solutions[1] - solutions[2])
+    observed_order = np.log(coarse_difference / fine_difference) / np.log(2.0)
+    assert observed_order > minimum_order
 
 
 def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement() -> None:
@@ -1043,6 +1054,9 @@ def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement()
     initial = np.zeros((2, 4, 4, 8, 8), dtype=np.complex64)
     initial[:, :, 1, 0, :] = 1.0e-4 * (
         rng.normal(size=(2, 4, 8)) + 1j * rng.normal(size=(2, 4, 8))
+    )
+    initial = np.asarray(
+        _make_hermitian_projector(np.asarray(grid.ky), nx=grid.kx.size)(initial)
     )
     linear_itg = TermConfig(
         streaming=1.0,

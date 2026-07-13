@@ -258,6 +258,11 @@ with finite differences. The full-complex nonlinear bracket uses split
 transforms to apply the residual radial phase between the :math:`k_x` and
 :math:`k_y` FFTs; a canonical-coordinate invariance test verifies that the
 Poisson bracket is unchanged by the shear-coordinate transformation. The
+full-complex state is projected onto its Hermitian subspace after every remap
+and Runge--Kutta stage, matching the real-field constraint implicit in the
+production real-FFT layout. Without this projection a physical pilot accumulated
+a 3.15% conjugate-symmetry defect by :math:`t=5`; the corrected trajectory keeps
+that residual at machine zero. The
 research function
 :func:`spectraxgk.nonlinear.integrate_nonlinear_sheared` verifies zero-shear
 trajectory identity and cumulative full-step remapping. Its midpoint RK2 and
@@ -276,6 +281,13 @@ nonlinear-integrator contract and avoids the endpoint field/RHS evaluation and
 field-history allocation on every step; the default retains field histories for
 diagnostic compatibility. State-only and field-returning trajectories satisfy
 the same zero-shear identity gate.
+
+Field-returning and transport scans reuse each accepted endpoint RHS and field
+solve as the next step's initial evaluation. The carried physical time ensures
+the reused derivative and shearing basis are identical. This removes one
+redundant RHS evaluation per step without altering the Runge--Kutta tableau;
+the state-only path remains separate so it never computes fields solely for
+reuse.
 
 :func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_transport` records the
 canonical per-species gyro-Bohm heat flux at every accepted step. It uses

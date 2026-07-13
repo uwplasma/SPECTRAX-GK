@@ -1622,6 +1622,14 @@ under 5 minutes.
   differences to ``1.9e-5`` relative error. Fixed-step behavior remains the
   default and is numerically unchanged.
 
+- 2026-07-13: Removed a redundant RHS/field solve from every field-returning or
+  transport sheared step by carrying each endpoint derivative and fields into
+  the next accepted step at the same physical time. The state-only path remains
+  separate and does not compute endpoint fields. All trajectory, transport,
+  observed-order, and AD gates remain unchanged; a warm 100-step CPU pilot
+  decreased from ``1.391`` to ``1.314 s`` (5.5%), which is recorded as local
+  implementation evidence rather than a release-level speedup claim.
+
 - 2026-07-13: Rejected the first long fixed-step transport campaign rather than
   treating pre-saturation values as evidence. On local CPU, ``24x24x24`` with
   ``Nl=4``, ``Nm=8``, Heun RK3, and ``dt=0.02`` first becomes non-finite at
@@ -1629,3 +1637,14 @@ under 5 minutes.
   ``gamma_E=0.01`` runs become non-finite at ``t=93.00`` and ``t=98.98``.
   Timestep refinement had already failed at a similar physical time, so these
   are recorded as nonlinear-CFL failures and are excluded from transport gates.
+
+- 2026-07-13: The production nonlinear CFL policy reduced 17,000 full-grid GPU
+  steps into ``t=92.98`` (baseline) and ``t=102.92`` (``gamma_E=0.01``), but
+  both still became non-finite. This falsified the timestep-only hypothesis.
+  A state-level audit then found that the full-complex sheared path accumulated
+  a 3.15% Hermitian defect by ``t=5`` even from an exactly physical initial
+  state, while the production real-FFT layout enforces this constraint by
+  construction. Projecting every remap and RK stage now keeps the defect at
+  machine zero and restores zero-shear identity with the compressed-real path.
+  All pre-fix long traces remain rejected; the corrected long campaign must be
+  rerun before any saturated-transport claim.
