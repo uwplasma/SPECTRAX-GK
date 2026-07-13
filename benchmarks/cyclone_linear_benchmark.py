@@ -19,6 +19,8 @@ from spectraxgk.benchmarking.shared import load_cyclone_reference
 CONFIG = Path("examples/linear/axisymmetric/cyclone.toml")
 N_LAGUERRE = 16
 N_HERMITE = 48
+FIT_TMIN = 7.0
+FIT_TMAX = 10.0
 
 
 def main() -> None:
@@ -36,12 +38,11 @@ def main() -> None:
     ky_values = np.array([float(args.ky)]) if args.ky is not None else np.asarray(ref.ky)
 
     window_kw = dict(
-        window_fraction=0.3,
+        auto_window=False,
+        tmin=FIT_TMIN,
+        tmax=FIT_TMAX,
         min_points=80,
-        start_fraction=0.3,
-        growth_weight=0.2,
         require_positive=True,
-        min_amp_fraction=0.0,
     )
 
     scan = run_runtime_scan(
@@ -54,7 +55,6 @@ def main() -> None:
         method="imex2",
         solver="time",
         batch_ky=True,
-        auto_window=True,
         fit_signal="phi",
         mode_method="z_index",
         **window_kw,
@@ -69,7 +69,6 @@ def main() -> None:
         steps=5000,
         method="imex2",
         solver="time",
-        auto_window=True,
         fit_signal="phi",
         mode_method="z_index",
         **window_kw,

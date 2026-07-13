@@ -1901,10 +1901,11 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
         metadata["comparison_source_fingerprint"]
         != metadata["office_instrumented_source_fingerprint"]
     )
-    assert "blocked" in metadata["office_binary_status"]
-    assert "parallel-NetCDF" in metadata["office_binary_status"]
-    assert "HDF5 1.10.7/1.14.5" in metadata["office_binary_status"]
+    assert "validated_clean_rebuild" in metadata["office_binary_status"]
+    assert "OpenMPI 4.1.6" in metadata["office_binary_status"]
+    assert "HDF5 1.14.5" in metadata["office_binary_status"]
     assert "Cyclone" in metadata["office_runtime_probe"]
+    assert "2145 steps" in metadata["office_runtime_probe"]
     assert len(by_id) == len(rows) >= 15
     assert {row["status"] for row in rows} <= allowed_statuses
     assert all(row["spectrax_owner"] and row["evidence"] for row in rows)

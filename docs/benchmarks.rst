@@ -44,6 +44,12 @@ Quick driver examples:
    python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
    python benchmarks/secondary_slab_workflow.py
 
+The Cyclone publication driver fits the terminal ``t=7--10`` interval. A
+fresh trajectory audit showed that the previous automatic window could select
+the short ``t=5.07--5.38`` startup transition and understate the ``ky=0.3``
+growth rate by more than a factor of two, even though the late-time mode
+converged to the tracked branch.
+
 The KBM plotting driver reads the reviewed fixed-beta ``ky`` comparison table.
 Use ``tools/comparison/compare_gx_kbm.py`` with a matched external output to
 regenerate that table; branch selection remains a transitional time-history
@@ -134,14 +140,12 @@ The promoted comparison contract was audited at GX revision ``bc2fe552``. A
 fresh office clone confirms that revision and has aggregate source fingerprint
 ``sha256:bfaaadfa...20b``. The long-lived instrumented office source tree is not
 a Git checkout and has fingerprint ``sha256:436e403e...a004``; these two
-provenances must not be interchanged. Explicit office library roots resolve
-cuBLAS, cuTENSOR, NCCL, HDF5, and GSL linkage, but a fresh bounded Cyclone probe
-still does not produce a valid runtime artifact: the clean-revision executable
-fails a parallel-NetCDF operation on a serial-opened file, while the
-instrumented executable aborts because its HDF5 1.10.7 headers are paired with
-the HDF5 1.14.5 runtime. A clean, consistently linked rebuild is therefore
-required before new runtime comparisons; source-level feature and decomposition
-inspection is unaffected. GX remains the mature baseline for conventional GPU nonlinear
+provenances must not be interchanged. The older binaries mixed system OpenMPI
+and netCDF with local HDF5 and are excluded. An isolated clean-revision rebuild
+now links one local OpenMPI 4.1.6, parallel netCDF 4.9.2, and HDF5 1.14.5 stack.
+The canonical Cyclone s-alpha probe completed 2,145 steps to ``t=10`` in 23.1 s
+and wrote valid netCDF/restart outputs; at ``ky=0.3`` its terminal diagnostic is
+``(gamma, omega)=(0.101814, 0.286777)``. GX remains the mature baseline for conventional GPU nonlinear
 initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
 distinct validated scope is its Python/JAX API, differentiable objectives,
 implicit gradient paths, CPU execution, and in-memory ``vmec_jax``/

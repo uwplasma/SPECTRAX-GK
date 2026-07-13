@@ -217,20 +217,20 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 
 ## Prioritized Implementation Steps
 
-1. **Freeze the required-core comparison contract.** Record exact equations,
+1. **Freeze the required-core comparison contract (closed 2026-07-13).** Record exact equations,
    normalization, geometry arrays, grid layout, initialization, timestepping,
    precision, and diagnostics for each promoted linear/nonlinear comparison.
-2. **Close the SOLVAX compatibility contract.** Fix current-JAX transpose and
+2. **Close the SOLVAX compatibility contract (closed for 0.7.3).** Fix current-JAX transpose and
    mixed-precision failures upstream, add complex Krylov/adjoint/fixed-point
    gates, publish a reviewed release, and migrate tridiagonal plus chunked
    Jacobian paths first. Do not add local compatibility copies.
-3. **Correct nonlinear execution and profiling.** Add a prepared nonlinear
+3. **Correct nonlinear execution and profiling (closed for serial prepared execution).** Add a prepared nonlinear
    simulation object whose dynamic state/cache/parameter pytrees enter stable
    JIT boundaries, while methods, layouts, and output schemas are explicit
    static policies. Require an identical repeated call to compile the scan once.
    Keep CFL and sampling device-resident, report only active-sharding speedups,
    and separate cold, fixed-overhead, warm-throughput, utilization, and memory.
-4. **Benchmark facade shrink.** Keep stable benchmark result contracts in
+4. **Benchmark facade shrink (closed).** Keep stable benchmark result contracts in
    `spectraxgk.benchmarks`; move case-policy and manuscript-like benchmark
    drivers to root `benchmarks` or maintainer tools.
 5. **Source ownership cleanup.** Keep imported Miller/VMEC geometry in `geometry`, choose
@@ -1459,3 +1459,14 @@ under 5 minutes.
   audit also found and fixed one SPECTRAX-GK facade regression: the canonical
   ``CollisionInvariantRates`` record had not been re-exported from the linear
   term facade after consolidation.
+
+- 2026-07-13: Rebuilt the exact comparison revision ``bc2fe552`` in an isolated
+  office tree against one consistent OpenMPI 4.1.6, parallel netCDF 4.9.2, and
+  HDF5 1.14.5 stack. The canonical Cyclone s-alpha run completed 2,145 steps to
+  ``t=10`` in 23.1 seconds and produced valid netCDF/restart files. This audit
+  also found a SPECTRAX-GK publication-driver bug: an early automatic fit chose
+  ``t=5.068--5.384`` and reported ``gamma=0.0413`` while the trajectory was
+  still selecting its asymptotic mode. The corrected explicit ``t=7--10`` fit
+  gives ``(gamma, omega)=(0.095109, 0.297253)`` at ``ky=0.3``, within 2.24% and
+  5.41% of the tracked reference. A regression now keeps this benchmark on the
+  measured terminal window.

@@ -358,7 +358,10 @@ def test_scan_multi_reference_figure(tmp_path):
 def test_growth_fit_figure_with_window(tmp_path):
     t = np.linspace(0.0, 4.0, 32)
     signal = np.exp((0.2 - 0.1j) * t)
-    fig, _axes = growth_fit_figure(t, signal, tmin=1.0, tmax=3.0)
+    fig, axes = growth_fit_figure(t, signal, tmin=1.0, tmax=3.0)
+    fit_x = np.asarray(axes[1].lines[1].get_xdata())
+    assert fit_x.min() >= 1.0
+    assert fit_x.max() <= 3.0
     out = tmp_path / "growth_fit.png"
     fig.savefig(out)
     plt.close(fig)

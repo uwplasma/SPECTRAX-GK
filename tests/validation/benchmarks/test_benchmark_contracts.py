@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 from support.paths import REPO_ROOT
+from benchmarks import cyclone_linear_benchmark
 from benchmarks.performance.benchmark_runtime_memory import (
     RuntimeBenchRun,
     _load_manifest,
@@ -74,6 +75,14 @@ ROOT = REPO_ROOT
 MANIFEST = ROOT / "benchmarks" / "results" / "manifest.toml"
 MAX_TRACKED_RESULT_BYTES = 1_000_000
 MAX_ROOT_BENCHMARK_PAYLOAD_BYTES = 200_000
+
+
+def test_cyclone_publication_driver_uses_asymptotic_fit_window() -> None:
+    """Exclude the measured startup transient from the Cyclone growth fit."""
+
+    runtime_cfg, _ = load_runtime_from_toml(cyclone_linear_benchmark.CONFIG)
+    assert cyclone_linear_benchmark.FIT_TMIN >= 0.7 * runtime_cfg.time.t_max
+    assert cyclone_linear_benchmark.FIT_TMAX == pytest.approx(runtime_cfg.time.t_max)
 
 
 def test_benchmark_public_exports_resolve() -> None:
