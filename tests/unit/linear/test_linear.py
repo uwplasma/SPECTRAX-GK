@@ -881,8 +881,8 @@ def test_implicit_preconditioner_linked_hermite_line_coarse_shape_and_finite():
     assert jnp.all(jnp.isfinite(jnp.real(z)))
 
 
-def test_shift_invert_preconditioner_hermite_line_runs():
-    """Shift-invert Krylov path should run with the Hermite-line preconditioner."""
+def test_shift_invert_preconditioner_rejects_unconverged_outer_pair():
+    """A completed inner solve must not promote a large-residual Ritz pair."""
 
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=16, Lx=6.28, Ly=6.28)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -913,23 +913,23 @@ def test_shift_invert_preconditioner_hermite_line_runs():
         apar=0.0,
         bpar=0.0,
     )
-    eig, _vec = dominant_eigenpair(
-        v0,
-        cache,
-        params,
-        terms,
-        method="shift_invert",
-        krylov_dim=4,
-        restarts=1,
-        shift=0.5j,
-        shift_tol=1.0e-2,
-        shift_maxiter=20,
-        shift_restart=10,
-        shift_solve_method="batched",
-        shift_preconditioner="hermite-line",
-    )
-    assert jnp.isfinite(jnp.real(eig))
-    assert jnp.isfinite(jnp.imag(eig))
+    with pytest.raises(RuntimeError, match="failed the outer residual gate"):
+        dominant_eigenpair(
+            v0,
+            cache,
+            params,
+            terms,
+            method="shift_invert",
+            krylov_dim=4,
+            restarts=1,
+            shift=0.5j,
+            shift_tol=1.0e-2,
+            shift_maxiter=20,
+            shift_restart=10,
+            shift_solve_method="batched",
+            shift_preconditioner="hermite-line",
+            fallback_method="none",
+        )
 
 
 def test_linear_cache_rho_star_scales_ky():

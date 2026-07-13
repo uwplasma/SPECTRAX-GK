@@ -246,6 +246,14 @@ Controls:
 - ``RuntimeCollisionConfig.nu_hermite``
 - ``RuntimeCollisionConfig.nu_laguerre``
 
+For two kinetic species, the explicit species-parallel integrator evaluates
+this complete collision contribution locally on each device after the shared
+field reduction. Nonzero, unequal ion/electron rates are identity-gated against
+serial RHS evolution on logical CPUs and two office GPUs. The direct
+species-sharded RHS helper remains collision-free; use
+``integrate_linear(..., parallel=RuntimeParallelConfig(strategy="velocity",
+axis="species", num_devices=2))`` for the validated collisional route.
+
 Hypercollisions
 ---------------
 

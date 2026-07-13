@@ -351,9 +351,13 @@ collective first, then evaluates streaming, mirror, curvature, grad-B, and
 diamagnetic terms on local species shards without reconstructing the global
 distribution. For a two-species explicit linear integration, pass
 ``RuntimeParallelConfig(strategy="velocity", axis="species", num_devices=2)``.
-The serial and two-device RHS are identity-gated. Collisions, electromagnetic
-fields, mixed species--Hermite meshes, and a speedup claim remain out of scope
-until matched artifacts pass their own gates.
+The serial and two-device RHS are identity-gated. The enclosing explicit
+``pmap`` also supports the built-in conserving Lenard--Bernstein/Dougherty-like
+collision contribution with independent species rates; a nonzero collision-only
+three-step CPU/GPU gate matches serial. The standalone ``shard_map`` RHS keeps
+collisions fail-closed because JAX 0.6.2 cannot reconcile its conditional VMA
+annotations. Electromagnetic fields, mixed species--Hermite meshes, and a broad
+speedup claim remain out of scope until matched artifacts pass their own gates.
 
 On the office JAX 0.6.2/CUDA stack, device-to-device resharding of an existing
 single-GPU array did not preserve the second device's input. The production

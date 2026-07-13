@@ -206,9 +206,9 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
-| Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
+| Advanced collision operators | 35% | The built-in conserving collision term now runs in the explicit species pmap; next add decomposed invariant artifacts, then species-coupled Dougherty, Sugama, and linearized Coulomb models. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 60% | The two-species explicit integrator now encloses its loop in a correct species-axis pmap; obtain an uncontended large GPU integration profile, then gate collision/EM or mixed Hermite routing. |
+| Production parallelization | 65% | The two-species explicit pmap now includes nonzero species-local collisions; obtain an uncontended large GPU integration profile, then gate electromagnetic or mixed Hermite routing. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -878,3 +878,10 @@ under 5 minutes.
   advancing state; the matched 100-step CPU profile preserves exact state and
   field histories while reducing serial wall time by about four percent. The
   species ``pmap`` already used the same field-only sampling policy.
+- 2026-07-12: Extended the enclosing species ``pmap`` through the complete
+  built-in conserving collision contribution. A collision-only gate uses
+  unequal nonzero ion/electron rates, verifies a nonzero operator, and matches
+  serial three-step evolution on logical CPUs and two office GPUs. The direct
+  ``shard_map`` helper remains collision-free because JAX 0.6.2 rejects the
+  varying-axis conditional branch; electromagnetic and IMEX paths still fail
+  closed.
