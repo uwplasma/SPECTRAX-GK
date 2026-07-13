@@ -71,7 +71,7 @@ direct/owned module coverage gaps for the next refactor tranche. Module-level
 coverage enforcement is intentionally a separate switch so the release gate can
 remain package-wide while the manifest still exposes specific debt.
 
-The manifest complements ``tools/artifacts/make_validation_gate_index.py``. The gate
+The manifest checker's ``gate-index`` mode complements its coverage audit. The gate
 index reports which validation artifacts currently pass. The coverage manifest
 reports whether the remaining refactor and testing work is traceable to
 physics, numerics, artifacts, and tests.

@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 91% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-validation artifacts, zonal-response artifacts, and repository hygiene now have one owner per domain; 119 tools remain against the enforced 99-file target. |
+| Tool consolidation | 92% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 118 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1223,6 +1223,13 @@ under 5 minutes.
   outer residual from ``0.995`` to ``0.884``, but still fails the unchanged
   ``0.1`` gate. This fixes branch semantics without promoting the unresolved
   solver or weakening its acceptance policy.
+- 2026-07-13: Consolidated validation traceability under
+  ``check_validation_coverage_manifest.py``. Its backward-compatible default
+  validates package ownership and measured coverage, while the explicit
+  ``gate-index`` mode scans artifact gate reports and writes the tracked
+  JSON/CSV/publication panel. Plotting dependencies remain lazy, so normal CI
+  validation stays dependency-light. The duplicate artifact command is removed
+  and tool inventory falls to ``118``.
 - 2026-07-13: Repaired the exact-state comparison orchestrator after its move
   into ``tools/campaigns``. It had still searched for comparison commands in
   the campaign directory and built ``PYTHONPATH`` from ``tools/``; checked

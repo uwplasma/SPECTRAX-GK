@@ -142,7 +142,7 @@ final-pair order above ``4.8``, and finest-grid relative growth-rate error
 about ``1.1e-3``.
 
 The current materialized gate reports are indexed by
-``tools/artifacts/make_validation_gate_index.py`` in
+``tools/release/check_validation_coverage_manifest.py gate-index`` in
 ``docs/_static/validation_gate_index.json`` and
 ``docs/_static/validation_gate_index.png``. Exploratory diagnostics can set
 ``gate_index_include=false`` so they remain documented but do not count as

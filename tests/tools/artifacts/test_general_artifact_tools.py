@@ -1878,7 +1878,7 @@ def _write_validation_gate(path: Path, *, case: str, passed: bool) -> None:
 
 
 def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> None:
-    mod = load_artifact_tool("make_validation_gate_index")
+    mod = load_release_tool("check_validation_coverage_manifest")
     old_root = mod.REPO_ROOT
     mod.REPO_ROOT = tmp_path
     _write_validation_gate(tmp_path / "pass.json", case="passed_case", passed=True)
@@ -1917,7 +1917,7 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     )
 
     try:
-        index = mod.build_index([str(tmp_path / "**" / "*.json")])
+        index = mod.build_gate_index([str(tmp_path / "**" / "*.json")])
     finally:
         mod.REPO_ROOT = old_root
 
@@ -1940,7 +1940,7 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
 def test_make_validation_gate_index_main_writes_json_csv_and_plot(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("make_validation_gate_index")
+    mod = load_release_tool("check_validation_coverage_manifest")
     _write_validation_gate(tmp_path / "gate.json", case="case_a", passed=True)
     out_json = tmp_path / "index.json"
     out_csv = tmp_path / "index.csv"
@@ -1949,6 +1949,7 @@ def test_make_validation_gate_index_main_writes_json_csv_and_plot(
     assert (
         mod.main(
             [
+                "gate-index",
                 "--glob",
                 str(tmp_path / "*.json"),
                 "--out-json",

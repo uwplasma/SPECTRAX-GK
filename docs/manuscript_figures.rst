@@ -231,7 +231,7 @@ Core Validation Figures
      - Closed as claim-scope guardrail; QH/CTH convergence promotion open
      - current artifact base: ``docs/_static/nonlinear_transport_time_horizon_audit.png`` with CSV/JSON/PDF companions. It audits the actual simulated time and claim scope for release nonlinear gates, startup finite-difference audits, reduced nonlinear-window estimators, and external-VMEC feasibility pilots. The new QH reduced-grid nonlinear pilot is extended from the earlier startup-scale ``t=20`` trace to ``t=150`` and reaches a meaningful late heat-flux window with mean about ``19.6``; it remains a feasibility result until a grid/window convergence gate passes. This panel prevents startup ``1e-11``-scale heat fluxes or reduced-envelope outputs from being described as post-transient nonlinear transport averages.
    * - Validation gate index
-     - ``tools/artifacts/make_validation_gate_index.py``
+     - ``tools/release/check_validation_coverage_manifest.py gate-index``
      - Current release-gate audit with quasilinear model-selection deliberately open
      - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for materialized release-window gates. The current index records ``17/18`` passed: the shaped-pressure external-VMEC high-grid admission gate is included as a passed scoped holdout, while ``docs/_static/quasilinear_model_selection_status.json`` remains open because the required spectral-envelope candidate misses the strict transport-error gate and is not promoted as an absolute-flux predictor.
    * - Open research lane status

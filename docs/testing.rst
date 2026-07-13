@@ -299,7 +299,7 @@ no-rerun artifact path: it reads the existing selected KBM candidate table and
 writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
 schema. The current continuity-first selected branch passes the adjacent
 growth/frequency jump and successive-overlap gates.
-``tools/artifacts/make_validation_gate_index.py`` scans tracked JSON metadata and writes
+``tools/release/check_validation_coverage_manifest.py gate-index`` scans tracked JSON metadata and writes
 ``docs/_static/validation_gate_index.json``, ``.csv``, ``.png``, and ``.pdf`` so the docs
 always have one compact pass/open view of the currently materialized release
 validation gates. The current JSON index has ``17/18`` tracked reports passing,

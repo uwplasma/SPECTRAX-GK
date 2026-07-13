@@ -10,8 +10,12 @@ scientific and numerical checks.
 from __future__ import annotations
 
 import argparse
+import csv
+import glob
 import json
 from pathlib import Path
+import sys
+import textwrap
 from typing import Any
 import xml.etree.ElementTree as ET
 
@@ -23,6 +27,29 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "tools" / "validation_coverage_manifest.toml"
+DEFAULT_GATE_GLOB = str(REPO_ROOT / "docs" / "_static" / "**" / "*.json")
+DEFAULT_GATE_JSON = REPO_ROOT / "docs" / "_static" / "validation_gate_index.json"
+DEFAULT_GATE_CSV = REPO_ROOT / "docs" / "_static" / "validation_gate_index.csv"
+DEFAULT_GATE_PNG = REPO_ROOT / "docs" / "_static" / "validation_gate_index.png"
+
+CURATED_RELEASE_GATE_ARTIFACTS = {
+    "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+    "docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+    "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+    "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+    "docs/_static/nonlinear_cyclone_gate_summary.json",
+    "docs/_static/cyclone_resolution_observed_order.json",
+    "docs/_static/nonlinear_hsx_gate_summary.json",
+    "docs/_static/kbm_branch_gate_summary.json",
+    "docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json",
+    "docs/_static/nonlinear_kbm_gate_summary.json",
+    "docs/_static/miller_zonal_response_pilot.json",
+    "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/quasilinear_model_selection_status.json",
+    "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
+    "docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json",
+    "docs/_static/nonlinear_w7x_gate_summary.json",
+}
 
 ALLOWED_STATUSES = {"closed", "active", "open", "planned"}
 ALLOWED_PRIORITIES = {"high", "medium", "low"}
@@ -41,6 +68,146 @@ REQUIRED_LIST_FIELDS = (
     "next_tests",
 )
 OPTIONAL_LIST_FIELDS = ("owned_modules",)
+
+
+def _stable_repo_path(path: Path) -> str:
+    """Return a stable repository-relative path when possible."""
+
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def _stable_repo_pattern(pattern: str) -> str:
+    repo = str(REPO_ROOT.resolve())
+    return pattern[len(repo) + 1 :] if pattern.startswith(repo + "/") else pattern
+
+
+def _gate_reports(path: Path, data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Extract normalized gate rows from one artifact payload."""
+
+    if data.get("gate_index_include") is False:
+        return []
+    artifact = _stable_repo_path(path)
+    if (
+        artifact.startswith("docs/_static/")
+        and data.get("gate_index_include") is not True
+        and artifact not in CURATED_RELEASE_GATE_ARTIFACTS
+    ):
+        return []
+
+    reports: list[dict[str, Any]] = []
+    if isinstance(data.get("gate_report"), dict):
+        reports.append(data["gate_report"])
+    if isinstance(data.get("gate_reports"), list):
+        reports.extend(item for item in data["gate_reports"] if isinstance(item, dict))
+    promotion = data.get("promotion_gate")
+    if data.get("gate_index_include") is True and not reports and isinstance(promotion, dict):
+        reports.append(
+            {
+                "case": data.get("case", path.stem),
+                "source": data.get("source", data.get("kind", "")),
+                "passed": bool(promotion.get("passed", False)),
+                "gates": promotion.get("gates", []),
+                "max_abs_error": promotion.get("max_abs_error"),
+                "max_rel_error": promotion.get("max_rel_error"),
+            }
+        )
+
+    rows: list[dict[str, Any]] = []
+    for report in reports:
+        gates = report.get("gates", [])
+        gate_list = gates if isinstance(gates, list) else []
+        failed = [
+            str(gate.get("metric", "unknown"))
+            for gate in gate_list
+            if isinstance(gate, dict) and not bool(gate.get("passed", False))
+        ]
+        rows.append(
+            {
+                "artifact": artifact,
+                "case": str(report.get("case", data.get("case", path.stem))),
+                "source": str(report.get("source", data.get("source", ""))),
+                "passed": bool(report.get("passed", False)),
+                "n_gates": len(gate_list),
+                "n_failed": len(failed),
+                "failed_metrics": ",".join(failed),
+                "max_abs_error": report.get("max_abs_error"),
+                "max_rel_error": report.get("max_rel_error"),
+            }
+        )
+    return rows
+
+
+def collect_gate_entries(patterns: list[str]) -> list[dict[str, Any]]:
+    """Collect gate-report rows from one or more recursive glob patterns."""
+
+    paths = {Path(item) for pattern in patterns for item in glob.glob(pattern, recursive=True)}
+    rows: list[dict[str, Any]] = []
+    for path in sorted(paths):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if isinstance(data, dict):
+            rows.extend(_gate_reports(path, data))
+    return sorted(rows, key=lambda row: str(row["case"]))
+
+
+def build_gate_index(patterns: list[str]) -> dict[str, Any]:
+    """Build the machine-readable validation-gate index."""
+
+    rows = collect_gate_entries(patterns)
+    passed = sum(bool(row["passed"]) for row in rows)
+    return {
+        "patterns": [_stable_repo_pattern(pattern) for pattern in patterns],
+        "n_reports": len(rows),
+        "n_passed": passed,
+        "n_open": len(rows) - passed,
+        "reports": rows,
+    }
+
+
+def write_gate_index_plot(rows: list[dict[str, Any]], out_png: Path) -> None:
+    """Render the compact pass/open audit panel, importing plotting only on demand."""
+
+    if not rows:
+        return
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    labels = [str(row["case"]).replace("_", " ") for row in rows]
+    y = np.arange(len(rows))
+    colors = ["#2a9d55" if bool(row["passed"]) else "#c2410c" for row in rows]
+    fig, ax = plt.subplots(figsize=(9.5, max(2.6, 0.45 * len(rows) + 1.2)))
+    ax.barh(y, np.ones(len(rows)), color=colors, alpha=0.88)
+    ax.set_yticks(y, labels, fontsize=8.8)
+    ax.set_xticks([])
+    ax.set_xlim(0.0, 1.0)
+    ax.invert_yaxis()
+    fig.suptitle("Validation Gate Index", fontsize=13, fontweight="bold")
+    for idx, row in enumerate(rows):
+        failed = str(row["failed_metrics"]).replace("_", " ")
+        status = "passed" if bool(row["passed"]) else f"open: {failed}"
+        ax.text(
+            0.02,
+            idx,
+            textwrap.shorten(status, width=64, placeholder="..."),
+            va="center",
+            color="white",
+            fontsize=8.5,
+        )
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.subplots_adjust(left=0.55, right=0.97, top=0.94, bottom=0.03)
+    fig.savefig(out_png, dpi=220)
+    fig.savefig(out_png.with_suffix(".pdf"))
+    plt.close(fig)
 
 
 def _repo_path(raw: str) -> Path:
@@ -434,6 +601,8 @@ def validate_manifest(
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the backward-compatible coverage-manifest parser."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--out-json", type=Path, default=None)
@@ -461,7 +630,19 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_gate_index_parser() -> argparse.ArgumentParser:
+    """Build the validation-gate artifact parser."""
+
+    parser = argparse.ArgumentParser(description="Aggregate JSON validation gates.")
+    parser.add_argument("--glob", action="append", dest="patterns", default=None)
+    parser.add_argument("--out-json", type=Path, default=DEFAULT_GATE_JSON)
+    parser.add_argument("--out-csv", type=Path, default=DEFAULT_GATE_CSV)
+    parser.add_argument("--out-png", type=Path, default=DEFAULT_GATE_PNG)
+    parser.add_argument("--no-plot", action="store_true")
+    return parser
+
+
+def _run_coverage_check(argv: list[str]) -> int:
     args = build_parser().parse_args(argv)
     summary = validate_manifest(
         load_manifest(args.manifest),
@@ -478,6 +659,50 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(payload, end="")
     return 0
+
+
+def _run_gate_index(argv: list[str]) -> int:
+    args = build_gate_index_parser().parse_args(argv)
+    patterns = args.patterns or [DEFAULT_GATE_GLOB]
+    index = build_gate_index(patterns)
+    args.out_json.parent.mkdir(parents=True, exist_ok=True)
+    args.out_json.write_text(
+        json.dumps(index, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    rows = list(index["reports"])
+    args.out_csv.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = list(rows[0]) if rows else [
+        "artifact",
+        "case",
+        "source",
+        "passed",
+        "n_gates",
+        "n_failed",
+        "failed_metrics",
+        "max_abs_error",
+        "max_rel_error",
+    ]
+    with args.out_csv.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    if not args.no_plot:
+        write_gate_index_plot(rows, args.out_png)
+    print(f"Wrote {args.out_json}")
+    print(f"Wrote {args.out_csv}")
+    if not args.no_plot:
+        print(f"Wrote {args.out_png}")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run coverage validation or the explicit ``gate-index`` artifact mode."""
+
+    args = list(sys.argv[1:] if argv is None else argv)
+    if args and args[0] == "gate-index":
+        return _run_gate_index(args[1:])
+    return _run_coverage_check(args)
 
 
 if __name__ == "__main__":
