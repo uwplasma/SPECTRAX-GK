@@ -4,7 +4,7 @@ from pathlib import Path
 import shlex
 import tomllib
 
-from tools.artifacts import make_figures
+from tools.artifacts import build_linear_validation_artifacts as linear_artifacts
 from tools.campaigns import run_validation_campaigns as validation_campaigns
 from tools.campaigns.run_validation_campaigns import (
     _load_manifest,
@@ -121,9 +121,14 @@ def test_benchmark_refresh_manifest_loading_and_selection(tmp_path: Path) -> Non
     assert commands["imported-linear-w7x"].startswith("JAX_PLATFORMS=cpu ")
     assert commands["imported-linear-hsx"].startswith("JAX_PLATFORMS=cpu ")
     figure_args = shlex.split(
-        commands["cyclone-core-assets"].split("make_figures.py", maxsplit=1)[1]
+        commands["cyclone-core-assets"].split(
+            "build_linear_validation_artifacts.py", maxsplit=1
+        )[1]
     )
-    parsed_figure_args = make_figures._parse_args(figure_args)
+    assert figure_args[0] == "figures"
+    parsed_figure_args = linear_artifacts.build_figures_parser().parse_args(
+        figure_args[1:]
+    )
     assert parsed_figure_args.case == "cyclone"
     assert parsed_figure_args.no_progress is True
     outputs = {job.name: job.outputs for job in jobs}

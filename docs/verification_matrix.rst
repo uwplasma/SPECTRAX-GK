@@ -126,7 +126,7 @@ observed-order gates for resolution or velocity-space convergence, and
 branch-continuity gates for adjacent ``gamma``/``omega`` jumps and successive
 eigenfunction overlap when overlap data are available. The tracked KBM
 candidate table now has a no-rerun summary path through
-``tools/artifacts/generate_linear_validation_gates.py kbm-branch`` and
+``tools/artifacts/build_linear_validation_artifacts.py kbm-branch`` and
 ``docs/_static/kbm_branch_gate_summary.json``. That summary now uses the
 continuity-first selected branch and passes the strict checks:
 ``max_rel_gamma_jump ~= 0.388``, ``max_rel_omega_jump ~= 0.320``, and no
@@ -134,7 +134,7 @@ successive-overlap deficit.
 
 Observed-order convergence tables should also gate both the asymptotic finest
 refinement and the full set of pairwise refinement orders. The generic
-``tools/artifacts/generate_linear_validation_gates.py observed-order`` path now records this policy in JSON.
+``tools/artifacts/build_linear_validation_artifacts.py observed-order`` path now records this policy in JSON.
 The tracked Cyclone velocity-space convergence artifact
 ``docs/_static/cyclone_resolution_observed_order.json`` is closed on an
 office/GPU ``ky=0.30`` time-path sweep with all pairwise orders positive,

@@ -75,11 +75,11 @@ and campaign code:
 - 96 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and artifact/tool families were consolidated.
-- 121 Python tool scripts and zero flat top-level ``tools/*.py`` files after
+- 120 Python tool scripts and zero flat top-level ``tools/*.py`` files after
   removing package-marker modules and moving release, comparison, artifact,
   campaign, profiling, benchmark, generator, compression-helper, reference-helper,
-  diagnostic, and VMEC-helper scripts into purpose folders. The enforced
-  consolidation target is at most 99 scripts; the default architecture check
+  diagnostic, linear-validation, and VMEC-helper scripts into purpose folders.
+  The enforced consolidation target is at most 99 scripts; the default architecture check
   prevents count regression while the stricter target gate reports the remaining
   work.
 - no tracked files above 2 MB and no tracked ``__pycache__`` / ``.pyc`` /

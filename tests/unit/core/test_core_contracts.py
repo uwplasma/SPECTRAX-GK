@@ -328,6 +328,19 @@ def test_linear_terms_import_has_no_facade_order_dependency() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_nonlinear_operator_facade_resolves_lazy_public_exports() -> None:
+    """The public facade must not require eager RHS assembly at import time."""
+
+    from spectraxgk.operators import nonlinear
+
+    assert nonlinear.NonlinearDiagnosticKernels.__module__.endswith("diagnostic_state")
+    assert callable(nonlinear.compute_nonlinear_diagnostic_tuple)
+    assert callable(nonlinear.make_nonlinear_diagnostic_tuple_fn)
+    assert callable(nonlinear.linear_rhs_jit_for_terms_impl)
+    assert callable(nonlinear.nonlinear_em_term_cached_impl)
+    assert callable(nonlinear.nonlinear_rhs_cached_impl)
+
+
 def test_velocity_basis_orthonormality_and_validation() -> None:
     from spectraxgk.core.velocity import hermite_ladder_coeffs, hermite_normed, laguerre
 
@@ -374,6 +387,7 @@ def test_species_builder_core_contracts() -> None:
     assert np.isclose(params.tz[1], -1.0)
     assert params.beta == 1.0e-4
 
+
 def test_normalization_and_benchmark_public_contracts() -> None:
     import spectraxgk.benchmarks as benchmark_defaults
     from spectraxgk import benchmarks
@@ -403,13 +417,17 @@ def test_normalization_and_benchmark_public_contracts() -> None:
     kinetic = get_normalization_contract("kinetic")
     kbm = get_normalization_contract("kbm")
     assert benchmarks.CYCLONE_OMEGA_D_SCALE == pytest.approx(cyclone.omega_d_scale)
-    assert benchmarks.CYCLONE_OMEGA_STAR_SCALE == pytest.approx(cyclone.omega_star_scale)
+    assert benchmarks.CYCLONE_OMEGA_STAR_SCALE == pytest.approx(
+        cyclone.omega_star_scale
+    )
     assert benchmarks.CYCLONE_RHO_STAR == pytest.approx(cyclone.rho_star)
     assert benchmarks.ETG_OMEGA_D_SCALE == pytest.approx(etg.omega_d_scale)
     assert benchmarks.ETG_OMEGA_STAR_SCALE == pytest.approx(etg.omega_star_scale)
     assert benchmarks.ETG_RHO_STAR == pytest.approx(etg.rho_star)
     assert benchmarks.KINETIC_OMEGA_D_SCALE == pytest.approx(kinetic.omega_d_scale)
-    assert benchmarks.KINETIC_OMEGA_STAR_SCALE == pytest.approx(kinetic.omega_star_scale)
+    assert benchmarks.KINETIC_OMEGA_STAR_SCALE == pytest.approx(
+        kinetic.omega_star_scale
+    )
     assert benchmarks.KINETIC_RHO_STAR == pytest.approx(kinetic.rho_star)
     assert benchmarks.KBM_OMEGA_D_SCALE == pytest.approx(kbm.omega_d_scale)
     assert benchmarks.KBM_OMEGA_STAR_SCALE == pytest.approx(kbm.omega_star_scale)
@@ -617,6 +635,8 @@ def test_config_override():
     assert d["model"]["R_over_LTe"] == 1.0
     assert d["time"]["dt"] == 0.05
     assert d["time"]["compressed_real_fft"] is False
+
+
 def test_reference_aligned_mass_ratio_defaults() -> None:
     """Reference-aligned benchmark defaults should use the tracked electron mass."""
 
@@ -629,6 +649,8 @@ def test_kbm_config_to_dict():
     cfg = KBMBaseCase()
     d = cfg.to_dict()
     assert d["model"]["beta"] == cfg.model.beta
+
+
 def test_explicit_method_default_cfl_fac_is_method_resolved() -> None:
     assert explicit_method_default_cfl_fac("rk2") == pytest.approx(1.0)
     assert explicit_method_default_cfl_fac("rk3") == pytest.approx(1.73)

@@ -1812,7 +1812,7 @@ def test_package_architecture_inventory_classifies_repository_areas() -> None:
         Path("src/spectraxgk/operators/nonlinear/rhs.py")
     )
     tool_role, tool_action, tool_notes = mod._role_and_action(
-        Path("tools/artifacts/make_figures.py")
+        Path("tools/artifacts/build_linear_validation_artifacts.py")
     )
     summary = mod._summary(
         [
@@ -1827,7 +1827,7 @@ def test_package_architecture_inventory_classifies_repository_areas() -> None:
                 notes=notes,
             ),
             mod.InventoryRow(
-                path="tools/artifacts/make_figures.py",
+                path="tools/artifacts/build_linear_validation_artifacts.py",
                 area="tools/artifacts",
                 role=tool_role,
                 action=tool_action,

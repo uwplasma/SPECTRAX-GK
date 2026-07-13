@@ -25,7 +25,7 @@ as follows:
 | --- | --- |
 | `generate_*` artifact/gate refreshers | `tools/artifacts/` if they write reviewed docs/readme artifacts; `tools/release/` only if CI/release calls them as gates. |
 | `benchmark_*` reproducibility drivers | `benchmarks/` when user-facing and small; `tools/profiling/` when they are engineering profilers. |
-| `make_figures.py`, `make_tables.py`, `make_benchmark_atlas.py` | moved to `tools/artifacts/`. |
+| `build_linear_validation_artifacts.py`, `make_tables.py`, `make_benchmark_atlas.py` | moved to `tools/artifacts/`. |
 | `digitize_*`, `derive_*` reference helpers | moved to `tools/artifacts/`. |
 | diagnostic probes such as `ky_diagnostics.py` | active comparison diagnostics moved to `tools/comparison/`; unowned probes removed from `main`. |
 

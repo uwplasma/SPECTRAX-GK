@@ -2,7 +2,7 @@
 name = "cyclone-core-assets"
 description = "Regenerate the tracked Cyclone tables and figures."
 cwd = "{root}"
-command = "PYTHONPATH=src python tools/artifacts/make_tables.py --case cyclone --no-progress --refresh-minimal && PYTHONPATH=src python tools/artifacts/make_figures.py --case cyclone --no-progress"
+command = "PYTHONPATH=src python tools/artifacts/make_tables.py --case cyclone --no-progress --refresh-minimal && PYTHONPATH=src python tools/artifacts/build_linear_validation_artifacts.py figures --case cyclone --no-progress"
 outputs = [
   "docs/_static/cyclone_mismatch_table.csv",
   "docs/_static/cyclone_comparison.png",
@@ -13,7 +13,7 @@ outputs = [
 name = "etg-core-assets"
 description = "Regenerate the tracked ETG tables and baseline figures."
 cwd = "{root}"
-command = "PYTHONPATH=src python tools/artifacts/make_tables.py --case etg --no-progress && PYTHONPATH=src python tools/artifacts/make_figures.py --case etg --no-progress"
+command = "PYTHONPATH=src python tools/artifacts/make_tables.py --case etg --no-progress && PYTHONPATH=src python tools/artifacts/build_linear_validation_artifacts.py figures --case etg --no-progress"
 outputs = [
   "docs/_static/etg_mismatch_table.csv",
   "docs/_static/etg_comparison.png",

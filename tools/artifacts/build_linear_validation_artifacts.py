@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Generate linear-validation gate reports from existing artifacts.
+"""Generate linear-validation figures and gate reports.
 
 Subcommands:
+  figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
 """
@@ -20,10 +21,27 @@ import numpy as np
 import pandas as pd
 
 from spectraxgk.diagnostics.analysis import estimate_observed_order
-from spectraxgk.diagnostics.validation_gates import gate_report_to_dict, observed_order_gate_report
+from spectraxgk.diagnostics.validation_gates import (
+    gate_report_to_dict,
+    observed_order_gate_report,
+)
+from spectraxgk.runtime import run_runtime_scan
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+
+from spectraxgk.artifacts.plotting import (  # noqa: E402
+    cyclone_comparison_figure,
+    cyclone_reference_figure,
+    scan_comparison_figure,
+)
+from spectraxgk.benchmarking.shared import (  # noqa: E402
+    LinearScanResult,
+    load_cyclone_reference,
+    load_etg_reference,
+    load_kbm_reference,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OBSERVED_CSV = REPO_ROOT / "docs" / "_static" / "cyclone_resolution_subset.csv"
@@ -37,6 +55,134 @@ DEFAULT_KBM_CANDIDATES = (
     REPO_ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv"
 )
 DEFAULT_KBM_BRANCH_OUT = REPO_ROOT / "docs" / "_static" / "kbm_branch_gate_summary.json"
+
+
+def build_figures_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Generate linear validation figures.")
+    parser.add_argument(
+        "--case",
+        choices=["all", "cyclone", "etg"],
+        default="all",
+        help="Limit figure generation to a specific case.",
+    )
+    parser.add_argument(
+        "--no-progress", action="store_true", help="Disable progress bars."
+    )
+    return parser
+
+
+def _load_spectrax_scan_from_mismatch(
+    csv_path: Path, *, x_col: str = "ky"
+) -> LinearScanResult:
+    table = pd.read_csv(csv_path).sort_values(x_col)
+    return LinearScanResult(
+        ky=table[x_col].to_numpy(dtype=float),
+        gamma=table["gamma_spectrax"].to_numpy(dtype=float),
+        omega=table["omega_spectrax"].to_numpy(dtype=float),
+    )
+
+
+def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
+    keep = np.asarray(ref.ky) <= 0.45 + 1.0e-12
+    return LinearScanResult(
+        ky=np.asarray(ref.ky)[keep],
+        gamma=np.asarray(ref.gamma)[keep],
+        omega=np.asarray(ref.omega)[keep],
+    )
+
+
+def _run_etg_figures(*, outdir: Path, progress: bool) -> None:
+    reference = load_etg_reference()
+    mismatch_csv = outdir / "etg_mismatch_table.csv"
+    if mismatch_csv.exists():
+        scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
+    else:
+        config, _ = load_runtime_from_toml(
+            REPO_ROOT / "examples/linear/axisymmetric/etg.toml"
+        )
+        scan = run_runtime_scan(
+            config,
+            np.asarray(reference.ky),
+            Nl=24,
+            Nm=8,
+            solver="time",
+            batch_ky=True,
+            method=config.time.method,
+            dt=config.time.dt,
+            steps=int(round(config.time.t_max / config.time.dt)),
+            sample_stride=config.time.sample_stride,
+            auto_window=False,
+            tmin=1.0,
+            tmax=config.time.t_max,
+            fit_signal="phi",
+            mode_method="z_index",
+            show_progress=progress,
+        )
+    fig, _axes = scan_comparison_figure(
+        scan.ky,
+        scan.gamma,
+        scan.omega,
+        r"$k_y \rho_i$",
+        "ETG Benchmark Scan",
+        x_ref=reference.ky,
+        gamma_ref=reference.gamma,
+        omega_ref=reference.omega,
+        label="SPECTRAX-GK",
+        ref_label="Reference",
+        log_x=True,
+    )
+    fig.savefig(outdir / "etg_comparison.png", dpi=200)
+    fig.savefig(outdir / "etg_comparison.pdf")
+
+
+def _run_kbm_figures(*, outdir: Path) -> None:
+    reference = load_kbm_reference()
+    mismatch_csv = outdir / "kbm_mismatch_table.csv"
+    if not mismatch_csv.exists():
+        raise FileNotFoundError(
+            f"missing {mismatch_csv}; generate the KBM mismatch table first"
+        )
+    scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
+    fig, _axes = scan_comparison_figure(
+        scan.ky,
+        scan.gamma,
+        scan.omega,
+        r"$\beta$",
+        "KBM Benchmark Scan",
+        x_ref=reference.ky,
+        gamma_ref=reference.gamma,
+        omega_ref=reference.omega,
+        label="SPECTRAX-GK",
+        ref_label="Reference",
+        log_x=False,
+    )
+    fig.savefig(outdir / "kbm_comparison.png", dpi=200)
+    fig.savefig(outdir / "kbm_comparison.pdf")
+
+
+def main_figures(argv: list[str] | None = None) -> int:
+    args = build_figures_parser().parse_args(argv)
+    outdir = REPO_ROOT / "docs" / "_static"
+    outdir.mkdir(parents=True, exist_ok=True)
+    progress = not args.no_progress
+    if args.case == "etg":
+        _run_etg_figures(outdir=outdir, progress=progress)
+        return 0
+
+    reference = _cyclone_refresh_reference(load_cyclone_reference())
+    fig, _axes = cyclone_reference_figure(reference)
+    fig.savefig(outdir / "cyclone_reference.png", dpi=200)
+    fig.savefig(outdir / "cyclone_reference.pdf")
+    scan = _load_spectrax_scan_from_mismatch(outdir / "cyclone_mismatch_table.csv")
+    fig, _axes = cyclone_comparison_figure(reference, scan)
+    fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
+    fig.savefig(outdir / "cyclone_comparison.pdf")
+    if args.case == "cyclone":
+        return 0
+
+    _run_etg_figures(outdir=outdir, progress=progress)
+    _run_kbm_figures(outdir=outdir)
+    return 0
 
 
 def _json_clean(value: Any) -> Any:
@@ -370,10 +516,14 @@ def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
         parser = argparse.ArgumentParser(description=__doc__)
-        parser.add_argument("command", choices=("observed-order", "kbm-branch"))
+        parser.add_argument(
+            "command", choices=("figures", "observed-order", "kbm-branch")
+        )
         parser.print_help()
         return 2
     command, rest = tokens[0], tokens[1:]
+    if command == "figures":
+        return main_figures(rest)
     if command == "observed-order":
         return main_observed_order(rest)
     if command == "kbm-branch":

@@ -283,7 +283,7 @@ release-gate index.
 Observed-order and branch-continuity gate helpers are also available so
 velocity-space convergence panels and branch-followed scan tables can use the
 same JSON-ready acceptance convention.
-``tools/artifacts/generate_linear_validation_gates.py observed-order`` is the generic no-rerun path for
+``tools/artifacts/build_linear_validation_artifacts.py observed-order`` is the generic no-rerun path for
 CSV-backed convergence studies: it reads either an explicit step column or a
 resolution column, writes an observed-order JSON gate report, and can generate
 a log-log convergence figure. The tracked Cyclone velocity-space convergence
@@ -294,7 +294,7 @@ with ``tmax=150`` and passes the strict pairwise-order and final-error gates.
 ``tools/comparison/compare_gx_kbm.py --branch-summary-json`` wires that convention into
 the KBM branch-following workflow by summarizing adjacent ``gamma``/``omega``
 jumps and successive eigenfunction-overlap continuity for the selected branch.
-``tools/artifacts/generate_linear_validation_gates.py kbm-branch`` provides the corresponding
+``tools/artifacts/build_linear_validation_artifacts.py kbm-branch`` provides the corresponding
 no-rerun artifact path: it reads the existing selected KBM candidate table and
 writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
 schema. The current continuity-first selected branch passes the adjacent

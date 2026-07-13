@@ -201,12 +201,12 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 89% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-reference plotting, and zonal-response artifacts now have one owner per domain; 121 tools remain against the enforced 99-file target. |
+| Tool consolidation | 90% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-validation artifacts, and zonal-response artifacts now have one owner per domain; 120 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 70% | The shipped model now has an independent Appendix-C equation kernel plus production equivalence, invariant, dissipation, and AD gates; finite-b and full-f reference gates remain scoped, and custom operators receive the post-field Hamiltonian response. Implement the published linearized Sugama/Coulomb Hermite--Laguerre coefficients and close adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
+| Advanced collision operators | 70% | The shipped model now has an independent Appendix-C equation kernel plus production equivalence, invariant, dissipation, and AD gates; finite-b and full-f reference gates remain scoped, and custom operators receive the post-field Hamiltonian response. Build the published linearized Sugama/Coulomb Hermite--Laguerre coefficients with an offline multiple-precision generator and checksummed tables, then close symmetry, adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -281,6 +281,27 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Unified linear comparison figures, observed-order reports, and
+  KBM branch-continuity gates under ``build_linear_validation_artifacts.py``.
+  The explicit ``figures``, ``observed-order``, and ``kbm-branch`` modes retain
+  distinct promotion policies while sharing one parser and artifact owner.
+  All 78 artifact tests and 10 focused campaign/release contracts pass; the
+  retired duplicate figure script lowers the tool inventory to 120. The
+  collision source audit also established that the published finite-Larmor-
+  radius Sugama/Coulomb sums require an offline multiple-precision coefficient
+  generator, checksummed tables, and JAX runtime application rather than
+  cancellation-prone direct ``float64`` evaluation.
+
+- 2026-07-13: Repaired the source-complexity regression exposed by the strict
+  architecture gate. The nonlinear full-:math:`f` Dougherty cross-species
+  reference now lives with nonlinear collision policies rather than in the
+  linear dissipation hotspot; the public re-export remains stable. The
+  nonlinear operator facade is lazy, removing an eager RHS assembly cycle and
+  allowing low-level collision utilities to import independently. The hotspot
+  falls from 1,021 to 901 lines with no new file, 15 focused collision gates
+  and the fresh-interpreter import gate pass, and the architecture baselines
+  now freeze the actual 226 source, 96 test, and 120 tool files.
 
 - 2026-07-13: Added an independently auditable drift-kinetic Dougherty kernel
   from Frei, Hoffmann & Ricci (2022), Appendix C, equation (C6), mapped to the

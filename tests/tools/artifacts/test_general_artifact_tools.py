@@ -712,12 +712,12 @@ def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(
     assert (tmp_path / "docs" / "_static" / "cyclone_mismatch_table.csv").exists()
 
 
-def test_make_figures_cyclone_uses_reviewed_mismatch_table(
+def test_linear_artifacts_cyclone_uses_reviewed_mismatch_table(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.artifacts.make_figures as make_figures
+    import tools.artifacts.build_linear_validation_artifacts as linear_artifacts
 
-    ref = make_figures.LinearScanResult(
+    ref = linear_artifacts.LinearScanResult(
         ky=np.array([0.1, 0.2, 0.55]),
         gamma=np.array([0.3, 0.4, 0.5]),
         omega=np.array([0.5, 0.6, 0.7]),
@@ -729,10 +729,12 @@ def test_make_figures_cyclone_uses_reviewed_mismatch_table(
         encoding="utf-8",
     )
     called: dict[str, np.ndarray] = {}
-    monkeypatch.setattr(make_figures, "ROOT", tmp_path)
-    monkeypatch.setattr(make_figures, "load_cyclone_reference", lambda: ref)
+    monkeypatch.setattr(linear_artifacts, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(linear_artifacts, "load_cyclone_reference", lambda: ref)
     monkeypatch.setattr(
-        make_figures, "cyclone_reference_figure", lambda _ref: (_DummyFigure(), None)
+        linear_artifacts,
+        "cyclone_reference_figure",
+        lambda _ref: (_DummyFigure(), None),
     )
 
     def fake_comparison(_ref, scan):
@@ -740,17 +742,23 @@ def test_make_figures_cyclone_uses_reviewed_mismatch_table(
         return _DummyFigure(), None
 
     monkeypatch.setattr(
-        make_figures,
+        linear_artifacts,
         "cyclone_comparison_figure",
         fake_comparison,
     )
     monkeypatch.setattr(
         sys,
         "argv",
-        ["make_figures.py", "--case", "cyclone", "--no-progress", "--quiet"],
+        [
+            "build_linear_validation_artifacts.py",
+            "figures",
+            "--case",
+            "cyclone",
+            "--no-progress",
+        ],
     )
 
-    assert make_figures.main() == 0
+    assert linear_artifacts.main() == 0
     assert np.allclose(called["gamma"], [0.31, 0.41])
 
 
@@ -927,7 +935,7 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
 
 
 def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
-    import tools.artifacts.make_figures as make_figures
+    import tools.artifacts.build_linear_validation_artifacts as linear_artifacts
 
     called: dict[str, object] = {}
 
@@ -935,29 +943,29 @@ def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
         called["ky_values"] = np.asarray(ky_values).copy()
         called["cfg"] = cfg
         called.update(kwargs)
-        return make_figures.LinearScanResult(
+        return linear_artifacts.LinearScanResult(
             ky=np.asarray(ky_values),
             gamma=np.array([1.0, 2.0, 3.0]),
             omega=np.array([-4.0, -5.0, -6.0]),
         )
 
     monkeypatch.setattr(
-        make_figures,
+        linear_artifacts,
         "load_etg_reference",
-        lambda: make_figures.LinearScanResult(
+        lambda: linear_artifacts.LinearScanResult(
             ky=np.array([10.0, 20.0, 30.0]),
             gamma=np.array([1.0, 2.0, 3.0]),
             omega=np.array([-4.0, -5.0, -6.0]),
         ),
     )
-    monkeypatch.setattr(make_figures, "run_runtime_scan", fake_run_runtime_scan)
+    monkeypatch.setattr(linear_artifacts, "run_runtime_scan", fake_run_runtime_scan)
     monkeypatch.setattr(
-        make_figures,
+        linear_artifacts,
         "scan_comparison_figure",
         lambda *args, **kwargs: (_DummyFigure(), None),
     )
 
-    make_figures._run_etg_figures(outdir=tmp_path, verbose=False, progress=False)
+    linear_artifacts._run_etg_figures(outdir=tmp_path, progress=False)
 
     cfg = called["cfg"]
     assert np.allclose(called["ky_values"], [10.0, 20.0, 30.0])
@@ -970,7 +978,7 @@ def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
 def test_run_etg_figures_prefers_existing_mismatch_csv(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.artifacts.make_figures as make_figures
+    import tools.artifacts.build_linear_validation_artifacts as linear_artifacts
 
     mismatch = tmp_path / "etg_mismatch_table.csv"
     mismatch.write_text(
@@ -981,28 +989,28 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(
     )
 
     monkeypatch.setattr(
-        make_figures,
+        linear_artifacts,
         "load_etg_reference",
-        lambda: make_figures.LinearScanResult(
+        lambda: linear_artifacts.LinearScanResult(
             ky=np.array([10.0, 20.0]),
             gamma=np.array([1.0, 5.0]),
             omega=np.array([2.0, 6.0]),
         ),
     )
     monkeypatch.setattr(
-        make_figures,
+        linear_artifacts,
         "run_runtime_scan",
         lambda *args, **kwargs: (_ for _ in ()).throw(
             AssertionError("should reuse mismatch csv")
         ),
     )
     monkeypatch.setattr(
-        make_figures,
+        linear_artifacts,
         "scan_comparison_figure",
         lambda *args, **kwargs: (_DummyFigure(), None),
     )
 
-    make_figures._run_etg_figures(outdir=tmp_path, verbose=False, progress=False)
+    linear_artifacts._run_etg_figures(outdir=tmp_path, progress=False)
 
 
 def test_make_tables_cyclone_reference_scan_falls_back_from_project_to_max(
@@ -1658,7 +1666,7 @@ def test_build_summary_accepts_collision_skip_and_rejects_hypercollision_skip() 
 def test_selected_kbm_branch_candidate_rows_uses_only_selected_branch(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("generate_linear_validation_gates")
+    mod = load_artifact_tool("build_linear_validation_artifacts")
     path = tmp_path / "candidates.csv"
     pd.DataFrame(
         {
@@ -1680,7 +1688,7 @@ def test_selected_kbm_branch_candidate_rows_uses_only_selected_branch(
 def test_generate_kbm_branch_gate_summary_main_writes_strict_json(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("generate_linear_validation_gates")
+    mod = load_artifact_tool("build_linear_validation_artifacts")
     candidates = tmp_path / "candidates.csv"
     out = tmp_path / "summary.json"
     pd.DataFrame(
@@ -1770,7 +1778,7 @@ def test_kbm_eigenfunction_gate_report_uses_strict_publication_thresholds() -> N
 
 
 def test_load_convergence_series_from_resolution_column(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_linear_validation_gates")
+    mod = load_artifact_tool("build_linear_validation_artifacts")
     path = tmp_path / "conv.csv"
     pd.DataFrame(
         {"N": [16, 4, 8], "error": [1.0 / 16**2, 1.0 / 4**2, 1.0 / 8**2]}
@@ -1792,7 +1800,7 @@ def test_load_convergence_series_from_resolution_column(tmp_path: Path) -> None:
 
 
 def test_generate_observed_order_gate_main_writes_json_and_plot(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_linear_validation_gates")
+    mod = load_artifact_tool("build_linear_validation_artifacts")
     csv_path = tmp_path / "conv.csv"
     out_json = tmp_path / "conv.json"
     out_png = tmp_path / "conv.png"
@@ -1832,7 +1840,7 @@ def test_generate_observed_order_gate_main_writes_json_and_plot(tmp_path: Path) 
 
 
 def test_load_convergence_series_requires_one_step_source(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_linear_validation_gates")
+    mod = load_artifact_tool("build_linear_validation_artifacts")
     path = tmp_path / "conv.csv"
     pd.DataFrame({"h": [0.1, 0.05], "N": [10, 20], "err": [0.01, 0.0025]}).to_csv(
         path,

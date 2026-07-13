@@ -338,6 +338,16 @@ not a Sugama/Coulomb promotion: those operators require the complete
 mass/temperature-ratio-dependent test- and field-particle coefficients and
 their own ITG, zonal, conductivity, entropy, and convergence gates.
 
+The full finite-Larmor-radius coefficient formulas contain deeply nested,
+cancellation-sensitive sums. Following the implementation guidance in the
+same reference, the planned advanced operator will generate those coefficients
+offline with multiple-precision arithmetic, record normalization/provenance
+and checksums with the resulting tables, and load only compact arrays into the
+JAX runtime. Direct evaluation of the published sums in runtime ``float64`` is
+not an accepted implementation path. The generated tables must first pass
+symmetry, conservation, adjointness, and entropy gates before any transport
+benchmark can promote the operator.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the
