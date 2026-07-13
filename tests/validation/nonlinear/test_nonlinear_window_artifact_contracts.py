@@ -11,7 +11,9 @@ import numpy as np
 
 from support.paths import REPO_ROOT, load_campaign_tool, load_release_tool
 from spectraxgk.diagnostics.transport_windows import (
+    MatchedTransportConfig,
     NonlinearWindowConvergenceConfig,
+    matched_nonlinear_transport_report,
     nonlinear_window_convergence_report,
 )
 
@@ -120,6 +122,45 @@ def _window_report(offset: float, *, case: str) -> dict[str, object]:
             max_sem_rel=0.02,
         ),
     )
+
+
+def test_matched_transport_requires_converged_windows_and_resolved_reduction() -> None:
+    baseline = _window_report(0.5, case="baseline")
+    treatment = _window_report(0.0, case="flow_shear")
+    report = matched_nonlinear_transport_report(
+        baseline,
+        treatment,
+        case="flow_shear_transport",
+        treatment_name="gamma_e_0p01",
+        config=MatchedTransportConfig(
+            min_relative_reduction=0.05,
+            min_uncertainty_z_score=2.0,
+        ),
+    )
+    assert report["passed"] is True
+    assert report["statistics"]["relative_reduction"] > 0.1
+    assert report["statistics"]["uncertainty_z_score"] > 2.0
+
+    drifting_t = np.linspace(0.0, 200.0, 201)
+    drifting_heat = 4.0 + 0.01 * drifting_t
+    drifting = nonlinear_window_convergence_report(
+        drifting_t,
+        drifting_heat,
+        case="drifting_treatment",
+        source_artifact="drifting_treatment.csv",
+        config=NonlinearWindowConvergenceConfig(
+            transient_fraction=0.5,
+            min_samples=64,
+            min_blocks=4,
+            max_running_mean_rel_drift=0.02,
+            max_terminal_mean_rel_delta=0.02,
+        ),
+    )
+    rejected = matched_nonlinear_transport_report(baseline, drifting)
+    assert rejected["passed"] is False
+    assert rejected["windows_ready"] is False
+    failed = {gate["metric"] for gate in rejected["gates"] if not gate["passed"]}
+    assert "treatment_window_passed" in failed
 
 
 def test_nonlinear_window_ensemble_tool_writes_json_png_and_fails_closed(

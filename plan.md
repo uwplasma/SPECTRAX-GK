@@ -1654,3 +1654,11 @@ under 5 minutes.
   and ``initial_dt`` preserves adaptive-CFL history. A two-chunk run reproduces
   a single scan's state, accepted times, and canonical heat flux, enabling
   bounded long campaigns without discarding completed GPU work.
+
+- 2026-07-13: Added one reusable matched nonlinear-transport acceptance gate
+  rather than embedding flow-shear decisions in a campaign script. It requires
+  both post-transient windows to pass their finite, stationarity, block, and
+  uncertainty gates before computing a relative reduction and quadrature-SEM
+  separation. A synthetic resolved reduction passes while a drifting treatment
+  fails closed; the wider 58-test transport-window tranche and focused MyPy
+  checks pass. This is diagnostic infrastructure, not a flow-shear promotion.

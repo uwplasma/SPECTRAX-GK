@@ -315,13 +315,22 @@ Long campaigns can continue from ``final_state`` using the previous terminal
 versus single-scan identity gate covers the absolute shearing basis, state, and
 heat-flux trace.
 
+Treatment effects are evaluated with
+:func:`spectraxgk.matched_nonlinear_transport_report`, not by comparing two
+instantaneous chaotic traces. The baseline and treatment first pass independent
+post-transient finite-sample, running-mean drift, terminal-mean, block count,
+and conservative SEM gates. Only then is the relative mean reduction reported;
+its uncertainty separation uses the quadrature sum of the two block/bootstrap
+SEMs. A drifting source window therefore blocks a treatment claim even when its
+provisional mean is lower.
+
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
 definitions. This path is a numerical foundation, not the production model. The
 compressed-real FFT rejects radial phases, and non-twist and linked boundaries
 fail closed because their Hermitian and boundary phases are not implemented.
-IMEX routing, saturated transport, and matched-comparison gates remain mandatory
-before enabling flow shear in input files.
+IMEX routing and a passed saturated-transport/matched-comparison artifact remain
+mandatory before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
 ------------------------------
