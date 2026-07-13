@@ -2500,7 +2500,7 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_diagnostics as mod
+        import compare_gx_nonlinear as mod
 
         argv = [
             "compare_gx_nonlinear_diagnostics.py",
@@ -2526,7 +2526,7 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
         old_argv = sys.argv
         sys.argv = argv
         try:
-            assert mod.main() == 0
+            assert mod.run_diagnostics() == 0
         finally:
             sys.argv = old_argv
     finally:
@@ -2560,7 +2560,7 @@ def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_diagnostics as mod
+        import compare_gx_nonlinear as mod
 
         loaded = mod._load_gx_diag(gx_path)
     finally:
@@ -2584,7 +2584,7 @@ def test_compare_gx_nonlinear_diagnostics_loads_spectrax_out_nc(tmp_path: Path) 
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_diagnostics as mod
+        import compare_gx_nonlinear as mod
 
         loaded = mod._load_spectrax(spectrax_path)
     finally:
@@ -2604,7 +2604,7 @@ def test_compare_gx_nonlinear_diagnostics_interp_summary() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_diagnostics as mod
+        import compare_gx_nonlinear as mod
 
         mean_rel, max_rel, final_rel = mod._interp_summary(
             np.array([0.0, 1.0, 2.0]),
@@ -2624,7 +2624,7 @@ def test_compare_gx_nonlinear_diagnostics_apply_time_window() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_diagnostics as mod
+        import compare_gx_nonlinear as mod
 
         series = {
             "t": np.array([0.0, 1.0, 2.0, 3.0]),
@@ -2651,11 +2651,11 @@ def test_compare_gx_nonlinear_terms_parser_accepts_runtime_config() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_terms as mod
+        import compare_gx_nonlinear as mod
     finally:
         sys.path.remove(str(tools_dir))
 
-    parser = mod.build_parser()
+    parser = mod.build_terms_parser()
     args = parser.parse_args(
         [
             "--gx-dir",
@@ -2679,7 +2679,7 @@ def test_build_runtime_compare_context_overrides_grid_from_dump(monkeypatch) -> 
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_terms as mod
+        import compare_gx_nonlinear as mod
     finally:
         sys.path.remove(str(tools_dir))
 
@@ -2736,7 +2736,7 @@ def test_pick_species_dump_prefers_species_suffix(tmp_path: Path) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_terms as mod
+        import compare_gx_nonlinear as mod
     finally:
         sys.path.remove(str(tools_dir))
 
@@ -2754,7 +2754,7 @@ def test_pick_first_existing_uses_diag_state_kxky_fallback(tmp_path: Path) -> No
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_terms as mod
+        import compare_gx_nonlinear as mod
     finally:
         sys.path.remove(str(tools_dir))
 
@@ -2778,7 +2778,7 @@ def test_resolve_dealias_mask_rebuilds_to_compared_shape() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_terms as mod
+        import compare_gx_nonlinear as mod
     finally:
         sys.path.remove(str(tools_dir))
 
@@ -2791,7 +2791,7 @@ def test_synth_positive_and_full_ky_rebuild_dump_grid() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import compare_gx_nonlinear_terms as mod
+        import compare_gx_nonlinear as mod
     finally:
         sys.path.remove(str(tools_dir))
 

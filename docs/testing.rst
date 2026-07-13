@@ -271,7 +271,7 @@ frozen finite GX raw-mode bundle when a matching ``.big.nc`` file is supplied
 and writes ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png``
 plus JSON/CSV companions. The current artifact passes with overlap
 ``0.9999999994`` and relative ``L^2`` mismatch ``3.33e-5``.
-``tools/comparison/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
+``tools/comparison/compare_gx_nonlinear.py diagnostics --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
 window mean relative mismatch as the scalar acceptance metric. The summary
 writer now accepts case/source labels, explicit ``tmin/tmax`` windows, and
@@ -1436,7 +1436,7 @@ published benchmarks and trend tests:
   ``tools/comparison/compare_gx_rhs_terms.py compare``).
 - **GX nonlinear term audit (KBM/Cyclone)**: compare nonlinear
   derivative, bracket, electromagnetic split, and total RHS dumps using
-  ``tools/comparison/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders
+  ``tools/comparison/compare_gx_nonlinear.py terms``. The tool supports GX dump folders
   with ``nl_apar.bin``/``nl_bpar.bin`` and can infer shape metadata when
   ``rhs_terms_shape.txt`` is absent.
 - **ETG linear instability**: verify that growth rates remain positive across

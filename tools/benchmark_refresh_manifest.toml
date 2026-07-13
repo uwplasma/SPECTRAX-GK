@@ -65,7 +65,7 @@ name = "nonlinear-cyclone"
 description = "Refresh the tracked nonlinear Cyclone diagnostic comparison figure."
 cwd = "{root}"
 requires_env = ["CYCLONE_NONLINEAR_ARGS"]
-command = "python tools/comparison/compare_gx_nonlinear_diagnostics.py ${CYCLONE_NONLINEAR_ARGS} --out docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png"
+command = "python tools/comparison/compare_gx_nonlinear.py diagnostics ${CYCLONE_NONLINEAR_ARGS} --out docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png"
 outputs = ["docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png"]
 
 [[job]]
