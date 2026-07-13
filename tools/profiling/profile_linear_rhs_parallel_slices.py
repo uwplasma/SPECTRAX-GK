@@ -89,6 +89,49 @@ def _terms() -> Any:
     )
 
 
+def _build_species_problem(*, nx: int, ny: int, nz: int, nl: int, nm: int):
+    import jax.numpy as jnp
+
+    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.geometry import SAlphaGeometry
+    from spectraxgk.linear import LinearParams, build_linear_cache
+
+    cfg = CycloneBaseCase(
+        grid=GridConfig(Nx=nx, Ny=ny, Nz=nz, Lx=6.0, Ly=6.0, boundary="periodic")
+    )
+    grid = build_spectral_grid(cfg.grid)
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0, -1.0]),
+        density=jnp.asarray([1.0, 1.0]),
+        mass=jnp.asarray([1.0, 1.0 / 1836.0]),
+        temp=jnp.asarray([1.0, 1.0]),
+        vth=jnp.asarray([1.0, 42.0]),
+        rho=jnp.asarray([1.0, 0.023]),
+        R_over_Ln=jnp.asarray([2.2, 2.2]),
+        R_over_LTi=jnp.asarray([6.9, 0.0]),
+        R_over_LTe=jnp.asarray([0.0, 6.9]),
+        tz=jnp.asarray([1.0, -1.0]),
+        tau_e=0.0,
+        beta=0.0,
+        fapar=0.0,
+    )
+    cache = build_linear_cache(
+        grid, SAlphaGeometry.from_config(cfg.geometry), params, Nl=nl, Nm=nm
+    )
+    shape = (2, nl, nm, grid.ky.size, grid.kx.size, grid.z.size)
+    rng = np.random.default_rng(20260712)
+    state = jnp.asarray(
+        1.0e-3
+        * (
+            rng.standard_normal(shape, dtype=np.float32)
+            + 1j * rng.standard_normal(shape, dtype=np.float32)
+        ),
+        dtype=jnp.complex64,
+    )
+    return state, cache, params, grid
+
+
 def _time_callable(fn: Callable[[], Any], *, repeats: int) -> tuple[list[float], Any]:
     samples: list[float] = []
     result: Any = None
@@ -113,12 +156,11 @@ def profile_linear_rhs_parallel_slices(
     repeats: int,
     atol: float,
     rtol: float,
+    axis: str = "hermite",
 ) -> dict[str, object]:
-    """Time serial and Hermite-sharded electrostatic linear-slices RHS calls."""
+    """Time serial and velocity-sharded electrostatic linear-slices RHS calls."""
 
     import jax
-    import jax.numpy as jnp
-
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
@@ -128,25 +170,51 @@ def profile_linear_rhs_parallel_slices(
         raise RuntimeError(
             f"requested {requested_devices} {platform_name} devices, but only {len(device_list)} are available"
         )
-    state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
+    axis_name = str(axis).strip().lower().replace("-", "_")
+    if axis_name not in {"hermite", "species"}:
+        raise ValueError("axis must be 'hermite' or 'species'")
+    if axis_name == "species" and int(requested_devices) != 2:
+        raise ValueError("species profiling requires exactly two devices")
+    builder = _build_species_problem if axis_name == "species" else build_problem
+    state, cache, params, grid = builder(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
     terms = _terms()
     parallel_cfg = RuntimeParallelConfig(
         strategy="velocity",
-        backend="electrostatic_linear_slices",
-        axis="hermite",
+        backend="auto" if axis_name == "species" else "electrostatic_linear_slices",
+        axis=axis_name,
         num_devices=len(device_list),
     )
 
+    serial_state = state
+    sharded_state = state
+    serial_cache, serial_params = cache, params
+    sharded_cache, sharded_params = cache, params
+    if axis_name == "species":
+        from spectraxgk.solvers.linear.parallel_electrostatic import (
+            prepare_electrostatic_species_inputs,
+        )
+
+        sharded_state, sharded_cache, sharded_params = (
+            prepare_electrostatic_species_inputs(
+                state, cache, params, devices=device_list
+            )
+        )
+
     def serial_call():
         return linear_rhs_cached(
-            state, cache, params, terms=terms, use_jit=True, use_custom_vjp=True
+            serial_state,
+            serial_cache,
+            serial_params,
+            terms=terms,
+            use_jit=True,
+            use_custom_vjp=True,
         )
 
     def sharded_call():
         return linear_rhs_parallel_cached(
-            state,
-            cache,
-            params,
+            sharded_state,
+            sharded_cache,
+            sharded_params,
             terms=terms,
             parallel=parallel_cfg,
             use_custom_vjp=False,
@@ -161,20 +229,21 @@ def profile_linear_rhs_parallel_slices(
     serial_rhs, serial_phi = serial_result
     sharded_rhs, sharded_phi = sharded_result
 
-    abs_err = jnp.max(jnp.abs(sharded_rhs - serial_rhs))
-    scale = jnp.max(jnp.abs(serial_rhs))
-    rel_err = abs_err / jnp.maximum(scale, jnp.asarray(1.0e-30, dtype=scale.dtype))
-    phi_abs_err = jnp.max(jnp.abs(sharded_phi - serial_phi))
-    phi_norm = jnp.linalg.norm(serial_phi)
-    _block_until_ready((abs_err, rel_err, phi_abs_err, phi_norm))
+    serial_rhs_host = np.asarray(serial_rhs)
+    sharded_rhs_host = np.asarray(sharded_rhs)
+    serial_phi_host = np.asarray(serial_phi)
+    sharded_phi_host = np.asarray(sharded_phi)
+    abs_err = float(np.max(np.abs(sharded_rhs_host - serial_rhs_host)))
+    scale = float(np.max(np.abs(serial_rhs_host)))
+    rel_err = abs_err / max(scale, 1.0e-30)
+    phi_abs_err = float(np.max(np.abs(sharded_phi_host - serial_phi_host)))
+    phi_norm = float(np.linalg.norm(serial_phi_host))
 
     serial_median = float(median(serial_samples))
     sharded_median = float(median(sharded_samples))
     speedup = serial_median / sharded_median if sharded_median > 0.0 else math.nan
     identity_passed = bool(
-        float(abs_err) <= float(atol)
-        and float(rel_err) <= float(rtol)
-        and float(phi_abs_err) <= float(atol)
+        abs_err <= float(atol) and rel_err <= float(rtol) and phi_abs_err <= float(atol)
     )
 
     rows = [
@@ -189,6 +258,7 @@ def profile_linear_rhs_parallel_slices(
                 "not a publication speedup claim"
             ),
             "state_shape": tuple(int(x) for x in state.shape),
+            "decomposition_axis": axis_name,
             "grid": {
                 "Nx": int(nx),
                 "Ny_requested": int(ny),
@@ -204,10 +274,10 @@ def profile_linear_rhs_parallel_slices(
             "sharded_median_s": sharded_median,
             "speedup": float(speedup),
             "identity_passed": identity_passed,
-            "max_abs_error": float(np.asarray(abs_err)),
-            "max_rel_error": float(np.asarray(rel_err)),
-            "max_phi_abs_error": float(np.asarray(phi_abs_err)),
-            "phi_norm": float(np.asarray(phi_norm)),
+            "max_abs_error": abs_err,
+            "max_rel_error": rel_err,
+            "max_phi_abs_error": phi_abs_err,
+            "phi_norm": phi_norm,
             "atol": float(atol),
             "rtol": float(rtol),
             "rows": rows,
@@ -461,6 +531,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_PREFIX)
     parser.add_argument("--platform", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--logical-devices", type=int, default=2)
+    parser.add_argument("--axis", choices=("hermite", "species"), default="hermite")
     parser.add_argument("--nl", type=int, default=4)
     parser.add_argument("--nm", type=int, default=16)
     parser.add_argument("--ny", type=int, default=8)
@@ -508,6 +579,7 @@ def main_profile(argv: list[str] | None = None) -> int:
         repeats=int(args.repeats),
         atol=float(args.atol),
         rtol=float(args.rtol),
+        axis=str(args.axis),
     )
     paths = write_artifacts(summary, args.out_prefix)
     print(
