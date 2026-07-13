@@ -1342,6 +1342,52 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         np.asarray(parallel_phi), np.asarray(serial_phi), rtol=5e-5, atol=5e-6
     )
 
+    serial_rk2, serial_rk2_phi = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        dt=1e-5,
+        steps=6,
+        method="rk2",
+        cache=cache,
+        terms=terms,
+        sample_stride=3,
+    )
+    parallel_rk2, parallel_rk2_phi = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        dt=1e-5,
+        steps=6,
+        method="rk2",
+        cache=cache,
+        terms=terms,
+        sample_stride=3,
+        parallel=parallel,
+    )
+    assert parallel_rk2_phi.shape[0] == 2
+    np.testing.assert_allclose(
+        np.asarray(parallel_rk2), np.asarray(serial_rk2), rtol=5e-5, atol=5e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(parallel_rk2_phi), np.asarray(serial_rk2_phi), rtol=5e-5, atol=5e-6
+    )
+    with pytest.raises(NotImplementedError, match="species-parallel IMEX"):
+        integrate_linear(
+            state,
+            grid,
+            geom,
+            params,
+            dt=1e-5,
+            steps=1,
+            method="imex",
+            cache=cache,
+            terms=terms,
+            parallel=parallel,
+        )
+
 
 def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
     state, cache, params = _small_periodic_field_problem()
