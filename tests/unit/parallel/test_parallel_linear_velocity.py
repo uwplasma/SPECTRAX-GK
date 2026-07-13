@@ -1101,7 +1101,7 @@ def _small_kinetic_electron_problem():
     ky = min(1, grid.ky.size - 1)
     state = state.at[0, 0, 0, ky, 0, :].set(0.2 * jnp.exp(1j * z))
     state = state.at[1, 0, 0, ky, 0, :].set(0.07j * jnp.exp(2j * z))
-    return state, cache, params
+    return state, cache, params, grid, geom
 
 
 def test_electrostatic_phi_reference_matches_production_field_solve() -> None:
@@ -1262,7 +1262,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     devices = jax.devices()
     if len(devices) < 2:
         pytest.skip("requires two logical CPU devices or two accelerators")
-    state, cache, params = _small_kinetic_electron_problem()
+    state, cache, params, grid, geom = _small_kinetic_electron_problem()
     terms = _electrostatic_slice_terms()
 
     expected_rhs, expected_phi = linear_rhs_cached(
@@ -1286,11 +1286,16 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     parallel = SimpleNamespace(
         strategy="velocity", backend="auto", axis="species", num_devices=2
     )
+    prepared_state, prepared_cache, prepared_params = (
+        linear_parallel_electrostatic.prepare_electrostatic_species_inputs(
+            state, cache, params, devices=devices[:2]
+        )
+    )
     routed_rhs, routed_phi = jax.jit(
         lambda value: linear_parallel.linear_rhs_parallel_cached(
-            value, cache, params, terms=terms, parallel=parallel
+            value, prepared_cache, prepared_params, terms=terms, parallel=parallel
         )
-    )(state)
+    )(prepared_state)
 
     np.testing.assert_allclose(
         np.asarray(observed_phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
@@ -1303,6 +1308,38 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     )
     np.testing.assert_allclose(
         np.asarray(routed_rhs), np.asarray(expected_rhs), rtol=3e-5, atol=3e-5
+    )
+
+    from spectraxgk.linear import integrate_linear
+
+    serial_state, serial_phi = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        dt=1e-4,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=terms,
+    )
+    parallel_state, parallel_phi = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        dt=1e-4,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=terms,
+        parallel=parallel,
+    )
+    np.testing.assert_allclose(
+        np.asarray(parallel_state), np.asarray(serial_state), rtol=5e-5, atol=5e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(parallel_phi), np.asarray(serial_phi), rtol=5e-5, atol=5e-6
     )
 
 
