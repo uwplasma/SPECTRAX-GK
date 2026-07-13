@@ -25,6 +25,7 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     "test_transport_artifact_tools.py",
     "test_stellarator_artifact_tools.py",
     "test_diffrax_integrators_core.py",
+    "test_nonlinear.py",
     "test_runtime_runner.py",
 }
 
