@@ -242,10 +242,10 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/artifacts/build_zonal_flow_artifacts.py`` with ``response-csv`` and ``response-output`` modes
 - ``tools/artifacts/build_zonal_flow_artifacts.py miller-panel``
-- ``tools/artifacts/generate_w7x_zonal_response_panel.py``
+- ``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py contract``
 - ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py moment-tail``
-- ``tools/artifacts/plot_w7x_zonal_closure_ladder.py``
+- ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder``
 - ``tools/campaigns/write_w7x_zonal_closure_sweep.py``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py state-convention``
 - ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py sweep``
@@ -860,8 +860,8 @@ single-``k_x`` closure probes for the paper-facing test-4 contract, separated
 by operator family: baseline, constant-Hermite, ``|k_z|``-weighted Hermite,
 mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
 The manifest includes the exact
-``tools/artifacts/generate_w7x_zonal_response_panel.py`` launch commands plus the
-companion ``tools/artifacts/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
+``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel`` launch commands plus the
+companion ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder`` command needed to refresh
 the bounded closure audit after the remote runs complete. Each launch command
 writes a case-local ``panel.png`` and the final ladder command writes
 ``w7x_zonal_closure_ladder_full.{png,json,csv}``, preventing exploratory
@@ -932,7 +932,7 @@ without moving the benchmark-scale damping gate.
 
 The next literature lane now has a dedicated runtime contract as well:
 ``benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
-``tools/artifacts/generate_w7x_zonal_response_panel.py`` define the W7-X high-mirror
+``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel`` define the W7-X high-mirror
 bean-tube zonal-flow relaxation benchmark from the stella/GENE paper. The
 tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]``. The runtime
 contract seeds the published electrostatic-potential perturbation with
@@ -1023,7 +1023,7 @@ fractions. The existing ``Nl=16``, ``Nm=64``, ``t≈100`` audit lowers the early
 trace standard deviation but already carries a large high-Hermite tail, so the
 next closure experiment should be a bounded moment/closure or recurrence
 control sweep, not a change to the paper normalization.
-``tools/artifacts/plot_w7x_zonal_closure_ladder.py`` makes that bounded sweep explicit
+``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder`` makes that bounded sweep explicit
 for ``k_x rho_i=0.07`` in
 ``docs/_static/w7x_zonal_closure_ladder_kx070.png``. The ladder separates
 closure families one knob at a time under the paper-facing initializer and
@@ -1080,7 +1080,7 @@ The more aggressive ``Nl=32,Nm=128`` run still becomes non-finite by
 time-step limitation from the larger physical result: the current mixed
 closure does not converge toward the digitized W7-X trace in a way that can be
 promoted as validation.
-``tools/artifacts/generate_w7x_zonal_response_panel.py`` now exposes explicit
+``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel`` now exposes explicit
 ``--nu-hyper``, ``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``,
 ``--p-hyper-*``, ``--hypercollisions-const``, ``--hypercollisions-kz``,
 ``--enable-hypercollisions``, and ``--gaussian-width`` overrides so future

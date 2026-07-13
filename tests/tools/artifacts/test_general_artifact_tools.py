@@ -2655,8 +2655,8 @@ def test_w7x_overlay_main_writes_gate_artifacts(tmp_path: Path, monkeypatch) -> 
 
 
 # W7-X zonal response panel assertions
-def test_generate_w7x_zonal_response_panel_main(tmp_path, monkeypatch) -> None:
-    mod = load_artifact_tool("generate_w7x_zonal_response_panel")
+def test_w7x_zonal_response_panel_main(tmp_path, monkeypatch) -> None:
+    mod = load_artifact_tool("build_w7x_zonal_validation_artifacts")
 
     config = tmp_path / "w7x_test4.toml"
     config.write_text(
@@ -2795,7 +2795,7 @@ diagnostics = true
         ],
     )
 
-    assert mod.main() == 0
+    assert mod.main(["response-panel", *sys.argv[1:]]) == 0
     assert out_png.exists()
     assert out_png.with_suffix(".pdf").exists()
     assert out_png.with_suffix(".csv").exists()
@@ -2885,8 +2885,8 @@ diagnostics = true
         assert kwargs["Nm"] == 10
 
 
-def test_generate_w7x_zonal_response_panel_resume_output(tmp_path, monkeypatch) -> None:
-    mod = load_artifact_tool("generate_w7x_zonal_response_panel")
+def test_w7x_zonal_response_panel_resume_output(tmp_path, monkeypatch) -> None:
+    mod = load_artifact_tool("build_w7x_zonal_validation_artifacts")
 
     config = tmp_path / "w7x_test4.toml"
     config.write_text(
@@ -2990,7 +2990,7 @@ diagnostics = true
         ],
     )
 
-    assert mod.main() == 0
+    assert mod.run_response_panel() == 0
     assert seen == [
         (
             True,
@@ -3005,7 +3005,7 @@ diagnostics = true
 
 
 def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
-    mod = load_artifact_tool("generate_w7x_zonal_response_panel")
+    mod = load_artifact_tool("build_w7x_zonal_validation_artifacts")
 
     assert mod._finite_or_none(float("nan")) is None
     assert mod._format_metric(None) == "not fitted"
@@ -3229,7 +3229,7 @@ def _plot_w7x_zonal_closure_ladder_output(
 
 
 def test_w7x_zonal_closure_ladder_builds_rows_and_main(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_w7x_zonal_closure_ladder")
+    mod = load_artifact_tool("build_w7x_zonal_recurrence_artifacts")
     reference = tmp_path / "reference.csv"
     out_nc = tmp_path / "run" / "w7x_test4_kx070.out.nc"
     _plot_w7x_zonal_closure_ladder_reference(reference)
@@ -3256,6 +3256,7 @@ def test_w7x_zonal_closure_ladder_builds_rows_and_main(tmp_path: Path) -> None:
     out_png = tmp_path / "closure.png"
     rc = mod.main(
         [
+            "closure-ladder",
             "--reference-traces",
             str(reference),
             "--run",

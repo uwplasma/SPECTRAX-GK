@@ -47,7 +47,9 @@ def test_w7x_zonal_closure_sweep_manifest_contract(tmp_path: Path) -> None:
     assert all(
         "--checkpoint-steps 500" in command for command in payload["launch_commands"]
     )
-    assert "plot_w7x_zonal_closure_ladder.py" in payload["plot_command"]
+    assert "build_w7x_zonal_recurrence_artifacts.py closure-ladder" in payload[
+        "plot_command"
+    ]
     assert "w7x_zonal_closure_ladder_full.png" in payload["plot_command"]
     assert payload["plot_outputs"]["png"].endswith("w7x_zonal_closure_ladder_full.png")
 
@@ -70,7 +72,7 @@ def test_w7x_zonal_closure_sweep_manifest_contract(tmp_path: Path) -> None:
     assert loaded["cases"][0]["slug"] == "baseline"
     assert loaded["cases"][0]["panel_png"].endswith("baseline/panel.png")
     assert loaded["launch_commands"][0].startswith(
-        "python3 tools/artifacts/generate_w7x_zonal_response_panel.py"
+        "python3 tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel"
     )
 
 

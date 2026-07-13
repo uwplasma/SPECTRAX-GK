@@ -423,7 +423,7 @@ def _build_compare_parser() -> argparse.ArgumentParser:
         "--spectrax-summary",
         type=Path,
         default=ROOT / "docs" / "_static" / "w7x_zonal_response_panel.csv",
-        help="SPECTRAX-GK zonal summary CSV written by generate_w7x_zonal_response_panel.py.",
+        help="SPECTRAX-GK zonal summary CSV written by the response-panel mode.",
     )
     parser.add_argument(
         "--spectrax-trace-dir",
@@ -482,7 +482,7 @@ def _build_compare_parser() -> argparse.ArgumentParser:
         help=(
             "Normalization for optional trace-shape gates. summary_initial_level "
             "keeps the envelope metric consistent with the residual normalization "
-            "recorded by generate_w7x_zonal_response_panel.py."
+            "recorded by the response-panel artifact mode."
         ),
     )
     parser.add_argument("--gate-index-include", action="store_true")

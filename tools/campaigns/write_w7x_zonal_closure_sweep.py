@@ -164,7 +164,8 @@ def _command_for_case(
     panel_png = out_dir / "panel.png"
     cmd = [
         "python3",
-        "tools/artifacts/generate_w7x_zonal_response_panel.py",
+        "tools/artifacts/build_w7x_zonal_validation_artifacts.py",
+        "response-panel",
         "--config",
         _repo_relative(config),
         "--out-dir",
@@ -266,7 +267,7 @@ def build_manifest(
     plot_json = out_dir / "w7x_zonal_closure_ladder_full.json"
     plot_csv = out_dir / "w7x_zonal_closure_ladder_full.csv"
     plot_command = (
-        "python3 tools/artifacts/plot_w7x_zonal_closure_ladder.py "
+        "python3 tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder "
         f"--out-png {_repo_relative(plot_out)} "
         f"--out-json {_repo_relative(plot_json)} "
         f"--out-csv {_repo_relative(plot_csv)} " + " ".join(plot_args)
