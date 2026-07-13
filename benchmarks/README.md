@@ -21,7 +21,8 @@ Run from the repository root, for example:
 
 ```bash
 python benchmarks/cyclone_linear_benchmark.py --outdir tools_out/cyclone_benchmark
-python benchmarks/kbm_beta_scan.py
+python benchmarks/kbm_linear_comparison.py \
+  --output tools_out/kbm_linear_comparison.png
 python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
 python benchmarks/secondary_slab_workflow.py
 ```

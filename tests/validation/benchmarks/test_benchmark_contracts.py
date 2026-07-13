@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import fields
 import math
 from pathlib import Path
+import re
 import subprocess
 import tomllib
 from types import SimpleNamespace
@@ -75,6 +76,16 @@ ROOT = REPO_ROOT
 MANIFEST = ROOT / "benchmarks" / "results" / "manifest.toml"
 MAX_TRACKED_RESULT_BYTES = 1_000_000
 MAX_ROOT_BENCHMARK_PAYLOAD_BYTES = 200_000
+
+
+def test_benchmark_readme_references_existing_python_drivers() -> None:
+    """Keep researcher-facing reproduction commands synchronized with drivers."""
+
+    readme = (ROOT / "benchmarks" / "README.md").read_text(encoding="utf-8")
+    drivers = re.findall(r"python (benchmarks/[^\s]+\.py)", readme)
+
+    assert drivers
+    assert all((ROOT / driver).is_file() for driver in drivers)
 
 
 def test_cyclone_publication_driver_uses_asymptotic_fit_window() -> None:

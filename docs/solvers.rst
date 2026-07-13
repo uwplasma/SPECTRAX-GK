@@ -34,12 +34,17 @@ algorithm. Users configure its tolerance, restart length, iteration limit,
 and physical preconditioner rather than selecting equivalent backend aliases.
 Shift-invert eigenmode extraction is separate and is not yet migrated because
 its branch-continuity gate remains open. Complex Ritz vectors now use the
-mathematically correct ``V @ y`` reconstruction, exact Arnoldi-breakdown zeros
-are excluded from inverse spectral mapping, and an outer eigenpair-residual
-gate rejects both primary and fallback pairs. A reduced KBM audit reports
-residual ``0.99978`` against the ``0.1`` threshold, so this lane remains
-unpromoted rather than silently returning that branch; validated time
-integration remains the release path.
+mathematically correct ``V @ y`` reconstruction. Arnoldi directions smaller
+than a dtype-scaled operator threshold are treated as numerical breakdown
+rather than normalized roundoff. Preconditioned shifted solves are also checked
+against the original physical linear system and retried without the
+preconditioner if that residual is not converged. An outer eigenpair-residual
+gate then rejects both primary and fallback pairs. These corrections reduce a
+representative reduced shifted-solve residual from ``4.76`` to ``1.14e-5`` and
+recover its dense-reference mode with residual ``3.18e-6``. The full canonical
+KBM audit still reports outer residual ``0.981`` against the ``0.1`` threshold,
+so this lane remains unpromoted rather than silently returning that branch;
+validated time integration remains the release path.
 
 Optional damping
 ----------------

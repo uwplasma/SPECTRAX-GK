@@ -206,14 +206,14 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
-| Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
+| Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 78% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, AD, and full-f primitive-target gates. A complete linearized Sugama/Coulomb model remains a separate research lane requiring generated coefficients plus symmetry, adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 97% | The bracket has one numerical owner and a clean A4000 profile; an identity-breaking FFT-layout rewrite was rejected. Require fresh identity and memory evidence for every future optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
 | Docs/readme release pass | 100% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
-| CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
+| CI/release hygiene | 100% | Preserve the green 24-shard 95% wide-coverage gate and its bounded logical-CPU supplements. |
 
 ## Prioritized Implementation Steps
 
@@ -1765,3 +1765,36 @@ under 5 minutes.
   integer remap where the residual phase is unity. This rules out a generic FFT
   representation error at the remap itself; fractional-phase ordering remains
   the next state-level localization target, and no production option was added.
+
+- 2026-07-13: Closed two numerical-correctness defects in the experimental
+  shift-invert path without promoting its unresolved KBM branch. Arnoldi now
+  rejects dtype-scale residual directions instead of normalizing roundoff, and
+  each preconditioned GMRES result is checked in the original shifted physical
+  system before an unpreconditioned retry. On a reduced physical KBM operator,
+  this lowers the falsely converged shifted-solve residual from ``4.76`` to
+  ``1.14e-5``; a restart from the dense-reference mode recovers that mode with
+  ``3.18e-6`` residual and unit overlap for all preconditioner settings. The
+  full ``Nl=16``, ``Nm=48``, ``Nz=96`` canonical audit still fails closed at
+  ``0.981`` outer residual versus the ``0.1`` gate. A fixed-step continuation
+  attempt overflowed and was rejected, while the tracked KBM branch table was
+  confirmed to use its separate controlled adaptive time-integration workflow.
+  The next structured-solver action is therefore a stable physical continuation
+  seed or field-coupled complex preconditioner, not more ungated parameter
+  searches; time integration remains the release path.
+
+- 2026-07-13: Audited the canonical KBM TOML as an actual user-facing office
+  GPU run. Neither the generic propagator default nor a full 4,000-step adaptive
+  RK4 attempt is admissible: the latter overflowed yet the fit layer reported
+  finite but meaningless ``gamma=373.3`` and ``omega=1135.7``. Runtime fitting
+  now rejects any non-finite time, field, or density history before analysis,
+  and KBM-normalized Krylov requests receive the targeted KBM policy so the
+  existing physical residual gate raises instead of returning the generic
+  propagator result. Documentation no longer presents this research TOML as a
+  standalone smoke run; the lightweight reviewed KBM comparison driver remains
+  the reproducible promoted entry point.
+
+- 2026-07-13: The complete GitHub Actions run ``29261912348`` passed repository
+  hygiene, MyPy, documentation/package checks, all quick-test groups, all 24
+  bounded wide-coverage shards, and the aggregate 95% package gate. The local
+  release-equivalent rerun also passed 93 release tests, strict Sphinx, Ruff,
+  focused MyPy, and the 47.999 MB repository-size manifest.

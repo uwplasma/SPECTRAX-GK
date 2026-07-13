@@ -99,6 +99,9 @@ nonlinear = 0.0
 ky = 0.3
 Nl = 16
 Nm = 48
+# This experimental shift-invert path fails closed unless its physical
+# eigenpair residual passes. Use the benchmark comparison driver for the
+# promoted KBM result.
 solver = "krylov"
 
 [scan]

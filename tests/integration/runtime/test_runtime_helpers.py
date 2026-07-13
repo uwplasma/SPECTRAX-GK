@@ -29,6 +29,7 @@ from spectraxgk.workflows.runtime.results import (
 from spectraxgk.workflows.runtime.orchestration_scan import (
     run_runtime_scan_ky_task,
 )
+from spectraxgk.workflows.linear import _require_finite_linear_history
 from spectraxgk.diagnostics.analysis import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
@@ -1112,6 +1113,14 @@ def test_runtime_species_and_model_helpers() -> None:
     assert krylov.mode_family == "etg"
     assert _runtime_default_krylov_config(cfg).method != "shift_invert"
 
+    kbm_cfg = replace(
+        cfg,
+        normalization=RuntimeNormalizationConfig(contract="kbm"),
+    )
+    kbm_krylov = _runtime_default_krylov_config(kbm_cfg)
+    assert kbm_krylov.method == "shift_invert"
+    assert kbm_krylov.mode_family == "kbm"
+
     assert _resolve_runtime_hl_dims(cfg, Nl=None, Nm=None) == (24, 12)
     unsupported_cfg = replace(
         cfg, physics=replace(cfg.physics, reduced_model="mystery")
@@ -1126,6 +1135,28 @@ def test_runtime_species_and_model_helpers() -> None:
     _require_full_gk_runtime_model(cfg)
     with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
         _require_full_gk_runtime_model(unsupported_cfg)
+
+
+@pytest.mark.parametrize(
+    ("name", "t", "phi", "density"),
+    [
+        ("time", np.array([0.0, np.nan]), np.ones(2), None),
+        ("field", np.arange(2.0), np.array([1.0, np.inf]), None),
+        ("density", np.arange(2.0), np.ones(2), np.array([1.0, np.nan])),
+    ],
+)
+def test_linear_history_rejects_nonfinite_trajectories(
+    name: str,
+    t: np.ndarray,
+    phi: np.ndarray,
+    density: np.ndarray | None,
+) -> None:
+    """Unstable histories must fail before a finite growth fit can hide them."""
+
+    with pytest.raises(FloatingPointError, match=rf"non-finite {name} history"):
+        _require_finite_linear_history(t, phi, density)
+
+    _require_finite_linear_history(np.arange(2.0), np.ones(2), np.ones(2))
 
 
 def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None:

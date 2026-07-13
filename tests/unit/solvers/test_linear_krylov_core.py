@@ -138,6 +138,33 @@ def test_ritz_vector_uses_complex_eigenvector_without_conjugation() -> None:
     assert jnp.allclose(vector, expected)
 
 
+def test_arnoldi_uses_dtype_scaled_near_breakdown_threshold() -> None:
+    """Do not normalize roundoff into a spurious Krylov direction."""
+
+    v0 = jnp.asarray([1.0 + 0.0j, 0.0 + 0.0j], dtype=jnp.complex64)
+    eps = jnp.finfo(jnp.float32).eps
+
+    def apply_near(vector, *_args):
+        matrix = jnp.asarray([[2.0, 0.0], [5.0 * eps, 1.0]], vector.dtype)
+        return matrix @ vector
+
+    basis_near, hessenberg_near = ka._arnoldi(
+        v0, apply_near, None, None, None, krylov_dim=1
+    )
+    assert hessenberg_near[1, 0] == 0.0
+    assert jnp.all(basis_near[1] == 0.0)
+
+    def apply_resolved(vector, *_args):
+        matrix = jnp.asarray([[2.0, 0.0], [1.0e-3, 1.0]], vector.dtype)
+        return matrix @ vector
+
+    basis_resolved, hessenberg_resolved = ka._arnoldi(
+        v0, apply_resolved, None, None, None, krylov_dim=1
+    )
+    assert hessenberg_resolved[1, 0] > 0.0
+    assert jnp.linalg.norm(basis_resolved[1]) == pytest.approx(1.0)
+
+
 def test_rayleigh_quotient_minimizes_fixed_vector_residual(monkeypatch) -> None:
     matrix = jnp.asarray(
         [[1.0 + 0.2j, 0.4 - 0.1j], [-0.3 + 0.5j, 2.0 - 0.4j]],
@@ -334,6 +361,45 @@ def test_build_shift_invert_preconditioner_linked_branch() -> None:
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
+
+
+def test_shift_invert_retries_preconditioned_false_convergence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A small preconditioned residual must not hide a bad physical solve."""
+
+    _grid, cache, params, v0, term_cfg, _terms = _tiny_krylov_setup(linked=False)
+    calls: list[bool] = []
+    monkeypatch.setattr(
+        ka,
+        "_build_shift_invert_precond",
+        lambda *_args: (jnp.ones_like(v0), lambda value: 0.1 * value),
+    )
+    monkeypatch.setattr(ka, "_apply_operator", lambda value, *_args: value)
+
+    def fake_gmres(_matvec, b, *, M, **_kwargs):
+        calls.append(M is not None)
+        solution = jnp.zeros_like(b) if M is not None else b
+        return solution, None
+
+    monkeypatch.setattr(ka, "gmres", fake_gmres)
+    apply_inverse = ka._shift_invert_apply_factory(
+        v0,
+        cache,
+        params,
+        term_cfg,
+        sigma_val=jnp.asarray(0.0, v0.dtype),
+        gmres_tol=1.0e-4,
+        gmres_maxiter=2,
+        gmres_restart=2,
+        gmres_solve_method="batched",
+        shift_preconditioner="damping",
+    )
+
+    observed = apply_inverse(v0, cache, params, term_cfg)
+
+    assert calls == [True, False]
+    assert jnp.allclose(observed, v0)
 
 
 @pytest.mark.parametrize("method", ["power", "propagator", "arnoldi"])

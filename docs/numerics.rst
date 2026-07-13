@@ -419,12 +419,20 @@ end-to-end JAX differentiability:
   IMEX Hermite factorization is not a valid complex shift preconditioner.
   A dedicated complex block implementation must pass inner and outer residual
   gates before those aliases can advertise streaming-line acceleration.
+  A preconditioned solve is checked against the original shifted system; if its
+  true residual exceeds the requested tolerance by an order of magnitude, the
+  solve is retried without that preconditioner. This prevents convergence in a
+  transformed norm from hiding a poor physical solve.
   Every returned pair is checked with the matrix-free relative residual
   :math:`\lVert Av-\lambda v\rVert/
   \max(\lVert Av\rVert,|\lambda|\lVert v\rVert)`. Configure the acceptance
   threshold with ``KrylovConfig.shift_outer_residual_tol``; the default is
   ``0.1``. Rejected primary and fallback pairs raise instead of returning a
   plausible frequency with an unconverged eigenvector.
+- **Arnoldi breakdown policy**: a candidate basis direction is retained only
+  when its norm exceeds a dtype-scaled threshold relative to the applied
+  operator. Exact and numerical happy breakdown therefore terminate the
+  resolved subspace instead of amplifying roundoff into a spurious mode.
 - **Physical Ritz refinement**: after selecting a shift-invert Ritz vector,
   the solver recomputes its eigenvalue with the physical-operator Rayleigh
   quotient. For a fixed vector this scalar minimizes the Euclidean residual;

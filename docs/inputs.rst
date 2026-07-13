@@ -345,7 +345,11 @@ Python driver
 .. code-block:: bash
 
   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/etg.toml
-  python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
+
+The canonical KBM TOML is currently a controlled comparison input rather than
+a promoted standalone solve: its experimental shift-invert branch raises when
+the physical eigenpair-residual gate is not met. Reproduce the reviewed result
+with ``python benchmarks/kbm_linear_comparison.py``.
 
 TOML sections
 -------------

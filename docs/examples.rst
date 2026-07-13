@@ -82,8 +82,8 @@ lanes:
 
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/cyclone.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
-   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
    python benchmarks/etg_linear_benchmark.py --outdir tools_out/etg
+   python benchmarks/kbm_linear_comparison.py --output tools_out/kbm_linear_comparison.png
 
    spectrax-gk run-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
@@ -93,6 +93,11 @@ lanes:
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
    spectrax-gk examples/linear/axisymmetric/cyclone.toml
+
+``runtime_kbm.toml`` is retained as the canonical operator input for controlled
+comparison studies. Its experimental shift-invert path fails closed while the
+full-resolution physical residual exceeds the documented acceptance gate; use
+the reviewed comparison driver above for the promoted KBM result.
 
 For a bounded runtime-configured independent ``k_y`` scan that uses
 ``[parallel] strategy = "batch"`` without changing the single-``k_y`` solver
