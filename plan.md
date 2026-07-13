@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 97% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 111 tools remain against the enforced 99-file target. |
+| Tool consolidation | 97% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 110 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1335,3 +1335,10 @@ under 5 minutes.
   tested; the tracked W7-X residual/envelope mismatch remains open scientific
   evidence rather than being obscured by the refactor. The tool inventory falls
   to ``111`` against the enforced ``99`` target.
+
+- 2026-07-13: Consolidated exact-state comparison execution and publication
+  reporting under ``tools/comparison/build_exact_state_audit.py`` with explicit
+  ``run`` and ``report`` modes. Manifest path/environment handling, comparison
+  command discovery, log parsing, scalar/array convention gates, and artifact
+  writing remain directly tested. This keeps comparison-code terminology inside
+  an explicit benchmark boundary and lowers the tool inventory to ``110``.

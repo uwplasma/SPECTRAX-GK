@@ -17,7 +17,7 @@ from PIL import Image
 matplotlib.use("Agg")
 import numpy as np
 
-from support.paths import load_artifact_tool, load_release_tool
+from support.paths import load_artifact_tool, load_comparison_tool, load_release_tool
 from spectraxgk.diagnostics.modes import save_eigenfunction_reference_bundle
 from tools.artifacts.make_benchmark_atlas import (
     _atlas_manifest_path,
@@ -3014,7 +3014,7 @@ def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
 
 
 # W7-X exact-state audit assertions
-def _plot_w7x_exact_state_audit_audit_dir(path: Path) -> None:
+def _write_w7x_exact_state_audit_fixture(path: Path) -> None:
     path.mkdir(parents=True)
     (path / "startup.log").write_text(
         "\n".join(
@@ -3064,9 +3064,9 @@ def _plot_w7x_exact_state_audit_audit_dir(path: Path) -> None:
 
 
 def test_w7x_exact_state_audit_parses_and_writes_outputs(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_w7x_exact_state_audit")
+    mod = load_comparison_tool("build_exact_state_audit")
     audit_dir = tmp_path / "audit" / "w7x_vmec"
-    _plot_w7x_exact_state_audit_audit_dir(audit_dir)
+    _write_w7x_exact_state_audit_fixture(audit_dir)
 
     rows = mod.build_rows(audit_dir)
     assert {row["phase"] for row in rows} == {
@@ -3080,7 +3080,7 @@ def test_w7x_exact_state_audit_parses_and_writes_outputs(tmp_path: Path) -> None
     )
 
     out_png = tmp_path / "w7x_exact_state_audit.png"
-    rc = mod.main(["--audit-dir", str(audit_dir), "--out-png", str(out_png)])
+    rc = mod.main(["report", "--audit-dir", str(audit_dir), "--out-png", str(out_png)])
 
     assert rc == 0
     assert out_png.exists()

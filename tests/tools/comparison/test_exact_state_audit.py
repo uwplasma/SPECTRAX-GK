@@ -7,13 +7,13 @@ import tomllib
 
 import pytest
 
-from tools.campaigns.run_exact_state_audit import (
+from tools.comparison.build_exact_state_audit import (
     COMPARISON_TOOL_DIR,
     REPO_ROOT,
     _comparison_tool_path,
     _resolve_manifest_path,
     _tool_env,
-    build_parser,
+    build_run_parser,
 )
 
 
@@ -28,8 +28,8 @@ def test_exact_state_tool_layout_resolves_repository_commands() -> None:
         _comparison_tool_path("missing.py")
 
 
-def test_run_exact_state_audit_parser_accepts_core_args() -> None:
-    args = build_parser().parse_args(
+def test_exact_state_audit_run_parser_accepts_core_args() -> None:
+    args = build_run_parser().parse_args(
         [
             "--manifest",
             "/tmp/lanes.toml",
