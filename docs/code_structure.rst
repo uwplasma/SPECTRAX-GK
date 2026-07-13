@@ -679,7 +679,7 @@ manifest row, so large modules cannot be hidden under another owner's
 The authoritative target package layout, naming policy, and conflict-resolution
 rules live in :doc:`architecture_refactor_plan`. The executable migration ledger
 is ``tools/differentiable_refactor_manifest.toml``, checked by
-``tools/release/check_differentiable_refactor_manifest.py``. See
+``tools/release/check_package_architecture_manifest.py differentiable-refactor``. See
 :doc:`differentiable_refactor_plan` for differentiability contracts, extension
 points, active manifest rows, and physics/autodiff/parity gates. If this page or
 the manifest conflicts with :doc:`architecture_refactor_plan`, update the

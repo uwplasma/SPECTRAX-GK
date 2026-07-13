@@ -478,6 +478,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "codecov/codecov-action",
                 "tools/release/check_parallel_scaling_artifacts.py",
                 "tools/release/check_package_architecture_manifest.py",
+                "tools/release/check_package_architecture_manifest.py differentiable-refactor",
                 "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
                 "tools/release/check_quasilinear_promotion_guardrails.py",
                 "tools/release/check_vmec_boozer_gates.py differentiability-claim",
@@ -515,6 +516,7 @@ coverage:
         "tools/release/check_repository_size_manifest.py\n"
         "tools/release/check_repository_size_manifest.py release-artifacts\n"
         "tools/release/check_package_architecture_manifest.py\n"
+        "tools/release/check_package_architecture_manifest.py differentiable-refactor\n"
         "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only\n"
         "tools/release/check_parallel_scaling_artifacts.py\n"
         "tools/release/check_quasilinear_promotion_guardrails.py\n"
@@ -1391,7 +1393,7 @@ PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {
 
 
 def _load_differentiable_refactor_tool():
-    return load_release_tool("check_differentiable_refactor_manifest")
+    return load_release_tool("check_package_architecture_manifest")
 
 
 def _load_performance_manifest_tool():
@@ -1600,8 +1602,8 @@ def _source_line_count(path: Path) -> int:
 
 def test_differentiable_refactor_manifest_is_well_formed() -> None:
     mod = _load_differentiable_refactor_tool()
-    summary = mod.validate_manifest(mod.load_manifest())
-    manifest = mod.load_manifest()
+    manifest = mod.load_differentiable_refactor_manifest()
+    summary = mod.validate_differentiable_refactor_manifest(manifest)
     assert summary["required_package_coverage_percent"] >= 95.0
     assert manifest["global_acceptance"]["require_adaptive_derivative_policy"] is True
     assert (
@@ -1679,7 +1681,7 @@ def test_differentiable_refactor_manifest_main_writes_summary_json(
 ) -> None:
     mod = _load_differentiable_refactor_tool()
     out_json = tmp_path / "summary.json"
-    assert mod.main(["--out-json", str(out_json)]) == 0
+    assert mod.main_differentiable_refactor(["--out-json", str(out_json)]) == 0
     payload = out_json.read_text(encoding="utf-8")
     assert "Differentiable architecture refactor plan" in payload
     assert "spectraxgk.geometry.differentiable" in payload

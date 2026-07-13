@@ -19,7 +19,7 @@ or ``tools/differentiable_refactor_manifest.toml`` should be updated.
 
 The active branch for this work starts with planning infrastructure only:
 ``tools/differentiable_refactor_manifest.toml`` and
-``tools/release/check_differentiable_refactor_manifest.py``. Large code moves should
+``tools/release/check_package_architecture_manifest.py differentiable-refactor``. Large code moves should
 land in later PRs only after the relevant manifest row, public facade, fast
 tests, parity gates, and documentation have been updated.
 

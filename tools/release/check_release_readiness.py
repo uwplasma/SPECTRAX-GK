@@ -31,6 +31,7 @@ REQUIRED_CI_SNIPPETS = (
     "codecov/codecov-action",
     "tools/release/check_parallel_scaling_artifacts.py",
     "tools/release/check_package_architecture_manifest.py",
+    "tools/release/check_package_architecture_manifest.py differentiable-refactor",
     "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
     "tools/release/check_quasilinear_promotion_guardrails.py",
     "tools/release/check_vmec_boozer_gates.py differentiability-claim",
@@ -51,6 +52,7 @@ REQUIRED_RELEASE_SNIPPETS = (
     "tools/release/check_repository_size_manifest.py",
     "tools/release/check_repository_size_manifest.py release-artifacts",
     "tools/release/check_package_architecture_manifest.py",
+    "tools/release/check_package_architecture_manifest.py differentiable-refactor",
     "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
     "tools/release/check_parallel_scaling_artifacts.py",
     "tools/release/check_quasilinear_promotion_guardrails.py",
@@ -457,7 +459,6 @@ def build_technical_release_status(root: Path = REPO_ROOT) -> dict[str, Any]:
             "Deferred manuscript physics lanes remain scoped separately."
         ),
     }
-
 
 
 def read_project_version(root: Path = REPO_ROOT) -> str:
