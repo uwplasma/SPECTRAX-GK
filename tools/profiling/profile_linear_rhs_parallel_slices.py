@@ -407,7 +407,7 @@ def profile_linear_rhs_parallel_slices(
             "claim_scope": (
                 "end-to-end explicit electrostatic "
                 + (
-                    "mixed species-Hermite collision-free electrostatic integration"
+                    "mixed species-Hermite collision-free integration"
                     if axis_name == "species_hermite"
                     else "species integration"
                 )

@@ -1,9 +1,9 @@
 {
   "actual_devices": 4,
   "atol": 2e-05,
-  "claim_scope": "engineering timing for the periodic electrostatic streaming-only mixed species-Hermite RHS with a separately reported exact-workload integration gate; not a GPU or general scaling claim",
+  "claim_scope": "engineering timing for the periodic collision-free electrostatic mixed species-Hermite RHS with a separately reported exact-workload integration gate; not a GPU or general scaling claim",
   "decomposition_axis": "species_hermite",
-  "git_revision": "66fc2b60d42a83d7b37edbc5a4ea0bd3936b343d",
+  "git_revision": "16bb2bfe8851262088d371a9023dc9062b0e4379",
   "grid": {
     "Nx": 1,
     "Ny_actual": 64,
@@ -12,37 +12,33 @@
   },
   "identity_passed": true,
   "integration": {
-    "claim_scope": "end-to-end explicit electrostatic mixed species-Hermite streaming integration for this exact grid, step count, device stack, and revision",
+    "claim_scope": "end-to-end explicit electrostatic mixed species-Hermite collision-free integration for this exact grid, step count, device stack, and revision",
     "dt": 1e-07,
     "field_history_identity": {
       "max_abs_error": 0.0,
       "max_rel_error": 0.0
     },
     "identity_passed": true,
-    "parallel_median_s": 0.32194950012490153,
+    "parallel_median_s": 0.563680584076792,
     "parallel_samples_s": [
-      0.32587475003674626,
-      0.31287758331745863,
-      0.3170864167623222,
-      0.3151851249858737,
-      0.32862037513405085,
-      0.32194950012490153,
-      0.32632720889523625
+      0.5392021248117089,
+      0.563680584076792,
+      0.5690725003369153,
+      0.6002045418135822,
+      0.5515071656554937
     ],
-    "repeats": 7,
+    "repeats": 5,
     "sample_stride": 1,
-    "serial_median_s": 0.5419654999859631,
+    "serial_median_s": 0.4991736668162048,
     "serial_samples_s": [
-      0.5403757086023688,
-      0.5454642078839242,
-      0.5342497080564499,
-      0.5481237079948187,
-      0.539038207847625,
-      0.5458302502520382,
-      0.5419654999859631
+      0.5451741670258343,
+      0.4924890408292413,
+      0.5054836673662066,
+      0.4991736668162048,
+      0.49617908289656043
     ],
-    "speedup": 1.6833866795124872,
-    "speedup_passed": true,
+    "speedup": 0.8855612219352241,
+    "speedup_passed": false,
     "state_identity": {
       "max_abs_error": 0.0,
       "max_rel_error": 0.0
@@ -53,49 +49,45 @@
   "kind": "linear_rhs_parallel_slices_profile",
   "max_abs_error": 1.0662403155947686e-06,
   "max_phi_abs_error": 9.33139787662185e-10,
-  "max_rel_error": 5.673847359295657e-08,
+  "max_rel_error": 5.5927314968510584e-08,
   "notes": "Both routes are warmed before timing. The serial route uses the production JIT path; the mixed route uses a four-device 2x2 species-Hermite shard-map.",
   "phi_norm": 0.06233418732881546,
   "platform": "cpu",
   "python_version": "3.11.14",
-  "repeats": 9,
+  "repeats": 7,
   "requested_devices": 4,
   "rows": [
     {
-      "median_s": 0.008822042029350996,
+      "median_s": 0.008630083873867989,
       "route": "serial",
       "samples_s": [
-        0.00857241591438651,
-        0.008638708852231503,
-        0.00867916690185666,
-        0.009037625044584274,
-        0.00871654087677598,
-        0.008822042029350996,
-        0.009019459132105112,
-        0.008909541182219982,
-        0.00892541604116559
+        0.008813458029180765,
+        0.008552207611501217,
+        0.008630083873867989,
+        0.008535875007510185,
+        0.008564166724681854,
+        0.00864124996587634,
+        0.009250833187252283
       ]
     },
     {
-      "median_s": 0.001666999887675047,
+      "median_s": 0.0029418752528727055,
       "route": "sharded",
       "samples_s": [
-        0.002209249883890152,
-        0.0019734581001102924,
-        0.001666999887675047,
-        0.0016379579901695251,
-        0.001583124976605177,
-        0.0017778328619897366,
-        0.0016536670736968517,
-        0.0017066248692572117,
-        0.0016621658578515053
+        0.003315542358905077,
+        0.0032537919469177723,
+        0.003089624922722578,
+        0.0029418752528727055,
+        0.002860625274479389,
+        0.002597792074084282,
+        0.0026826667599380016
       ]
     }
   ],
   "rtol": 2e-06,
-  "serial_median_s": 0.008822042029350996,
-  "sharded_median_s": 0.001666999887675047,
-  "speedup": 5.292167140847884,
+  "serial_median_s": 0.008630083873867989,
+  "sharded_median_s": 0.0029418752528727055,
+  "speedup": 2.933531551156296,
   "state_shape": [
     2,
     4,

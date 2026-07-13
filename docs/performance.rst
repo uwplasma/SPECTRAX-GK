@@ -1025,15 +1025,14 @@ An uncontended two-GPU integration artifact is still required before promoting
 an end-to-end species-parallel speedup; concurrent office workloads invalidated
 the available timing samples but not their host-reduced identity checks.
 
-The first mixed species--Hermite profile is narrower and uses four logical CPU
-devices. On the periodic streaming-only ``2x4x16x64x1x64`` workload, the
-``(species,m)=(2,2)`` mesh matches the serial RHS to ``5.7e-8`` relative and
-reaches a scoped ``5.29x`` warm-RHS speedup. The same artifact advances 100
-Euler steps with exact state/field histories and ``1.68x`` end-to-end speedup.
-This above-ideal RHS result can arise
-from the smaller per-device working set; it is not evidence for general strong
-scaling, GPUs, linked boundaries, or the complete linear operator. The
-integration result is scoped to the exact recorded method, grid, and host. The
+The mixed species--Hermite profile uses four logical CPU devices. On the
+periodic collision-free electrostatic ``2x4x16x64x1x64`` workload, the
+``(species,m)=(2,2)`` mesh matches the serial RHS to ``5.6e-8`` relative and
+reaches a scoped ``2.93x`` warm-RHS speedup. It applies streaming, mirror,
+curvature, grad-:math:`B`, and diamagnetic terms. The same artifact advances
+100 Euler steps with exact state/field histories but only ``0.89x`` end-to-end
+throughput, so no integration-speedup claim is made. This is not evidence for
+general strong scaling, GPUs, linked boundaries, or collisions. The
 machine-readable evidence is
 ``docs/_static/linear_rhs_species_hermite_profile_cpu.json`` and is regenerated
 with:
@@ -1042,8 +1041,8 @@ with:
 
    python tools/profiling/profile_linear_rhs_parallel_slices.py \
      --axis species_hermite --platform cpu --logical-devices 4 \
-     --nl 4 --nm 16 --ny 64 --nz 64 --warmups 2 --repeats 9 \
-     --integration-steps 100 --integration-repeats 7 \
+     --nl 4 --nm 16 --ny 64 --nz 64 --warmups 2 --repeats 7 \
+     --integration-steps 100 --integration-repeats 5 \
      --integration-dt 1e-7 --integration-sample-stride 1 \
      --out-prefix /tmp/linear_rhs_species_hermite_profile_cpu
 

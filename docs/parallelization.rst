@@ -400,11 +400,13 @@ and width-two exchanges also apply the production mirror, curvature, and
 grad-:math:`B` equations; global Hermite indices place the diamagnetic drive at
 the correct moments. Isolated term gates and their combined RHS match the
 serial production equations, and Euler/RK2 trajectories pass state and field
-identity on four logical CPUs. The older streaming-only artifact recorded
-``5.29x`` RHS and ``1.68x`` integration speedups, but those numbers are not
-automatically transferred to the broader operator. Linked boundaries,
-collisions, other integrators, and all GPU claims remain fail-closed. The office
-host has only two GPUs, so no mixed-mesh GPU claim can be tested there.
+identity on four logical CPUs. The revision-pinned full-operator artifact
+records ``2.93x`` warm-RHS speedup and exact 100-step state/field identity, but
+only ``0.89x`` end-to-end throughput. The route is therefore promoted for
+equation ownership and RHS acceleration, not complete integration speedup.
+Linked boundaries, collisions, other integrators, and all GPU claims remain
+fail-closed. The office host has only two GPUs, so no mixed-mesh GPU claim can
+be tested there.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate linked boundaries, complete mixed

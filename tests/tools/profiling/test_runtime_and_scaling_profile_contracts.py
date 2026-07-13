@@ -430,11 +430,12 @@ def test_tracked_mixed_species_hermite_profile_is_scoped_and_identity_gated() ->
     assert payload["identity_passed"] is True
     integration = payload["integration"]
     assert integration["identity_passed"] is True
-    assert integration["speedup_passed"] is True
-    assert integration["speedup"] > 1.0
+    assert integration["speedup_passed"] is (integration["speedup"] > 1.0)
     assert integration["state_identity"]["max_abs_error"] <= payload["atol"]
     assert integration["field_history_identity"]["max_abs_error"] <= payload["atol"]
-    assert "mixed species-Hermite streaming integration" in integration["claim_scope"]
+    assert (
+        "mixed species-Hermite collision-free integration" in integration["claim_scope"]
+    )
     assert payload["max_rel_error"] <= payload["rtol"]
     assert payload["max_abs_error"] <= payload["atol"]
     assert payload["max_phi_abs_error"] <= payload["atol"]
