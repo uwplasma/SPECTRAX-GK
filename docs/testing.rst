@@ -1375,10 +1375,10 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   simulation diagnostic and explicitly not a Doppler-reflectometry transfer-
   function validation.
 - **W7-X/TEM extension status**:
-  ``tools/artifacts/build_w7x_tem_extension_status.py`` reads the W7-X fluctuation panel
+  ``tools/artifacts/build_tem_validation_artifacts.py w7x-extension`` reads the W7-X fluctuation panel
   plus the current TEM branch audit and writes
   ``docs/_static/w7x_tem_extension_status.{png,pdf,json,csv}``. It closes only
-  the simulation-spectrum estimator. ``tools/artifacts/build_tem_branch_parity_audit.py``
+  the simulation-spectrum estimator. Its ``axisymmetric-branch`` mode
   writes ``docs/_static/tem_branch_parity_audit.{png,pdf,json,csv}`` from the
   tracked TEM mismatch table. TEM linear parity remains open with maximum
   absolute relative growth-rate mismatch about ``4.25``, maximum absolute

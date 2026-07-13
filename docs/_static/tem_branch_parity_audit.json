@@ -34,7 +34,7 @@
     ],
     "n_rows": 6,
     "path": "/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/data/tem_reference.csv",
-    "provenance": "Digitized low-ky TEM branch from the literature figure used by retired literature digitization helper; this is not a direct GX/SPECTRAX-GK dump."
+    "provenance": "Digitized low-ky TEM branch from the literature figure tracked in src/spectraxgk/data/tem_reference.csv; this is not a direct code-to-code dump."
   },
   "rows": [
     {

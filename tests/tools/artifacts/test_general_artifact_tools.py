@@ -1401,7 +1401,7 @@ def test_qi_branch_refinement_tool_writes_fail_closed_artifacts(tmp_path: Path) 
 
 
 def test_tem_branch_audit_tracks_sign_and_branch_mismatch(tmp_path: Path) -> None:
-    mod = load_artifact_tool("build_tem_branch_parity_audit")
+    mod = load_artifact_tool("build_tem_validation_artifacts")
     table = tmp_path / "tem_mismatch.csv"
     table.write_text(
         "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega\n"
@@ -1413,7 +1413,7 @@ def test_tem_branch_audit_tracks_sign_and_branch_mismatch(tmp_path: Path) -> Non
     reference = tmp_path / "tem_reference.csv"
     reference.write_text("ky,omega,gamma\n0.2,2.0,1.0\n", encoding="utf-8")
 
-    payload = mod.build_audit_payload(table=table, reference=reference)
+    payload = mod.build_branch_audit_payload(table=table, reference=reference)
     metrics = payload["metrics"]
 
     assert payload["status"] == "open"
@@ -1425,7 +1425,7 @@ def test_tem_branch_audit_tracks_sign_and_branch_mismatch(tmp_path: Path) -> Non
 
 
 def test_tem_branch_audit_writes_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("build_tem_branch_parity_audit")
+    mod = load_artifact_tool("build_tem_validation_artifacts")
     table = tmp_path / "tem_mismatch.csv"
     table.write_text(
         "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega\n"
@@ -1434,8 +1434,8 @@ def test_tem_branch_audit_writes_artifacts(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    payload = mod.build_audit_payload(table=table, reference=tmp_path / "missing.csv")
-    paths = mod.write_artifacts(payload, out_png=tmp_path / "tem_audit.png")
+    payload = mod.build_branch_audit_payload(table=table, reference=tmp_path / "missing.csv")
+    paths = mod.write_branch_artifacts(payload, out_png=tmp_path / "tem_audit.png")
 
     for path in paths.values():
         assert Path(path).exists()
@@ -2444,7 +2444,7 @@ def test_w7x_tem_extension_status_tracks_open_tem_and_multiflux(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    payload = load_artifact_tool("build_w7x_tem_extension_status").build_status_payload(
+    payload = load_artifact_tool("build_tem_validation_artifacts").build_w7x_status_payload(
         w7x_spectrum=spectrum, tem_table=tem, tem_audit=tmp_path / "missing.json"
     )
     rows = {row["lane"]: row for row in payload["rows"]}
@@ -2493,7 +2493,7 @@ def test_w7x_tem_extension_status_prefers_tem_audit_when_available(
         encoding="utf-8",
     )
 
-    payload = load_artifact_tool("build_w7x_tem_extension_status").build_status_payload(
+    payload = load_artifact_tool("build_tem_validation_artifacts").build_w7x_status_payload(
         w7x_spectrum=spectrum, tem_table=tem, tem_audit=audit
     )
     row = {row["lane"]: row for row in payload["rows"]}[
@@ -2530,7 +2530,7 @@ def test_w7x_tem_extension_status_writes_artifacts(tmp_path: Path) -> None:
         "summary": {"n_rows": 2, "n_closed": 1, "n_partial": 0, "n_open": 1},
     }
 
-    paths = load_artifact_tool("build_w7x_tem_extension_status").write_artifacts(
+    paths = load_artifact_tool("build_tem_validation_artifacts").write_w7x_status_artifacts(
         payload, out_png=tmp_path / "status.png"
     )
 
