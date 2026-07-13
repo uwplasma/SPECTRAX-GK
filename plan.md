@@ -1529,3 +1529,11 @@ under 5 minutes.
   Galilean invariance, while the documentation continues to block any claim
   that these targets constitute a complete distribution-space collision
   operator. All 19 focused collision integration tests pass.
+
+- 2026-07-13: Tested an explicit layout-normalized compressed-``ky`` FFT route
+  on the benchmark-size nonlinear bracket before changing production code. It
+  was CPU timing-neutral (``30.75`` versus ``30.90 ms``) and failed numerical
+  identity with relative norm error ``0.474``, so it is rejected. Both office
+  GPUs were concurrently occupied at 100% by unrelated work; no contaminated
+  GPU row is admitted. The clean A4000 profile at ``694fbc42`` remains the
+  current hot-path evidence, and no new speedup claim is made.
