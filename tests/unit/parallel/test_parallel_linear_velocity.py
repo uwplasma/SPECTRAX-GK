@@ -1374,7 +1374,81 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     np.testing.assert_allclose(
         np.asarray(parallel_rk2_phi), np.asarray(serial_rk2_phi), rtol=5e-5, atol=5e-6
     )
-    with pytest.raises(NotImplementedError, match="electrostatic linear slices"):
+    collision_params = replace(params, nu=jnp.asarray([0.1, 0.2]))
+    collision_terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    collision_serial_rhs, collision_serial_phi = linear_rhs_cached(
+        state,
+        cache,
+        collision_params,
+        terms=collision_terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    collision_parallel_rhs, collision_parallel_phi = (
+        linear_parallel_electrostatic.linear_rhs_electrostatic_species_sharded(
+            state,
+            cache,
+            collision_params,
+            terms=collision_terms,
+            devices=devices[:2],
+        )
+    )
+    assert float(jnp.linalg.norm(collision_serial_rhs)) > 0.0
+    np.testing.assert_allclose(
+        np.asarray(collision_parallel_rhs),
+        np.asarray(collision_serial_rhs),
+        rtol=5e-5,
+        atol=5e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(collision_parallel_phi),
+        np.asarray(collision_serial_phi),
+        rtol=5e-5,
+        atol=5e-6,
+    )
+    collision_serial_state, _ = integrate_linear(
+        state,
+        grid,
+        geom,
+        collision_params,
+        dt=1e-5,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=collision_terms,
+    )
+    collision_parallel_state, _ = integrate_linear(
+        state,
+        grid,
+        geom,
+        collision_params,
+        dt=1e-5,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=collision_terms,
+        parallel=parallel,
+    )
+    np.testing.assert_allclose(
+        np.asarray(collision_parallel_state),
+        np.asarray(collision_serial_state),
+        rtol=5e-5,
+        atol=5e-6,
+    )
+    with pytest.raises(NotImplementedError, match="electrostatic field terms"):
         integrate_linear(
             state,
             grid,
@@ -1384,7 +1458,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
             steps=1,
             method="euler",
             cache=cache,
-            terms=replace(terms, collisions=1.0),
+            terms=replace(terms, apar=1.0),
             parallel=parallel,
         )
     with pytest.raises(NotImplementedError, match="species-parallel IMEX"):
