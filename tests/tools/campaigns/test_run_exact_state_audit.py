@@ -21,12 +21,8 @@ def test_exact_state_tool_layout_resolves_repository_commands() -> None:
     repo = Path(__file__).resolve().parents[3]
     assert REPO_ROOT == repo
     assert COMPARISON_TOOL_DIR == repo / "tools" / "comparison"
-    for name in (
-        "compare_gx_runtime_startup.py",
-        "compare_gx_runtime_diag_state.py",
-        "compare_gx_runtime_window.py",
-    ):
-        assert _comparison_tool_path(name) == COMPARISON_TOOL_DIR / name
+    name = "compare_runtime.py"
+    assert _comparison_tool_path(name) == COMPARISON_TOOL_DIR / name
 
     with pytest.raises(FileNotFoundError, match="comparison tool does not exist"):
         _comparison_tool_path("missing.py")

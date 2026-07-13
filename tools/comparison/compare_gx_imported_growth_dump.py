@@ -25,7 +25,7 @@ from tools.comparison.compare_gx_imported_linear import (
     _resolve_internal_geometry_source,
 )
 from tools.comparison.compare_gx_rhs_terms import _infer_y0
-from tools.comparison.compare_gx_runtime_diag_state import (
+from tools.comparison.compare_runtime import (
     _load_field,
     _load_real_vector_auto,
     _load_species_state,

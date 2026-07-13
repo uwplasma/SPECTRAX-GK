@@ -5,10 +5,8 @@ This runner is intentionally file-path driven (manifest-based) so it can be
 used on local laptops and remote machines without hardcoding office-only paths
 into the repo.
 
-It wraps:
-- tools/comparison/compare_gx_runtime_startup.py
-- tools/comparison/compare_gx_runtime_diag_state.py
-- tools/comparison/compare_gx_runtime_window.py
+It wraps the startup, diagnostic-state, and window subcommands in
+``tools/comparison/compare_runtime.py``.
 """
 
 from __future__ import annotations
@@ -187,7 +185,8 @@ def main() -> None:
                 st = cfg["startup"]
                 cmd = [
                     py,
-                    str(_comparison_tool_path("compare_gx_runtime_startup.py")),
+                    str(_comparison_tool_path("compare_runtime.py")),
+                    "startup",
                     "--gx-dir",
                     str(
                         _resolve_manifest_path(st["gx_dir"], manifest_dir=manifest_dir)
@@ -214,7 +213,8 @@ def main() -> None:
                 ds = cfg["diag_state"]
                 cmd = [
                     py,
-                    str(_comparison_tool_path("compare_gx_runtime_diag_state.py")),
+                    str(_comparison_tool_path("compare_runtime.py")),
+                    "diagnostic-state",
                     "--gx-dir",
                     str(
                         _resolve_manifest_path(ds["gx_dir"], manifest_dir=manifest_dir)
@@ -241,7 +241,8 @@ def main() -> None:
                 w = cfg["window"]
                 cmd = [
                     py,
-                    str(_comparison_tool_path("compare_gx_runtime_window.py")),
+                    str(_comparison_tool_path("compare_runtime.py")),
+                    "window",
                     "--gx-dir",
                     str(_resolve_manifest_path(w["gx_dir"], manifest_dir=manifest_dir)),
                     "--gx-out",

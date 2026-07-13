@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_compare_gx_imported_growth_dump.py ----
 
 from pathlib import Path
@@ -2648,7 +2647,6 @@ import sys
 from pathlib import Path
 
 
-
 def test_compare_gx_nonlinear_terms_parser_accepts_runtime_config() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
@@ -3156,8 +3154,8 @@ def test_rhs_term_diagnostics_etg_uses_canonical_runtime_contract() -> None:
             "R_over_LTe": 6.0,
         },
     )()
-    cfg, params, species_index, drift_scale, drive_scale, rho_scale = (
-        mod._case_config("etg", args)
+    cfg, params, species_index, drift_scale, drive_scale, rho_scale = mod._case_config(
+        "etg", args
     )
 
     assert cfg.species[0].tprim == pytest.approx(6.0)
@@ -3208,7 +3206,7 @@ def test_write_rhs_term_diagnostics_seed_state_handles_multispecies_tem() -> Non
     assert np.allclose(np.asarray(G0[0]), 0.0)
 
 
-# ---- test_compare_gx_runtime_window.py ----
+# ---- compare_runtime.py ----
 
 """Tests for runtime-configured exact-state comparison tooling."""
 
@@ -3219,13 +3217,8 @@ from pathlib import Path
 from netCDF4 import Dataset
 
 
-def test_compare_gx_runtime_startup_select_ky_block_slices_third_to_last_axis() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_startup as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_startup_select_ky_block_slices_third_to_last_axis() -> None:
+    from tools.comparison import compare_runtime as mod
 
     arr = np.arange(2 * 3 * 4 * 5 * 6).reshape(2, 3, 4, 5, 6)
     sliced = mod._select_ky_block(arr, 1)
@@ -3234,26 +3227,16 @@ def test_compare_gx_runtime_startup_select_ky_block_slices_third_to_last_axis() 
     assert np.array_equal(sliced[:, :, 0, :, :], arr[:, :, 1, :, :])
 
 
-def test_compare_gx_runtime_startup_infers_full_ny_from_positive_ky() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_startup as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_startup_infers_full_ny_from_positive_ky() -> None:
+    from tools.comparison import compare_runtime as mod
 
     assert mod._full_ny_from_positive_ky(np.array([0.1, 0.2, 0.3, 0.4])) == 10
 
 
-def test_compare_gx_runtime_startup_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_startup as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_startup_parser_requires_core_args() -> None:
+    from tools.comparison import compare_runtime as mod
 
-    parser = mod.build_parser()
+    parser = mod.build_startup_parser()
     args = parser.parse_args(
         [
             "--gx-dir",
@@ -3273,15 +3256,10 @@ def test_compare_gx_runtime_startup_parser_requires_core_args() -> None:
     assert args.ky == 0.3
 
 
-def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
+def test_compare_runtime_startup_builds_full_grid_before_slicing(
     tmp_path: Path, monkeypatch
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_startup as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+    from tools.comparison import compare_runtime as mod
 
     gx_out = tmp_path / "gx.out.nc"
     with Dataset(gx_out, "w") as ds:
@@ -3364,7 +3342,7 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
         sys,
         "argv",
         [
-            "compare_gx_runtime_startup.py",
+            "compare_runtime.py startup",
             "--gx-dir",
             str(tmp_path),
             "--gx-out",
@@ -3376,7 +3354,7 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
         ],
     )
 
-    mod.main()
+    mod.main_startup()
 
     assert captured["grid"] is grid_full
     assert captured["ky_index"] == 2
@@ -3385,15 +3363,10 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
     assert ("phi", (1, 1, 2), (1, 1, 2)) in summaries
 
 
-def test_compare_gx_runtime_diag_state_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_diag_state as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_diagnostic_state_parser_requires_core_args() -> None:
+    from tools.comparison import compare_runtime as mod
 
-    parser = mod.build_parser()
+    parser = mod.build_diagnostic_state_parser()
     args = parser.parse_args(
         [
             "--gx-dir",
@@ -3413,15 +3386,10 @@ def test_compare_gx_runtime_diag_state_parser_requires_core_args() -> None:
     assert args.time_index == 10
 
 
-def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
+def test_compare_runtime_diagnostic_state_builds_positive_ky_grid_and_writes_csv(
     tmp_path: Path, monkeypatch
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_diag_state as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+    from tools.comparison import compare_runtime as mod
 
     gx_out = tmp_path / "gx.out.nc"
     with Dataset(gx_out, "w") as ds:
@@ -3550,7 +3518,7 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
         sys,
         "argv",
         [
-            "compare_gx_runtime_diag_state.py",
+            "compare_runtime.py diagnostic-state",
             "--gx-dir",
             str(gx_dir),
             "--gx-out",
@@ -3564,7 +3532,7 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
         ],
     )
 
-    mod.main()
+    mod.main_diagnostic_state()
 
     assert captured["grid"] is grid_full
     assert np.array_equal(captured["ky_vals"], np.array([0.1, 0.2], dtype=np.float32))
@@ -3574,15 +3542,10 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
     assert "Wg" in text
 
 
-def test_compare_gx_runtime_window_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_window as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_window_parser_requires_core_args() -> None:
+    from tools.comparison import compare_runtime as mod
 
-    parser = mod.build_parser()
+    parser = mod.build_window_parser()
     args = parser.parse_args(
         [
             "--gx-dir",
@@ -3605,15 +3568,10 @@ def test_compare_gx_runtime_window_parser_requires_core_args() -> None:
     assert args.time_index_stop == 11
 
 
-def test_compare_gx_runtime_window_parser_accepts_optional_ky_and_steps() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_window as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_window_parser_accepts_optional_ky_and_steps() -> None:
+    from tools.comparison import compare_runtime as mod
 
-    parser = mod.build_parser()
+    parser = mod.build_window_parser()
     args = parser.parse_args(
         [
             "--gx-dir",
@@ -3636,13 +3594,8 @@ def test_compare_gx_runtime_window_parser_accepts_optional_ky_and_steps() -> Non
     assert args.ky == 0.3
 
 
-def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import compare_gx_runtime_window as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+def test_compare_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> None:
+    from tools.comparison import compare_runtime as mod
 
     gx_out = tmp_path / "gx.out.nc"
     with Dataset(gx_out, "w") as ds:
@@ -3787,7 +3740,7 @@ def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> No
         sys,
         "argv",
         [
-            "compare_gx_runtime_window.py",
+            "compare_runtime.py window",
             "--gx-dir",
             str(gx_dir),
             "--gx-out",
@@ -3805,7 +3758,7 @@ def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> No
         ],
     )
 
-    mod.main()
+    mod.main_window()
 
     text = out_csv.read_text()
     assert "time_index_start,time_index_stop" in text
@@ -4142,7 +4095,10 @@ def test_secondary_table_rows_format_expected_values(tmp_path: Path) -> None:
 
 def test_parser_defaults_to_repository_static_assets() -> None:
     args = reference_panels_build_parser().parse_args(["summary"])
-    assert args.secondary_csv == STATIC / "comparison" / "secondary_reference_out_compare.csv"
+    assert (
+        args.secondary_csv
+        == STATIC / "comparison" / "secondary_reference_out_compare.csv"
+    )
     assert STATIC == ROOT / "docs" / "_static"
 
 
@@ -4350,8 +4306,6 @@ def test_reference_panel_subcommands_render_outputs(tmp_path: Path) -> None:
 
 
 from pathlib import Path
-
-
 
 
 def test_imported_window_parser_accepts_required_args() -> None:

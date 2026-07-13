@@ -50,15 +50,15 @@ explicitly verified differentiable workflows for analysis and optimization.
 
 ## Current State
 
-Date: 2026-07-12.
+Date: 2026-07-13.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 226 | reviewed domain ownership | closed |
 | Source modules above 1000 lines | 0 | 0 unreviewed | closed |
 | Public/compatibility facade maximum | 472 lines | <=500 lines | closed |
-| Tool Python files | 134 | grouped commands; no duplicate owners | active |
-| Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
+| Tool Python files | 132 | <=99 grouped commands; no duplicate owners | active |
+| Test Python files | 96 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | owner test restored; CI rerun in progress | pass | active pending CI |
@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 72% | The exact-state orchestrator now resolves purpose-folder commands correctly; split shared command engines before deleting more wrappers so grouped owners stay below the architecture size limit. |
+| Tool consolidation | 74% | Runtime startup, diagnostic-state, and evolution-window comparisons now share one subcommand owner; continue with another evidence-linked command family toward the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1045,3 +1045,11 @@ under 5 minutes.
   warning-strict Sphinx build. User-facing wording now consistently describes
   nonlinear parallelization without implying a multi-device speedup; the
   documented ``0.586x`` two-GPU result remains explicit negative evidence.
+- 2026-07-13: Consolidated exact-state runtime comparison tooling. Startup,
+  saved diagnostic-state, and evolved-window audits now use the ``startup``,
+  ``diagnostic-state``, and ``window`` subcommands of one 690-line owner;
+  imported growth/window diagnostics reuse its binary loaders, and the
+  orchestrator invokes the unified command. Three scripts were replaced by
+  one, lowering the tool inventory from 134 to 132. The architecture manifest
+  now enforces the honest ``<=99`` final target instead of treating 134 as
+  complete, while the normal no-regression check remains green.

@@ -64,21 +64,24 @@ navigation cost inside domain packages and should not add more root-level prefix
 modules unless they are deliberate public facades tracked in the migration
 manifest.
 
-The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
+The refreshed topology audit on 2026-07-13 found that root-prefix modules are no
 longer the main problem. The current blockers are source/test/tool sprawl,
 oversized facades, and ambiguous ownership between benchmark, tool, validation,
 and campaign code:
 
-- 255 Python source files under ``src/spectraxgk`` after continued
+- 226 Python source files under ``src/spectraxgk`` after continued
   consolidation and removal of the installable validation package.
 - 0 Python files under ``src/spectraxgk/validation``; the package has been removed.
-- 164 Python test files, including the shared ``tests/support/paths.py`` helper;
+- 96 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and artifact/tool families were consolidated.
-- 134 Python tool scripts and zero flat top-level ``tools/*.py`` files after
+- 132 Python tool scripts and zero flat top-level ``tools/*.py`` files after
   removing package-marker modules and moving release, comparison, artifact,
   campaign, profiling, benchmark, generator, compression-helper, reference-helper,
-  diagnostic, and VMEC-helper scripts into purpose folders.
+  diagnostic, and VMEC-helper scripts into purpose folders. The enforced
+  consolidation target is at most 99 scripts; the default architecture check
+  prevents count regression while the stricter target gate reports the remaining
+  work.
 - no tracked files above 2 MB and no tracked ``__pycache__`` / ``.pyc`` /
   ``.DS_Store`` files.
 
