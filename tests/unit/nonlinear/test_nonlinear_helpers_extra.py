@@ -44,7 +44,7 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
     integrate_nonlinear_imex_diagnostics,
-    integrate_nonlinear_sheared_euler,
+    integrate_nonlinear_sheared,
     maybe_emit_nonlinear_progress,
     run_sampled_explicit_diagnostic_scan,
     sampled_scan_intervals,
@@ -632,7 +632,7 @@ def test_shearing_coordinate_tangent_matches_finite_difference() -> None:
     np.testing.assert_allclose(x0_tangent, x0_finite_difference, rtol=3.0e-4)
 
 
-def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
+def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
     grid = build_spectral_grid(
         GridConfig(
             Nx=4,
@@ -669,11 +669,11 @@ def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
         params,
         dt=0.02,
         steps=2,
-        method="euler",
+        method="rk2",
         terms=nonlinear_only,
         compressed_real_fft=False,
     )
-    sheared_state, sheared_fields = integrate_nonlinear_sheared_euler(
+    sheared_state, sheared_fields = integrate_nonlinear_sheared(
         state,
         grid,
         geom,
@@ -681,6 +681,7 @@ def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
         dt=0.02,
         steps=2,
         shear_rate=0.0,
+        method="rk2",
         cache=cache,
         terms=nonlinear_only,
     )
@@ -688,7 +689,7 @@ def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
     np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
 
     disabled = TermConfig(*([0.0] * 12))
-    remapped_state, _ = integrate_nonlinear_sheared_euler(
+    remapped_state, _ = integrate_nonlinear_sheared(
         state,
         grid,
         geom,
@@ -696,6 +697,7 @@ def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
         dt=0.4,
         steps=3,
         shear_rate=1.0,
+        method="rk2",
         cache=cache,
         terms=disabled,
     )
@@ -712,7 +714,7 @@ def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
     np.testing.assert_allclose(remapped_state, expected, atol=2.0e-7)
 
     with pytest.raises(ValueError, match="steps must be at least one"):
-        integrate_nonlinear_sheared_euler(
+        integrate_nonlinear_sheared(
             state,
             grid,
             geom,
@@ -722,6 +724,149 @@ def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
             shear_rate=1.0,
             cache=cache,
         )
+    with pytest.raises(ValueError, match="method must be 'euler' or 'rk2'"):
+        integrate_nonlinear_sheared(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.1,
+            steps=1,
+            shear_rate=1.0,
+            method="rk4",
+            cache=cache,
+        )
+
+
+def test_sheared_rk2_recovers_second_order_on_physical_rhs() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=4,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="periodic",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(
+        rho_star=1.0,
+        nu_hyper=0.0,
+        nu_hyper_m=0.0,
+        R_over_LTi=2.0,
+        R_over_Ln=0.5,
+    )
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=2)
+    initial = np.zeros((1, 2, 4, 4, 4), dtype=np.complex64)
+    initial[0, 0, 1, 0, :] = np.asarray(
+        [0.2 + 0.1j, 0.1 - 0.05j, 0.15 + 0.02j, 0.07 - 0.03j]
+    )
+    initial[0, 1, 1, 1, :] = 0.03 + 0.02j
+    drift_drive = TermConfig(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+        nonlinear=0.0,
+    )
+
+    solutions = []
+    final_time = 0.08
+    for steps in (2, 4, 8, 32):
+        state, _ = integrate_nonlinear_sheared(
+            jnp.asarray(initial.copy()),
+            grid,
+            geom,
+            params,
+            dt=final_time / steps,
+            steps=steps,
+            shear_rate=0.3,
+            method="rk2",
+            cache=cache,
+            terms=drift_drive,
+        )
+        solutions.append(np.asarray(state))
+
+    reference = solutions[-1]
+    errors = [np.linalg.norm(value - reference) for value in solutions[:-1]]
+    observed_orders = [
+        np.log(errors[index] / errors[index + 1]) / np.log(2.0)
+        for index in range(2)
+    ]
+    assert min(observed_orders) > 1.8
+
+
+def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=8,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi / 0.2,
+            Ly=2.0 * np.pi / 0.3,
+            boundary="periodic",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18)
+    params = LinearParams(
+        rho_star=1.0,
+        nu_hyper=0.0,
+        nu_hyper_m=0.0,
+        R_over_LTi=6.9,
+        R_over_Ln=2.2,
+        damp_ends_amp=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=4)
+    rng = np.random.default_rng(10)
+    initial = np.zeros((2, 4, 4, 8, 8), dtype=np.complex64)
+    initial[:, :, 1, 0, :] = 1.0e-4 * (
+        rng.normal(size=(2, 4, 8)) + 1j * rng.normal(size=(2, 4, 8))
+    )
+    linear_itg = TermConfig(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+        nonlinear=0.0,
+    )
+
+    amplitudes: dict[tuple[float, float], float] = {}
+    for dt in (0.02, 0.01):
+        for shear_rate in (0.0, 1.0):
+            _, fields = integrate_nonlinear_sheared(
+                jnp.asarray(initial.copy()),
+                grid,
+                geom,
+                params,
+                dt=dt,
+                steps=int(round(2.0 / dt)),
+                shear_rate=shear_rate,
+                method="rk2",
+                cache=cache,
+                terms=linear_itg,
+            )
+            amplitudes[(dt, shear_rate)] = float(jnp.linalg.norm(fields.phi[-1]))
+
+    for shear_rate in (0.0, 1.0):
+        coarse = amplitudes[(0.02, shear_rate)]
+        fine = amplitudes[(0.01, shear_rate)]
+        assert abs(coarse - fine) / fine < 0.01
+    assert amplitudes[(0.01, 1.0)] / amplitudes[(0.01, 0.0)] < 0.8
 
 
 def test_build_nonlinear_diagnostic_setup_uses_injected_policy() -> None:

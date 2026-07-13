@@ -79,7 +79,7 @@ group = "optional_extension"
 status = "planned_research_lane"
 spectrax_owner = "spectraxgk.operators.nonlinear.projection and spectraxgk.operators.linear.cache_builder plus future time-step policy"
 comparison_owner = "src/exb.cu plus sheared perpendicular-grid phase updates"
-evidence = "coordinate, periodic cache, split-phase bracket, and research Euler kernels pass zero-shear array/RHS/trajectory identity, analytic kx evolution, canonical bracket invariance, cumulative remap/dealias, inverse-remap, and AD/FD tangent gates; higher-order, compressed-real, and linked-boundary routing plus linear suppression, nonlinear transport, and matched comparison gates remain required"
+evidence = "coordinate, periodic cache, split-phase bracket, and fixed-step RK2 kernels pass zero-shear array/RHS/trajectory identity, analytic kx evolution, canonical bracket invariance, stage/cumulative remap/dealias, inverse-remap, and AD/FD tangent gates; adaptive/IMEX, compressed-real, and linked-boundary routing plus linear suppression, nonlinear transport, and matched comparison gates remain required"
 
 [[capabilities]]
 id = "initial_value_time_integration"

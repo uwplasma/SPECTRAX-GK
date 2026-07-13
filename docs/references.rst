@@ -83,6 +83,14 @@ References
    16, 072303 (2009). `ORNL record <https://impact.ornl.gov/en/publications/gyrokinetic-simulation-tests-of-quasilinear-and-tracer-transport/>`__,
    `DOI <https://doi.org/10.1063/1.3167391>`__.
 
+.. [Biglari90] H. Biglari, P. H. Diamond, and P. W. Terry, "Influence of
+   sheared poloidal rotation on edge turbulence," Physics of Fluids B 2, 1
+   (1990). `DOI <https://doi.org/10.1063/1.859529>`__.
+
+.. [Waltz95] R. E. Waltz, G. D. Kerbel, J. Milovich, and G. W. Hammett,
+   "Advances in the simulation of toroidal gyro-Landau fluid model turbulence,"
+   Physics of Plasmas 2, 2408 (1995).
+
 .. [Staebler24] G. Staebler, C. Bourdelle, J. Citrin, and R. Waltz,
    "Quasilinear theory and modelling of gyrokinetic turbulent transport in
    tokamaks," Nuclear Fusion 64, 103001 (2024).

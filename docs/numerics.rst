@@ -259,13 +259,20 @@ transforms to apply the residual radial phase between the :math:`k_x` and
 :math:`k_y` FFTs; a canonical-coordinate invariance test verifies that the
 Poisson bracket is unchanged by the shear-coordinate transformation. The
 research function
-:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_euler` verifies
-zero-shear trajectory identity and cumulative full-step remapping.
+:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared` verifies zero-shear
+trajectory identity and cumulative full-step remapping. Its midpoint RK2 route
+evaluates the RHS in the correctly remapped stage coordinate basis and recovers
+observed orders 2.02 and 2.07 on a physical drift/diamagnetic trajectory. A
+fixed-window Cyclone-like linear ITG pilot is converged to below 1% under a
+factor-two timestep refinement and reduces the final potential norm by more
+than 20% when :math:`\gamma_E=1`. This is the expected decorrelation direction
+when the shearing rate exceeds the instability rate [Biglari90]_ [Waltz95]_,
+but it is not a nonlinear transport validation.
 
-This Euler path is a numerical foundation, not the production model. The
+This fixed-step path is a numerical foundation, not the production model. The
 compressed-real FFT rejects radial phases, and non-twist and linked boundaries
 fail closed because their Hermitian and boundary phases are not implemented.
-Higher-order stage-time routing, linear suppression, saturated transport, and
+Adaptive/IMEX routing, linear suppression, saturated transport, and
 matched-code gates remain mandatory before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion

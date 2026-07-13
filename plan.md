@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/cache/split-phase bracket plus periodic research Euler trajectory validated | complete higher-order/compressed/linked routing and physics gates before shipping |
+| Equilibrium ExB flow shear | coordinate/cache/split-phase bracket plus periodic research RK2 trajectory validated | complete adaptive/IMEX/compressed/linked routing and physics gates before shipping |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1574,7 +1574,16 @@ under 5 minutes.
   foundation without exposing it in TOML. The full-complex bracket now applies
   and removes the residual radial phase between split ``kx``/``ky`` transforms;
   a canonical-coordinate gate shows that this preserves the Poisson bracket.
-  The research Euler path passes zero-shear trajectory identity and exact
-  cumulative full-step remapping. Compressed-real, linked/non-twist, and
-  higher-order stage-time paths fail closed or remain absent, so no production
-  flow-shear or transport claim is made.
+  The fixed-step midpoint RK2 path remaps stage states and derivatives into the
+  correct time-dependent basis, passes zero-shear trajectory identity, and
+  reproduces exact cumulative full-step remapping. Compressed-real,
+  linked/non-twist, adaptive, and IMEX paths fail closed or remain absent, so no
+  production flow-shear or transport claim is made.
+
+- 2026-07-13: Verified the sheared midpoint route beyond identity tests. A
+  physical drift/diamagnetic trajectory converges at observed orders ``2.02``
+  and ``2.07``. In a compact Cyclone-like linear ITG pilot, both zero and strong
+  shear final-potential norms change by less than 1% when ``dt`` is halved from
+  ``0.02`` to ``0.01``; ``gamma_E=1`` lowers the refined final norm by more than
+  20%. This literature-consistent suppression direction is admitted only as a
+  linear pilot, not as saturated-transport evidence.
