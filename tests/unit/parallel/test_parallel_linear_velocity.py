@@ -1259,6 +1259,15 @@ def test_species_sharded_phi_matches_production_quasineutrality() -> None:
 def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     from spectraxgk.linear import linear_rhs_cached
 
+    def assert_species_close(observed, expected, *, rtol=5e-5, atol=5e-6):
+        for species_index in range(int(expected.shape[0])):
+            np.testing.assert_allclose(
+                np.asarray(observed[species_index]),
+                np.asarray(expected[species_index]),
+                rtol=rtol,
+                atol=atol,
+            )
+
     devices = jax.devices()
     if len(devices) < 2:
         pytest.skip("requires two logical CPU devices or two accelerators")
@@ -1300,15 +1309,11 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     np.testing.assert_allclose(
         np.asarray(observed_phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
     )
-    np.testing.assert_allclose(
-        np.asarray(observed_rhs), np.asarray(expected_rhs), rtol=3e-5, atol=3e-5
-    )
+    assert_species_close(observed_rhs, expected_rhs, rtol=3e-5, atol=3e-5)
     np.testing.assert_allclose(
         np.asarray(routed_phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
     )
-    np.testing.assert_allclose(
-        np.asarray(routed_rhs), np.asarray(expected_rhs), rtol=3e-5, atol=3e-5
-    )
+    assert_species_close(routed_rhs, expected_rhs, rtol=3e-5, atol=3e-5)
 
     from spectraxgk.linear import integrate_linear
 
@@ -1335,9 +1340,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         terms=terms,
         parallel=parallel,
     )
-    np.testing.assert_allclose(
-        np.asarray(parallel_state), np.asarray(serial_state), rtol=5e-5, atol=5e-6
-    )
+    assert_species_close(parallel_state, serial_state)
     np.testing.assert_allclose(
         np.asarray(parallel_phi), np.asarray(serial_phi), rtol=5e-5, atol=5e-6
     )
@@ -1368,9 +1371,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         parallel=parallel,
     )
     assert parallel_rk2_phi.shape[0] == 2
-    np.testing.assert_allclose(
-        np.asarray(parallel_rk2), np.asarray(serial_rk2), rtol=5e-5, atol=5e-6
-    )
+    assert_species_close(parallel_rk2, serial_rk2)
     np.testing.assert_allclose(
         np.asarray(parallel_rk2_phi), np.asarray(serial_rk2_phi), rtol=5e-5, atol=5e-6
     )
@@ -1407,12 +1408,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         )
     )
     assert float(jnp.linalg.norm(collision_serial_rhs)) > 0.0
-    np.testing.assert_allclose(
-        np.asarray(collision_parallel_rhs),
-        np.asarray(collision_serial_rhs),
-        rtol=5e-5,
-        atol=5e-6,
-    )
+    assert_species_close(collision_parallel_rhs, collision_serial_rhs)
     np.testing.assert_allclose(
         np.asarray(collision_parallel_phi),
         np.asarray(collision_serial_phi),
@@ -1442,12 +1438,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         terms=collision_terms,
         parallel=parallel,
     )
-    np.testing.assert_allclose(
-        np.asarray(collision_parallel_state),
-        np.asarray(collision_serial_state),
-        rtol=5e-5,
-        atol=5e-6,
-    )
+    assert_species_close(collision_parallel_state, collision_serial_state)
     with pytest.raises(NotImplementedError, match="electrostatic field terms"):
         integrate_linear(
             state,
