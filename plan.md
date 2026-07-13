@@ -1428,3 +1428,9 @@ under 5 minutes.
   coarse-grid exclusion, retained-grid convergence, time-horizon, replicate,
   and claim-scope gates remain directly tested beside differentiability and
   held-out geometry gates. Tool inventory reaches the enforced target of 99.
+
+- 2026-07-13: Kept the consolidated quasilinear promotion guardrail usable in
+  dependency-minimal repository-hygiene jobs by moving NumPy/Matplotlib imports
+  into calibration serialization and plotting functions. Metadata-only release
+  checks therefore remain lightweight, while docs jobs retain the same optional
+  publication-plot path.

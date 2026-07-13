@@ -12,14 +12,6 @@ from pathlib import Path
 import sys
 from typing import Any, Iterable
 
-import matplotlib
-import numpy as np
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -1289,6 +1281,8 @@ DEFAULT_PNG = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inp
 
 
 def _json_clean(value: Any) -> Any:
+    import numpy as np
+
     if isinstance(value, dict):
         return {str(key): _json_clean(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -1563,6 +1557,14 @@ def audit_calibration_inputs(
 def write_audit_plot(
     payload: dict[str, Any], out_png: str | Path = DEFAULT_PNG
 ) -> None:
+    import matplotlib
+    import numpy as np
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from spectraxgk.artifacts.plotting import set_plot_style
+
     """Write a compact calibration-input audit plot."""
 
     rows = []
