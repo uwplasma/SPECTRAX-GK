@@ -1543,3 +1543,11 @@ under 5 minutes.
   Ruff, strict Sphinx, wheel/sdist construction, and Twine metadata pass. The
   source/test/tool inventories are ``226/96/99``; the plan's stale 129-tool row
   was corrected. GitHub CI for the final checkpoint is pending, not assumed.
+
+- 2026-07-13: Completed a two-domain source-ownership migration without
+  compatibility shims. Linear collision/hypercollision/hyperdiffusion/end-
+  damping kernels moved from ``terms.linear_dissipation`` to
+  ``operators.linear.dissipation`` and pseudo-spectral Poisson brackets moved
+  from ``terms.brackets`` to ``operators.nonlinear.brackets``. All internal,
+  test, tool, manifest, capability-matrix, and API references use the canonical
+  paths; 146 affected operator/assembly/benchmark tests pass in bounded shards.

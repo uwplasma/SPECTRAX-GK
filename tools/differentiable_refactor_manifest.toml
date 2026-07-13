@@ -1272,8 +1272,8 @@ fast_tests = ["tests/unit/nonlinear/test_nonlinear_exb.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.terms.brackets"
-source_path = "src/spectraxgk/terms/brackets.py"
+module = "spectraxgk.operators.nonlinear.brackets"
+source_path = "src/spectraxgk/operators/nonlinear/brackets.py"
 facade_module = "spectraxgk.terms.nonlinear"
 status = "active"
 responsibility = "pseudo-spectral E cross B Poisson-bracket FFT kernels, mask/grid broadcasting, real-FFT Hermitian reconstruction, and multi-field bracket batching"
@@ -2058,8 +2058,8 @@ fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.terms.linear_dissipation"
-source_path = "src/spectraxgk/terms/linear_dissipation.py"
+module = "spectraxgk.operators.linear.dissipation"
+source_path = "src/spectraxgk/operators/linear/dissipation.py"
 facade_module = "spectraxgk.terms.linear_terms"
 status = "active"
 responsibility = "linear collisional, hypercollisional, perpendicular hyperdiffusive, and end-damping RHS contributions"

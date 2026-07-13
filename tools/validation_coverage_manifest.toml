@@ -276,7 +276,7 @@ owned_modules = [
   "spectraxgk.terms.assembly",
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",
-  "spectraxgk.terms.linear_dissipation",
+  "spectraxgk.operators.linear.dissipation",
   "spectraxgk.terms.linear_terms",
   "spectraxgk.operators.linear.streaming",
 ]
@@ -595,7 +595,7 @@ path = "src/spectraxgk/nonlinear.py"
 owned_modules = [
   "spectraxgk.solvers.nonlinear.state_integration",
   "spectraxgk.solvers.nonlinear.diagnostic_integration",
-  "spectraxgk.terms.brackets",
+  "spectraxgk.operators.nonlinear.brackets",
   "spectraxgk.terms.gyroaveraging",
   "spectraxgk.terms.nonlinear",
 ]

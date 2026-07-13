@@ -636,7 +636,9 @@ Phase D: runtime and output consolidation
 Phase E: linear, basis, grids, and operator consolidation
   Move linear cache, linked-boundary helpers, Krylov helpers, moments, and field
   solves under ``operators/linear`` and ``solvers/linear``. Move basis and grid
-  primitives into packages with short names and shared contracts.
+  primitives into packages with short names and shared contracts. Linear
+  dissipation and nonlinear Poisson-bracket kernels have completed this move;
+  their former ``terms`` modules were removed rather than retained as shims.
 
 Phase F: geometry and differentiable-geometry consolidation
   Move imported geometry, VMEC, Boozer, and differentiable bridges under

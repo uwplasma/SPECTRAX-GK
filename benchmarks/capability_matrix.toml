@@ -69,7 +69,7 @@ evidence = "exact-periodic, continuous-drift, and fixed-aspect geometry-policy t
 id = "nonlinear_exb_bracket"
 group = "required_core"
 status = "validated_scoped"
-spectrax_owner = "spectraxgk.operators.nonlinear and spectraxgk.terms.brackets"
+spectrax_owner = "spectraxgk.operators.nonlinear.brackets"
 comparison_owner = "src/nonlinear.cu and src/exb.cu"
 evidence = "operator identity, de-aliasing, invariant, and nonlinear transport-window gates"
 

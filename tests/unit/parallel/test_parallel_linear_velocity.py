@@ -1934,7 +1934,7 @@ def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
 
 def test_species_pmap_collision_preserves_long_wavelength_moments() -> None:
     from spectraxgk.linear import integrate_linear
-    from spectraxgk.terms.linear_dissipation import _laguerre_temperature_coupling
+    from spectraxgk.operators.linear.dissipation import _laguerre_temperature_coupling
 
     if len(jax.devices()) < 2:
         pytest.skip("requires two logical CPU devices or two accelerators")

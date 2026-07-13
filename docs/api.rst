@@ -230,6 +230,13 @@ Linear RHS
 .. automodule:: spectraxgk.operators.linear.rhs
    :members:
 
+Linear Dissipation
+------------------
+
+.. automodule:: spectraxgk.operators.linear.dissipation
+   :members:
+   :private-members:
+
 Linear Implicit Solvers
 -----------------------
 
@@ -348,7 +355,7 @@ Nonlinear RHS
 Nonlinear Bracket Kernels
 -------------------------
 
-.. automodule:: spectraxgk.terms.brackets
+.. automodule:: spectraxgk.operators.nonlinear.brackets
    :members:
    :private-members:
 

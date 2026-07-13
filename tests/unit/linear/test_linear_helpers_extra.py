@@ -22,7 +22,7 @@ import spectraxgk.solvers.linear.implicit as linear_implicit
 import spectraxgk.solvers.linear.integrators as linear_integrators
 import spectraxgk.solvers.linear.parallel as linear_parallel
 import spectraxgk.operators.linear.params as linear_params
-import spectraxgk.terms.linear_dissipation as linear_dissipation
+import spectraxgk.operators.linear.dissipation as linear_dissipation
 import spectraxgk.terms.linear_terms as linear_terms
 from spectraxgk.linear import (
     LinearParams,

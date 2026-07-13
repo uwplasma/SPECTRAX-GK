@@ -478,6 +478,9 @@ Phase 1: introduce protocols and containers
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and
   diagnostic kernels first. These have the clearest unit and numerical tests.
+  The nonlinear bracket and linear dissipation slices now live under
+  ``operators/nonlinear/brackets.py`` and ``operators/linear/dissipation.py``;
+  no compatibility modules remain at their former ``terms`` paths.
   The linear cache builder now keeps one public construction function but
   delegates twist-shift policy, perpendicular-wavenumber/drift arrays,
   Laguerre gyroaverage arrays, and linked-boundary metadata to focused private

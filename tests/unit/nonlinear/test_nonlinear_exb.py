@@ -5,7 +5,7 @@ from spectraxgk.config import GridConfig
 from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
 from spectraxgk.core.grid import build_spectral_grid, real_fft_mesh
 from spectraxgk.terms import nonlinear as nonlinear_terms_module
-from spectraxgk.terms.brackets import (
+from spectraxgk.operators.nonlinear.brackets import (
     _apply_mask_xy,
     _broadcast_grid,
     _broadcast_mask,

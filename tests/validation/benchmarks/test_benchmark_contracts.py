@@ -30,7 +30,7 @@ from benchmarks.performance.benchmark_runtime_memory import (
 from spectraxgk.core.velocity import J_l_all, single_precision_factorial
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
-from spectraxgk.terms import linear_dissipation as linear_dissipation_module
+from spectraxgk.operators.linear import dissipation as linear_dissipation_module
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
     diamagnetic_contribution,
