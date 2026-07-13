@@ -1025,3 +1025,10 @@ under 5 minutes.
   repository/comparison roots now make all three command paths executable, and
   nine focused tests pass. The architecture snapshot now records the actual
   134-tool inventory instead of the stale 213-script migration count.
+- 2026-07-13: Audited the ETG Krylov blocker after Rayleigh refinement. At
+  ``k_y rho_i=15`` the model-aware target shift is physically located near
+  ``+14.94i``, but damping-preconditioned shift-invert returns outer residual
+  ``0.584`` and Arnoldi fallback returns ``0.997``. Reusing the real-time IMEX
+  Hermite-line factorization as a complex shift preconditioner worsened the
+  residual to ``0.951`` and was removed. ETG therefore remains on its validated
+  time-integrated path pending a dedicated complex block preconditioner.

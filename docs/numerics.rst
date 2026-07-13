@@ -267,11 +267,12 @@ end-to-end JAX differentiability:
 - **Shift-invert preconditioning hooks**: the shift-invert Krylov solver uses
   GMRES solves for ``(A - \sigma I)^{-1}``. Configure
   ``KrylovConfig.shift_preconditioner`` to accelerate these solves with
-  ``"damping"`` (element-wise inverse of the collisional/hyper damping) or
-  ``"hermite-line"`` (Hermite streaming line solve via FFT in ``z`` and a
-  tridiagonal solve in ``m``). The ``"-coarse"`` variants add a lightweight
-  coarse correction in the kx direction (for linked boundaries this averages
-  within linked chains; for periodic boundaries this reduces to a kx-mean).
+  ``"damping"`` (element-wise inverse of the collisional/hyper damping).
+  ``"hermite-line"`` and ``"hermite-line-coarse"`` remain accepted aliases but
+  currently resolve to that conservative damping preconditioner; the real-time
+  IMEX Hermite factorization is not a valid complex shift preconditioner.
+  A dedicated complex block implementation must pass inner and outer residual
+  gates before those aliases can advertise streaming-line acceleration.
   Every returned pair is checked with the matrix-free relative residual
   :math:`\lVert Av-\lambda v\rVert/
   \max(\lVert Av\rVert,|\lambda|\lVert v\rVert)`. Configure the acceptance
