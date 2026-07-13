@@ -1314,14 +1314,100 @@ def test_mixed_species_hermite_streaming_matches_serial_production_route() -> No
             np.asarray(rhs), np.asarray(expected_rhs), rtol=4e-5, atol=4e-6
         )
 
-    with pytest.raises(NotImplementedError, match="adiabatic closure"):
+    adiabatic_params = replace(params, tau_e=1.0)
+    adiabatic_expected_rhs, adiabatic_expected_phi = linear_rhs_cached(
+        state,
+        cache,
+        adiabatic_params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    adiabatic_rhs, adiabatic_phi = (
         linear_parallel_streaming.linear_rhs_streaming_electrostatic_species_hermite_sharded(
             state,
             cache,
-            replace(params, tau_e=1.0),
+            adiabatic_params,
             devices=devices[:4],
         )
-    with pytest.raises(NotImplementedError, match="scan-level identity"):
+    )
+    np.testing.assert_allclose(
+        np.asarray(adiabatic_phi),
+        np.asarray(adiabatic_expected_phi),
+        rtol=3e-6,
+        atol=3e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(adiabatic_rhs),
+        np.asarray(adiabatic_expected_rhs),
+        rtol=4e-5,
+        atol=4e-6,
+    )
+
+    integration = dict(
+        dt=1e-5,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=terms,
+    )
+    serial_state, serial_phi = integrate_linear(
+        state, _grid, _geom, params, **integration
+    )
+    mixed_state, mixed_phi = integrate_linear(
+        state,
+        _grid,
+        _geom,
+        params,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="electrostatic_species_hermite_streaming",
+            axis="species_hermite",
+            num_devices=4,
+        ),
+        **integration,
+    )
+    np.testing.assert_allclose(
+        np.asarray(mixed_state), np.asarray(serial_state), rtol=5e-5, atol=5e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(mixed_phi), np.asarray(serial_phi), rtol=5e-5, atol=5e-6
+    )
+    rk2_integration = dict(
+        dt=1e-5,
+        steps=4,
+        method="rk2",
+        sample_stride=2,
+        cache=cache,
+        terms=terms,
+    )
+    serial_rk2, serial_rk2_phi = integrate_linear(
+        state, _grid, _geom, params, **rk2_integration
+    )
+    mixed_rk2, mixed_rk2_phi = integrate_linear(
+        state,
+        _grid,
+        _geom,
+        params,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="electrostatic_species_hermite_streaming",
+            axis="species_hermite",
+            num_devices=4,
+        ),
+        **rk2_integration,
+    )
+    np.testing.assert_allclose(
+        np.asarray(mixed_rk2), np.asarray(serial_rk2), rtol=6e-5, atol=6e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(mixed_rk2_phi),
+        np.asarray(serial_rk2_phi),
+        rtol=6e-5,
+        atol=6e-6,
+    )
+    with pytest.raises(NotImplementedError, match="Euler and RK2"):
         integrate_linear(
             state,
             _grid,
@@ -1329,7 +1415,7 @@ def test_mixed_species_hermite_streaming_matches_serial_production_route() -> No
             params,
             dt=1e-5,
             steps=1,
-            method="euler",
+            method="rk4",
             cache=cache,
             terms=terms,
             parallel=SimpleNamespace(

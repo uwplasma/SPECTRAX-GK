@@ -364,7 +364,7 @@ def profile_linear_rhs_parallel_slices(
     )
 
     integration: dict[str, object] | None = None
-    if axis_name == "species" and int(integration_steps) > 0:
+    if axis_name in {"species", "species_hermite"} and int(integration_steps) > 0:
         from spectraxgk.linear import integrate_linear
 
         def integrate(parallel):
@@ -405,8 +405,13 @@ def profile_linear_rhs_parallel_slices(
         integration_speedup = serial_integration_median / parallel_integration_median
         integration = {
             "claim_scope": (
-                "end-to-end explicit electrostatic species integration for this exact "
-                "grid, step count, device stack, and revision"
+                "end-to-end explicit electrostatic "
+                + (
+                    "mixed species-Hermite streaming integration"
+                    if axis_name == "species_hermite"
+                    else "species integration"
+                )
+                + " for this exact grid, step count, device stack, and revision"
             ),
             "steps": int(integration_steps),
             "sample_stride": int(integration_sample_stride),
