@@ -345,6 +345,15 @@ Sugama/Coulomb promotion: those operators require the complete
 mass/temperature-ratio-dependent test- and field-particle coefficients and
 their own ITG, zonal, conductivity, entropy, and convergence gates.
 
+``conservative_full_f_dougherty_cross_moments`` separately implements only the
+cross-species primitive-moment targets in equations (2.11)--(2.12) of
+`Francisquez et al. (2022) <https://doi.org/10.1017/S0022377822000289>`_. The
+tests check those formulas directly, pairwise momentum and energy conservation,
+positive target temperatures, equal-species limits, and AD/FD agreement. It is
+useful when developing a future nonlinear full-distribution collision operator,
+but it is not itself that operator and is not routed through the current
+delta-f gyrokinetic evolution.
+
 The full finite-Larmor-radius coefficient formulas contain deeply nested,
 cancellation-sensitive sums. Following the implementation guidance in the
 same reference, the planned advanced operator will generate those coefficients

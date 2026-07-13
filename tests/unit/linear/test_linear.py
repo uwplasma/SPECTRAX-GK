@@ -641,6 +641,28 @@ def test_full_f_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -
         collision_frequency=nu,
     )
 
+    momentum_rate_sr = mass[0] * density[0] * nu[0, 1]
+    momentum_rate_rs = mass[1] * density[1] * nu[1, 0]
+    expected_flow = (
+        momentum_rate_sr * flow[0] + momentum_rate_rs * flow[1]
+    ) / (momentum_rate_sr + momentum_rate_rs)
+    expected_thermal = (
+        mass[0] * density[0] * nu[0, 1] * thermal[0]
+        + mass[1] * density[1] * nu[1, 0] * thermal[1]
+        + momentum_rate_sr
+        * momentum_rate_rs
+        / (momentum_rate_sr + momentum_rate_rs)
+        * (flow[0] - flow[1]) ** 2
+        / 3.0
+    ) / (mass[0] * (density[0] * nu[0, 1] + density[1] * nu[1, 0]))
+    np.testing.assert_allclose(targets.parallel_flow[0, 1], expected_flow)
+    np.testing.assert_allclose(targets.parallel_flow[1, 0], expected_flow)
+    np.testing.assert_allclose(targets.thermal_speed_sq[0, 1], expected_thermal)
+    np.testing.assert_allclose(
+        mass[1] * targets.thermal_speed_sq[1, 0],
+        mass[0] * expected_thermal,
+    )
+
     momentum_rate = mass * density * nu.sum(axis=1)
     momentum_change = momentum_rate * (
         jnp.asarray([targets.parallel_flow[0, 1], targets.parallel_flow[1, 0]]) - flow

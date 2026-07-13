@@ -1507,3 +1507,12 @@ under 5 minutes.
   before and ``31.671 ms`` after. This removes 85 source lines without making
   a speedup claim. A direct single-to-multi delegation was measured and
   rejected first because it added about 1.6% overhead.
+
+- 2026-07-13: Re-profiled the fused benchmark-size Cyclone Miller RHS from a
+  clean office checkout at exact commit ``694fbc42`` with JAX 0.6.2. The valid
+  idle-A4000 grid-mode row measured ``6.60 ms`` bracket, ``6.78 ms`` linear
+  RHS, and ``13.16 ms`` full RHS with unchanged finite norms. Its HLO summary
+  has 2,403 lines, 1,016 reshapes, and 1,439 broadcasts, versus 3,336, 1,545,
+  and 1,822 in the older tracked trace. A following spectral-mode run overlapped
+  unrelated two-GPU work at 100% utilization and is rejected; no mixed-load
+  performance artifact or panel update is admitted.
