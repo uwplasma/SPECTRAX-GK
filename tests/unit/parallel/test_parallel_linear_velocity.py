@@ -1374,6 +1374,19 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     np.testing.assert_allclose(
         np.asarray(parallel_rk2_phi), np.asarray(serial_rk2_phi), rtol=5e-5, atol=5e-6
     )
+    with pytest.raises(NotImplementedError, match="electrostatic linear slices"):
+        integrate_linear(
+            state,
+            grid,
+            geom,
+            params,
+            dt=1e-5,
+            steps=1,
+            method="euler",
+            cache=cache,
+            terms=replace(terms, collisions=1.0),
+            parallel=parallel,
+        )
     with pytest.raises(NotImplementedError, match="species-parallel IMEX"):
         integrate_linear(
             state,
