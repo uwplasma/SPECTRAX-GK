@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 93% | The explicit electrostatic species-pmap trajectory has a reverse-mode/finite-difference parameter gate; next add adaptive-controller derivative policy gates and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 74% | A 2x2 species-Hermite streaming RHS now passes four-device CPU identity; extend its field/boundary/term coverage before time-integration or speedup promotion. |
+| Production parallelization | 76% | A 2x2 species-Hermite streaming RHS passes four-device CPU identity and a scoped 5.13x profile; extend boundary/term coverage before time-integration or broader speedup promotion. |
 | Performance/release claims | 95% | The refreshed CPU species artifact is identity-exact at 3.41x RHS/0.96x integration; refresh the broader multi-case panel and keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -927,3 +927,9 @@ under 5 minutes.
   Direct and explicit-backend calls match the serial periodic streaming RHS on
   four logical CPUs. Adiabatic closure and all broader terms fail closed; the
   two-GPU office host cannot validate this four-device GPU topology.
+- 2026-07-12: Extended the consolidated linear profiler to the exact mixed
+  backend and froze a revision-pinned four-logical-CPU artifact. The
+  ``2x4x16x64x1x64`` streaming RHS matches serial to ``5.7e-8`` relative and
+  records ``5.13x`` warm speedup. The above-ideal value is scoped to cache and
+  working-set effects on this RHS; integration, GPU, and general scaling claims
+  remain blocked.

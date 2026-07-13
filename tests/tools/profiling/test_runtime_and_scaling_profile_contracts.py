@@ -415,6 +415,28 @@ def test_profile_linear_rhs_parallel_slices_writes_artifacts(tmp_path: Path) -> 
     assert Path(paths["pdf"]).exists()
 
 
+def test_tracked_mixed_species_hermite_profile_is_scoped_and_identity_gated() -> None:
+    artifact = (
+        linear_slices.REPO_ROOT
+        / "docs"
+        / "_static"
+        / "linear_rhs_species_hermite_profile_cpu.json"
+    )
+    payload = json.loads(artifact.read_text(encoding="utf-8"))
+
+    assert payload["decomposition_axis"] == "species_hermite"
+    assert payload["requested_devices"] == 4
+    assert payload["actual_devices"] == 4
+    assert payload["identity_passed"] is True
+    assert payload["integration"] is None
+    assert payload["max_rel_error"] <= payload["rtol"]
+    assert payload["max_abs_error"] <= payload["atol"]
+    assert payload["max_phi_abs_error"] <= payload["atol"]
+    assert payload["speedup"] > 1.0
+    assert "not an integration, GPU, or general scaling claim" in payload["claim_scope"]
+    assert len(payload["git_revision"]) == 40
+
+
 def test_linear_rhs_sweep_subcommand_builds_summary(
     monkeypatch,
 ) -> None:

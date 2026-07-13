@@ -1025,6 +1025,23 @@ An uncontended two-GPU integration artifact is still required before promoting
 an end-to-end species-parallel speedup; concurrent office workloads invalidated
 the available timing samples but not their host-reduced identity checks.
 
+The first mixed species--Hermite profile is narrower and uses four logical CPU
+devices. On the periodic streaming-only ``2x4x16x64x1x64`` workload, the
+``(species,m)=(2,2)`` mesh matches the serial RHS to ``5.7e-8`` relative and
+reaches a scoped ``5.13x`` warm-RHS speedup. This above-ideal result can arise
+from the smaller per-device working set; it is not evidence for general strong
+scaling, time integration, GPUs, linked boundaries, or the complete linear
+operator. The machine-readable evidence is
+``docs/_static/linear_rhs_species_hermite_profile_cpu.json`` and is regenerated
+with:
+
+.. code-block:: bash
+
+   python tools/profiling/profile_linear_rhs_parallel_slices.py \
+     --axis species_hermite --platform cpu --logical-devices 4 \
+     --nl 4 --nm 16 --ny 64 --nz 64 --warmups 2 --repeats 9 \
+     --out-prefix /tmp/linear_rhs_species_hermite_profile_cpu
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 

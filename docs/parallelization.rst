@@ -395,10 +395,13 @@ streaming-only two-species RHS on a ``(species, m)=(2,2)`` mesh. Quasineutrality
 reduces density over both mesh axes, polarization over species only, and the
 Hermite ladder exchanges one boundary moment within each species row. A
 four-logical-CPU gate matches the serial production RHS and field solve. This
-is a diagnostic equation/communication contract: adiabatic closure, linked
+same scoped RHS reaches ``5.13x`` versus the serial JIT on the tracked host;
+the above-ideal value is consistent with reduced per-device working sets and
+is not a general strong-scaling result. This is a diagnostic
+equation/communication contract: adiabatic closure, linked
 boundaries, drifts, collisions, time integration, and speedup remain
-fail-closed. The office host has only two GPUs, so no mixed-mesh GPU claim can
-be tested on that machine.
+fail-closed outside that exact RHS artifact. The office host has only two GPUs,
+so no mixed-mesh GPU claim can be tested on that machine.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate linked boundaries, complete mixed
