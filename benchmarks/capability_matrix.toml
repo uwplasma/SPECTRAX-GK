@@ -79,7 +79,7 @@ group = "optional_extension"
 status = "planned_research_lane"
 spectrax_owner = "spectraxgk.operators.nonlinear.projection, spectraxgk.operators.linear.cache_builder, and spectraxgk.solvers.nonlinear.state_integration"
 comparison_owner = "src/exb.cu plus sheared perpendicular-grid phase updates"
-evidence = "coordinate, periodic cache, split-phase bracket, fixed-step RK2, and canonical heat-flux trace pass zero-shear array/RHS/trajectory identity, analytic kx evolution, canonical bracket invariance, stage/cumulative remap/dealias, inverse-remap, observed-order, linear-suppression, fast/differentiable identity, and JVP/gradient/finite-difference gates; adaptive/IMEX, compressed-real, and linked-boundary routing plus saturated transport and matched comparison gates remain required"
+evidence = "coordinate, periodic cache, split-phase bracket, fixed-step RK2/Heun-RK3, and canonical heat-flux trace pass zero-shear array/RHS/trajectory identity, analytic kx evolution, canonical bracket invariance, stage/cumulative remap/dealias, inverse-remap, designed-order, linear-suppression, fast/differentiable identity, and JVP/gradient/finite-difference gates; adaptive/IMEX, compressed-real, and linked-boundary routing plus saturated transport and matched comparison gates remain required"
 
 [[capabilities]]
 id = "initial_value_time_integration"

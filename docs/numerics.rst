@@ -260,9 +260,11 @@ transforms to apply the residual radial phase between the :math:`k_x` and
 Poisson bracket is unchanged by the shear-coordinate transformation. The
 research function
 :func:`spectraxgk.nonlinear.integrate_nonlinear_sheared` verifies zero-shear
-trajectory identity and cumulative full-step remapping. Its midpoint RK2 route
-evaluates the RHS in the correctly remapped stage coordinate basis and recovers
-observed orders 2.02 and 2.07 on a physical drift/diamagnetic trajectory. A
+trajectory identity and cumulative full-step remapping. Its midpoint RK2 and
+three-stage Heun RK3 routes evaluate each RHS in the correctly remapped stage
+coordinate basis and return each derivative to the step basis before combining
+stages. Both recover their designed orders on a physical drift/diamagnetic
+trajectory. A
 fixed-window Cyclone-like linear ITG pilot is converged to below 1% under a
 factor-two timestep refinement and reduces the final potential norm by more
 than 20% when :math:`\gamma_E=1`. This is the expected decorrelation direction
@@ -282,7 +284,9 @@ with a centered finite difference in the validated mini-case. Setting
 and a numerical-identity gate confirms that this policy switch does not alter
 the trajectory or heat flux.
 
-This fixed-step path is a numerical foundation, not the production model. The
+RK3 is the preferred research-campaign method because it expands the stable
+explicit operating envelope without changing the coordinate or transport
+definitions. This fixed-step path is a numerical foundation, not the production model. The
 compressed-real FFT rejects radial phases, and non-twist and linked boundaries
 fail closed because their Hermitian and boundary phases are not implemented.
 Adaptive/IMEX routing, saturated transport, and matched-comparison gates remain

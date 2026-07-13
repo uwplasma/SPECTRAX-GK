@@ -651,7 +651,6 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
     cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
     state = jnp.zeros((1, 1, 4, 4, 4), dtype=jnp.complex64)
     state = state.at[0, 0, 1, 0, :].set(0.2 + 0.1j)
-    reference_input = jnp.asarray(np.asarray(state).copy())
     nonlinear_only = TermConfig(
         streaming=0.0,
         mirror=0.0,
@@ -666,30 +665,31 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
         bpar=0.0,
         nonlinear=1.0,
     )
-    reference_state, reference_fields = integrate_nonlinear_cached(
-        reference_input,
-        cache,
-        params,
-        dt=0.02,
-        steps=2,
-        method="rk2",
-        terms=nonlinear_only,
-        compressed_real_fft=False,
-    )
-    sheared_state, sheared_fields = integrate_nonlinear_sheared(
-        state,
-        grid,
-        geom,
-        params,
-        dt=0.02,
-        steps=2,
-        shear_rate=0.0,
-        method="rk2",
-        cache=cache,
-        terms=nonlinear_only,
-    )
-    np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
-    np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
+    for method in ("rk2", "rk3"):
+        reference_state, reference_fields = integrate_nonlinear_cached(
+            jnp.asarray(np.asarray(state).copy()),
+            cache,
+            params,
+            dt=0.02,
+            steps=2,
+            method=method,
+            terms=nonlinear_only,
+            compressed_real_fft=False,
+        )
+        sheared_state, sheared_fields = integrate_nonlinear_sheared(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=2,
+            shear_rate=0.0,
+            method=method,
+            cache=cache,
+            terms=nonlinear_only,
+        )
+        np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
+        np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
 
     disabled = TermConfig(*([0.0] * 12))
     remapped_state, _ = integrate_nonlinear_sheared(
@@ -727,7 +727,7 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
             shear_rate=1.0,
             cache=cache,
         )
-    with pytest.raises(ValueError, match="method must be 'euler' or 'rk2'"):
+    with pytest.raises(ValueError, match="method must be 'euler', 'rk2', or 'rk3'"):
         integrate_nonlinear_sheared(
             state,
             grid,
@@ -889,7 +889,14 @@ def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> N
     np.testing.assert_allclose(gradient, finite_difference, rtol=5.0e-3, atol=1.0e-10)
 
 
-def test_sheared_rk2_recovers_second_order_on_physical_rhs() -> None:
+@pytest.mark.parametrize(
+    ("method", "minimum_order"),
+    [("rk2", 1.8), ("rk3", 2.6)],
+)
+def test_sheared_runge_kutta_recovers_observed_order_on_physical_rhs(
+    method: str,
+    minimum_order: float,
+) -> None:
     grid = build_spectral_grid(
         GridConfig(
             Nx=4,
@@ -940,7 +947,7 @@ def test_sheared_rk2_recovers_second_order_on_physical_rhs() -> None:
             dt=final_time / steps,
             steps=steps,
             shear_rate=0.3,
-            method="rk2",
+            method=method,
             cache=cache,
             terms=drift_drive,
         )
@@ -952,7 +959,7 @@ def test_sheared_rk2_recovers_second_order_on_physical_rhs() -> None:
         np.log(errors[index] / errors[index + 1]) / np.log(2.0)
         for index in range(2)
     ]
-    assert min(observed_orders) > 1.8
+    assert min(observed_orders) > minimum_order
 
 
 def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement() -> None:

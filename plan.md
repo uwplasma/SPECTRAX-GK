@@ -1597,3 +1597,12 @@ under 5 minutes.
   converged centered finite-difference plateau. The faster custom-VJP policy is
   numerically identical. This closes transport instrumentation and derivative
   plumbing, but not the required saturated-transport or matched-comparison gate.
+
+- 2026-07-13: Added the stage-basis-correct three-stage Heun RK3 method to the
+  periodic sheared integrator. Every intermediate state is advanced into its
+  instantaneous shearing basis and every derivative is returned to the step
+  basis before the Runge--Kutta combination. Zero-shear trajectory identity
+  with the production RK3 route and third-order convergence on the physical
+  drift/diamagnetic RHS pass. This closes a higher-order fixed-step numerical
+  route for long-window research campaigns; it does not admit an unconverged
+  low-resolution transport trace or expose equilibrium flow shear in TOML.
