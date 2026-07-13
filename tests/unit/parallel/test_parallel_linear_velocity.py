@@ -106,6 +106,12 @@ def test_linear_parallel_term_classifiers_cover_release_routes() -> None:
         linear_parallel._is_electrostatic_field_terms(LinearTerms(apar=1.0, bpar=0.0))
         is False
     )
+    assert linear_parallel._is_mixed_electrostatic_terms(
+        replace(_electrostatic_slice_terms(), hypercollisions=1.0)
+    )
+    assert not linear_parallel._is_mixed_electrostatic_terms(
+        LinearTerms(collisions=1.0)
+    )
 
 
 def test_resolve_parallel_devices_validates_explicit_and_requested_counts(
@@ -1364,6 +1370,69 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
             err_msg=name,
         )
 
+    dissipative_params = replace(
+        params,
+        nu_hyper=0.01,
+        nu_hyper_l=0.03,
+        nu_hyper_m=0.05,
+        nu_hyper_lm=0.02,
+        hypercollisions_const=1.0,
+        hypercollisions_kz=0.4,
+        D_hyper=0.02,
+        damp_ends_amp=0.1,
+    )
+    dissipative_cache = replace(
+        cache,
+        damp_profile=jnp.linspace(0.2, 1.0, cache.damp_profile.size),
+    )
+    dissipation_cases = {
+        "hypercollisions": replace(zero_terms, hypercollisions=1.0),
+        "hyperdiffusion": replace(zero_terms, hyperdiffusion=1.0),
+        "end_damping": replace(zero_terms, end_damping=1.0),
+        "combined_local_dissipation": replace(
+            _electrostatic_slice_terms(),
+            hypercollisions=1.0,
+            hyperdiffusion=1.0,
+            end_damping=1.0,
+        ),
+    }
+    for name, active_terms in dissipation_cases.items():
+        expected_term_rhs, expected_term_phi = linear_rhs_cached(
+            state,
+            dissipative_cache,
+            dissipative_params,
+            terms=active_terms,
+            dt=0.01,
+            use_jit=False,
+            use_custom_vjp=False,
+            force_electrostatic_fields=True,
+        )
+        observed_term_rhs, observed_term_phi = (
+            linear_parallel_streaming.linear_rhs_electrostatic_species_hermite_sharded(
+                state,
+                dissipative_cache,
+                dissipative_params,
+                terms=active_terms,
+                dt=0.01,
+                devices=devices[:4],
+            )
+        )
+        assert float(jnp.linalg.norm(expected_term_rhs)) > 0.0
+        np.testing.assert_allclose(
+            np.asarray(observed_term_phi),
+            np.asarray(expected_term_phi),
+            rtol=3e-6,
+            atol=3e-6,
+            err_msg=name,
+        )
+        np.testing.assert_allclose(
+            np.asarray(observed_term_rhs),
+            np.asarray(expected_term_rhs),
+            rtol=7e-5,
+            atol=7e-6,
+            err_msg=name,
+        )
+
     adiabatic_params = replace(params, tau_e=1.0)
     adiabatic_expected_rhs, adiabatic_expected_phi = linear_rhs_cached(
         state,
@@ -1396,22 +1465,22 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
         atol=4e-6,
     )
 
-    integration_terms = _electrostatic_slice_terms()
+    integration_terms = dissipation_cases["combined_local_dissipation"]
     integration = dict(
         dt=1e-5,
         steps=3,
         method="euler",
-        cache=cache,
+        cache=dissipative_cache,
         terms=integration_terms,
     )
     serial_state, serial_phi = integrate_linear(
-        state, _grid, _geom, params, **integration
+        state, _grid, _geom, dissipative_params, **integration
     )
     mixed_state, mixed_phi = integrate_linear(
         state,
         _grid,
         _geom,
-        params,
+        dissipative_params,
         parallel=SimpleNamespace(
             strategy="velocity",
             backend="electrostatic_species_hermite",
@@ -1431,17 +1500,17 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
         steps=4,
         method="rk2",
         sample_stride=2,
-        cache=cache,
+        cache=dissipative_cache,
         terms=integration_terms,
     )
     serial_rk2, serial_rk2_phi = integrate_linear(
-        state, _grid, _geom, params, **rk2_integration
+        state, _grid, _geom, dissipative_params, **rk2_integration
     )
     mixed_rk2, mixed_rk2_phi = integrate_linear(
         state,
         _grid,
         _geom,
-        params,
+        dissipative_params,
         parallel=SimpleNamespace(
             strategy="velocity",
             backend="electrostatic_species_hermite",
@@ -1464,7 +1533,7 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
             state,
             _grid,
             _geom,
-            params,
+            dissipative_params,
             dt=1e-5,
             steps=1,
             method="rk4",

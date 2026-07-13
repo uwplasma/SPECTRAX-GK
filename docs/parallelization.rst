@@ -398,15 +398,19 @@ reduces density over both mesh axes, polarization over species only, and the
 Hermite ladder exchanges one boundary moment within each species row. Width-one
 and width-two exchanges also apply the production mirror, curvature, and
 grad-:math:`B` equations; global Hermite indices place the diamagnetic drive at
-the correct moments. Isolated term gates and their combined RHS match the
-serial production equations, and Euler/RK2 trajectories pass state and field
-identity on four logical CPUs. The revision-pinned full-operator artifact
+the correct moments. Global basis indices also preserve the physical
+normalization of constant and :math:`|k_z|` hypercollisions, while perpendicular
+hyperdiffusion and end damping remain shard-local. Isolated term gates are
+required to be nonzero and match the serial production equations; combined
+dissipative Euler/RK2 trajectories pass state and field identity on four
+logical CPUs. The revision-pinned profile covers the core operator without
+optional dissipation and
 records ``3.11x`` warm-RHS speedup and exact 100-step state/field identity, but
 only ``0.97x`` end-to-end throughput. The route is therefore promoted for
 equation ownership and RHS acceleration, not complete integration speedup.
-Linked boundaries, collisions, other integrators, and all GPU claims remain
-fail-closed. The office host has only two GPUs, so no mixed-mesh GPU claim can
-be tested there.
+Linked boundaries, conserving collisions, other integrators, and all GPU claims
+remain fail-closed. The office host has only two GPUs, so no mixed-mesh GPU
+claim can be tested there.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate linked boundaries, complete mixed

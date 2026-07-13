@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 95% | Fixed-step species-pmap reverse mode and adaptive Diffrax forward JVPs have observable-level finite-difference gates; next add a bounded-memory adaptive reverse policy and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 87% | The 2x2 species-Hermite collision-free electrostatic route has full identity and one-time scan-state placement; extend linked-boundary and collision coverage next. |
+| Production parallelization | 90% | The 2x2 species-Hermite route covers all electrostatic terms except the conserving collision operator and linked boundaries; implement those two collective-heavy contracts next. |
 | Performance/release claims | 96% | The full mixed operator records 3.11x RHS but 0.97x integration throughput on one scoped CPU workload; no end-to-end speedup is claimed, and broader panels remain workload-specific. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -971,3 +971,12 @@ under 5 minutes.
   and improves 100-step throughput from ``0.89x`` to ``0.97x``. Since it is
   still below crossover, the release retains no end-to-end speedup claim and
   defers deeper collective fusion to the next performance campaign.
+- 2026-07-12: Extended the 2x2 species--Hermite route through every shard-local
+  dissipative term. Hypercollision rates use the global, not local, Hermite
+  resolution; the ``|k_z|`` branch uses each global mode's mask and power;
+  hyperdiffusion preserves the dealiased perpendicular spectrum; and end
+  damping preserves the production ``dt`` scaling. Each nonzero operator and a
+  combined dissipative Euler/RK2 trajectory match serial on four logical CPUs
+  in a 147 s bounded gate. Conserving collisions and linked boundaries remain
+  fail-closed because they require additional cross-shard moment or topology
+  collectives.
