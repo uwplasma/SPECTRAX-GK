@@ -15,6 +15,7 @@ from spectraxgk.operators.nonlinear.brackets import (
     _spectral_bracket_multi,
     _stack_fields,
 )
+from spectraxgk.operators.nonlinear.projection import advance_shearing_coordinates
 from spectraxgk.terms.gyroaveraging import (
     _laguerre_bpar_correction,
     _laguerre_bpar_correction_precomputed,
@@ -459,19 +460,21 @@ def test_compressed_real_fft_toggle_matches_full_fft_for_hermitian():
     )
     ny = grid.ky.size
     nx = grid.kx.size
-    nyc = ny // 2 + 1
     rng = np.random.default_rng(123)
-    G_nyc = rng.normal(size=(1, 1, 1, nyc, nx, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 1, nyc, nx, grid.z.size)
-    )
-    chi_nyc = rng.normal(size=(nyc, nx, grid.z.size)) + 1j * rng.normal(
-        size=(nyc, nx, grid.z.size)
-    )
+    normalization = float(ny * nx)
+    G_full = np.fft.fft2(
+        rng.normal(size=(1, 1, 1, ny, nx, grid.z.size)),
+        axes=(-3, -2),
+    ) / normalization
+    chi_full = np.fft.fft2(
+        rng.normal(size=(ny, nx, grid.z.size)),
+        axes=(-3, -2),
+    ) / normalization
+    mask = np.asarray(grid.dealias_mask)
+    G_full *= mask[None, None, None, :, :, None]
+    chi_full *= mask[:, :, None]
 
-    G_full = _expand_hermitian(G_nyc, ny)
-    chi_full = _expand_hermitian(chi_nyc[None, ...], ny)[0]
-
-    bracket_gx = _spectral_bracket(
+    bracket_compressed = _spectral_bracket(
         jnp.asarray(G_full),
         jnp.asarray(chi_full),
         kx_grid=grid.kx_grid,
@@ -489,9 +492,58 @@ def test_compressed_real_fft_toggle_matches_full_fft_for_hermitian():
         kxfac=jnp.asarray(1.0),
         compressed_real_fft=False,
     )
-    assert bracket_gx.shape == bracket_full.shape
-    assert np.all(np.isfinite(np.asarray(bracket_gx)))
-    assert np.all(np.isfinite(np.asarray(bracket_full)))
+    np.testing.assert_allclose(
+        bracket_compressed, bracket_full, rtol=2.0e-5, atol=2.0e-6
+    )
+
+    # At an integer radial shift the residual phase is unity. Both
+    # representations must therefore produce the same post-remap bracket.
+    state_update = advance_shearing_coordinates(
+        jnp.asarray(G_full),
+        kx=grid.kx,
+        ky=grid.ky,
+        x0=grid.x0,
+        shear_rate=1.0,
+        previous_time=0.0,
+        time=1.0,
+        dealias_mask=grid.dealias_mask,
+    )
+    field_update = advance_shearing_coordinates(
+        jnp.asarray(chi_full),
+        kx=grid.kx,
+        ky=grid.ky,
+        x0=grid.x0,
+        shear_rate=1.0,
+        previous_time=0.0,
+        time=1.0,
+        dealias_mask=grid.dealias_mask,
+    )
+    np.testing.assert_allclose(state_update.phase, 1.0, atol=2.0e-6)
+    bracket_remapped_compressed = _spectral_bracket(
+        state_update.state,
+        field_update.state,
+        kx_grid=state_update.effective_kx,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        compressed_real_fft=True,
+    )
+    bracket_remapped_full = _spectral_bracket(
+        state_update.state,
+        field_update.state,
+        kx_grid=state_update.effective_kx,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        radial_phase=state_update.phase,
+        compressed_real_fft=False,
+    )
+    np.testing.assert_allclose(
+        bracket_remapped_compressed,
+        bracket_remapped_full,
+        rtol=2.0e-5,
+        atol=2.0e-6,
+    )
 
 
 def test_full_fft_shearing_phase_preserves_poisson_bracket_coordinates():

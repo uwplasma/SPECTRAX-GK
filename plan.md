@@ -1757,3 +1757,11 @@ under 5 minutes.
   reports ``28,093`` statements with ``1,271`` missed (``95.48%``), while each
   supplemental process completes in under 20 seconds without the out-of-memory
   behavior of running the complete file with four devices.
+
+- 2026-07-13: Tightened the existing compressed-real/full-complex bracket test
+  from a finiteness check on a nonphysical random spectrum to numerical identity
+  on a real, Hermitian, two-thirds-dealiased field. The kernels agree to
+  ``1.4e-7`` relative error, and the same gate passes immediately after an exact
+  integer remap where the residual phase is unity. This rules out a generic FFT
+  representation error at the remap itself; fractional-phase ordering remains
+  the next state-level localization target, and no production option was added.

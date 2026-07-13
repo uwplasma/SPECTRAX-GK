@@ -353,9 +353,14 @@ same finite-sample, stationarity, and uncertainty checks but give
 ``5.9963 +/- 0.0321`` without shear and ``6.0014 +/- 0.0416`` with shear. The
 corresponding ``-0.084%`` reduction is only ``-0.10`` combined SEM and disagrees
 with the internal ``6.10%`` response. This is negative parity evidence, not a
-flow-suppression result. The discrepancy must be localized at state level before
-the matched-code, linked-boundary, compressed-real, or IMEX gates can pass, so
-no input-file flow-shear option is enabled.
+flow-suppression result. A dealiased real-field regression shows that the
+full-complex and compressed-real Poisson brackets agree before and immediately
+after an exact integer remap, where the residual phase is unity. The unresolved
+difference is therefore narrower than a generic FFT-representation mismatch,
+but it still includes fractional-phase ordering and other treatment-dependent
+operators. It must be localized at state level before the matched-code,
+linked-boundary, compressed-real, or IMEX gates can pass, so no input-file
+flow-shear option is enabled.
 
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
