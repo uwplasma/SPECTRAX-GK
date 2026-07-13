@@ -172,6 +172,7 @@ def profile_linear_rhs_parallel_slices(
     integration_steps: int = 0,
     integration_repeats: int = 3,
     integration_dt: float = 1.0e-7,
+    integration_sample_stride: int = 1,
 ) -> dict[str, object]:
     """Time serial and velocity-sharded electrostatic linear-slices RHS calls."""
 
@@ -190,8 +191,14 @@ def profile_linear_rhs_parallel_slices(
         raise ValueError("axis must be 'hermite' or 'species'")
     if axis_name == "species" and int(requested_devices) != 2:
         raise ValueError("species profiling requires exactly two devices")
-    if int(integration_steps) < 0 or int(integration_repeats) < 1:
-        raise ValueError("integration_steps must be nonnegative and repeats positive")
+    if (
+        int(integration_steps) < 0
+        or int(integration_repeats) < 1
+        or int(integration_sample_stride) < 1
+    ):
+        raise ValueError(
+            "integration_steps must be nonnegative and repeats/sample stride positive"
+        )
     if axis_name == "species":
         state, cache, params, grid, geom = _build_species_problem(
             nx=nx, ny=ny, nz=nz, nl=nl, nm=nm
@@ -310,6 +317,7 @@ def profile_linear_rhs_parallel_slices(
                 dt=float(integration_dt),
                 steps=int(integration_steps),
                 method="euler",
+                sample_stride=int(integration_sample_stride),
                 cache=cache,
                 terms=terms,
                 parallel=parallel,
@@ -342,6 +350,7 @@ def profile_linear_rhs_parallel_slices(
                 "grid, step count, device stack, and revision"
             ),
             "steps": int(integration_steps),
+            "sample_stride": int(integration_sample_stride),
             "dt": float(integration_dt),
             "repeats": int(integration_repeats),
             "serial_samples_s": serial_integration,
@@ -664,6 +673,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--integration-steps", type=int, default=0)
     parser.add_argument("--integration-repeats", type=int, default=3)
     parser.add_argument("--integration-dt", type=float, default=1.0e-7)
+    parser.add_argument("--integration-sample-stride", type=int, default=1)
     parser.add_argument("--atol", type=float, default=2.0e-5)
     parser.add_argument("--rtol", type=float, default=2.0e-6)
     return parser
@@ -708,6 +718,7 @@ def main_profile(argv: list[str] | None = None) -> int:
         integration_steps=int(args.integration_steps),
         integration_repeats=int(args.integration_repeats),
         integration_dt=float(args.integration_dt),
+        integration_sample_stride=int(args.integration_sample_stride),
     )
     paths = write_artifacts(summary, args.out_prefix)
     print(
