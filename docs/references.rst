@@ -90,6 +90,7 @@ References
 .. [Waltz95] R. E. Waltz, G. D. Kerbel, J. Milovich, and G. W. Hammett,
    "Advances in the simulation of toroidal gyro-Landau fluid model turbulence,"
    Physics of Plasmas 2, 2408 (1995).
+   `DOI <https://doi.org/10.1063/1.871264>`__.
 
 .. [Staebler24] G. Staebler, C. Bourdelle, J. Citrin, and R. Waltz,
    "Quasilinear theory and modelling of gyrokinetic turbulent transport in
