@@ -254,6 +254,12 @@ species-sharded RHS helper remains collision-free; use
 ``integrate_linear(..., parallel=RuntimeParallelConfig(strategy="velocity",
 axis="species", num_devices=2))`` for the validated collisional route.
 
+The same enclosing route is gated for Hermite/Laguerre hypercollisions with
+explicitly populated high moments and nonzero ``nu_hyper_l``/``nu_hyper_m``.
+This verifies that the decomposed operator damps its intended high-order
+subspace while retaining serial evolution identity; it is separate from the
+low-order conserving collision correction above.
+
 Hypercollisions
 ---------------
 
