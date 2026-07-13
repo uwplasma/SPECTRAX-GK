@@ -31,7 +31,7 @@ from spectraxgk.diagnostics.transport_windows import (
 
 
 def _load_tool_module():
-    return load_release_tool("check_nonlinear_window_ensemble")
+    return load_release_tool("check_nonlinear_transport_gates")
 
 
 def _saturated_trace() -> tuple[np.ndarray, np.ndarray]:
@@ -325,7 +325,7 @@ def test_nonlinear_window_script_imports_before_editable_install() -> None:
     completed = subprocess.run(
         [
             sys.executable,
-            "tools/release/check_nonlinear_window_ensemble.py",
+            "tools/release/check_nonlinear_transport_gates.py",
             "convergence",
             "--help",
         ],

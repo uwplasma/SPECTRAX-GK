@@ -18,13 +18,17 @@ from spectraxgk.diagnostics.transport_windows import (
 ROOT = REPO_ROOT
 OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_transport_gates.py"
 output_target = load_release_tool("check_nonlinear_transport_gates")
-window_ensemble = load_release_tool("check_nonlinear_window_ensemble")
+window_ensemble = load_release_tool("check_nonlinear_transport_gates")
 window_readiness = window_ensemble
 compact_bundle = load_campaign_tool("nonlinear_replicate_followup")
 
 
 def _touch_bundle(output: Path) -> None:
-    stem = output.name[: -len(".out.nc")] if output.name.endswith(".out.nc") else output.stem
+    stem = (
+        output.name[: -len(".out.nc")]
+        if output.name.endswith(".out.nc")
+        else output.stem
+    )
     base = output.with_name(stem)
     for suffix in ("out.nc", "restart.nc", "big.nc"):
         Path(f"{base}.{suffix}").write_text("stub\n", encoding="utf-8")
@@ -133,6 +137,7 @@ def test_nonlinear_window_ensemble_tool_writes_json_png_and_fails_closed(
     out_png = tmp_path / "ensemble.png"
     rc = window_ensemble.main(
         [
+            "ensemble",
             *[str(path) for path in reports],
             "--out-json",
             str(out_json),
@@ -168,6 +173,7 @@ def test_nonlinear_window_ensemble_tool_writes_json_png_and_fails_closed(
     failed_json = tmp_path / "ensemble_failed.json"
     rc = window_ensemble.main(
         [
+            "ensemble",
             *[str(path) for path in paths],
             "--out-json",
             str(failed_json),
@@ -223,7 +229,14 @@ def test_readiness_tool_writes_reports_and_requires_seed_timestep_replicates(
     reports_dir = tmp_path / "reports"
 
     rc = window_readiness.main(
-        ["readiness", str(summary), "--out-json", str(out_json), "--reports-dir", str(reports_dir)]
+        [
+            "readiness",
+            str(summary),
+            "--out-json",
+            str(out_json),
+            "--reports-dir",
+            str(reports_dir),
+        ]
     )
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert rc == 1
@@ -250,15 +263,25 @@ def test_readiness_tool_writes_reports_and_requires_seed_timestep_replicates(
         )
     passed_json = tmp_path / "manifest_passed.json"
     rc = window_readiness.main(
-        ["readiness", *[str(path) for path in summaries], "--out-json", str(passed_json)]
+        [
+            "readiness",
+            *[str(path) for path in summaries],
+            "--out-json",
+            str(passed_json),
+        ]
     )
     passed_payload = json.loads(passed_json.read_text(encoding="utf-8"))
     assert rc == 0
     assert passed_payload["passed"] is True
     assert passed_payload["missing_artifacts"] == []
-    assert passed_payload["cases"][0]["variant_axes"]["seed"]["observed_distinct_count"] == 2
     assert (
-        passed_payload["cases"][0]["variant_axes"]["timestep"]["observed_distinct_count"]
+        passed_payload["cases"][0]["variant_axes"]["seed"]["observed_distinct_count"]
+        == 2
+    )
+    assert (
+        passed_payload["cases"][0]["variant_axes"]["timestep"][
+            "observed_distinct_count"
+        ]
         == 2
     )
 

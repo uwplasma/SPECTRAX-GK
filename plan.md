@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 98% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, and performance/scaling release checks now have one owner per domain; 102 tools remain against the enforced 99-file target. |
+| Tool consolidation | 99% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, and performance/scaling release checks now have one owner per domain; 101 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1409,3 +1409,10 @@ under 5 minutes.
   autodiff contracts now share one architecture-policy owner and are all run by
   CI/release readiness. Focused APIs remain independently testable; tool
   inventory falls to 102.
+
+- 2026-07-13: Consolidated nonlinear-window convergence, replicate readiness,
+  and ensemble robustness under ``check_nonlinear_transport_gates.py``. The
+  explicit ``convergence``, ``readiness``, and ``ensemble`` subcommands now sit
+  beside target-time, runtime-output, matrix-progress, and portfolio admission
+  checks, removing an implicit legacy command mode while preserving the same
+  statistical and fail-closed physics gates. Tool inventory falls to 101.

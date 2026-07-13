@@ -376,7 +376,7 @@ production nonlinear optimization evidence lane the same generator also accepts
 ``[metadata]`` blocks and variant-specific filenames so seed and timestep
 replicate windows can be launched on the office GPUs, extracted with the same
 transport-window protocol, and checked by
-``tools/release/check_nonlinear_window_ensemble.py readiness`` before any
+``tools/release/check_nonlinear_transport_gates.py readiness`` before any
 absolute-flux or turbulent-flux optimization wording can be considered.
 For external-VMEC replicate campaigns,
 ``tools/artifacts/build_external_vmec_replicate_ensemble.py`` is the reproducible

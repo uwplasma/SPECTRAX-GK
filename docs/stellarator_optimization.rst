@@ -1836,7 +1836,7 @@ frozen artifacts: it accepts the aggregate FD and line-search artifacts as
 necessary optimizer-plumbing evidence, then blocks promotion until independent
 surface/field-line holdout evidence is supplied. It also requires a passed
 replicated nonlinear-window ensemble artifact from
-``tools/release/check_nonlinear_window_ensemble.py`` before any optimized-equilibrium
+``tools/release/check_nonlinear_transport_gates.py ensemble`` before any optimized-equilibrium
 production nonlinear heat-flux claim can be made. The ensemble requirement is
 deliberately separate from the single-window convergence rule: a single
 post-transient mean can establish a candidate window, but seed/timestep/restart
