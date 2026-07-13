@@ -1798,3 +1798,10 @@ under 5 minutes.
   bounded wide-coverage shards, and the aggregate 95% package gate. The local
   release-equivalent rerun also passed 93 release tests, strict Sphinx, Ruff,
   focused MyPy, and the 47.999 MB repository-size manifest.
+
+- 2026-07-13: Fixed the immediate architecture failure in CI run
+  ``29263875566`` without adding an exception. Non-finite trajectory validation
+  now lives in the runtime-diagnostics owner that performs growth fitting,
+  rather than pushing ``workflows/linear.py`` above its 1,000-line budget. The
+  architecture manifest again reports ``226/96/99`` source/test/tool files,
+  zero complexity exceptions, and all topology targets met.

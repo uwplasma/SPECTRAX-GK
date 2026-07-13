@@ -29,7 +29,7 @@ from spectraxgk.workflows.runtime.results import (
 from spectraxgk.workflows.runtime.orchestration_scan import (
     run_runtime_scan_ky_task,
 )
-from spectraxgk.workflows.linear import _require_finite_linear_history
+from spectraxgk.workflows.runtime.diagnostics import _prepare_runtime_linear_fit_inputs
 from spectraxgk.diagnostics.analysis import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
@@ -1154,9 +1154,21 @@ def test_linear_history_rejects_nonfinite_trajectories(
     """Unstable histories must fail before a finite growth fit can hide them."""
 
     with pytest.raises(FloatingPointError, match=rf"non-finite {name} history"):
-        _require_finite_linear_history(t, phi, density)
+        _prepare_runtime_linear_fit_inputs(
+            t=t,
+            phi_t=phi,
+            density_t=density,
+            z=np.ones(1),
+            fit_signal="auto",
+        )
 
-    _require_finite_linear_history(np.arange(2.0), np.ones(2), np.ones(2))
+    _prepare_runtime_linear_fit_inputs(
+        t=np.arange(2.0),
+        phi_t=np.ones(2),
+        density_t=np.ones(2),
+        z=np.ones(1),
+        fit_signal="auto",
+    )
 
 
 def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None:
