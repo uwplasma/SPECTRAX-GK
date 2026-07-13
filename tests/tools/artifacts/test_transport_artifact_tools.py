@@ -1589,7 +1589,7 @@ def test_convergence_gate_fails_large_grid_shift(tmp_path: Path) -> None:
 
 # Nonlinear feasibility pilot assertions
 def test_window_summaries_track_late_slope() -> None:
-    mod = load_artifact_tool("plot_nonlinear_feasibility_panel")
+    mod = load_artifact_tool("build_nonlinear_validation_panels")
     t = np.linspace(0.0, 10.0, 11)
     heat = 2.0 + 0.1 * t
     wphi = 1.0 + 0.05 * t
@@ -1604,7 +1604,7 @@ def test_window_summaries_track_late_slope() -> None:
 
 
 def test_write_pilot_panel_writes_replayable_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_nonlinear_feasibility_panel")
+    mod = load_artifact_tool("build_nonlinear_validation_panels")
     t = np.linspace(0.0, 20.0, 21)
     trace = {
         "t": t,
@@ -1632,7 +1632,7 @@ def test_write_pilot_panel_writes_replayable_artifacts(tmp_path: Path) -> None:
 
 
 def test_window_summaries_validate_inputs() -> None:
-    mod = load_artifact_tool("plot_nonlinear_feasibility_panel")
+    mod = load_artifact_tool("build_nonlinear_validation_panels")
     with pytest.raises(ValueError, match="same length"):
         mod.window_summaries([0, 1, 2], [1, 2], [1, 2, 3])
     with pytest.raises(ValueError, match="at least three samples"):
@@ -1749,7 +1749,7 @@ def test_plot_scaling_panels_nonlinear_sharding_loads_combined_rows(
 
 
 # Nonlinear window-statistics assertions
-def _plot_nonlinear_window_statistics_write_summary(
+def _write_nonlinear_window_gate_summary(
     path: Path,
     *,
     case: str,
@@ -1792,15 +1792,15 @@ def _plot_nonlinear_window_statistics_write_summary(
 def test_load_window_rows_excludes_exploratory_and_uses_repo_relative_paths(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_nonlinear_window_statistics")
+    mod = load_artifact_tool("build_nonlinear_validation_panels")
     old_root = mod.ROOT
     mod.ROOT = tmp_path
     try:
-        _plot_nonlinear_window_statistics_write_summary(
+        _write_nonlinear_window_gate_summary(
             tmp_path / "nonlinear_cyclone_gate_summary.json",
             case="cyclone_nonlinear_long_window",
         )
-        _plot_nonlinear_window_statistics_write_summary(
+        _write_nonlinear_window_gate_summary(
             tmp_path / "nonlinear_cyclone_short_gate_summary.json",
             case="cyclone_short_nonlinear_window",
             include=False,
@@ -1816,18 +1816,18 @@ def test_load_window_rows_excludes_exploratory_and_uses_repo_relative_paths(
     assert {row["case_gate_mean_rel"] for row in rows} == {0.10}
 
 
-def test_plot_nonlinear_window_statistics_main_writes_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_nonlinear_window_statistics")
-    _plot_nonlinear_window_statistics_write_summary(
+def test_nonlinear_window_statistics_main_writes_artifacts(tmp_path: Path) -> None:
+    mod = load_artifact_tool("build_nonlinear_validation_panels")
+    _write_nonlinear_window_gate_summary(
         tmp_path / "nonlinear_cyclone_gate_summary.json",
         case="cyclone_nonlinear_long_window",
     )
-    _plot_nonlinear_window_statistics_write_summary(
+    _write_nonlinear_window_gate_summary(
         tmp_path / "nonlinear_hsx_gate_summary.json",
         case="hsx_nonlinear_window",
         heat_flux=0.04,
     )
-    _plot_nonlinear_window_statistics_write_summary(
+    _write_nonlinear_window_gate_summary(
         tmp_path / "nonlinear_cyclone_short_gate_summary.json",
         case="cyclone_short_nonlinear_window",
         include=False,
@@ -1835,7 +1835,18 @@ def test_plot_nonlinear_window_statistics_main_writes_artifacts(tmp_path: Path) 
     )
     out = tmp_path / "panel.png"
 
-    assert mod.main(["--glob", str(tmp_path / "*.json"), "--out", str(out)]) == 0
+    assert (
+        mod.main(
+            [
+                "window-statistics",
+                "--glob",
+                str(tmp_path / "*.json"),
+                "--out",
+                str(out),
+            ]
+        )
+        == 0
+    )
 
     assert out.exists()
     assert out.with_suffix(".pdf").exists()
@@ -1853,20 +1864,20 @@ def test_plot_nonlinear_window_statistics_main_writes_artifacts(tmp_path: Path) 
 def test_case_specific_window_gates_expose_tighter_release_thresholds(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_nonlinear_window_statistics")
-    _plot_nonlinear_window_statistics_write_summary(
+    mod = load_artifact_tool("build_nonlinear_validation_panels")
+    _write_nonlinear_window_gate_summary(
         tmp_path / "nonlinear_kbm_gate_summary.json",
         case="kbm_nonlinear_window",
         heat_flux=0.019,
         wg=0.01,
         wphi=0.015,
     )
-    _plot_nonlinear_window_statistics_write_summary(
+    _write_nonlinear_window_gate_summary(
         tmp_path / "nonlinear_hsx_gate_summary.json",
         case="hsx_nonlinear_window",
         heat_flux=0.049,
     )
-    _plot_nonlinear_window_statistics_write_summary(
+    _write_nonlinear_window_gate_summary(
         tmp_path / "nonlinear_cyclone_miller_gate_summary.json",
         case="cyclone_miller_nonlinear_window",
         heat_flux=0.094,

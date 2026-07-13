@@ -307,11 +307,11 @@ with the quasilinear model-selection status intentionally open until a
 candidate passes the strict uncertainty and transport-error gates.
 Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
-``tools/artifacts/plot_nonlinear_window_statistics.py`` provides the companion
+``tools/artifacts/build_nonlinear_validation_panels.py window-statistics`` provides the companion
 manuscript-facing statistics panel for the nonlinear GX comparison gates by
 plotting the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` values from
 those same tracked JSON summaries.
-``tools/artifacts/plot_nonlinear_feasibility_panel.py`` is the analogous tool for new
+The ``feasibility`` mode of the same command is the analogous tool for new
 finite nonlinear pilots that do not yet have a reference comparison or
 production-resolution convergence gate. It writes PNG/PDF/JSON/CSV artifacts
 with explicit ``claim_level`` and ``promotion_gate.passed = false`` metadata,
