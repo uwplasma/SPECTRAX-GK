@@ -1469,54 +1469,6 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         parallel=parallel,
     )
     assert_species_close(hyper_parallel_state, hyper_serial_state)
-    from spectraxgk.operators.linear.params import linear_terms_to_term_config
-    from spectraxgk.terms.assembly import compute_fields_cached
-
-    ky = min(1, grid.ky.size - 1)
-    electromagnetic_state = state.at[:, 0, 1, ky, 0, :].set(0.03 + 0.02j)
-    electromagnetic_params = replace(params, beta=0.01, fapar=1.0)
-    electromagnetic_terms = replace(terms, apar=1.0, bpar=1.0)
-    electromagnetic_fields = compute_fields_cached(
-        electromagnetic_state,
-        cache,
-        electromagnetic_params,
-        terms=linear_terms_to_term_config(electromagnetic_terms),
-        use_custom_vjp=False,
-    )
-    assert float(jnp.linalg.norm(electromagnetic_fields.apar)) > 0.0
-    assert float(jnp.linalg.norm(electromagnetic_fields.bpar)) > 0.0
-    electromagnetic_serial_state, electromagnetic_serial_phi = integrate_linear(
-        electromagnetic_state,
-        grid,
-        geom,
-        electromagnetic_params,
-        dt=1e-6,
-        steps=3,
-        method="euler",
-        cache=cache,
-        terms=electromagnetic_terms,
-    )
-    electromagnetic_parallel_state, electromagnetic_parallel_phi = integrate_linear(
-        electromagnetic_state,
-        grid,
-        geom,
-        electromagnetic_params,
-        dt=1e-6,
-        steps=3,
-        method="euler",
-        cache=cache,
-        terms=electromagnetic_terms,
-        parallel=parallel,
-    )
-    assert_species_close(
-        electromagnetic_parallel_state, electromagnetic_serial_state, rtol=8e-5
-    )
-    np.testing.assert_allclose(
-        np.asarray(electromagnetic_parallel_phi),
-        np.asarray(electromagnetic_serial_phi),
-        rtol=8e-5,
-        atol=8e-6,
-    )
     with pytest.raises(NotImplementedError, match="species-parallel IMEX"):
         integrate_linear(
             state,
@@ -1530,6 +1482,62 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
             terms=terms,
             parallel=parallel,
         )
+
+
+def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
+    from spectraxgk.linear import integrate_linear
+    from spectraxgk.operators.linear.params import linear_terms_to_term_config
+    from spectraxgk.terms.assembly import compute_fields_cached
+
+    if len(jax.devices()) < 2:
+        pytest.skip("requires two logical CPU devices or two accelerators")
+    state, cache, params, grid, geom = _small_kinetic_electron_problem()
+    ky = min(1, grid.ky.size - 1)
+    state = state.at[:, 0, 1, ky, 0, :].set(0.03 + 0.02j)
+    params = replace(params, beta=0.01, fapar=1.0)
+    terms = replace(_electrostatic_slice_terms(), apar=1.0, bpar=1.0)
+    fields = compute_fields_cached(
+        state,
+        cache,
+        params,
+        terms=linear_terms_to_term_config(terms),
+        use_custom_vjp=False,
+    )
+    assert float(jnp.linalg.norm(fields.apar)) > 0.0
+    assert float(jnp.linalg.norm(fields.bpar)) > 0.0
+
+    integration = dict(
+        dt=1e-6,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=terms,
+    )
+    serial_state, serial_phi = integrate_linear(
+        state, grid, geom, params, **integration
+    )
+    parallel_state, parallel_phi = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        parallel=SimpleNamespace(
+            strategy="velocity", backend="auto", axis="species", num_devices=2
+        ),
+        **integration,
+    )
+    np.testing.assert_allclose(
+        np.asarray(parallel_state),
+        np.asarray(serial_state),
+        rtol=8e-5,
+        atol=8e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(parallel_phi),
+        np.asarray(serial_phi),
+        rtol=8e-5,
+        atol=8e-6,
+    )
 
 
 def test_species_pmap_parameter_gradient_matches_centered_difference() -> None:
