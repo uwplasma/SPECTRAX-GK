@@ -1084,7 +1084,7 @@ def test_default_tag_from_github_env_ignores_branch_refs(
 
 
 def test_ci_quick_test_matrix_references_existing_paths() -> None:
-    """Keep hardcoded CI pytest shards synchronized with the test tree."""
+    """Keep hardcoded CI pytest and coverage shards internally consistent."""
 
     root = Path(__file__).resolve().parents[2]
     workflow = yaml.safe_load((root / ".github" / "workflows" / "ci.yml").read_text())
@@ -1097,6 +1097,25 @@ def test_ci_quick_test_matrix_references_existing_paths() -> None:
                 missing.append(f"{shard['name']}: {entry}")
 
     assert missing == []
+
+    wide_job = workflow["jobs"]["wide-coverage-shards"]
+    wide_shards = wide_job["strategy"]["matrix"]["shard"]
+    shard_count = len(wide_shards)
+    assert wide_shards == list(range(1, shard_count + 1))
+
+    shard_step = next(
+        step
+        for step in wide_job["steps"]
+        if "Wide package coverage" in step.get("name", "")
+    )
+    combine_step = next(
+        step
+        for step in workflow["jobs"]["wide-coverage"]["steps"]
+        if step.get("name") == "Combine wide package coverage"
+    )
+    assert f"/{shard_count}" in shard_step["name"]
+    assert f"--shards {shard_count}" in shard_step["run"]
+    assert f"--shards {shard_count}" in combine_step["run"]
 
 
 def _release_artifact_manifest(

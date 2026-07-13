@@ -1702,3 +1702,12 @@ under 5 minutes.
   4,000 accepted steps and reuses the compiled executable for three chunks.
   This is campaign execution metadata only; no transport result is admitted
   until the combined post-transient windows and matched comparison pass.
+
+- 2026-07-13: Halved the package-wide coverage matrix from 48 to 24
+  cost-balanced shards. The five known compile-heavy test owners remain isolated;
+  every other shard contains four or five files under the unchanged 300-second
+  test timeout. This removes 24 duplicate checkout/environment/install sequences,
+  cuts action-download pressure, and reduces the matrix from six to three waves
+  at ``max-parallel=8`` without weakening the combined 95% package gate. A
+  workflow contract now keeps the matrix cardinality, test command, label, and
+  coverage-combine command synchronized.
