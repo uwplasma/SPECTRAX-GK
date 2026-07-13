@@ -199,26 +199,55 @@ def profile_linear_rhs_parallel_slices(
                 state, cache, params, devices=device_list
             )
         )
-
-    def serial_call():
-        return linear_rhs_cached(
-            serial_state,
-            serial_cache,
-            serial_params,
-            terms=terms,
-            use_jit=True,
-            use_custom_vjp=True,
+        serial_compiled = jax.jit(
+            lambda value: linear_rhs_cached(
+                value,
+                serial_cache,
+                serial_params,
+                terms=terms,
+                use_jit=False,
+                use_custom_vjp=False,
+                force_electrostatic_fields=True,
+            )
+        )
+        sharded_compiled = jax.jit(
+            lambda value: linear_rhs_parallel_cached(
+                value,
+                sharded_cache,
+                sharded_params,
+                terms=terms,
+                parallel=parallel_cfg,
+                use_custom_vjp=False,
+            )
         )
 
-    def sharded_call():
-        return linear_rhs_parallel_cached(
-            sharded_state,
-            sharded_cache,
-            sharded_params,
-            terms=terms,
-            parallel=parallel_cfg,
-            use_custom_vjp=False,
-        )
+        def serial_call():
+            return serial_compiled(serial_state)
+
+        def sharded_call():
+            return sharded_compiled(sharded_state)
+
+    else:
+
+        def serial_call():
+            return linear_rhs_cached(
+                serial_state,
+                serial_cache,
+                serial_params,
+                terms=terms,
+                use_jit=True,
+                use_custom_vjp=True,
+            )
+
+        def sharded_call():
+            return linear_rhs_parallel_cached(
+                sharded_state,
+                sharded_cache,
+                sharded_params,
+                terms=terms,
+                parallel=parallel_cfg,
+                use_custom_vjp=False,
+            )
 
     for _ in range(int(warmups)):
         _block_until_ready(serial_call())
