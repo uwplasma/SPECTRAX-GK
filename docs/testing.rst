@@ -1503,7 +1503,7 @@ benchmark figures move):
 For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
 
-- ``tools/comparison/run_reference_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
+- ``tools/comparison/compare_runtime.py stress-matrix`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/campaigns/run_validation_campaigns.py imported-linear-targeted`` (generic per-``ky`` targeted imported-linear wrapper)
 - ``tools/comparison/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
 - ``tools/campaigns/run_validation_campaigns.py kbm-lowky-extractor`` (direct cached-trajectory KBM low-``ky`` extractor audit)

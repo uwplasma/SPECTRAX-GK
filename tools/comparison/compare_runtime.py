@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import replace
+import os
 from pathlib import Path
+import subprocess
 import sys
 
 import jax.numpy as jnp
@@ -40,6 +42,113 @@ from spectraxgk.runtime import (
 )
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+
+
+def _default_comparison_repo() -> Path | None:
+    for candidate in (
+        os.environ.get("REFERENCE_GK_REPO"),
+        str(REPO_ROOT.parent / "GX"),
+        str(REPO_ROOT.parent / "gx"),
+    ):
+        if candidate:
+            path = Path(candidate).expanduser().resolve()
+            if path.exists():
+                return path
+    return None
+
+
+def _linear_stress_cases(repo: Path) -> dict[str, tuple[Path, Path]]:
+    benchmark = repo / "benchmarks" / "linear"
+    return {
+        "kaw": (
+            benchmark / "KAW" / "kaw_betahat10.0_kp0.01_correct.out.nc",
+            benchmark / "KAW" / "kaw_betahat10.0_kp0.01.in",
+        ),
+        "cyclone_ke": (
+            benchmark / "ITG_cyclone" / "itg_miller_kinetic_electrons_correct.out.nc",
+            benchmark / "ITG_cyclone" / "itg_miller_kinetic_electrons.in",
+        ),
+        "kbm_miller": (
+            benchmark / "KBM" / "kbm_miller_correct.out.nc",
+            benchmark / "KBM" / "kbm_miller.in",
+        ),
+    }
+
+
+def build_stress_matrix_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the linear comparison stress matrix.")
+    parser.add_argument(
+        "--comparison-repo", "--gx-repo", dest="comparison_repo", type=Path
+    )
+    parser.add_argument(
+        "--outdir", type=Path, default=Path("tools_out") / "stress_matrix_linear"
+    )
+    parser.add_argument(
+        "--cases", nargs="*", default=["kaw", "cyclone_ke", "kbm_miller"]
+    )
+    parser.add_argument("--Nl", type=int, default=8)
+    parser.add_argument("--Nm", type=int, default=16)
+    return parser
+
+
+def _run_linear_stress_case(
+    *, name: str, output: Path, input_file: Path, out_csv: Path, nl: int, nm: int
+) -> pd.DataFrame:
+    for path in (output, input_file):
+        if not path.exists():
+            raise FileNotFoundError(f"missing comparison benchmark file: {path}")
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).resolve().parent / "compare_gx_imported_linear.py"),
+            "--gx", str(output),
+            "--geometry-file", str(output),
+            "--gx-input", str(input_file),
+            "--Nl", str(nl),
+            "--Nm", str(nm),
+            "--out", str(out_csv),
+        ],
+        check=True,
+    )
+    frame = pd.read_csv(out_csv)
+    frame.insert(0, "case", name)
+    return frame
+
+
+def main_stress_matrix() -> None:
+    args = build_stress_matrix_parser().parse_args()
+    repo = args.comparison_repo or _default_comparison_repo()
+    if repo is None:
+        raise SystemExit(
+            "comparison repository not found; pass --comparison-repo or set REFERENCE_GK_REPO"
+        )
+    cases = _linear_stress_cases(repo.expanduser().resolve())
+    unknown = sorted(set(args.cases).difference(cases))
+    if unknown:
+        raise SystemExit(f"unknown cases {unknown}; choose from {sorted(cases)}")
+    outdir = args.outdir.expanduser().resolve()
+    frames = []
+    for name in args.cases:
+        output, input_file = cases[name]
+        frames.append(
+            _run_linear_stress_case(
+                name=name,
+                output=output,
+                input_file=input_file,
+                out_csv=outdir / f"{name}.csv",
+                nl=int(args.Nl),
+                nm=int(args.Nm),
+            )
+        )
+    combined = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    combined_path = outdir / "combined.csv"
+    combined_path.parent.mkdir(parents=True, exist_ok=True)
+    combined.to_csv(combined_path, index=False)
+    print(combined.to_string(index=False))
+    print(f"saved {combined_path}")
+
+
 def _select_ky_block(arr: np.ndarray, ky_idx: int) -> np.ndarray:
     if arr.ndim < 3:
         raise ValueError("Expected an array with a ky axis in the third-to-last position")
@@ -663,6 +772,7 @@ _COMMANDS = {
     "startup": main_startup,
     "diagnostic-state": main_diagnostic_state,
     "window": main_window,
+    "stress-matrix": main_stress_matrix,
 }
 
 

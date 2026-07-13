@@ -3217,6 +3217,54 @@ from pathlib import Path
 from netCDF4 import Dataset
 
 
+def test_compare_runtime_stress_matrix_parser_and_case_layout(tmp_path: Path) -> None:
+    from tools.comparison import compare_runtime as mod
+
+    parser = mod.build_stress_matrix_parser()
+    args = parser.parse_args(
+        ["--comparison-repo", str(tmp_path), "--cases", "kaw", "--Nl", "6"]
+    )
+    cases = mod._linear_stress_cases(tmp_path)
+
+    assert args.comparison_repo == tmp_path
+    assert args.cases == ["kaw"]
+    assert args.Nl == 6
+    assert set(cases) == {"kaw", "cyclone_ke", "kbm_miller"}
+    assert cases["kaw"][0].name == "kaw_betahat10.0_kp0.01_correct.out.nc"
+
+
+def test_compare_runtime_stress_case_writes_labeled_frame(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from tools.comparison import compare_runtime as mod
+
+    output = tmp_path / "case.out.nc"
+    input_file = tmp_path / "case.in"
+    output.touch()
+    input_file.touch()
+    captured: list[list[str]] = []
+
+    def _run(command, *, check):
+        assert check is True
+        captured.append(command)
+        out = Path(command[command.index("--out") + 1])
+        out.write_text("ky,gamma\n0.2,0.1\n", encoding="utf-8")
+
+    monkeypatch.setattr(mod.subprocess, "run", _run)
+    frame = mod._run_linear_stress_case(
+        name="case",
+        output=output,
+        input_file=input_file,
+        out_csv=tmp_path / "result.csv",
+        nl=4,
+        nm=8,
+    )
+
+    assert frame.to_dict("records") == [{"case": "case", "ky": 0.2, "gamma": 0.1}]
+    assert captured[0][captured[0].index("--Nl") + 1] == "4"
+    assert captured[0][captured[0].index("--Nm") + 1] == "8"
+
+
 def test_compare_runtime_startup_select_ky_block_slices_third_to_last_axis() -> None:
     from tools.comparison import compare_runtime as mod
 
@@ -3687,9 +3735,11 @@ def test_compare_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         mod,
         "_load_real_vector_auto",
-        lambda path: np.array([0.0], dtype=np.float32)
-        if "kx" in path.name
-        else np.array([0.1], dtype=np.float32),
+        lambda path: (
+            np.array([0.0], dtype=np.float32)
+            if "kx" in path.name
+            else np.array([0.1], dtype=np.float32)
+        ),
     )
     monkeypatch.setattr(
         mod,
