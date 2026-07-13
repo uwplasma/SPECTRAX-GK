@@ -3815,16 +3815,16 @@ def test_compare_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> None:
     assert "Wg" in text
 
 
-# ---- test_compare_w7x_zonal_reference.py ----
+# ---- W7-X zonal-reference comparison contracts ----
 
 from pathlib import Path
 
 
-from support.paths import load_comparison_tool
+from support.paths import load_artifact_tool, load_comparison_tool
 
 
 def _load_tool_module():
-    return load_comparison_tool("compare_w7x_zonal_reference")
+    return load_artifact_tool("build_w7x_zonal_reference_artifacts")
 
 
 def _write_reference(tmp_path: Path) -> tuple[Path, Path]:
@@ -3990,6 +3990,7 @@ def test_w7x_zonal_reference_main_writes_open_json(tmp_path: Path) -> None:
 
     rc = mod.main(
         [
+            "compare",
             "--spectrax-summary",
             str(summary),
             "--reference-traces",

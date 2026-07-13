@@ -961,14 +961,14 @@ per-``k_x`` directories. It is a long-window run: ``k_x rho_i=0.05`` reaches
 paper-faithful line-first normalization, the late residuals are about
 ``0.0189``, ``0.137``, ``0.0938``, and ``0.526`` for ``k_x rho_i = 0.05``,
 ``0.07``, ``0.10``, and ``0.30``.
-``tools/artifacts/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
+``tools/artifacts/build_w7x_zonal_reference_artifacts.py digitize`` now extracts the stella/GENE Fig. 11
 main traces and inset residual levels from the arXiv source ``figs/ZF.pdf``.
 The resulting reference artifacts are
 ``docs/_static/w7x_zonal_reference_digitized.csv``,
 ``docs/_static/w7x_zonal_reference_digitized_residuals.csv``,
 ``docs/_static/w7x_zonal_reference_digitized.json``, and
 ``docs/_static/w7x_zonal_reference_digitized.png``. The comparison contract is
-implemented in ``tools/comparison/compare_w7x_zonal_reference.py`` and materialized at
+implemented in ``tools/artifacts/build_w7x_zonal_reference_artifacts.py compare`` and materialized at
 ``docs/_static/w7x_zonal_reference_compare.png`` with JSON metadata in
 ``docs/_static/w7x_zonal_reference_compare.json``. The current long-window
 artifact passes the time-coverage gate for all four wavelengths, but the

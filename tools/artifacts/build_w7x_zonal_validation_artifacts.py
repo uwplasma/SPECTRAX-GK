@@ -91,7 +91,10 @@ def _parse_contract_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--compare-csv",
         type=Path,
         default=ROOT / "docs" / "_static" / "w7x_zonal_reference_compare.csv",
-        help="Residual/time/envelope comparison CSV from compare_w7x_zonal_reference.py.",
+        help=(
+            "Residual/time/envelope CSV from "
+            "build_w7x_zonal_reference_artifacts.py compare."
+        ),
     )
     parser.add_argument(
         "--out-png", type=Path, default=DEFAULT_CONTRACT_OUT, help="Output PNG path."

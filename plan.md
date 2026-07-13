@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 97% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 112 tools remain against the enforced 99-file target. |
+| Tool consolidation | 97% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 111 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1327,3 +1327,11 @@ under 5 minutes.
   policy, or JSON schema. The physical runtime-to-NetCDF regression gate is
   retained, figures are explicitly closed after writing, and the tool inventory
   falls to ``112`` against the enforced ``99`` target.
+
+- 2026-07-13: Unified W7-X zonal-reference digitization and comparison under
+  ``build_w7x_zonal_reference_artifacts.py`` with explicit ``digitize`` and
+  ``compare`` modes. Pixel calibration, residual extraction, normalization,
+  time-coverage, envelope, and open-gate exit semantics remain independently
+  tested; the tracked W7-X residual/envelope mismatch remains open scientific
+  evidence rather than being obscured by the refactor. The tool inventory falls
+  to ``111`` against the enforced ``99`` target.

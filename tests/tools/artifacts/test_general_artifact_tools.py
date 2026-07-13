@@ -1434,7 +1434,9 @@ def test_tem_branch_audit_writes_artifacts(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    payload = mod.build_branch_audit_payload(table=table, reference=tmp_path / "missing.csv")
+    payload = mod.build_branch_audit_payload(
+        table=table, reference=tmp_path / "missing.csv"
+    )
     paths = mod.write_branch_artifacts(payload, out_png=tmp_path / "tem_audit.png")
 
     for path in paths.values():
@@ -1556,7 +1558,7 @@ def _synthetic_w7x_reference_image(mod) -> Image.Image:
 
 
 def test_w7x_zonal_digitizer_axis_mapping_round_trip() -> None:
-    mod = load_artifact_tool("digitize_w7x_zonal_reference")
+    mod = load_artifact_tool("build_w7x_zonal_reference_artifacts")
     panel = mod.PANEL_CALIBRATIONS[0]
     x, y = mod._pixel_to_data(
         np.array([panel.main_box[0], panel.main_box[1]]),
@@ -1572,7 +1574,7 @@ def test_w7x_zonal_digitizer_axis_mapping_round_trip() -> None:
 
 
 def test_w7x_zonal_digitizer_extracts_synthetic_residuals() -> None:
-    mod = load_artifact_tool("digitize_w7x_zonal_reference")
+    mod = load_artifact_tool("build_w7x_zonal_reference_artifacts")
     image = np.asarray(_synthetic_w7x_reference_image(mod), dtype=np.uint8)
 
     trace_df, residual_df = mod.digitize_reference(image, samples_per_trace=11)
@@ -1585,7 +1587,7 @@ def test_w7x_zonal_digitizer_extracts_synthetic_residuals() -> None:
 
 
 def test_w7x_zonal_digitizer_main_writes_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("digitize_w7x_zonal_reference")
+    mod = load_artifact_tool("build_w7x_zonal_reference_artifacts")
     figure = tmp_path / "synthetic_zf.png"
     _synthetic_w7x_reference_image(mod).save(figure)
     out_csv = tmp_path / "trace.csv"
@@ -1595,6 +1597,7 @@ def test_w7x_zonal_digitizer_main_writes_artifacts(tmp_path: Path) -> None:
 
     rc = mod.main(
         [
+            "digitize",
             "--figure",
             str(figure),
             "--out-csv",
@@ -2443,7 +2446,9 @@ def test_w7x_tem_extension_status_tracks_open_tem_and_multiflux(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    payload = load_artifact_tool("build_tem_validation_artifacts").build_w7x_status_payload(
+    payload = load_artifact_tool(
+        "build_tem_validation_artifacts"
+    ).build_w7x_status_payload(
         w7x_spectrum=spectrum, tem_table=tem, tem_audit=tmp_path / "missing.json"
     )
     rows = {row["lane"]: row for row in payload["rows"]}
@@ -2492,9 +2497,9 @@ def test_w7x_tem_extension_status_prefers_tem_audit_when_available(
         encoding="utf-8",
     )
 
-    payload = load_artifact_tool("build_tem_validation_artifacts").build_w7x_status_payload(
-        w7x_spectrum=spectrum, tem_table=tem, tem_audit=audit
-    )
+    payload = load_artifact_tool(
+        "build_tem_validation_artifacts"
+    ).build_w7x_status_payload(w7x_spectrum=spectrum, tem_table=tem, tem_audit=audit)
     row = {row["lane"]: row for row in payload["rows"]}[
         "TEM / kinetic-electron linear parity"
     ]
@@ -2529,9 +2534,9 @@ def test_w7x_tem_extension_status_writes_artifacts(tmp_path: Path) -> None:
         "summary": {"n_rows": 2, "n_closed": 1, "n_partial": 0, "n_open": 1},
     }
 
-    paths = load_artifact_tool("build_tem_validation_artifacts").write_w7x_status_artifacts(
-        payload, out_png=tmp_path / "status.png"
-    )
+    paths = load_artifact_tool(
+        "build_tem_validation_artifacts"
+    ).write_w7x_status_artifacts(payload, out_png=tmp_path / "status.png")
 
     for path in paths.values():
         assert Path(path).exists()
