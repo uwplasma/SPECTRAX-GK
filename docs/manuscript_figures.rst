@@ -76,9 +76,10 @@ variants deferred until the seed outputs are finite.
 The latest manuscript-stack additions are deliberately contract-level figures:
 ``docs/_static/quasilinear_holdout_gap_report.png`` with CSV/JSON/PDF
 companions states exactly why absolute-flux promotion remains blocked;
-``docs/_static/stellarator_objective_portfolio_gate.png``
-validates the aggregate reduced-objective reducer used before expensive
-VMEC/Boozer row production; and
+``docs/_static/vmec_boozer_aggregate_objective_gate.png`` together with
+``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` validates the
+aggregate reducer on real VMEC/Boozer rows and checks provenance, sample
+coverage, objective columns, and AD/FD diagnostics; and
 ``docs/_static/parallel_decomposition_status.png`` keeps production
 independent-work parallelization claims separated from diagnostic nonlinear
 whole-state/domain sharding metadata. The newer

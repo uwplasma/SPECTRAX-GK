@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 86% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, and geometry generation now have one owner per domain; 124 tools remain against the enforced 99-file target. |
+| Tool consolidation | 87% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, and geometry generation now have one owner per domain; 123 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,14 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Removed the backend-free synthetic stellarator portfolio panel,
+  generator, and three tracked companions. The objective reducer remains unit
+  tested, while paper-facing documentation and coverage ownership now point to
+  the real QH VMEC/Boozer aggregate-objective artifact and its fail-closed
+  provenance, sample-coverage, objective-column, and AD/FD guard. That guard,
+  warning-strict docs, and the validation manifest pass. Tool inventory is 123,
+  with the no-regression baseline lowered accordingly.
 
 - 2026-07-13: Replaced the pre-field, distribution-only collision callback with
   a typed post-field ``CollisionContext`` carrying :math:`G`, :math:`H`, solved

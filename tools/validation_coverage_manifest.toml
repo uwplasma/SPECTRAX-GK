@@ -1443,7 +1443,6 @@ fast_tests = [
   "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
-  "docs/_static/stellarator_objective_portfolio_gate.json",
   "docs/_static/zonal_flow_objective_gate.json",
   "docs/_static/zonal_flow_objective_gate.png",
 ]
@@ -2892,8 +2891,9 @@ fast_tests = [
   "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
-  "docs/_static/stellarator_objective_portfolio_gate.json",
-  "docs/_static/stellarator_objective_portfolio_gate.png",
+  "docs/_static/vmec_boozer_aggregate_objective_gate.json",
+  "docs/_static/vmec_boozer_aggregate_objective_gate.png",
+  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
 ]
 next_tests = [
   "extend aggregate-weight tests to sparse held-out surface/alpha/ky portfolio slices",
@@ -2922,7 +2922,8 @@ fast_tests = [
   "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
-  "docs/_static/stellarator_objective_portfolio_gate.json",
+  "docs/_static/vmec_boozer_aggregate_objective_gate.json",
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
 ]
 next_tests = [
   "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",

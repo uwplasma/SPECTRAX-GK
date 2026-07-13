@@ -1995,8 +1995,8 @@ This is intentionally tied to the optimization objective. It is not computed
 from the initial-to-final parameter displacement, which would measure optimizer
 travel rather than local uncertainty at the optimized point.
 
-Objective-portfolio reducer gate
---------------------------------
+Objective-portfolio artifact guard
+----------------------------------
 
 Multi-surface, multi-field-line, and multi-``k_y`` stellarator studies should
 separate two contracts:
@@ -2006,31 +2006,11 @@ separate two contracts:
 - row reduction, where those fixed samples are combined into one scalar for an
   optimizer or UQ ensemble.
 
-The lightweight reducer in
-:mod:`spectraxgk.objectives.portfolio_contracts` validates the second contract
-without importing optional VMEC or Boozer backends. It requires a real numeric
-``(surface, alpha, ky, objective)`` table, finite non-negative normalized
-weights, and an explicit reduction policy. The gate below checks the weighted
-mean reducer, directional JVP, reverse-mode gradient projection, and central
-finite difference on a deterministic nonlinear row fixture.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_stellarator_objective_portfolio_gate.py \
-     --out docs/_static/stellarator_objective_portfolio_gate.png
-
-.. figure:: _static/stellarator_objective_portfolio_gate.png
-   :width: 95%
-   :align: center
-   :alt: Stellarator objective portfolio reducer gate
-
-   Backend-free aggregate-objective reducer gate. It passes AD/JVP/central-FD
-   parity for fixed surface/alpha/``k_y`` rows and validates the normalized
-   sample/objective weights. This is a required optimization-plumbing contract,
-   not a standalone VMEC/Boozer geometry-gradient or nonlinear heat-flux
-   optimization claim.
-
-The corresponding real-artifact guard is
+The reducer in :mod:`spectraxgk.objectives.portfolio_contracts` requires a real
+numeric ``(surface, alpha, ky, objective)`` table, finite non-negative
+normalized weights, and an explicit reduction policy. Its unit tests cover
+shape, weighting, JVP, reverse-mode, and finite-difference contracts. The
+research-facing evidence is the real-artifact guard
 ``tools/release/check_vmec_boozer_gates.py reduced-portfolio``. It consumes the tracked
 multi-alpha VMEC/Boozer aggregate-objective JSON plus a VMEC/Boozer AD/FD
 gradient JSON, rebuilds a backend-free reducer table from the real rows, and
