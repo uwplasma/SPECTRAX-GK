@@ -191,9 +191,11 @@ thermodynamic-drive tangent: it agrees with a centered finite difference to
 ``1.9e-5`` relative error, and changing ``rtol`` from ``1e-3`` to ``3e-4``
 changes the objective and tangent by less than ``2e-4`` relative. The default
 ``derivative_mode="reverse"`` retains the custom-VJP field solve used by
-fixed-step scalar objectives. Adaptive reverse-mode objectives are not yet a
-promoted workflow because a bounded-memory adjoint/checkpoint policy has not
-passed the same observable-level gate.
+scalar objectives. With ``checkpoint=True``, adaptive Tsit5 uses Diffrax's
+recursive checkpoint adjoint; its reverse gradient matches both the forward
+JVP and centered finite difference to ``1.9e-5`` relative on the same physical
+observable. Adaptive reverse mode without checkpointing remains unpromoted
+because its direct adjoint exceeded the bounded local memory envelope.
 
 Nonlinear FFT bracket
 ---------------------

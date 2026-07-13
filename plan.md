@@ -205,7 +205,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
-| Differentiable API clarity | 95% | Fixed-step species-pmap reverse mode and adaptive Diffrax forward JVPs have observable-level finite-difference gates; next add a bounded-memory adaptive reverse policy and held-out implicit-VJP transport objectives. |
+| Differentiable API clarity | 98% | Fixed-step pmap reverse mode plus adaptive forward JVP and checkpointed reverse gradients pass observable-level FD gates; held-out implicit-VJP transport remains. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
@@ -997,3 +997,10 @@ under 5 minutes.
   serial combined RHS and two-step state/field trajectory in a 25 s bounded
   four-logical-CPU gate. The remaining mixed-mesh gaps are electromagnetic
   integration and four-device GPU evidence; office has only two GPUs.
+- 2026-07-12: Promoted bounded-memory adaptive reverse differentiation. The
+  explicit ``derivative_mode="reverse", checkpoint=True`` policy selects
+  Diffrax's recursive checkpoint adjoint; its nonzero Tsit5 thermodynamic-drive
+  gradient matches the existing forward JVP and centered finite difference to
+  ``1.9e-5`` relative. Direct non-checkpointed adaptive reverse remains
+  unpromoted after exceeding the local memory envelope, so documentation now
+  distinguishes these policies rather than making a generic adaptive-AD claim.

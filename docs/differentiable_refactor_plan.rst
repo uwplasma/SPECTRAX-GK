@@ -538,10 +538,12 @@ the differentiated function, and traced parameters bypass host conversion. A
 separate adaptive Diffrax gate now promotes low-dimensional forward-mode JVPs:
 ``derivative_mode="forward"`` uses native JAX rules through the accepted Tsit5
 trajectory, agrees with centered finite differences to ``1.9e-5`` relative,
-and remains stable when the controller tolerance is tightened. Reverse-mode
-adaptive objectives, IMEX trajectories, electromagnetic trajectories, and
-mixed species--Hermite derivatives remain fail-closed until each has a
-bounded-memory observable-level finite-difference or tangent gate.
+and remains stable when the controller tolerance is tightened. The same
+observable now passes a checkpointed reverse gradient through Diffrax's
+``RecursiveCheckpointAdjoint`` at ``1.9e-5`` relative to finite differences.
+Direct non-checkpointed adaptive reverse mode, IMEX trajectories,
+electromagnetic trajectories, and mixed species--Hermite derivatives remain
+fail-closed until each has a bounded-memory observable-level gate.
 
 Generic structured derivatives should use reviewed SOLVAX primitives when
 their contracts pass the required dtype and transformation gates. In

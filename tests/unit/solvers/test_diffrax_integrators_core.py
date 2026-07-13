@@ -64,7 +64,13 @@ def test_adaptive_linear_forward_jvp_matches_centered_difference() -> None:
     state = state.at[0, 0, 1, 0, :].set(0.2 * jnp.exp(1j * z))
     probe = jnp.exp(1j * jnp.linspace(0.0, 1.0, grid.z.size))
 
-    def objective(omega_star_scale, rtol=1.0e-3):
+    def objective(
+        omega_star_scale,
+        rtol=1.0e-3,
+        *,
+        derivative_mode="forward",
+        checkpoint=False,
+    ):
         final_state, _phi = integrate_linear_diffrax(
             state,
             grid,
@@ -79,7 +85,8 @@ def test_adaptive_linear_forward_jvp_matches_centered_difference() -> None:
             max_steps=100,
             progress_bar=False,
             jit=False,
-            derivative_mode="forward",
+            derivative_mode=derivative_mode,
+            checkpoint=checkpoint,
         )
         return jnp.real(jnp.vdot(probe, final_state[0, 0, 1, 0, :]))
 
@@ -94,11 +101,21 @@ def test_adaptive_linear_forward_jvp_matches_centered_difference() -> None:
         (point,),
         (jnp.ones_like(point),),
     )
+    reverse_value, reverse_tangent = jax.value_and_grad(
+        lambda x: objective(
+            x,
+            derivative_mode="reverse",
+            checkpoint=True,
+        )
+    )(point)
 
     assert float(jnp.abs(tangent)) > 1.0e-4
     assert float(tangent) == pytest.approx(float(finite_difference), rel=1.0e-3)
     assert float(tightened_value) == pytest.approx(float(value), rel=2.0e-4)
     assert float(tightened_tangent) == pytest.approx(float(tangent), rel=2.0e-4)
+    assert float(reverse_value) == pytest.approx(float(value), rel=2.0e-5)
+    assert float(reverse_tangent) == pytest.approx(float(finite_difference), rel=1.0e-3)
+    assert float(reverse_tangent) == pytest.approx(float(tangent), rel=2.0e-4)
 
     with pytest.raises(ValueError, match="derivative_mode"):
         integrate_linear_diffrax(
