@@ -44,6 +44,7 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
     integrate_nonlinear_imex_diagnostics,
+    integrate_nonlinear_sheared_euler,
     maybe_emit_nonlinear_progress,
     run_sampled_explicit_diagnostic_scan,
     sampled_scan_intervals,
@@ -629,6 +630,98 @@ def test_shearing_coordinate_tangent_matches_finite_difference() -> None:
     x0_minus = radial_scale_observable(x0 - step)
     x0_finite_difference = (x0_plus - x0_minus) / (2.0 * step)
     np.testing.assert_allclose(x0_tangent, x0_finite_difference, rtol=3.0e-4)
+
+
+def test_sheared_euler_zero_shear_identity_and_full_step_remap() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=4,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="periodic",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(rho_star=1.0, nu_hyper=0.0, nu_hyper_m=0.0)
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
+    state = jnp.zeros((1, 1, 4, 4, 4), dtype=jnp.complex64)
+    state = state.at[0, 0, 1, 0, :].set(0.2 + 0.1j)
+    reference_input = jnp.asarray(np.asarray(state).copy())
+    nonlinear_only = TermConfig(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+        nonlinear=1.0,
+    )
+    reference_state, reference_fields = integrate_nonlinear_cached(
+        reference_input,
+        cache,
+        params,
+        dt=0.02,
+        steps=2,
+        method="euler",
+        terms=nonlinear_only,
+        compressed_real_fft=False,
+    )
+    sheared_state, sheared_fields = integrate_nonlinear_sheared_euler(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=2,
+        shear_rate=0.0,
+        cache=cache,
+        terms=nonlinear_only,
+    )
+    np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
+    np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
+
+    disabled = TermConfig(*([0.0] * 12))
+    remapped_state, _ = integrate_nonlinear_sheared_euler(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.4,
+        steps=3,
+        shear_rate=1.0,
+        cache=cache,
+        terms=disabled,
+    )
+    expected = nonlinear_projection.advance_shearing_coordinates(
+        state,
+        kx=grid.kx,
+        ky=grid.ky,
+        x0=grid.x0,
+        shear_rate=1.0,
+        previous_time=0.0,
+        time=1.2,
+        dealias_mask=grid.dealias_mask,
+    ).state
+    np.testing.assert_allclose(remapped_state, expected, atol=2.0e-7)
+
+    with pytest.raises(ValueError, match="steps must be at least one"):
+        integrate_nonlinear_sheared_euler(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.1,
+            steps=0,
+            shear_rate=1.0,
+            cache=cache,
+        )
 
 
 def test_build_nonlinear_diagnostic_setup_uses_injected_policy() -> None:

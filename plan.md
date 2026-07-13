@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/remap plus periodic dynamic-cache/AD kernels validated; timestep routing absent | complete integrator/linked-boundary routing and physics gates before shipping |
+| Equilibrium ExB flow shear | coordinate/cache/split-phase bracket plus periodic research Euler trajectory validated | complete higher-order/compressed/linked routing and physics gates before shipping |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1569,3 +1569,12 @@ under 5 minutes.
   assembled linear RHS reproduce the static path, while a nonzero-shear JVP
   agrees with the stable centered-FD plateau. Linked and non-twist boundaries
   intentionally raise until their boundary phase and integration policy land.
+
+- 2026-07-13: Completed the first end-to-end periodic flow-shear trajectory
+  foundation without exposing it in TOML. The full-complex bracket now applies
+  and removes the residual radial phase between split ``kx``/``ky`` transforms;
+  a canonical-coordinate gate shows that this preserves the Poisson bracket.
+  The research Euler path passes zero-shear trajectory identity and exact
+  cumulative full-step remapping. Compressed-real, linked/non-twist, and
+  higher-order stage-time paths fail closed or remain absent, so no production
+  flow-shear or transport claim is made.

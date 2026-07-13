@@ -1,5 +1,6 @@
 import numpy as np
 import jax.numpy as jnp
+import pytest
 
 from spectraxgk.config import GridConfig
 from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
@@ -491,6 +492,58 @@ def test_compressed_real_fft_toggle_matches_full_fft_for_hermitian():
     assert bracket_gx.shape == bracket_full.shape
     assert np.all(np.isfinite(np.asarray(bracket_gx)))
     assert np.all(np.isfinite(np.asarray(bracket_full)))
+
+
+def test_full_fft_shearing_phase_preserves_poisson_bracket_coordinates():
+    grid = build_spectral_grid(
+        GridConfig(Nx=6, Ny=6, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
+    rng = np.random.default_rng(401)
+    G = rng.normal(size=(1, 1, 1, 6, 6, 1)) + 1j * rng.normal(
+        size=(1, 1, 1, 6, 6, 1)
+    )
+    chi = rng.normal(size=(6, 6, 1)) + 1j * rng.normal(size=(6, 6, 1))
+    mask = np.asarray(grid.dealias_mask)
+    G *= mask[None, None, None, :, :, None]
+    chi *= mask[:, :, None]
+
+    reference = _spectral_bracket(
+        jnp.asarray(G),
+        jnp.asarray(chi),
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        compressed_real_fft=False,
+    )
+    radial_x = 2.0 * jnp.pi * grid.x0 * jnp.arange(6) / 6.0
+    shear_displacement = jnp.asarray(0.23)
+    residual_kx = -grid.ky * shear_displacement
+    phase = jnp.exp(1j * residual_kx[:, None] * radial_x[None, :])
+    effective_kx = grid.kx_grid + residual_kx[:, None]
+    sheared = _spectral_bracket(
+        jnp.asarray(G),
+        jnp.asarray(chi),
+        kx_grid=effective_kx,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        radial_phase=phase,
+        compressed_real_fft=False,
+    )
+    np.testing.assert_allclose(sheared, reference, rtol=2.0e-5, atol=2.0e-5)
+
+    with pytest.raises(NotImplementedError, match="compressed_real_fft=False"):
+        _spectral_bracket(
+            jnp.asarray(G),
+            jnp.asarray(chi),
+            kx_grid=effective_kx,
+            ky_grid=grid.ky_grid,
+            dealias_mask=grid.dealias_mask,
+            kxfac=jnp.asarray(1.0),
+            radial_phase=phase,
+            compressed_real_fft=True,
+        )
 
 
 def test_compressed_real_fft_bracket_preserves_full_hermitian_symmetry():

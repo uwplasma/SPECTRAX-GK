@@ -254,10 +254,19 @@ already rebuilds :math:`k_\perp^2`, drift frequencies, gyroaverages, Bessel
 tables, field-solve inputs, bracket multipliers, and hyperdiffusion from the
 two-dimensional effective :math:`k_x` grid. Its zero-shear arrays and complete
 linear RHS reproduce the static-cache path, and its nonzero-shear tangent agrees
-with finite differences. Non-twist and linked boundaries fail closed because
-their boundary phase is not implemented. Production timestep routing, linear
-suppression, saturated transport, and matched-code gates remain mandatory
-before enabling flow shear in input files.
+with finite differences. The full-complex nonlinear bracket uses split
+transforms to apply the residual radial phase between the :math:`k_x` and
+:math:`k_y` FFTs; a canonical-coordinate invariance test verifies that the
+Poisson bracket is unchanged by the shear-coordinate transformation. The
+research function
+:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_euler` verifies
+zero-shear trajectory identity and cumulative full-step remapping.
+
+This Euler path is a numerical foundation, not the production model. The
+compressed-real FFT rejects radial phases, and non-twist and linked boundaries
+fail closed because their Hermitian and boundary phases are not implemented.
+Higher-order stage-time routing, linear suppression, saturated transport, and
+matched-code gates remain mandatory before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
 ------------------------------
