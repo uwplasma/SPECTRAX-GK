@@ -13,8 +13,6 @@ import sys
 import tomllib
 from typing import Any
 
-from PIL import Image
-
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = ROOT / "tools/repository_size_manifest.toml"
 DEFAULT_RELEASE_ARTIFACT_MANIFEST = ROOT / "tools/release_artifact_manifest.toml"
@@ -424,6 +422,8 @@ def compress_png_preview(
     restore_if_larger: bool = True,
 ) -> dict[str, Any]:
     """Compress one PNG preview and return size/checksum metadata."""
+
+    from PIL import Image
 
     target = Path(path)
     before_size = target.stat().st_size

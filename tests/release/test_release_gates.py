@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_check_quasilinear_calibration_inputs.py ----
 
 """Tests for quasilinear calibration input validation gates."""
@@ -979,6 +978,7 @@ def test_release_readiness_rejects_stale_prelaunch_gate_rows(
 
 import hashlib
 import subprocess
+import sys
 import textwrap
 
 import yaml
@@ -993,6 +993,8 @@ from tools.release.check_release_readiness import (
     read_source_version,
     validate_release_version,
 )
+
+
 def _write_version_files(
     root: Path, *, project: str = "1.2.3", source: str = "1.2.3"
 ) -> None:
@@ -1129,6 +1131,36 @@ def _release_artifact_manifest(
         encoding="utf-8",
     )
     return manifest
+
+
+def test_repository_hygiene_import_does_not_require_pillow() -> None:
+    script = (
+        Path(__file__).resolve().parents[2]
+        / "tools"
+        / "release"
+        / "check_repository_size_manifest.py"
+    )
+    code = """
+import importlib.abc
+import runpy
+import sys
+
+class BlockPillow(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "PIL" or fullname.startswith("PIL."):
+            raise ModuleNotFoundError("Pillow intentionally unavailable")
+        return None
+
+sys.meta_path.insert(0, BlockPillow())
+runpy.run_path(sys.argv[1], run_name="repository_hygiene_import_test")
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(script)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_release_artifact_manifest_validates_size_and_sha(tmp_path: Path) -> None:
@@ -1335,6 +1367,7 @@ def test_technical_release_status_reports_missing_required_evidence(
 # ---- test_release_manifests.py ----
 
 import re
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
@@ -1481,7 +1514,7 @@ def _coverage_row(module: str, owned_modules: list[str] | None = None) -> str:
     return f"""
 [[modules]]
 module = "{module}"
-path = "src/{module.replace('.', '/')}.py"
+path = "src/{module.replace(".", "/")}.py"
 {owned}owner_lane = "runtime lane"
 status = "active"
 coverage_priority = "high"
@@ -1588,40 +1621,34 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     assert "spectraxgk.geometry.flux_tube_contract" in summary["phase1_split_modules"]
     assert "spectraxgk.geometry.sensitivity" in summary["phase1_split_modules"]
     assert "spectraxgk.geometry.booz_xform_bridge" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.vmec_state_sensitivity" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.geometry.vmec_boozer_core" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.geometry.vmec_flux_tube_reports" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.geometry.vmec_tensor_mapping" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.objectives.gradient_gates" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.objectives.vmec_boozer_gradients" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.objectives.vmec_boozer_fd" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.objectives.vmec_boozer_line_search" in summary[
-        "phase1_split_modules"
-    ]
+    assert (
+        "spectraxgk.geometry.vmec_state_sensitivity" in summary["phase1_split_modules"]
+    )
+    assert "spectraxgk.geometry.vmec_boozer_core" in summary["phase1_split_modules"]
+    assert (
+        "spectraxgk.geometry.vmec_flux_tube_reports" in summary["phase1_split_modules"]
+    )
+    assert "spectraxgk.geometry.vmec_tensor_mapping" in summary["phase1_split_modules"]
+    assert "spectraxgk.objectives.gradient_gates" in summary["phase1_split_modules"]
+    assert (
+        "spectraxgk.objectives.vmec_boozer_gradients" in summary["phase1_split_modules"]
+    )
+    assert "spectraxgk.objectives.vmec_boozer_fd" in summary["phase1_split_modules"]
+    assert (
+        "spectraxgk.objectives.vmec_boozer_line_search"
+        in summary["phase1_split_modules"]
+    )
     assert "spectraxgk.objectives.vmec_boozer" in summary["phase1_split_modules"]
     assert "spectraxgk.operators.nonlinear.rhs" in summary["phase1_split_modules"]
-    assert "spectraxgk.operators.nonlinear.diagnostic_state" in summary[
-        "phase1_split_modules"
-    ]
-    assert "spectraxgk.solvers.nonlinear.explicit" in summary[
-        "phase1_split_modules"
-    ]
+    assert (
+        "spectraxgk.operators.nonlinear.diagnostic_state"
+        in summary["phase1_split_modules"]
+    )
+    assert "spectraxgk.solvers.nonlinear.explicit" in summary["phase1_split_modules"]
     assert "spectraxgk.solvers.nonlinear.imex" in summary["phase1_split_modules"]
-    assert "spectraxgk.operators.linear.cache_builder" in summary["phase1_split_modules"]
+    assert (
+        "spectraxgk.operators.linear.cache_builder" in summary["phase1_split_modules"]
+    )
     assert "spectraxgk.operators.linear.moments" in summary["phase1_split_modules"]
     assert "spectraxgk.operators.linear.params" in summary["phase1_split_modules"]
     assert "spectraxgk.solvers.linear.krylov" in summary["phase1_split_modules"]
@@ -1630,9 +1657,9 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     assert "spectraxgk.artifacts.io" in summary["phase1_split_modules"]
     assert "spectraxgk.artifacts.linear" in summary["phase1_split_modules"]
     assert "spectraxgk.artifacts.nonlinear" in summary["phase1_split_modules"]
-    assert "spectraxgk.artifacts.nonlinear_diagnostics" in summary[
-        "phase1_split_modules"
-    ]
+    assert (
+        "spectraxgk.artifacts.nonlinear_diagnostics" in summary["phase1_split_modules"]
+    )
     for module in (
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",
@@ -1868,7 +1895,10 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
     assert metadata["comparison_revision"]
     assert metadata["comparison_source_fingerprint"].startswith("sha256:")
     assert metadata["office_instrumented_source_fingerprint"].startswith("sha256:")
-    assert metadata["comparison_source_fingerprint"] != metadata["office_instrumented_source_fingerprint"]
+    assert (
+        metadata["comparison_source_fingerprint"]
+        != metadata["office_instrumented_source_fingerprint"]
+    )
     assert "blocked" in metadata["office_binary_status"]
     assert len(by_id) == len(rows) >= 15
     assert {row["status"] for row in rows} <= allowed_statuses
@@ -1882,7 +1912,10 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
         by_id["linearized_sugama_or_coulomb_collisions"]["status"]
         == "planned_research_lane"
     )
-    assert by_id["jax_autodiff_and_implicit_gradients"]["group"] == "differentiable_extension"
+    assert (
+        by_id["jax_autodiff_and_implicit_gradients"]["group"]
+        == "differentiable_extension"
+    )
     assert by_id["species_hermite_multi_device_decomposition"]["status"] == "planned"
     assert by_id["equilibrium_exb_flow_shear"]["status"] == "planned_research_lane"
     assert by_id["specialized_reduced_equation_sets"]["status"] == "not_shipped"
@@ -2149,7 +2182,6 @@ def test_manifest_rejects_direct_rows_listed_as_owned_modules(tmp_path: Path) ->
 
 
 # ---- test_release_scope_docs.py ----
-
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -2536,8 +2568,6 @@ def test_write_json_creates_parent_directory(tmp_path: Path) -> None:
 # ---- test_validation_coverage_manifest.py ----
 
 from pathlib import Path
-
-
 
 
 def _load_validation_tool_module():

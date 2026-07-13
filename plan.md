@@ -282,6 +282,13 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-13: Fixed the repository-hygiene CI regression introduced by command
+  consolidation. Pillow is now imported only by the opt-in
+  ``compress-previews`` path, so the default size and release-artifact checks
+  retain their minimal dependency contract. A subprocess gate blocks every
+  ``PIL`` import while loading the checker and reproduces the GitHub Actions
+  environment; all nine focused repository-hygiene gates pass.
+
 - 2026-07-13: Folded PNG preview compression into the existing repository-size
   and release-artifact policy command as the explicit ``compress-previews``
   mode. Compression functions remain directly tested, but image mutation is
