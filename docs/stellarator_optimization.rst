@@ -1535,13 +1535,12 @@ for the current strict-baseline ``[-75%, +75%]`` figure.
    long post-transient ensemble sidecars; reduced nonlinear-window diagnostics
    are excluded from this figure.
 
-The VMEC-JAX WOUT files generated for this landscape currently require a
-metadata-only patch because their Fourier geometry is present but scalar
-summary fields such as ``Aminor_p`` can be zero. The helper
-:download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
-fills positive scalar metadata from the LCFS Fourier boundary without changing
-the equilibrium Fourier coefficients. This patch is a runtime-EIK compatibility
-step, not a geometry optimization result.
+Current VMEC-JAX WOUT files provide ``Aminor_p``, ``Rmajor_p``, ``aspect``, and
+``volume_p`` from the solved equilibrium. SPECTRAX-GK consumes those values
+directly; the runtime EIK path rejects an invalid ``Aminor_p``. In-memory bridge
+workflows may instead pass an explicit reference length for normalization.
+SPECTRAX-GK does not estimate or rewrite equilibrium scalars from the LCFS
+boundary.
 
 Implementation Map
 ~~~~~~~~~~~~~~~~~~
@@ -1555,7 +1554,6 @@ Implementation Map
   ``python tools/artifacts/build_nonlinear_transport_admission.py prelaunch ...``
   (:download:`build_nonlinear_transport_admission.py <../tools/artifacts/build_nonlinear_transport_admission.py>`)
 - Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_transport_admission.py campaign <../tools/artifacts/build_nonlinear_transport_admission.py>`
-- VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/validation/stellarator/test_qa_low_turbulence.py`` and
   ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.

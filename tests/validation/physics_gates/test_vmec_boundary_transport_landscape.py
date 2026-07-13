@@ -4,9 +4,6 @@ from pathlib import Path
 import re
 from types import SimpleNamespace
 
-import numpy as np
-from netCDF4 import Dataset
-
 from tools.artifacts.build_vmec_boundary_transport_landscape import (
     DEFAULT_FRACTIONS,
     DEFAULT_KINDS,
@@ -17,7 +14,6 @@ from tools.artifacts.build_vmec_boundary_transport_landscape import (
     _write_scan_inputs,
     build_parser,
 )
-from tools.campaigns.patch_vmec_jax_wout_metadata import patch_wout
 from tools.campaigns.write_vmec_boundary_campaigns import (
     _parse_coefficient_spec,
 )
@@ -244,25 +240,3 @@ def test_load_nonlinear_ensemble_preserves_uncertainty_and_pass_flag(
     assert point["sem"] == 0.5831708511946153
     assert point["passed"] is False
     assert point["case"] == "landscape_rbc_1_1_m0p5_replicated_nonlinear_window"
-
-
-def test_patch_vmec_jax_wout_metadata_fills_zero_scalars(tmp_path: Path) -> None:
-    path = tmp_path / "wout_test.nc"
-    with Dataset(path, "w") as ds:
-        ds.createDimension("mn", 2)
-        ds.createDimension("ns", 2)
-        ds.createVariable("xm", "f8", ("mn",))[:] = np.asarray([0.0, 1.0])
-        ds.createVariable("xn", "f8", ("mn",))[:] = np.asarray([0.0, 0.0])
-        rmnc = ds.createVariable("rmnc", "f8", ("ns", "mn"))
-        rmnc[:, :] = np.asarray([[1.0, 0.1], [1.0, 0.2]])
-        for name in ("Aminor_p", "Rmajor_p", "aspect", "volume_p"):
-            ds.createVariable(name, "f8").assignValue(0.0)
-
-    report = patch_wout(path, ntheta=64, nphi=4)
-
-    assert set(report["patched"]) == {"Aminor_p", "Rmajor_p", "aspect", "volume_p"}
-    assert report["after"]["Aminor_p"] > 0.0
-    assert report["after"]["Rmajor_p"] > 0.0
-    assert report["after"]["aspect"] > 0.0
-    with Dataset(path) as ds:
-        assert float(ds.variables["Aminor_p"][:]) == report["after"]["Aminor_p"]

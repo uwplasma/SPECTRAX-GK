@@ -57,7 +57,7 @@ Date: 2026-07-13.
 | Installable source Python files | 226 | reviewed domain ownership | closed |
 | Source modules above 1000 lines | 0 | 0 unreviewed | closed |
 | Public/compatibility facade maximum | 472 lines | <=500 lines | closed |
-| Tool Python files | 130 | <=99 grouped commands; no duplicate owners | active |
+| Tool Python files | 129 | <=99 grouped commands; no duplicate owners | active |
 | Test Python files | 96 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 76% | Runtime comparisons, including the linear stress matrix, and symmetric/asymmetric VMEC state-mapping campaigns now have one owner per domain; continue toward the enforced 99-file target. |
+| Tool consolidation | 77% | Runtime comparisons and VMEC state-mapping campaigns now have one owner per domain; the obsolete approximate WOUT metadata patcher is removed; continue toward the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,14 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Removed the experimental VMEC-JAX WOUT metadata patcher. Current
+  VMEC-JAX computes and tests ``Aminor_p``, ``Rmajor_p``, ``aspect``, and
+  ``volume_p`` from the solved equilibrium, so retaining an approximate LCFS
+  scalar rewrite could mask an upstream output failure. SPECTRAX-GK now relies
+  on the authoritative WOUT contract; runtime EIK generation rejects invalid
+  reference length, while in-memory workflows can supply an explicit scale.
+  Tool inventory is 129.
 
 - 2026-07-13: Folded the standalone linear stress-matrix executable into
   ``tools/comparison/compare_runtime.py stress-matrix``. The KAW, kinetic-
