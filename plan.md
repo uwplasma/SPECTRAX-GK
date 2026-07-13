@@ -289,6 +289,18 @@ That topology is the reference design for the production parallel lane.
   while the nonlinear-window gate owns native-window statistics and release
   acceptance. Tool inventory is 126.
 
+- 2026-07-13: Consolidated the solved-equilibrium linear launch screen into
+  ``tools/artifacts/build_nonlinear_transport_admission.py linear-screen``.
+  The fail-closed growth, effective-perpendicular-wavenumber, heat-flux-weight,
+  and sampled-``ky`` gates retain their tracked JSON/CSV schema, while one
+  duplicate artifact executable and its generic ``build_report`` API were
+  removed. Tool inventory is 125; the maintained command now owns the complete
+  progression from linear triage through nonlinear landscape, prelaunch,
+  redesign, and optimizer-campaign admission. The consolidation audit also
+  fixed a fail-closed bug: non-finite effective-wavenumber and heat-flux-weight
+  rows had previously been discarded before policy evaluation and can no
+  longer allow a partially corrupt spectrum to pass.
+
 - 2026-07-13: Consolidated the nonlinear-gradient evidence chain. Central
   finite-difference, variance-reduction planning, and independent control-mean
   gating now use the ``finite-difference``, ``variance-plan``, and

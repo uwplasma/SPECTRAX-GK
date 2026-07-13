@@ -1554,6 +1554,8 @@ Implementation Map
   ``python tools/artifacts/build_nonlinear_transport_admission.py prelaunch ...``
   (:download:`build_nonlinear_transport_admission.py <../tools/artifacts/build_nonlinear_transport_admission.py>`)
 - Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_transport_admission.py campaign <../tools/artifacts/build_nonlinear_transport_admission.py>`
+- Solved-equilibrium linear launch screen:
+  ``python tools/artifacts/build_nonlinear_transport_admission.py linear-screen ...``
 - Tests: ``tests/validation/stellarator/test_qa_low_turbulence.py`` and
   ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.

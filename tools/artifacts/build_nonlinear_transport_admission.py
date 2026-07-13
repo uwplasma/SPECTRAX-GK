@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build nonlinear transport admission artifacts from compact JSON evidence.
+"""Build transport admission artifacts from linear and nonlinear evidence.
 
-The two subcommands keep the evidence flow explicit:
+The subcommands keep the evidence flow explicit:
 
 * ``landscape`` selects an uncertainty-resolved nonlinear landscape candidate
   from matched replicated transport-window ensembles.
@@ -9,15 +9,21 @@ The two subcommands keep the evidence flow explicit:
   transport landscape row pair or explicit reduced metrics.
 * ``campaign`` decides whether a reduced prelaunch screen plus a landscape
   admission artifact is strong enough to launch the next optimizer campaign.
+* ``linear-screen`` rejects solved-equilibrium spectra that are unsuitable for
+  an expensive nonlinear transport launch.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
+import math
 from pathlib import Path
 import sys
 from typing import Any
+
+import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -46,6 +52,9 @@ DEFAULT_LANDSCAPE = (
     ROOT / "docs/_static/vmec_boundary_transport_landscape_admission.json"
 )
 DEFAULT_CAMPAIGN_OUT = ROOT / "docs/_static/nonlinear_campaign_admission_report.json"
+DEFAULT_LINEAR_SCREEN_OUT = (
+    ROOT / "docs/_static/vmec_optimization_candidate_screen_gate.json"
+)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -60,6 +69,179 @@ def _repo_relative(path: Path) -> str:
         return path.resolve().relative_to(ROOT.resolve()).as_posix()
     except ValueError:
         return path.as_posix()
+
+
+def _finite_float(value: object) -> float | None:
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return None
+    return result if math.isfinite(result) else None
+
+
+def _read_linear_spectrum(path: Path) -> list[dict[str, float]]:
+    required = {"ky", "gamma", "omega", "kperp_eff2", "heat_flux_weight_total"}
+    rows: list[dict[str, float]] = []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        missing = required - set(reader.fieldnames or [])
+        if missing:
+            raise ValueError(f"{path} is missing required columns: {sorted(missing)}")
+        for raw in reader:
+            row = {name: _finite_float(raw.get(name)) for name in required}
+            if any(row[name] is None for name in ("ky", "gamma", "omega")):
+                continue
+            rows.append(
+                {
+                    name: float(value) if value is not None else math.nan
+                    for name, value in row.items()
+                }
+            )
+    if not rows:
+        raise ValueError(f"{path} has no finite candidate-screen rows")
+    return sorted(rows, key=lambda item: item["ky"])
+
+
+def _linear_screen_status(
+    *,
+    max_gamma: float,
+    min_kperp_eff2: float | None,
+    finite_heat_weights: bool,
+    n_rows: int,
+    min_launch_gamma: float,
+    min_points: int,
+) -> tuple[str, list[str], bool]:
+    blockers: list[str] = []
+    if n_rows < min_points:
+        blockers.append("too_few_ky_points")
+    if max_gamma < min_launch_gamma:
+        blockers.append("below_nonlinear_launch_growth")
+    if min_kperp_eff2 is None or min_kperp_eff2 <= 0.0:
+        blockers.append("nonpositive_effective_kperp2")
+    if not finite_heat_weights:
+        blockers.append("nonfinite_heat_flux_weight")
+    if not blockers:
+        return "nonlinear_launch_candidate", blockers, True
+    if "nonpositive_effective_kperp2" in blockers:
+        return "invalid_metric_nonpositive_kperp2", blockers, False
+    if max_gamma <= 0.0:
+        return "stable_or_damped", blockers, False
+    return "marginal_or_incomplete_screen", blockers, False
+
+
+def summarize_linear_spectrum(
+    *,
+    label: str,
+    spectrum_path: str | Path,
+    min_launch_gamma: float = 0.02,
+    min_points: int = 3,
+) -> dict[str, Any]:
+    """Summarize one spectrum using the fail-closed nonlinear-launch policy."""
+
+    path = Path(spectrum_path)
+    rows = _read_linear_spectrum(path)
+    gamma = np.asarray([row["gamma"] for row in rows], dtype=float)
+    ky = np.asarray([row["ky"] for row in rows], dtype=float)
+    omega = np.asarray([row["omega"] for row in rows], dtype=float)
+    kperp = np.asarray([row["kperp_eff2"] for row in rows], dtype=float)
+    heat = np.asarray([row["heat_flux_weight_total"] for row in rows], dtype=float)
+    imax = int(np.nanargmax(gamma))
+    finite_kperp = bool(np.all(np.isfinite(kperp)))
+    finite_heat = bool(np.all(np.isfinite(heat)))
+    min_kperp = float(np.min(kperp)) if finite_kperp else None
+    max_heat = float(np.max(heat)) if finite_heat else None
+    status, blockers, passed = _linear_screen_status(
+        max_gamma=float(gamma[imax]),
+        min_kperp_eff2=min_kperp,
+        finite_heat_weights=finite_heat,
+        n_rows=int(gamma.size),
+        min_launch_gamma=float(min_launch_gamma),
+        min_points=int(min_points),
+    )
+    return {
+        "label": str(label),
+        "source": _repo_relative(path),
+        "status": status,
+        "passed": passed,
+        "blockers": blockers,
+        "n_ky": int(gamma.size),
+        "max_gamma": float(gamma[imax]),
+        "max_gamma_ky": float(ky[imax]),
+        "omega_at_max_gamma": float(omega[imax]),
+        "min_kperp_eff2": min_kperp,
+        "max_heat_flux_weight_total": max_heat,
+        "min_launch_gamma": float(min_launch_gamma),
+    }
+
+
+def build_linear_screen_report(
+    spectra: list[tuple[str, Path]],
+    *,
+    min_launch_gamma: float = 0.02,
+    min_points: int = 3,
+) -> dict[str, Any]:
+    """Build the solved-equilibrium linear screen for nonlinear launch."""
+
+    rows = [
+        summarize_linear_spectrum(
+            label=label,
+            spectrum_path=path,
+            min_launch_gamma=min_launch_gamma,
+            min_points=min_points,
+        )
+        for label, path in spectra
+    ]
+    candidates = [row for row in rows if row["passed"]]
+    return {
+        "kind": "vmec_optimization_candidate_screen_gate",
+        "claim_level": "linear_candidate_screen_not_nonlinear_transport_validation",
+        "passed": bool(candidates),
+        "absolute_flux_promoted": False,
+        "n_cases": len(rows),
+        "n_launch_candidates": len(candidates),
+        "min_launch_gamma": float(min_launch_gamma),
+        "min_points": int(min_points),
+        "rows": rows,
+        "launch_candidates": candidates,
+        "notes": (
+            "This gate screens solved VMEC optimization-result WOUTs before any nonlinear holdout launch. "
+            "A case must have finite growth, max gamma above the nonlinear-launch threshold, finite heat-flux "
+            "weights, and positive effective k_perp^2 on every sampled ky. It is not a nonlinear transport "
+            "validation or quasilinear absolute-flux promotion."
+        ),
+    }
+
+
+def _parse_spectrum_spec(raw: str) -> tuple[str, Path]:
+    if ":" not in raw:
+        raise argparse.ArgumentTypeError("--spectrum must have form LABEL:PATH")
+    label, path = raw.split(":", 1)
+    if not label.strip():
+        raise argparse.ArgumentTypeError("--spectrum label cannot be empty")
+    return label.strip(), Path(path)
+
+
+def _write_linear_screen_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    fields = [
+        "label",
+        "status",
+        "passed",
+        "max_gamma",
+        "max_gamma_ky",
+        "omega_at_max_gamma",
+        "min_kperp_eff2",
+        "max_heat_flux_weight_total",
+        "blockers",
+        "source",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        for row in rows:
+            output = {field: row.get(field, "") for field in fields}
+            output["blockers"] = ";".join(str(item) for item in row["blockers"])
+            writer.writerow(output)
 
 
 def _row_identifier(row: dict[str, Any]) -> tuple[str, ...]:
@@ -351,6 +533,21 @@ def _add_redesign_parser(
     parser.set_defaults(func=_run_redesign)
 
 
+def _add_linear_screen_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    parser = subparsers.add_parser(
+        "linear-screen", help="screen solved-equilibrium spectra for nonlinear launch"
+    )
+    parser.add_argument(
+        "--spectrum", action="append", type=_parse_spectrum_spec, required=True
+    )
+    parser.add_argument("--out", type=Path, default=DEFAULT_LINEAR_SCREEN_OUT)
+    parser.add_argument("--min-launch-gamma", type=float, default=0.02)
+    parser.add_argument("--min-points", type=int, default=3)
+    parser.set_defaults(func=_run_linear_screen)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -358,6 +555,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_prelaunch_parser(subparsers)
     _add_campaign_parser(subparsers)
     _add_redesign_parser(subparsers)
+    _add_linear_screen_parser(subparsers)
     return parser
 
 
@@ -529,6 +727,30 @@ def _run_redesign(args: argparse.Namespace) -> int:
     if args.fail_on_redesign and bool(report["requires_objective_redesign"]):
         return 1
     return 0
+
+
+def _run_linear_screen(args: argparse.Namespace) -> int:
+    report = build_linear_screen_report(
+        list(args.spectrum),
+        min_launch_gamma=float(args.min_launch_gamma),
+        min_points=int(args.min_points),
+    )
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    csv_path = out.with_suffix(".csv")
+    report["csv"] = _repo_relative(csv_path)
+    out.write_text(
+        json.dumps(report, separators=(",", ":"), sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    _write_linear_screen_csv(csv_path, list(report["rows"]))
+    print(
+        json.dumps(
+            {"passed": report["passed"], "json": str(out), "csv": str(csv_path)},
+            indent=2,
+        )
+    )
+    return 0 if report["passed"] else 2
 
 
 def main(argv: list[str] | None = None) -> int:

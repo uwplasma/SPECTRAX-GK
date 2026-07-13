@@ -1583,7 +1583,7 @@ finite and launchable:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_vmec_optimization_candidate_screen_gate.py \
+   python tools/artifacts/build_nonlinear_transport_admission.py linear-screen \
      --spectrum qa_nfp2_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qa_nfp2_mode5_ess_final_scan.quasilinear_spectrum.csv \
      --spectrum qh_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qh_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
      --spectrum qp_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \

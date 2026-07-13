@@ -5905,7 +5905,7 @@ def test_build_collection_main_writes_json(tmp_path: Path) -> None:
 
 
 # VMEC optimization candidate-screen assertions
-def _build_vmec_optimization_candidate_screen_gate_write_spectrum(
+def _write_candidate_screen_spectrum(
     path: Path, rows: list[tuple[float, float, float, float, float]]
 ) -> None:
     lines = ["ky,gamma,omega,kperp_eff2,heat_flux_weight_total"]
@@ -5918,9 +5918,9 @@ def _build_vmec_optimization_candidate_screen_gate_write_spectrum(
 def test_candidate_screen_rejects_nonpositive_kperp_even_with_large_growth(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_vmec_optimization_candidate_screen_gate")
+    mod = load_artifact_tool("build_nonlinear_transport_admission")
     spectrum = tmp_path / "bad.csv"
-    _build_vmec_optimization_candidate_screen_gate_write_spectrum(
+    _write_candidate_screen_spectrum(
         spectrum,
         [
             (0.1, 1.2, -0.5, -0.7, 0.1),
@@ -5929,7 +5929,7 @@ def test_candidate_screen_rejects_nonpositive_kperp_even_with_large_growth(
         ],
     )
 
-    row = mod.summarize_spectrum(label="bad_metric", spectrum_path=spectrum)
+    row = mod.summarize_linear_spectrum(label="bad_metric", spectrum_path=spectrum)
 
     assert row["passed"] is False
     assert row["status"] == "invalid_metric_nonpositive_kperp2"
@@ -5940,9 +5940,9 @@ def test_candidate_screen_rejects_nonpositive_kperp_even_with_large_growth(
 def test_candidate_screen_accepts_positive_metric_launch_candidate(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_vmec_optimization_candidate_screen_gate")
+    mod = load_artifact_tool("build_nonlinear_transport_admission")
     spectrum = tmp_path / "good.csv"
-    _build_vmec_optimization_candidate_screen_gate_write_spectrum(
+    _write_candidate_screen_spectrum(
         spectrum,
         [
             (0.1, 0.01, -0.5, 0.7, 0.1),
@@ -5951,7 +5951,7 @@ def test_candidate_screen_accepts_positive_metric_launch_candidate(
         ],
     )
 
-    report = mod.build_report([("good", spectrum)])
+    report = mod.build_linear_screen_report([("good", spectrum)])
 
     assert report["passed"] is True
     assert report["n_launch_candidates"] == 1
@@ -5959,9 +5959,9 @@ def test_candidate_screen_accepts_positive_metric_launch_candidate(
 
 
 def test_candidate_screen_tool_writes_fail_closed_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("build_vmec_optimization_candidate_screen_gate")
+    mod = load_artifact_tool("build_nonlinear_transport_admission")
     spectrum = tmp_path / "marginal.csv"
-    _build_vmec_optimization_candidate_screen_gate_write_spectrum(
+    _write_candidate_screen_spectrum(
         spectrum,
         [
             (0.1, -0.01, -0.5, 0.7, 0.1),
@@ -5971,11 +5971,39 @@ def test_candidate_screen_tool_writes_fail_closed_artifacts(tmp_path: Path) -> N
     )
     out = tmp_path / "screen.json"
 
-    assert mod.main(["--spectrum", f"marginal:{spectrum}", "--out", str(out)]) == 2
+    assert (
+        mod.main(
+            ["linear-screen", "--spectrum", f"marginal:{spectrum}", "--out", str(out)]
+        )
+        == 2
+    )
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["passed"] is False
     assert payload["rows"][0]["status"] == "marginal_or_incomplete_screen"
     assert out.with_suffix(".csv").exists()
+
+
+def test_candidate_screen_rejects_nonfinite_metric_rows(tmp_path: Path) -> None:
+    mod = load_artifact_tool("build_nonlinear_transport_admission")
+    spectrum = tmp_path / "nonfinite.csv"
+    _write_candidate_screen_spectrum(
+        spectrum,
+        [
+            (0.1, 0.03, -0.5, 0.7, 0.1),
+            (0.2, 0.04, -0.4, float("nan"), 0.2),
+            (0.3, 0.03, -0.2, 0.9, float("inf")),
+        ],
+    )
+
+    row = mod.summarize_linear_spectrum(
+        label="nonfinite_metric", spectrum_path=spectrum
+    )
+
+    assert row["passed"] is False
+    assert row["min_kperp_eff2"] is None
+    assert row["max_heat_flux_weight_total"] is None
+    assert "nonpositive_effective_kperp2" in row["blockers"]
+    assert "nonfinite_heat_flux_weight" in row["blockers"]
 
 
 # VMEC state-control bracket sweep assertions
