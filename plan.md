@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 99% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; 100 tools remain against the enforced 99-file target. |
+| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1422,3 +1422,9 @@ under 5 minutes.
   VMEC admission policy, nonlinear-gate matching, negative-evidence reporting,
   and publication plots remain reusable by artifact builders, while calibration
   and claim promotion now have one release owner. Tool inventory falls to 100.
+
+- 2026-07-13: Consolidated external-VMEC high-grid holdout admission under
+  ``check_vmec_boozer_gates.py high-grid-admission``. The same fail-closed
+  coarse-grid exclusion, retained-grid convergence, time-horizon, replicate,
+  and claim-scope gates remain directly tested beside differentiability and
+  held-out geometry gates. Tool inventory reaches the enforced target of 99.

@@ -1869,7 +1869,7 @@ around ``10.5``/``9.9``. The retained high-grid pair passes at ``t=250`` and
 ``0.018``/``0.019``; and the restart-continued ``n80`` seed/timestep ensemble
 passes on ``t=[350,700]`` with mean heat flux ``9.60``, mean-relative spread
 ``0.041``, and combined SEM/mean ``0.052``. The dedicated
-``tools/release/check_external_vmec_high_grid_admission.py`` gate therefore admits
+``tools/release/check_vmec_boozer_gates.py high-grid-admission`` gate therefore admits
 CTH-like as a scoped high-grid holdout while explicitly excluding any full
 ``n48/n64/n80`` convergence claim. The shaped-tokamak-pressure repair uses the
 same admission policy: full-grid failure is retained as a coarse-grid warning,

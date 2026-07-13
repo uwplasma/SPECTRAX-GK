@@ -482,7 +482,7 @@ def test_runbook_tool_writes_modified_protocol_contract(tmp_path: Path) -> None:
 
 
 def _load_admission_tool_module():
-    return load_release_tool("check_external_vmec_high_grid_admission")
+    return load_release_tool("check_vmec_boozer_gates")
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> Path:
@@ -658,6 +658,7 @@ def test_high_grid_admission_cli_writes_json(tmp_path: Path) -> None:
     out = tmp_path / "admission.json"
     rc = mod.main(
         [
+            "high-grid-admission",
             "--full-grid-gate",
             str(_full_grid_gate(tmp_path)),
             "--high-grid-gate",

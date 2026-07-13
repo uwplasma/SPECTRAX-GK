@@ -336,7 +336,7 @@ horizons. The gate is deliberately necessary-only: even a passing
 time-horizon figure writes ``promotion_gate.passed = false`` until independent
 replicate, seed, timestep, and admission-policy evidence exists.
 
-``tools/release/check_external_vmec_high_grid_admission.py`` is the final scoped
+``tools/release/check_vmec_boozer_gates.py high-grid-admission`` is the final scoped
 exception gate for the rare case where the full grid ladder fails only because
 the lowest grid is not converged. It requires the failed full-grid JSON sidecar
 to contain only common/least grid-difference failures, requires the retained
