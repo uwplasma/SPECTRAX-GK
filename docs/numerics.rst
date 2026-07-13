@@ -326,6 +326,18 @@ Implementation note:
 Custom collision operators
 --------------------------
 
+The shipped conserving long-wavelength model is independently exposed as
+``drift_kinetic_dougherty_contribution``. It implements Appendix C, equation
+(C6), of `Frei, Hoffmann & Ricci (2022)
+<https://doi.org/10.1017/S0022377822000344>`_ in SPECTRAX-GK's
+Hermite--Laguerre ordering. The test suite verifies exact agreement between
+that equation-level kernel and the production finite-Larmor-radius operator at
+``b=0``, its density/momentum/thermal null moments, non-positive quadratic
+rate, and collision-frequency JVP against centered finite differences. This is
+not a Sugama/Coulomb promotion: those operators require the complete
+mass/temperature-ratio-dependent test- and field-particle coefficients and
+their own ITG, zonal, conductivity, entropy, and convergence gates.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the

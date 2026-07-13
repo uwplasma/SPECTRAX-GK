@@ -39,6 +39,7 @@ from spectraxgk.terms.linear_terms import (
     collision_quadratic_rate,
     collisions_contribution,
     conservative_full_f_dougherty_cross_moments,
+    drift_kinetic_dougherty_contribution,
     multispecies_collision_invariant_rates,
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
@@ -352,6 +353,71 @@ def test_long_wavelength_collision_invariants_and_free_energy_rate():
     np.testing.assert_allclose(
         np.asarray(rate_gradient), 2.0 * np.asarray(quadratic_rate), rtol=2.0e-6
     )
+
+
+def test_long_wavelength_collision_matches_published_dougherty_equation_c6():
+    """Production moments match Frei et al. (2022), Appendix C, equation C6."""
+
+    shape = (2, 3, 5, 1, 1, 2)
+    state = jnp.arange(np.prod(shape), dtype=jnp.float32).reshape(shape)
+    state = state.astype(jnp.complex64) + 0.17j
+    nu = jnp.asarray([0.2, 0.35], dtype=jnp.float32)
+    reference = drift_kinetic_dougherty_contribution(state, nu=nu)
+
+    Jl = jnp.zeros((2, 3, 1, 1, 2), dtype=jnp.float32).at[:, 0].set(1.0)
+    production = collisions_contribution(
+        state,
+        G=state,
+        Jl=Jl,
+        JlB=Jl.at[:, 1].set(1.0),
+        b=jnp.zeros((2, 1, 1, 2), dtype=jnp.float32),
+        nu=nu,
+        lb_lam=jnp.asarray(
+            [[2 * ell + m for m in range(5)] for ell in range(3)],
+            dtype=jnp.float32,
+        ),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+    np.testing.assert_allclose(
+        np.asarray(production), np.asarray(reference), rtol=2.0e-6, atol=2.0e-5
+    )
+
+    rates = collision_invariant_rates(reference)
+    np.testing.assert_allclose(np.asarray(rates.density), 0.0, atol=2.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-6
+    )
+    np.testing.assert_allclose(np.asarray(rates.thermal_energy), 0.0, atol=2.0e-5)
+    assert float(collision_quadratic_rate(state, reference)) < 0.0
+
+    tangent = jax.jvp(
+        lambda frequency: drift_kinetic_dougherty_contribution(
+            state, nu=frequency
+        ),
+        (nu,),
+        (jnp.ones_like(nu),),
+    )[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        drift_kinetic_dougherty_contribution(state, nu=nu + step)
+        - drift_kinetic_dougherty_contribution(state, nu=nu - step)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(
+        np.asarray(tangent),
+        np.asarray(finite_difference),
+        rtol=2.0e-4,
+        atol=2.0e-3,
+    )
+    np.testing.assert_allclose(
+        np.asarray(drift_kinetic_dougherty_contribution(state[0], nu=nu[:1])),
+        np.asarray(reference[0]),
+        rtol=2.0e-6,
+        atol=2.0e-5,
+    )
+    with pytest.raises(ValueError, match="Nl >= 2"):
+        drift_kinetic_dougherty_contribution(state[:, :1], nu=nu)
+    with pytest.raises(ValueError, match="five or six"):
+        drift_kinetic_dougherty_contribution(jnp.ones((2, 3)), nu=nu)
 
 
 def test_long_wavelength_local_maxwellian_is_collision_null_space():

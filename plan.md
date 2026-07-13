@@ -206,7 +206,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 67% | Long-wavelength and finite-b gates cover the shipped model; full-f multispecies Dougherty primitive moments pass arbitrary-mass conservation and AD gates, and custom operators receive the post-field Hamiltonian response. Implement the published linearized Sugama/Coulomb Hermite--Laguerre coefficients and close adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
+| Advanced collision operators | 70% | The shipped model now has an independent Appendix-C equation kernel plus production equivalence, invariant, dissipation, and AD gates; finite-b and full-f reference gates remain scoped, and custom operators receive the post-field Hamiltonian response. Implement the published linearized Sugama/Coulomb Hermite--Laguerre coefficients and close adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -281,6 +281,16 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Added an independently auditable drift-kinetic Dougherty kernel
+  from Frei, Hoffmann & Ricci (2022), Appendix C, equation (C6), mapped to the
+  code's Laguerre sign and ``(species, ell, m, ky, kx, z)`` conventions. A new
+  gate proves that the production finite-Larmor-radius operator reduces to
+  this equation at ``b=0`` and separately checks density, momentum, and thermal
+  invariants, non-positive quadratic rate, and a collision-frequency JVP
+  against centered finite differences. The office source audit confirms the
+  comparison implementation uses the same limited Dougherty family, so it is
+  not evidence for Sugama/Coulomb promotion.
 
 - 2026-07-13: Made the benchmark-refresh manifest's figure command executable
   as written. It had passed a removed ``--reuse-cyclone-mismatch`` option even
