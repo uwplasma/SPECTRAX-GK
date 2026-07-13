@@ -1342,3 +1342,12 @@ under 5 minutes.
   command discovery, log parsing, scalar/array convention gates, and artifact
   writing remain directly tested. This keeps comparison-code terminology inside
   an explicit benchmark boundary and lowers the tool inventory to ``110``.
+
+- 2026-07-13: Prototyped a JAX-linear field-coupled low-moment defect
+  correction for the shift-invert damping preconditioner. A synthetic coupled
+  shifted-system gate reproduced the expected residual reduction and linearity,
+  but the full x64 ``Nl=16,Nm=48,Nz=96`` KBM nested-GMRES audit exceeded safe
+  local memory before returning a physical outer residual. All probe processes
+  were terminated and the prototype was removed. No solver claim or default is
+  changed; any revisit must run damping and candidate modes under supervised
+  office resources and retain the unchanged matrix-free outer residual gate.
