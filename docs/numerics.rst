@@ -336,8 +336,12 @@ The shipped conserving long-wavelength model is independently exposed as
 Hermite--Laguerre ordering. The test suite verifies exact agreement between
 that equation-level kernel and the production finite-Larmor-radius operator at
 ``b=0``, its density/momentum/thermal null moments, non-positive quadratic
-rate, and collision-frequency JVP against centered finite differences. This is
-not a Sugama/Coulomb promotion: those operators require the complete
+rate, and collision-frequency JVP against centered finite differences. At
+finite ``b``, the suite independently reconstructs the gyroaveraged flow and
+temperature moments in Mandell et al. equations (3.39)--(3.42), verifies the
+free-energy dissipation identity in equation (4.10), and measures first-order
+convergence to the drift-kinetic equation as ``b`` tends to zero. This is not a
+Sugama/Coulomb promotion: those operators require the complete
 mass/temperature-ratio-dependent test- and field-particle coefficients and
 their own ITG, zonal, conductivity, entropy, and convergence gates.
 

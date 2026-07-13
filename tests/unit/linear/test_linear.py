@@ -8,6 +8,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
+from spectraxgk.diagnostics.analysis import estimate_observed_order
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
@@ -319,9 +320,7 @@ def test_long_wavelength_collision_invariants_and_free_energy_rate():
 
     rates = collision_invariant_rates(contribution)
     np.testing.assert_allclose(np.asarray(rates.density), 0.0, atol=2.0e-5)
-    np.testing.assert_allclose(
-        np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-5
-    )
+    np.testing.assert_allclose(np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-5)
     np.testing.assert_allclose(np.asarray(rates.thermal_energy), 0.0, atol=2.0e-5)
     quadratic_rate = collision_quadratic_rate(state, contribution)
     assert float(quadratic_rate) < 0.0
@@ -384,16 +383,12 @@ def test_long_wavelength_collision_matches_published_dougherty_equation_c6():
 
     rates = collision_invariant_rates(reference)
     np.testing.assert_allclose(np.asarray(rates.density), 0.0, atol=2.0e-6)
-    np.testing.assert_allclose(
-        np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-6
-    )
+    np.testing.assert_allclose(np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-6)
     np.testing.assert_allclose(np.asarray(rates.thermal_energy), 0.0, atol=2.0e-5)
     assert float(collision_quadratic_rate(state, reference)) < 0.0
 
     tangent = jax.jvp(
-        lambda frequency: drift_kinetic_dougherty_contribution(
-            state, nu=frequency
-        ),
+        lambda frequency: drift_kinetic_dougherty_contribution(state, nu=frequency),
         (nu,),
         (jnp.ones_like(nu),),
     )[1]
@@ -443,7 +438,7 @@ def test_long_wavelength_local_maxwellian_is_collision_null_space():
 
 
 def test_finite_larmor_collision_matches_published_moment_equations():
-    """Check Mandell et al. (2018), equations (3.38)--(3.42), at finite b."""
+    """Check Mandell et al. (2018), equations (3.38)--(3.42) and (4.10)."""
 
     nl, nm = 4, 5
     b = jnp.asarray([[[[0.7]]]], dtype=jnp.float32)
@@ -454,24 +449,24 @@ def test_finite_larmor_collision_matches_published_moment_equations():
     ell = jnp.arange(nl, dtype=jnp.float32)[None, :, None, None, None]
     temperature_coeff = ell * Jl_m1 + 2.0 * ell * Jl + (ell + 1.0) * Jl_p1
     state = (
-        jnp.arange(nl * nm, dtype=jnp.float32).reshape(1, nl, nm, 1, 1, 1)
-        + 0.2j
+        jnp.arange(nl * nm, dtype=jnp.float32).reshape(1, nl, nm, 1, 1, 1) + 0.2j
     ).astype(jnp.complex64)
     nu = jnp.asarray([0.3], dtype=jnp.float32)
 
     u_parallel = jnp.sum(Jl * state[:, :, 1], axis=1)
     u_perpendicular = jnp.sqrt(b) * jnp.sum(JlB * state[:, :, 0], axis=1)
-    temperature = (
-        jnp.sqrt(2.0) / 3.0 * jnp.sum(Jl * state[:, :, 2], axis=1)
-        + 2.0 / 3.0 * jnp.sum(temperature_coeff * state[:, :, 0], axis=1)
-    )
+    temperature = jnp.sqrt(2.0) / 3.0 * jnp.sum(
+        Jl * state[:, :, 2], axis=1
+    ) + 2.0 / 3.0 * jnp.sum(temperature_coeff * state[:, :, 0], axis=1)
     eigenvalues = jnp.asarray(
         [[0.7 + 2 * ell_index + m for m in range(nm)] for ell_index in range(nl)],
         dtype=jnp.float32,
     )
-    expected = -nu[:, None, None, None, None, None] * eigenvalues[
-        None, :, :, None, None, None
-    ] * state
+    expected = (
+        -nu[:, None, None, None, None, None]
+        * eigenvalues[None, :, :, None, None, None]
+        * state
+    )
     expected = expected.at[:, :, 0].add(
         nu[:, None, None, None, None]
         * (
@@ -483,10 +478,7 @@ def test_finite_larmor_collision_matches_published_moment_equations():
         nu[:, None, None, None, None] * Jl * u_parallel[:, None]
     )
     expected = expected.at[:, :, 2].add(
-        nu[:, None, None, None, None]
-        * jnp.sqrt(2.0)
-        * Jl
-        * temperature[:, None]
+        nu[:, None, None, None, None] * jnp.sqrt(2.0) * Jl * temperature[:, None]
     )
     contribution = collisions_contribution(
         state,
@@ -505,7 +497,71 @@ def test_finite_larmor_collision_matches_published_moment_equations():
     np.testing.assert_allclose(
         np.asarray(contribution), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6
     )
-    assert float(collision_quadratic_rate(state, contribution)) < 0.0
+    quadratic_rate = collision_quadratic_rate(state, contribution)
+    differential_rate = jnp.sum(
+        nu[:, None, None, None, None, None]
+        * eigenvalues[None, :, :, None, None, None]
+        * jnp.abs(state) ** 2
+    )
+    restoring_rate = jnp.sum(
+        nu[:, None, None, None, None]
+        * (
+            jnp.abs(u_parallel) ** 2
+            + jnp.abs(u_perpendicular) ** 2
+            + 3.0 * jnp.abs(temperature) ** 2
+        )
+    )
+    np.testing.assert_allclose(
+        np.asarray(quadratic_rate),
+        np.asarray(-(differential_rate - restoring_rate)),
+        rtol=2.0e-6,
+        atol=1.0e-3,
+    )
+    assert float(quadratic_rate) < 0.0
+
+
+def test_finite_larmor_collision_has_first_order_drift_kinetic_limit():
+    """The Mandell finite-b model approaches Frei et al. equation (C6)."""
+
+    nl, nm = 4, 5
+    state = (
+        jnp.arange(nl * nm, dtype=jnp.float32).reshape(1, nl, nm, 1, 1, 1) + 0.2j
+    ).astype(jnp.complex64)
+    nu = jnp.asarray([0.3], dtype=jnp.float32)
+    eigenvalues = jnp.asarray(
+        [[2 * ell + m for m in range(nm)] for ell in range(nl)],
+        dtype=jnp.float32,
+    )
+    drift_kinetic = drift_kinetic_dougherty_contribution(state, nu=nu)
+
+    errors = []
+    b_values = (0.2, 0.1, 0.05, 0.025)
+    for b_value in b_values:
+        b = jnp.asarray([[[[b_value]]]], dtype=jnp.float32)
+        Jl = jnp.moveaxis(J_l_all(b, nl - 1), 0, 1)
+        Jl_m1 = jnp.pad(Jl[:, :-1], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+        finite_larmor = collisions_contribution(
+            state,
+            G=state,
+            Jl=Jl,
+            JlB=Jl + Jl_m1,
+            b=b,
+            nu=nu,
+            lb_lam=eigenvalues,
+            weight=jnp.asarray(1.0, dtype=jnp.float32),
+        )
+        errors.append(
+            float(
+                jnp.linalg.norm(finite_larmor - drift_kinetic)
+                / jnp.linalg.norm(drift_kinetic)
+            )
+        )
+
+    order = estimate_observed_order(
+        np.asarray(b_values, dtype=float), np.asarray(errors, dtype=float)
+    ).asymptotic_order
+    assert 0.85 <= order <= 1.15
+    assert all(fine < coarse for coarse, fine in zip(errors, errors[1:]))
 
 
 def test_collision_diagnostics_validate_shapes_and_weights():
@@ -547,9 +603,7 @@ def test_multispecies_collision_diagnostic_uses_physical_moment_weights():
     np.testing.assert_allclose(
         np.asarray(rates.total_parallel_momentum), 0.0, atol=1.0e-7
     )
-    np.testing.assert_allclose(
-        np.asarray(rates.total_thermal_energy), 0.0, atol=1.0e-7
-    )
+    np.testing.assert_allclose(np.asarray(rates.total_thermal_energy), 0.0, atol=1.0e-7)
     energy_gradient = jax.grad(
         lambda scale: jnp.real(
             multispecies_collision_invariant_rates(
@@ -589,8 +643,7 @@ def test_full_f_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -
 
     momentum_rate = mass * density * nu.sum(axis=1)
     momentum_change = momentum_rate * (
-        jnp.asarray([targets.parallel_flow[0, 1], targets.parallel_flow[1, 0]])
-        - flow
+        jnp.asarray([targets.parallel_flow[0, 1], targets.parallel_flow[1, 0]]) - flow
     )
     np.testing.assert_allclose(momentum_change.sum(), 0.0, atol=2.0e-7)
 
@@ -600,8 +653,11 @@ def test_full_f_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -
     target_thermal = jnp.asarray(
         [targets.thermal_speed_sq[0, 1], targets.thermal_speed_sq[1, 0]]
     )
-    energy_change = mass * density * nu.sum(axis=1) * (
-        3.0 * (target_thermal - thermal) + flow * (target_flow - flow)
+    energy_change = (
+        mass
+        * density
+        * nu.sum(axis=1)
+        * (3.0 * (target_thermal - thermal) + flow * (target_flow - flow))
     )
     np.testing.assert_allclose(energy_change.sum(), 0.0, atol=3.0e-7)
     np.testing.assert_allclose(target_flow[0], target_flow[1], atol=1.0e-7)
@@ -649,9 +705,7 @@ def test_full_f_dougherty_cross_moments_equal_species_limit_and_shapes() -> None
         collision_frequency=jnp.asarray([[0.0, 0.3], [0.3, 0.0]]),
     )
     expected_flow = 0.5 * (flow[0] + flow[1])
-    expected_thermal = 0.5 * (
-        thermal[0] + thermal[1] + (flow[0] - flow[1]) ** 2 / 6.0
-    )
+    expected_thermal = 0.5 * (thermal[0] + thermal[1] + (flow[0] - flow[1]) ** 2 / 6.0)
     np.testing.assert_allclose(targets.parallel_flow[0, 1], expected_flow)
     np.testing.assert_allclose(targets.thermal_speed_sq[0, 1], expected_thermal)
     np.testing.assert_allclose(targets.parallel_flow.diagonal(), flow)

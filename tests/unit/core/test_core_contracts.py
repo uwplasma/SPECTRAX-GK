@@ -316,9 +316,12 @@ def test_linear_terms_import_has_no_facade_order_dependency() -> None:
             sys.executable,
             "-c",
             (
+                "from spectraxgk.terms.linear_dissipation import "
+                "collisions_contribution; "
                 "from spectraxgk.terms.linear_terms import "
                 "conservative_full_f_dougherty_cross_moments, "
-                "drift_kinetic_dougherty_contribution"
+                "drift_kinetic_dougherty_contribution; "
+                "from spectraxgk.operators.linear import linear_rhs"
             ),
         ],
         check=False,

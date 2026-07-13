@@ -1480,3 +1480,21 @@ under 5 minutes.
   keeps the source-file target unchanged, and passes 172 selected operator,
   linear, and parallel tests plus strict architecture and coverage-manifest
   ownership gates.
+
+- 2026-07-13: Falsified recycled GCROT as a drop-in KBM shift-invert repair.
+  On the reduced physical ``Nl=8, Nm=24, Nz=96`` problem at the tracked shift,
+  JAX GMRES returned residual ``0.974`` in 66.6 s. SOLVAX GCROT reduced the
+  neutral-selection residual to ``0.799`` in 22.4 s but selected a strongly
+  damped wrong branch; the production KBM frequency masks returned residual
+  ``0.992`` on another wrong branch. No mutable recycling or solver-specific
+  complexity is admitted. The validated time-integrated KBM path remains the
+  release path.
+
+- 2026-07-13: Fixed a direct-import cycle exposed by the collision audit after
+  streaming consolidation. The ``operators`` and ``operators.linear`` facades
+  now resolve public names lazily, allowing the canonical collision module to
+  import independently while removing 17 net source lines. The finite-Larmor-
+  radius gate now checks the exact Mandell et al. equation (4.10) free-energy
+  rate and measured first-order convergence to the independent drift-kinetic
+  equation, in addition to the existing equation, invariant, full-f, and AD
+  gates.
