@@ -1695,6 +1695,14 @@ under 5 minutes.
   toroidal-rotation physics remain a separate unimplemented lane rather than an
   implicit part of ``gamma_E``.
 
+- 2026-07-13: Anchored that scope and numerical convention to primary
+  literature. Schekochihin--Highcock--Cowley and Ball--Brunner--McMillan
+  distinguish perpendicular decorrelation from parallel-velocity-gradient
+  drive, while McMillan--Ball--Brunner show why the residual sub-cell Fourier
+  phase must be retained rather than rounding the nonlinear coupling to an
+  integer wavevector. The documentation now cites all three results directly;
+  no broader rotation-physics claim was added.
+
 - 2026-07-13: Rejected a 6,000-step external checkpoint interval after both
   full-grid x64 A4000 traces reached the 600-second segment ceiling before
   writing output. The replacement keeps the identical ``64x64x24``, ``Nl=4``,

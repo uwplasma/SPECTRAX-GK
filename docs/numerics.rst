@@ -238,7 +238,8 @@ follows a shearing wave according to
 
 This model isolates perpendicular equilibrium-flow decorrelation. It does not
 include a parallel-velocity-gradient drive, which is a distinct physical term
-and requires its own normalization, instability, and transport gates. The
+and requires its own normalization, instability, and transport gates
+[Schekochihin12]_ [Ball19]_. The
 matched comparison campaign uses the same scope: continuous :math:`k_x^*`
 geometry updates, nearest-cell remapping, and the residual nonlinear FFT phase,
 without claiming a toroidal-rotation or parallel-flow-shear model.
@@ -247,7 +248,10 @@ When the displacement crosses half a radial Fourier cell, the state is moved
 to the nearest :math:`k_x` mode. The residual sub-cell displacement is retained
 both in the effective wavenumber and in the real-space phase
 :math:`\exp(i\,\delta k_x x)`. Modes leaving the two-thirds retained band are
-zeroed rather than wrapped around the FFT grid. Tests cover zero-shear identity,
+zeroed rather than wrapped around the FFT grid. Retaining this residual phase
+implements the corrected-remap principle and avoids the non-convergent smeared
+nonlinear coupling of integer-only wavevector remapping [McMillan19]_. Tests
+cover zero-shear identity,
 the analytic shearing-wave trajectory, norm-preserving forward/inverse remaps,
 the de-alias boundary, and JAX tangents with respect to both :math:`\gamma_E`
 and the radial scale against centered finite differences.

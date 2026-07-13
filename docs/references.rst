@@ -92,6 +92,24 @@ References
    Physics of Plasmas 2, 2408 (1995).
    `DOI <https://doi.org/10.1063/1.871264>`__.
 
+.. [Schekochihin12] A. A. Schekochihin, E. G. Highcock, and S. C. Cowley,
+   "Subcritical fluctuations and suppression of turbulence in differentially
+   rotating gyrokinetic plasmas," Plasma Physics and Controlled Fusion 54,
+   055011 (2012). `arXiv <https://arxiv.org/abs/1111.4929>`__,
+   `DOI <https://doi.org/10.1088/0741-3335/54/5/055011>`__.
+
+.. [McMillan19] B. F. McMillan, J. Ball, and S. Brunner, "Simulating
+   background shear flow in local gyrokinetic simulations," Plasma Physics
+   and Controlled Fusion 61, 055006 (2019).
+   `arXiv <https://arxiv.org/abs/1711.03830>`__,
+   `DOI <https://doi.org/10.1088/1361-6587/ab06a4>`__.
+
+.. [Ball19] J. Ball, S. Brunner, and B. F. McMillan, "The effect of
+   background flow shear on gyrokinetic turbulence in the cold ion limit,"
+   Plasma Physics and Controlled Fusion 61, 064004 (2019).
+   `arXiv <https://arxiv.org/abs/1812.08566>`__,
+   `DOI <https://doi.org/10.1088/1361-6587/ab1320>`__.
+
 .. [Staebler24] G. Staebler, C. Bourdelle, J. Citrin, and R. Waltz,
    "Quasilinear theory and modelling of gyrokinetic turbulent transport in
    tokamaks," Nuclear Fusion 64, 103001 (2024).
