@@ -310,6 +310,10 @@ trace's ``time`` array then records the nonuniform accepted-time grid, while
 ``steps`` is an explicit work budget. Time, step size, shearing remaps, fields,
 and transport remain inside the JAX scan so tangents propagate through the
 piecewise-smooth adaptive policy away from clipping and remap transitions.
+Long campaigns can continue from ``final_state`` using the previous terminal
+``time`` and accepted step as ``initial_time`` and ``initial_dt``. A chunked
+versus single-scan identity gate covers the absolute shearing basis, state, and
+heat-flux trace.
 
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport

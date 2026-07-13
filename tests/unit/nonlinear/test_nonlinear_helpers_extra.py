@@ -917,6 +917,46 @@ def test_sheared_transport_adaptive_cfl_records_accepted_time_steps() -> None:
     np.testing.assert_allclose(tangent, finite_difference, rtol=1.0e-3, atol=1.0e-12)
 
 
+def test_sheared_transport_restart_preserves_physical_time_and_state() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+    options = dict(
+        shear_rate=0.2,
+        method="rk3",
+        cache=cache,
+        terms=terms,
+        differentiable=False,
+    )
+
+    complete = integrate_nonlinear_sheared_transport(
+        state, grid, geom, params, dt=0.02, steps=4, **options
+    )
+    first = integrate_nonlinear_sheared_transport(
+        state, grid, geom, params, dt=0.02, steps=2, **options
+    )
+    second = integrate_nonlinear_sheared_transport(
+        first.final_state,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=2,
+        initial_time=first.time[-1],
+        initial_dt=first.time[-1] - first.time[-2],
+        **options,
+    )
+
+    np.testing.assert_allclose(second.final_state, complete.final_state, atol=3.0e-7)
+    np.testing.assert_allclose(
+        jnp.concatenate((first.time, second.time)), complete.time, atol=1.0e-7
+    )
+    np.testing.assert_allclose(
+        jnp.concatenate((first.heat_flux, second.heat_flux)),
+        complete.heat_flux,
+        rtol=2.0e-6,
+        atol=2.0e-7,
+    )
+
+
 def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> None:
     jax.clear_caches()
     grid, geom, params, cache, state, terms = _small_sheared_transport_case()

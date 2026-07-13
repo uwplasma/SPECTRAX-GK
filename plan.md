@@ -1648,3 +1648,9 @@ under 5 minutes.
   machine zero and restores zero-shear identity with the compressed-real path.
   All pre-fix long traces remain rejected; the corrected long campaign must be
   rerun before any saturated-transport claim.
+
+- 2026-07-13: Added restartable physical-time chunks to the compact sheared
+  transport API. ``initial_time`` preserves the absolute shearing coordinate
+  and ``initial_dt`` preserves adaptive-CFL history. A two-chunk run reproduces
+  a single scan's state, accepted times, and canonical heat flux, enabling
+  bounded long campaigns without discarding completed GPU work.
