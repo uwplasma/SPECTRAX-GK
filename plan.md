@@ -206,7 +206,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 55% | Long-wavelength null-space/invariant/free-energy and direct finite-b equation gates cover the shipped model, and splitting preserves field-particle terms; implement and gate species-coupled Dougherty before Sugama/Coulomb promotion. |
+| Advanced collision operators | 65% | Long-wavelength and finite-b gates cover the shipped model; exact conservative cross-species Dougherty primitive moments now pass arbitrary-mass conservation and AD gates. Insert them into the gyroaveraged Hermite--Laguerre RHS and close entropy/relaxation/transport gates before Sugama/Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -281,6 +281,15 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Implemented the exact conservative cross-species primitive
+  moments from equations (2.11)--(2.12) of Francisquez et al. (2022). The JAX
+  kernel supports arbitrary mass ratios, directed rates, and independent
+  trailing spatial samples; rejects statically invalid density, mass,
+  temperature, and rate inputs; and passes pairwise momentum/energy,
+  equal-species, positivity, shape, and AD/finite-difference gates. This closes
+  the cross-moment mathematics needed by a multispecies Dougherty operator but
+  does not yet promote the complete gyroaveraged collision RHS.
 
 - 2026-07-13: Promoted VMEC and Miller EIK generation from a maintainer artifact
   script to the installed ``spectraxgk geometry`` executable. Both backends now

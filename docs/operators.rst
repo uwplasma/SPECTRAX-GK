@@ -257,7 +257,35 @@ The model is promotable only when every particle rate and both summed rates
 vanish to discretization tolerance. This diagnostic is implemented and
 autodiff-tested; it does not by itself promote a multispecies collision model.
 
-The next model tier is a species-coupled conserving Dougherty operator. The
+The first exact implementation step toward that model is
+``conservative_dougherty_cross_moments``. For directed collision rates
+:math:`\nu_{sr}`, it evaluates the pairwise primitive moments
+
+.. math::
+
+   u_{sr} =
+   \frac{m_s n_s \nu_{sr} u_s + m_r n_r \nu_{rs} u_r}
+        {m_s n_s \nu_{sr} + m_r n_r \nu_{rs}},
+
+.. math::
+
+   (n_s\nu_{sr}+n_r\nu_{rs})m_s v_{t,sr}^2
+   =m_s n_s\nu_{sr}v_{t,s}^2+m_r n_r\nu_{rs}v_{t,r}^2
+   +\frac{m_s n_s\nu_{sr}m_r n_r\nu_{rs}}
+          {m_s n_s\nu_{sr}+m_r n_r\nu_{rs}}
+    \frac{(u_s-u_r)^2}{d_v}.
+
+These are equations (2.11)--(2.12) of the
+`improved multispecies Dougherty derivation <https://doi.org/10.1017/S0022377822000289>`_.
+The JAX implementation accepts arbitrary mass ratios and directed rates, keeps
+zero-rate and self pairs unchanged, and is equation-gated for pairwise momentum
+and energy conservation, the equal-species limit, positive target temperature,
+and AD/finite-difference agreement. It computes the exact cross moments needed
+by the future gyroaveraged operator; it is not by itself a collision RHS or a
+runtime model-selection claim.
+
+The next model tier inserts these cross moments into the species-coupled
+gyroaveraged Dougherty operator. The
 research tier after that is the linearized gyrokinetic Sugama/Coulomb operator
 in the Hermite--Laguerre moment basis. Promotion requires discrete Maxwellian
 null-space, particle conservation per species, total momentum and energy
