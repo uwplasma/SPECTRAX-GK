@@ -948,7 +948,7 @@ def _postprocess_commands(
                 f"--case {manifest['case']}_{state}_followup_replicate_spread"
             )
             row["central_fd_command"] = (
-                "python3 tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py "
+                "python3 tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference "
                 f"--baseline {baseline_json} --plus {row['ensemble_json']} --minus {minus_json} "
                 f"--delta-parameter {float(manifest['delta_parameter']):.12g} "
                 f"--parameter-name {manifest['parameter_name']} "

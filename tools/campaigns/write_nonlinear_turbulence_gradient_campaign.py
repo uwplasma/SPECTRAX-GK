@@ -241,7 +241,7 @@ def _promotion_contract(
         / "nonlinear_turbulence_gradient_evidence_gap_report.json"
     )
     fd_command = (
-        f"{PYTHON_CMD} tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py "
+        f"{PYTHON_CMD} tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference "
         f"--baseline {state_commands['baseline']['ensemble_json']} "
         f"--plus {state_commands['plus_delta']['ensemble_json']} "
         f"--minus {state_commands['minus_delta']['ensemble_json']} "

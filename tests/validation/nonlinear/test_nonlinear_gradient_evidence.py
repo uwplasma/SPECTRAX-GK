@@ -99,7 +99,7 @@ def _load_tool_module():
 
 
 def _load_fd_tool_module():
-    return load_artifact_tool("build_nonlinear_turbulence_gradient_fd_gate")
+    return load_artifact_tool("build_nonlinear_gradient_evidence")
 
 
 def _load_campaign_tool_module():
@@ -1147,6 +1147,7 @@ def test_fd_cli_writes_json_csv_and_plot_artifacts(tmp_path: Path) -> None:
 
     rc = mod.main(
         [
+            "finite-difference",
             "--baseline",
             str(baseline),
             "--plus",
@@ -1348,7 +1349,7 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(
     }
     assert set(manifest["state_manifests"]) == {"minus_delta", "baseline", "plus_delta"}
     assert (
-        "build_nonlinear_turbulence_gradient_fd_gate.py"
+        "build_nonlinear_gradient_evidence.py finite-difference"
         in manifest["promotion_contract"]["central_fd_command"]
     )
     central_fd_command = manifest["promotion_contract"]["central_fd_command"]

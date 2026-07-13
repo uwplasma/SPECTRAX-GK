@@ -438,7 +438,7 @@ created before the first long nonlinear task exits, with ``status="running"``,
 have immediate machine-readable progress even when no output NetCDF has finished
 yet.
 Then use
-``tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
+``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` after the matched
 ``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
 the central finite-difference gradient sidecar and checks response resolution,
 forward/backward asymmetry, subtraction conditioning, propagated uncertainty,

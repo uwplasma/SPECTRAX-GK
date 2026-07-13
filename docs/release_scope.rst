@@ -372,7 +372,7 @@ Quasilinear model-selection state:
   Until a paired post-transient artifact passes all response, asymmetry,
   conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
   evidence remains explicitly unpromoted.
-- ``tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py`` is the paired
+- ``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` is the paired
   long-window promotion builder for that missing evidence. It takes the
   finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated
   nonlinear-window ensemble JSON files, computes the central finite-difference

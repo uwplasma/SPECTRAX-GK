@@ -3096,7 +3096,7 @@ The generated files are still launch artifacts, not evidence: production
 promotion only begins after ``vmec_jax`` has re-equilibrated all three inputs
 and produced distinct ``wout`` files.
 Once the three matched ensembles exist,
-``tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py`` is the promotion
+``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` is the promotion
 artifact builder. It consumes the ``baseline``, ``plus_delta``, and
 ``minus_delta`` replicated ensemble JSON files, computes
 ``dQ/dp = (Q_+ - Q_-)/(2 delta_p)``, propagates the ensemble SEM into

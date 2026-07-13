@@ -684,7 +684,7 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
         in postprocess["replicate_spread_command"]
     )
     assert (
-        "build_nonlinear_turbulence_gradient_fd_gate.py"
+        "build_nonlinear_gradient_evidence.py finite-difference"
         in postprocess["central_fd_command"]
     )
 
