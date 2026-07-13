@@ -210,7 +210,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
-| Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
+| Docs/readme release pass | 100% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
 
 ## Prioritized Implementation Steps
@@ -1039,3 +1039,9 @@ under 5 minutes.
   identity-complete but only ``0.586x``; it remains diagnostic negative evidence
   rather than a production speedup claim. Release-claim hygiene is closed while
   a different nonlinear communication algorithm remains future work.
+- 2026-07-13: Closed the README/docs release pass after checking every local
+  README link and figure, the installed API snippet, scoped claim guards,
+  release/performance/size manifests, and all 31 documentation pages with a
+  warning-strict Sphinx build. User-facing wording now consistently describes
+  nonlinear parallelization without implying a multi-device speedup; the
+  documented ``0.586x`` two-GPU result remains explicit negative evidence.
