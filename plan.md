@@ -1516,3 +1516,9 @@ under 5 minutes.
   and 1,822 in the older tracked trace. A following spectral-mode run overlapped
   unrelated two-GPU work at 100% utilization and is rejected; no mixed-load
   performance artifact or panel update is admitted.
+
+- 2026-07-13: Repaired the CI fallout from linear-streaming consolidation.
+  Both quick-test and terms-coverage shards now reference the canonical
+  ``test_linear_streaming.py`` owner, and the zero-weight benchmark guard
+  patches ``streaming_ladder_term`` rather than the removed adapter. The
+  release path contract plus focused streaming regressions pass 19/19.

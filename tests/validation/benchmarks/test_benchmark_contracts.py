@@ -1122,15 +1122,15 @@ def test_linked_kz_hypercollisions_activate_for_z_varying_state():
 def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
     def _fail_streaming(*args, **kwargs):
         raise AssertionError(
-            "streaming_term should not run when streaming weight is zero"
+            "streaming_ladder_term should not run when streaming weight is zero"
         )
 
     def _fail_grad(*args, **kwargs):
         raise AssertionError(
-            "grad_z_periodic should not run when GX streaming weight is zero"
+            "grad_z_periodic should not run when linked streaming weight is zero"
         )
 
-    monkeypatch.setattr(linear_terms_module, "streaming_term", _fail_streaming)
+    monkeypatch.setattr(linear_terms_module, "streaming_ladder_term", _fail_streaming)
     monkeypatch.setattr(linear_terms_module, "grad_z_periodic", _fail_grad)
 
     G = jnp.ones((1, 2, 3, 1, 1, 4), dtype=jnp.complex64)
@@ -1147,7 +1147,7 @@ def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
     assert jnp.allclose(out, jnp.zeros_like(G))
 
     field = jnp.zeros((1, 1, 4), dtype=jnp.complex64)
-    out_gx = linked_streaming_contribution(
+    out_linked = linked_streaming_contribution(
         G,
         phi=field,
         apar=field,
@@ -1163,7 +1163,7 @@ def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
         kz=jnp.ones((4,), dtype=jnp.float32),
         dz=jnp.asarray(1.0, dtype=jnp.float32),
     )
-    assert jnp.allclose(out_gx, jnp.zeros_like(G))
+    assert jnp.allclose(out_linked, jnp.zeros_like(G))
 
 
 def test_disabled_em_fields_match_explicit_zero_arrays_in_streaming_and_diamagnetic():
