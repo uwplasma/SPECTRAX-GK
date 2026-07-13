@@ -432,13 +432,28 @@ def profile_linear_rhs_parallel_slices(
         {"route": "serial", "median_s": serial_median, "samples_s": serial_samples},
         {"route": "sharded", "median_s": sharded_median, "samples_s": sharded_samples},
     ]
+    claim_scope = (
+        "engineering timing for the periodic electrostatic streaming-only mixed "
+        "species-Hermite RHS; not an integration, GPU, or general scaling claim"
+        if axis_name == "species_hermite"
+        else (
+            "engineering timing for the current opt-in electrostatic linear-slices "
+            "route; not a publication speedup claim"
+        )
+    )
+    route_note = (
+        "the mixed route uses a four-device 2x2 species-Hermite shard-map"
+        if axis_name == "species_hermite"
+        else (
+            "the species route compiles a host-prepared two-device shard-map callable"
+            if axis_name == "species"
+            else "the sharded route uses the cached fused Hermite shard-map callable"
+        )
+    )
     return _json_clean(
         {
             "kind": "linear_rhs_parallel_slices_profile",
-            "claim_scope": (
-                "engineering timing for the current opt-in electrostatic linear-slices route; "
-                "not a publication speedup claim"
-            ),
+            "claim_scope": claim_scope,
             "state_shape": tuple(int(x) for x in state.shape),
             "decomposition_axis": axis_name,
             "grid": {
@@ -469,11 +484,8 @@ def profile_linear_rhs_parallel_slices(
             "integration": integration,
             "notes": (
                 "Both routes are warmed before timing. The serial route uses the production JIT path; "
-                + (
-                    "the species route compiles a host-prepared two-device shard-map callable."
-                    if axis_name == "species"
-                    else "the sharded route uses the cached fused Hermite shard-map callable."
-                )
+                + route_note
+                + "."
             ),
         }
     )
