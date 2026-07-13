@@ -19,8 +19,9 @@ import numpy as np
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+for import_root in (REPO_ROOT / "src", REPO_ROOT):
+    if str(import_root) not in sys.path:
+        sys.path.insert(0, str(import_root))
 
 from tools.artifacts.generate_linear_rhs_parallel_gates import build_problem  # noqa: E402
 
@@ -332,7 +333,14 @@ def profile_linear_rhs_parallel_slices(
 
         serial_integration_median = float(median(serial_integration))
         parallel_integration_median = float(median(parallel_integration))
+        state_identity = host_error(serial_state_out, parallel_state_out)
+        field_identity = host_error(serial_phi_out, parallel_phi_out)
+        integration_speedup = serial_integration_median / parallel_integration_median
         integration = {
+            "claim_scope": (
+                "end-to-end explicit electrostatic species integration for this exact "
+                "grid, step count, device stack, and revision"
+            ),
             "steps": int(integration_steps),
             "dt": float(integration_dt),
             "repeats": int(integration_repeats),
@@ -340,9 +348,16 @@ def profile_linear_rhs_parallel_slices(
             "parallel_samples_s": parallel_integration,
             "serial_median_s": serial_integration_median,
             "parallel_median_s": parallel_integration_median,
-            "speedup": serial_integration_median / parallel_integration_median,
-            "state_identity": host_error(serial_state_out, parallel_state_out),
-            "field_history_identity": host_error(serial_phi_out, parallel_phi_out),
+            "speedup": integration_speedup,
+            "identity_passed": bool(
+                state_identity["max_abs_error"] <= float(atol)
+                and state_identity["max_rel_error"] <= float(rtol)
+                and field_identity["max_abs_error"] <= float(atol)
+                and field_identity["max_rel_error"] <= float(rtol)
+            ),
+            "speedup_passed": bool(integration_speedup > 1.0),
+            "state_identity": state_identity,
+            "field_history_identity": field_identity,
         }
 
     rows = [
