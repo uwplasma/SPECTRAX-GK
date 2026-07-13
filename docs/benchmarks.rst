@@ -117,9 +117,10 @@ actually use the same physical and numerical contract.
      - validated, scoped
      - policy tests plus fixed-aspect W7-X/HSX comparison lanes
    * - Equilibrium :math:`E\times B` flow shear
-     - planned research lane
-     - zero-shear recovery, shearing-wave, remap/phase, linear suppression,
-       nonlinear transport, and matched comparison gates are required
+     - coordinate kernel validated; model unshipped
+     - zero-shear, shearing-wave, remap/dealias, and AD/FD gates pass; complete
+       cache routing, linear suppression, nonlinear transport, and matched
+       comparison gates remain required
    * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
      - not shipped
      - separate reduced models are outside the full-gyrokinetic release claim

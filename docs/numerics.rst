@@ -225,6 +225,35 @@ quadrature transform and instead use the spectral gyroaverage factors ``Jl``
 directly. The default ``"grid"`` mode applies the quadrature
 transform.
 
+Equilibrium-flow shearing coordinates
+--------------------------------------
+
+The validated coordinate kernel
+:func:`spectraxgk.operators.nonlinear.projection.advance_shearing_coordinates`
+follows a shearing wave according to
+
+.. math::
+
+   k_x^*(t) = k_x(0) - k_y\,\gamma_E t.
+
+When the displacement crosses half a radial Fourier cell, the state is moved
+to the nearest :math:`k_x` mode. The residual sub-cell displacement is retained
+both in the effective wavenumber and in the real-space phase
+:math:`\exp(i\,\delta k_x x)`. Modes leaving the two-thirds retained band are
+zeroed rather than wrapped around the FFT grid. Tests cover zero-shear identity,
+the analytic shearing-wave trajectory, norm-preserving forward/inverse remaps,
+the de-alias boundary, and JAX tangents with respect to both :math:`\gamma_E`
+and the radial scale against centered finite differences.
+
+The integer nearest-mode decision is piecewise constant and therefore uses a
+stopped tangent. Continuous effective wavenumbers and phases remain
+differentiable between the measure-zero remap events. This kernel is not yet a
+shipped equilibrium-flow-shear model: production routing must also update every
+:math:`k_x`-dependent gyroaverage, drift, field-solve, linked-boundary, and
+nonlinear-bracket quantity during integration. Linear suppression, saturated
+transport, and matched-code gates remain mandatory before enabling it in input
+files.
+
 De-aliasing and hyperdiffusion
 ------------------------------
 

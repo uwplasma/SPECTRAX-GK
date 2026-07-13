@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import fields as dataclass_fields
 from types import SimpleNamespace
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -502,6 +503,132 @@ def test_make_nonlinear_state_projector_composes_fixed_mode_and_hermitian() -> N
         fixed_mode_kx_index=None,
     )
     np.testing.assert_allclose(np.asarray(no_hermitian(trial)), np.asarray(trial))
+
+
+def test_shearing_coordinates_follow_analytic_wave_and_inverse_remap() -> None:
+    kx = jnp.asarray([0.0, 1.0, 2.0, 3.0, -4.0, -3.0, -2.0, -1.0])
+    ky = jnp.asarray([0.0, 1.0])
+    state = jnp.zeros((1, 2, 8, 1), dtype=jnp.complex64)
+    state = state.at[0, 1, 0, 0].set(2.0 - 0.5j)
+
+    update = nonlinear_projection.advance_shearing_coordinates(
+        state,
+        kx=kx,
+        ky=ky,
+        x0=1.0,
+        shear_rate=1.0,
+        previous_time=0.0,
+        time=1.2,
+    )
+
+    assert int(update.cumulative_mode_shift[0]) == 0
+    assert int(update.cumulative_mode_shift[1]) == -1
+    np.testing.assert_allclose(update.state[0, 1, 7, 0], 2.0 - 0.5j)
+    np.testing.assert_allclose(update.effective_kx[1, 7], -1.2, atol=2.0e-7)
+    np.testing.assert_allclose(
+        np.linalg.norm(np.asarray(update.state)),
+        np.linalg.norm(np.asarray(state)),
+        atol=2.0e-7,
+    )
+
+    restored = nonlinear_projection.advance_shearing_coordinates(
+        update.state,
+        kx=kx,
+        ky=ky,
+        x0=1.0,
+        shear_rate=1.0,
+        previous_time=1.2,
+        time=0.0,
+    )
+    np.testing.assert_allclose(restored.state, state, atol=2.0e-7)
+
+
+def test_shearing_coordinates_zero_shear_and_dealias_boundary() -> None:
+    kx = jnp.asarray([0.0, 1.0, 2.0, 3.0, -4.0, -3.0, -2.0, -1.0])
+    ky = jnp.asarray([0.0, 1.0])
+    state = (
+        jnp.arange(16, dtype=jnp.float32).reshape(1, 2, 8, 1) + 0.25j
+    ).astype(jnp.complex64)
+    identity = nonlinear_projection.advance_shearing_coordinates(
+        state,
+        kx=kx,
+        ky=ky,
+        x0=1.0,
+        shear_rate=0.0,
+        previous_time=0.0,
+        time=4.0,
+    )
+    np.testing.assert_array_equal(identity.state, state)
+    np.testing.assert_allclose(
+        identity.effective_kx,
+        jnp.broadcast_to(kx[None, :], (ky.size, kx.size)),
+    )
+    np.testing.assert_allclose(identity.phase, 1.0)
+
+    edge = jnp.zeros_like(state).at[0, 1, 6, 0].set(1.0)
+    mask = jnp.abs(kx)[None, :] <= 2.0
+    mask = jnp.broadcast_to(mask, (2, 8))
+    shifted = nonlinear_projection.advance_shearing_coordinates(
+        edge,
+        kx=kx,
+        ky=ky,
+        x0=1.0,
+        shear_rate=0.5,
+        previous_time=0.0,
+        time=1.0,
+        dealias_mask=mask,
+    )
+    assert int(shifted.cumulative_mode_shift[1]) == -1
+    np.testing.assert_allclose(shifted.state, 0.0)
+
+
+def test_shearing_coordinate_tangent_matches_finite_difference() -> None:
+    kx = jnp.asarray([0.0, 1.0, -2.0, -1.0])
+    ky = jnp.asarray([0.0, 0.75])
+    state = jnp.ones((1, 2, 4, 1), dtype=jnp.complex64)
+
+    def observables(rate):
+        update = nonlinear_projection.advance_shearing_coordinates(
+            state,
+            kx=kx,
+            ky=ky,
+            x0=1.0,
+            shear_rate=rate,
+            previous_time=0.0,
+            time=0.2,
+        )
+        return update.effective_kx[1, 0], update.phase[1, 1]
+
+    rate = jnp.asarray(0.4, dtype=jnp.float32)
+    _, tangent = jax.jvp(observables, (rate,), (jnp.ones_like(rate),))
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    plus = observables(rate + step)
+    minus = observables(rate - step)
+    finite_difference = tuple((hi - lo) / (2.0 * step) for hi, lo in zip(plus, minus))
+    np.testing.assert_allclose(tangent[0], finite_difference[0], rtol=2.0e-4)
+    np.testing.assert_allclose(tangent[1], finite_difference[1], rtol=3.0e-4)
+
+    def radial_scale_observable(x0):
+        return nonlinear_projection.advance_shearing_coordinates(
+            state,
+            kx=kx,
+            ky=ky,
+            x0=x0,
+            shear_rate=rate,
+            previous_time=0.0,
+            time=0.2,
+        ).phase[1, 1]
+
+    x0 = jnp.asarray(1.1, dtype=jnp.float32)
+    _, x0_tangent = jax.jvp(
+        radial_scale_observable,
+        (x0,),
+        (jnp.ones_like(x0),),
+    )
+    x0_plus = radial_scale_observable(x0 + step)
+    x0_minus = radial_scale_observable(x0 - step)
+    x0_finite_difference = (x0_plus - x0_minus) / (2.0 * step)
+    np.testing.assert_allclose(x0_tangent, x0_finite_difference, rtol=3.0e-4)
 
 
 def test_build_nonlinear_diagnostic_setup_uses_injected_policy() -> None:

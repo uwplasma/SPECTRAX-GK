@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | missing | add as a fully gated research extension |
+| Equilibrium ExB flow shear | coordinate/remap/AD kernel validated; production routing absent | complete cache/RHS routing and physics gates before shipping |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1551,3 +1551,13 @@ under 5 minutes.
   from ``terms.brackets`` to ``operators.nonlinear.brackets``. All internal,
   test, tool, manifest, capability-matrix, and API references use the canonical
   paths; 146 affected operator/assembly/benchmark tests pass in bounded shards.
+
+- 2026-07-13: Added the differentiable foundation for equilibrium
+  :math:`E\times B` flow shear without exposing an incomplete runtime option.
+  The shearing-coordinate kernel follows ``kx*(t)=kx(0)-ky*gamma_E*t``, applies
+  nearest-cell non-circular remaps and two-thirds-band loss, and returns the
+  residual real-space phase. Zero-shear, analytic trajectory, inverse-remap,
+  de-alias-boundary, and ``gamma_E``/radial-scale AD-versus-FD gates pass. Full
+  runtime admission remains blocked until all kx-dependent linear,
+  gyroaverage, field-solve, linked-boundary, and nonlinear quantities are
+  updated and linear-suppression/nonlinear-transport comparison gates pass.
