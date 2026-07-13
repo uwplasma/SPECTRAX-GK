@@ -1432,6 +1432,43 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         parallel=parallel,
     )
     assert_species_close(collision_parallel_state, collision_serial_state)
+    hyper_state = state.at[:, 1, 5, :, :, :].set(1.0e-3 + 2.0e-3j)
+    hyper_params = replace(params, nu_hyper_l=0.03, nu_hyper_m=0.05)
+    hyper_terms = replace(collision_terms, collisions=0.0, hypercollisions=1.0)
+    hyper_rhs, _ = linear_rhs_cached(
+        hyper_state,
+        cache,
+        hyper_params,
+        terms=hyper_terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    assert float(jnp.linalg.norm(hyper_rhs)) > 0.0
+    hyper_serial_state, _ = integrate_linear(
+        hyper_state,
+        grid,
+        geom,
+        hyper_params,
+        dt=1e-5,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=hyper_terms,
+    )
+    hyper_parallel_state, _ = integrate_linear(
+        hyper_state,
+        grid,
+        geom,
+        hyper_params,
+        dt=1e-5,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=hyper_terms,
+        parallel=parallel,
+    )
+    assert_species_close(hyper_parallel_state, hyper_serial_state)
     with pytest.raises(NotImplementedError, match="electrostatic field terms"):
         integrate_linear(
             state,
