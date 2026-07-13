@@ -236,6 +236,13 @@ follows a shearing wave according to
 
    k_x^*(t) = k_x(0) - k_y\,\gamma_E t.
 
+This model isolates perpendicular equilibrium-flow decorrelation. It does not
+include a parallel-velocity-gradient drive, which is a distinct physical term
+and requires its own normalization, instability, and transport gates. The
+matched comparison campaign uses the same scope: continuous :math:`k_x^*`
+geometry updates, nearest-cell remapping, and the residual nonlinear FFT phase,
+without claiming a toroidal-rotation or parallel-flow-shear model.
+
 When the displacement crosses half a radial Fourier cell, the state is moved
 to the nearest :math:`k_x` mode. The residual sub-cell displacement is retained
 both in the effective wavenumber and in the real-space phase

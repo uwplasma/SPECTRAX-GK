@@ -1684,3 +1684,21 @@ under 5 minutes.
   domain, leaving those modules at 943 and 642 lines. The architecture gate
   again passes with zero exceptions and unchanged ``226/96/99`` source, test,
   and tool inventories; the 57-test core/release/transport tranche passes.
+
+- 2026-07-13: Tightened the equilibrium-flow-shear comparison scope from the
+  actual comparison-executable source. Its production path applies continuous
+  ``kx*`` geometry updates, nearest-cell remaps, and the residual FFT phase. A
+  separately labeled ``m=1`` flow-shear expression is accumulated only by the
+  term-resolved diagnostic kernel; in the production linear kernel the same
+  expression is not assigned to the RHS. The current matched campaign therefore
+  validates perpendicular decorrelation only. Parallel-velocity-gradient and
+  toroidal-rotation physics remain a separate unimplemented lane rather than an
+  implicit part of ``gamma_E``.
+
+- 2026-07-13: Rejected a 6,000-step external checkpoint interval after both
+  full-grid x64 A4000 traces reached the 600-second segment ceiling before
+  writing output. The replacement keeps the identical ``64x64x24``, ``Nl=4``,
+  ``Nm=8``, periodic ``x0=y0=28.2``, adaptive-RK3 contract but checkpoints every
+  4,000 accepted steps and reuses the compiled executable for three chunks.
+  This is campaign execution metadata only; no transport result is admitted
+  until the combined post-transient windows and matched comparison pass.
