@@ -206,7 +206,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
 | Differentiable API clarity | 93% | The explicit electrostatic species-pmap trajectory has a reverse-mode/finite-difference parameter gate; next add adaptive-controller derivative policy gates and held-out implicit-VJP transport objectives. |
-| Advanced collision operators | 37% | Built-in conserving and high-mode hypercollision terms run in the explicit species pmap; next add decomposed invariant artifacts, then species-coupled Dougherty, Sugama, and linearized Coulomb models. |
+| Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 71% | The two-species explicit pmap includes conserving/high-mode collision terms, electromagnetic fields, and a reverse-mode parameter gate; obtain an uncontended large GPU integration profile, then design mixed Hermite routing. |
 | Performance/release claims | 95% | The refreshed CPU species artifact is identity-exact at 3.41x RHS/0.96x integration; refresh the broader multi-case panel and keep cold executable, warm Python, and parallel scaling claims separate. |
@@ -913,3 +913,10 @@ under 5 minutes.
   end-to-end throughput from ``0.91x`` to ``0.96x``. Since the latter remains
   below one, no integration speedup is claimed. A larger office rerun was
   externally contended and is retained only as transient debugging evidence.
+- 2026-07-12: Added an operator-level long-wavelength collision invariant
+  trajectory. Populated high moments produce a nonzero collision response,
+  while density, parallel momentum, and the temperature-like low moment remain
+  fixed over five serial and species-pmap steps. A separate random-state audit
+  found finite-``b`` residuals at a few percent of the collision RHS norm, so
+  the documentation now limits conservation claims to ``k_perp*rho=0`` and
+  keeps finite-Larmor-radius repair open.

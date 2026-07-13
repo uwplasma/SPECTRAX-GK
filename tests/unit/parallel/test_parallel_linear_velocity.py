@@ -1540,6 +1540,80 @@ def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
     )
 
 
+def test_species_pmap_collision_preserves_long_wavelength_moments() -> None:
+    from spectraxgk.linear import integrate_linear
+    from spectraxgk.terms.linear_dissipation import _laguerre_temperature_coupling
+
+    if len(jax.devices()) < 2:
+        pytest.skip("requires two logical CPU devices or two accelerators")
+    template, cache, params, grid, geom = _small_kinetic_electron_problem()
+    rng = np.random.default_rng(20260712)
+    state = jnp.zeros_like(template)
+    kperp_zero_shape = state[:, :, :, 0, 0, :].shape
+    values = rng.standard_normal(kperp_zero_shape) + 1j * rng.standard_normal(
+        kperp_zero_shape
+    )
+    state = state.at[:, :, :, 0, 0, :].set(
+        jnp.asarray(1.0e-3 * values, dtype=state.dtype)
+    )
+    params = replace(params, nu=jnp.asarray([0.1, 0.2]))
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    def invariant_moments(value):
+        density = jnp.sum(cache.Jl * value[:, :, 0, ...], axis=1)[:, 0, 0, :]
+        momentum = jnp.sum(cache.Jl * value[:, :, 1, ...], axis=1)[:, 0, 0, :]
+        _coefficients, temperature = _laguerre_temperature_coupling(
+            value[:, :, 0, ...],
+            value[:, :, 2, ...],
+            cache.Jl,
+        )
+        return density, momentum, temperature[:, 0, 0, :]
+
+    integration = dict(
+        dt=1e-4,
+        steps=5,
+        method="euler",
+        cache=cache,
+        terms=terms,
+    )
+    serial_state, _ = integrate_linear(state, grid, geom, params, **integration)
+    parallel_state, _ = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        parallel=SimpleNamespace(
+            strategy="velocity", backend="auto", axis="species", num_devices=2
+        ),
+        **integration,
+    )
+    assert float(jnp.linalg.norm(serial_state - state)) > 0.0
+    for expected, serial, parallel in zip(
+        invariant_moments(state),
+        invariant_moments(serial_state),
+        invariant_moments(parallel_state),
+        strict=True,
+    ):
+        np.testing.assert_allclose(
+            np.asarray(serial), np.asarray(expected), rtol=2e-5, atol=2e-9
+        )
+        np.testing.assert_allclose(
+            np.asarray(parallel), np.asarray(expected), rtol=2e-5, atol=2e-9
+        )
+
+
 def test_species_pmap_parameter_gradient_matches_centered_difference() -> None:
     from spectraxgk.linear import integrate_linear
 

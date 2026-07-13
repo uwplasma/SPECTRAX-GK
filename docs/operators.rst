@@ -254,6 +254,15 @@ species-sharded RHS helper remains collision-free; use
 ``integrate_linear(..., parallel=RuntimeParallelConfig(strategy="velocity",
 axis="species", num_devices=2))`` for the validated collisional route.
 
+The conservation claim is explicitly long-wavelength. At
+:math:`k_\perp\rho=0`, a five-step gate starts from populated high moments,
+requires a nonzero collision response, and preserves each species' density,
+parallel-momentum, and temperature-like moments in both serial and decomposed
+integration. At finite :math:`k_\perp\rho`, the current finite-Larmor-radius
+field-particle correction is not exactly conservative; those residuals remain
+a blocker for promoting this baseline to a complete gyrokinetic Landau/Sugama
+operator.
+
 The same enclosing route is gated for Hermite/Laguerre hypercollisions with
 explicitly populated high moments and nonzero ``nu_hyper_l``/``nu_hyper_m``.
 This verifies that the decomposed operator damps its intended high-order
