@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 95% | Fixed-step species-pmap reverse mode and adaptive Diffrax forward JVPs have observable-level finite-difference gates; next add a bounded-memory adaptive reverse policy and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 94% | The periodic 2x2 species-Hermite route covers the complete electrostatic operator including conserving collisions; linked boundaries and four-device GPU evidence remain. |
+| Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 96% | The full mixed operator records 3.11x RHS but 0.97x integration throughput on one scoped CPU workload; no end-to-end speedup is claimed, and broader panels remain workload-specific. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -989,3 +989,11 @@ under 5 minutes.
   promoted implementation is the standard factorized operator used by runtime
   cases. Production parallelization is now limited primarily by linked
   boundary topology and unavailable four-device GPU hardware.
+- 2026-07-12: Closed linked-boundary topology without reconstructing the global
+  distribution. Since every species--Hermite shard owns full ``(ky,kx,z)``
+  chains, the production linked gradient, linked ``|k_z|`` hypercollision, and
+  linked end-damping profile execute locally after Hermite exchange. A
+  nontrivial ``Nx=Ny=Nz=8`` linked case with unequal collision rates matches the
+  serial combined RHS and two-step state/field trajectory in a 25 s bounded
+  four-logical-CPU gate. The remaining mixed-mesh gaps are electromagnetic
+  integration and four-device GPU evidence; office has only two GPUs.

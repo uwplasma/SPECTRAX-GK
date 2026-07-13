@@ -411,15 +411,19 @@ without optional dissipation or collisions and
 records ``3.11x`` warm-RHS speedup and exact 100-step state/field identity, but
 only ``0.97x`` end-to-end throughput. The route is therefore promoted for
 equation ownership and RHS acceleration, not complete integration speedup.
-Linked boundaries, electromagnetic fields, other integrators, and all GPU
-claims remain fail-closed. The office host has only two GPUs, so no mixed-mesh
-GPU claim can be tested there.
+Linked flux-tube boundaries use the same production chain FFT independently on
+each shard because ``ky``, ``kx``, and ``z`` remain local. A nontrivial linked
+case passes combined streaming, linked :math:`|k_z|` hypercollision, linked end
+damping, conserving collisions, and two-step state/field identity. Mixed-mesh
+electromagnetic fields, other integrators, and all GPU claims remain
+fail-closed. The office host has only two GPUs, so no four-device mixed-mesh GPU
+claim can be tested there.
 
-These gates validate communication and numerical identity for bounded linear or
-microkernel paths. They do not validate linked boundaries, complete mixed
-species--Hermite integration, multi-species nonlinear field solves, nonlinear
-brackets, or nonlinear transport speedup unless those paths have their own
-identity gates and profiler artifacts.
+These gates validate communication and numerical identity for the stated
+bounded linear paths. They do not validate mixed-mesh electromagnetic fields,
+multi-species nonlinear field solves, nonlinear brackets, or nonlinear
+transport speedup unless those paths have their own identity gates and profiler
+artifacts.
 
 Claim rules
 -----------

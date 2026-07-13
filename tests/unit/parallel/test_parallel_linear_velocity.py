@@ -1073,15 +1073,26 @@ def _small_periodic_field_problem():
     return state, cache, params
 
 
-def _small_kinetic_electron_problem():
+def _small_kinetic_electron_problem(*, linked: bool = False):
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import LinearParams, build_linear_cache
 
-    cfg = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
+    grid_config = (
+        GridConfig(
+            Nx=8,
+            Ny=8,
+            Nz=8,
+            Lx=62.8,
+            Ly=2.0 * np.pi,
+            boundary="linked",
+            y0=1.0,
+        )
+        if linked
+        else GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
     )
+    cfg = CycloneBaseCase(grid=grid_config)
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams(
@@ -1108,6 +1119,92 @@ def _small_kinetic_electron_problem():
     state = state.at[0, 0, 0, ky, 0, :].set(0.2 * jnp.exp(1j * z))
     state = state.at[1, 0, 0, ky, 0, :].set(0.07j * jnp.exp(2j * z))
     return state, cache, params, grid, geom
+
+
+def test_mixed_species_hermite_linked_operator_matches_serial_trajectory() -> None:
+    from spectraxgk.linear import integrate_linear, linear_rhs_cached
+
+    devices = jax.devices()
+    if len(devices) < 4:
+        pytest.skip("requires four logical CPU devices or accelerators")
+    template, cache, params, grid, geom = _small_kinetic_electron_problem(linked=True)
+    assert cache.use_twist_shift
+    assert cache.linked_indices
+    assert cache.linked_damp_profile.size > 0
+    rng = np.random.default_rng(20260713)
+    state = jnp.asarray(
+        1.0e-3
+        * (
+            rng.standard_normal(template.shape)
+            + 1j * rng.standard_normal(template.shape)
+        ),
+        dtype=template.dtype,
+    )
+    params = replace(
+        params,
+        nu=jnp.asarray([0.1, 0.2]),
+        nu_hyper_l=0.03,
+        nu_hyper_m=0.05,
+        hypercollisions_kz=0.4,
+        damp_ends_amp=0.1,
+    )
+    terms = replace(
+        _electrostatic_slice_terms(),
+        collisions=1.0,
+        hypercollisions=1.0,
+        end_damping=1.0,
+    )
+    expected_rhs, expected_phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        dt=0.01,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    observed_rhs, observed_phi = (
+        linear_parallel_streaming.linear_rhs_electrostatic_species_hermite_sharded(
+            state,
+            cache,
+            params,
+            terms=terms,
+            dt=0.01,
+            devices=devices[:4],
+        )
+    )
+    assert float(jnp.linalg.norm(expected_rhs)) > 0.0
+    np.testing.assert_allclose(
+        np.asarray(observed_phi), np.asarray(expected_phi), rtol=4e-6, atol=4e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(observed_rhs), np.asarray(expected_rhs), rtol=8e-5, atol=8e-6
+    )
+
+    integration = dict(dt=1.0e-5, steps=2, method="euler", cache=cache, terms=terms)
+    serial_state, serial_phi = integrate_linear(
+        state, grid, geom, params, **integration
+    )
+    mixed_state, mixed_phi = integrate_linear(
+        state,
+        grid,
+        geom,
+        params,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="electrostatic_species_hermite",
+            axis="species_hermite",
+            num_devices=4,
+        ),
+        **integration,
+    )
+    np.testing.assert_allclose(
+        np.asarray(mixed_state), np.asarray(serial_state), rtol=9e-5, atol=9e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(mixed_phi), np.asarray(serial_phi), rtol=9e-5, atol=9e-6
+    )
 
 
 def test_electrostatic_phi_reference_matches_production_field_solve() -> None:
