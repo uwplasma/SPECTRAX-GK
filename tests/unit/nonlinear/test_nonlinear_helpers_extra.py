@@ -690,6 +690,20 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
         )
         np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
         np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
+        state_only = integrate_nonlinear_sheared(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=2,
+            shear_rate=0.0,
+            method=method,
+            cache=cache,
+            terms=nonlinear_only,
+            return_fields=False,
+        )
+        np.testing.assert_allclose(state_only, reference_state, atol=2.0e-7)
 
     disabled = TermConfig(*([0.0] * 12))
     remapped_state, _ = integrate_nonlinear_sheared(
@@ -853,6 +867,48 @@ def test_sheared_transport_scale_does_not_change_trajectory() -> None:
     np.testing.assert_allclose(scaled.heat_flux, 3.0 * base.heat_flux, atol=2.0e-7)
     np.testing.assert_allclose(fast.final_state, base.final_state, atol=2.0e-7)
     np.testing.assert_allclose(fast.heat_flux, base.heat_flux, atol=2.0e-7)
+
+
+def test_sheared_transport_adaptive_cfl_records_accepted_time_steps() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+
+    def run(amplitude):
+        return integrate_nonlinear_sheared_transport(
+            amplitude * state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=4,
+            shear_rate=0.1,
+            method="rk3",
+            cache=cache,
+            terms=terms,
+            fixed_dt=False,
+            dt_min=1.0e-7,
+            dt_max=0.02,
+            cfl=0.9,
+        )
+
+    amplitude = jnp.asarray(1.0e5, dtype=jnp.float32)
+    trace = run(amplitude)
+
+    accepted_dt = np.diff(np.concatenate(([0.0], np.asarray(trace.time))))
+    assert np.all(np.isfinite(accepted_dt))
+    assert np.all(accepted_dt > 0.0)
+    assert np.max(accepted_dt) <= 0.02 + 1.0e-7
+    assert np.min(accepted_dt) < 0.019
+    assert np.all(np.isfinite(np.asarray(trace.heat_flux)))
+
+    def final_time(scale):
+        return run(scale).time[-1]
+
+    _, tangent = jax.jvp(final_time, (amplitude,), (jnp.ones_like(amplitude),))
+    step = 100.0
+    finite_difference = (
+        final_time(amplitude + step) - final_time(amplitude - step)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=1.0e-3, atol=1.0e-12)
 
 
 def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> None:

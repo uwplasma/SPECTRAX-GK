@@ -1606,3 +1606,26 @@ under 5 minutes.
   drift/diamagnetic RHS pass. This closes a higher-order fixed-step numerical
   route for long-window research campaigns; it does not admit an unconverged
   low-resolution transport trace or expose equilibrium flow shear in TOML.
+
+- 2026-07-13: Added an explicit state-only policy to the sheared integrator,
+  matching the established nonlinear API. ``return_fields=False`` skips the
+  endpoint field/RHS evaluation and field-history output at every step while
+  preserving the final trajectory exactly. The default field-returning route
+  is unchanged, and transport traces continue to evaluate endpoint fields
+  because the canonical heat flux requires them.
+
+- 2026-07-13: Reused the production nonlinear CFL policy in the differentiable
+  sheared transport scan. Adaptive runs carry physical time and accepted step
+  size through JAX, combining the linear-frequency bound with instantaneous
+  pseudo-spectral ExB frequencies. A nonlinear-CFL-dominated test reduces the
+  step below its cap and its final-time JVP agrees with centered finite
+  differences to ``1.9e-5`` relative error. Fixed-step behavior remains the
+  default and is numerically unchanged.
+
+- 2026-07-13: Rejected the first long fixed-step transport campaign rather than
+  treating pre-saturation values as evidence. On local CPU, ``24x24x24`` with
+  ``Nl=4``, ``Nm=8``, Heun RK3, and ``dt=0.02`` first becomes non-finite at
+  ``t=134.96``. On clean office A4000 GPUs, the full ``64x64x24`` baseline and
+  ``gamma_E=0.01`` runs become non-finite at ``t=93.00`` and ``t=98.98``.
+  Timestep refinement had already failed at a similar physical time, so these
+  are recorded as nonlinear-CFL failures and are excluded from transport gates.

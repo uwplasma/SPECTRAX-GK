@@ -271,8 +271,14 @@ than 20% when :math:`\gamma_E=1`. This is the expected decorrelation direction
 when the shearing rate exceeds the instability rate [Biglari90]_ [Waltz95]_,
 but it is not a nonlinear transport validation.
 
+State-only campaigns may set ``return_fields=False``. This follows the main
+nonlinear-integrator contract and avoids the endpoint field/RHS evaluation and
+field-history allocation on every step; the default retains field histories for
+diagnostic compatibility. State-only and field-returning trajectories satisfy
+the same zero-shear identity gate.
+
 :func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_transport` records the
-canonical per-species gyro-Bohm heat flux at every accepted fixed step. It uses
+canonical per-species gyro-Bohm heat flux at every accepted step. It uses
 the same flux-surface quadrature and transport kernel as production nonlinear
 diagnostics and evaluates that kernel with the instantaneous sheared cache. The
 returned ``ShearedTransportTrace`` stores only the final distribution plus time,
@@ -284,13 +290,22 @@ with a centered finite difference in the validated mini-case. Setting
 and a numerical-identity gate confirms that this policy switch does not alter
 the trajectory or heat flux.
 
+Setting ``fixed_dt=False`` applies the same production nonlinear CFL policy
+used by the main diagnostic integrator. The accepted step combines conservative
+linear-frequency bounds with the instantaneous pseudo-spectral
+:math:`E\times B` frequency and is clipped by ``dt_min`` and ``dt_max``. The
+trace's ``time`` array then records the nonuniform accepted-time grid, while
+``steps`` is an explicit work budget. Time, step size, shearing remaps, fields,
+and transport remain inside the JAX scan so tangents propagate through the
+piecewise-smooth adaptive policy away from clipping and remap transitions.
+
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
-definitions. This fixed-step path is a numerical foundation, not the production model. The
+definitions. This path is a numerical foundation, not the production model. The
 compressed-real FFT rejects radial phases, and non-twist and linked boundaries
 fail closed because their Hermitian and boundary phases are not implemented.
-Adaptive/IMEX routing, saturated transport, and matched-comparison gates remain
-mandatory before enabling flow shear in input files.
+IMEX routing, saturated transport, and matched-comparison gates remain mandatory
+before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
 ------------------------------
