@@ -933,8 +933,8 @@ hosted as release assets. The reproducible preview-compression command is:
 
 .. code-block:: bash
 
-   python tools/artifacts/compress_previews.py --mode release --max-width 2200 --colors 192
-   python tools/artifacts/compress_previews.py --mode docs --min-bytes 300000 --max-width 1800 --colors 192
+   python tools/release/check_repository_size_manifest.py compress-previews --mode release --max-width 2200 --colors 192
+   python tools/release/check_repository_size_manifest.py compress-previews --mode docs --min-bytes 300000 --max-width 1800 --colors 192
 
 The first command only touches release-manifest previews, so update
 ``tools/release_artifact_manifest.toml`` with the new sizes and checksums after

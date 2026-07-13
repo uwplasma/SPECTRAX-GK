@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 90% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-validation artifacts, and zonal-response artifacts now have one owner per domain; 120 tools remain against the enforced 99-file target. |
+| Tool consolidation | 91% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-validation artifacts, zonal-response artifacts, and repository hygiene now have one owner per domain; 119 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,14 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Folded PNG preview compression into the existing repository-size
+  and release-artifact policy command as the explicit ``compress-previews``
+  mode. Compression functions remain directly tested, but image mutation is
+  now opt-in under the same manifest owner that selects previews and verifies
+  their size/checksum provenance. The standalone artifact script is removed,
+  the combined command remains below its complexity budget, and the tool
+  inventory falls to 119.
 
 - 2026-07-13: Unified linear comparison figures, observed-order reports, and
   KBM branch-continuity gates under ``build_linear_validation_artifacts.py``.

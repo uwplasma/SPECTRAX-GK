@@ -17,7 +17,7 @@ from PIL import Image
 matplotlib.use("Agg")
 import numpy as np
 
-from support.paths import load_artifact_tool
+from support.paths import load_artifact_tool, load_release_tool
 from spectraxgk.diagnostics.modes import save_eigenfunction_reference_bundle
 from tools.artifacts.make_benchmark_atlas import (
     _atlas_manifest_path,
@@ -130,7 +130,7 @@ def test_eigenfunction_diagnostics_tool_writes_summary_and_overlay(
 
 
 def test_compress_docs_previews_skips_release_manifest_paths(tmp_path: Path) -> None:
-    mod = load_artifact_tool("compress_previews")
+    mod = load_release_tool("check_repository_size_manifest")
     static = tmp_path / "docs" / "_static"
     static.mkdir(parents=True)
     keep = static / "keep.png"
@@ -163,7 +163,7 @@ path = "{keep.as_posix()}"
 
 
 def test_compress_png_preview_dry_run_does_not_modify_file(tmp_path: Path) -> None:
-    mod = load_artifact_tool("compress_previews")
+    mod = load_release_tool("check_repository_size_manifest")
     path = tmp_path / "panel.png"
     Image.new("RGBA", (64, 32), (255, 255, 255, 255)).save(path)
     before = path.read_bytes()
@@ -176,7 +176,7 @@ def test_compress_png_preview_dry_run_does_not_modify_file(tmp_path: Path) -> No
 
 
 def test_release_preview_targets_and_compression_use_manifest(tmp_path: Path) -> None:
-    mod = load_artifact_tool("compress_previews")
+    mod = load_release_tool("check_repository_size_manifest")
     panel = tmp_path / "panel.png"
     ignored = tmp_path / "ignored.png"
     Image.new("RGBA", (64, 32), (255, 255, 255, 255)).save(panel)
@@ -217,7 +217,7 @@ preview_strategy = "none"
 def test_compress_previews_cli_supports_docs_and_release_modes(
     tmp_path: Path, capsys
 ) -> None:
-    mod = load_artifact_tool("compress_previews")
+    mod = load_release_tool("check_repository_size_manifest")
     static = tmp_path / "docs" / "_static"
     static.mkdir(parents=True)
     panel = static / "panel.png"
@@ -237,6 +237,7 @@ preview_strategy = "preview"
     assert (
         mod.main(
             [
+                "compress-previews",
                 "--mode",
                 "docs",
                 "--static-dir",
@@ -254,6 +255,7 @@ preview_strategy = "preview"
     assert (
         mod.main(
             [
+                "compress-previews",
                 "--mode",
                 "release",
                 "--manifest",

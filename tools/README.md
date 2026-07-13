@@ -29,9 +29,10 @@ as follows:
 | `digitize_*`, `derive_*` reference helpers | moved to `tools/artifacts/`. |
 | diagnostic probes such as `ky_diagnostics.py` | active comparison diagnostics moved to `tools/comparison/`; unowned probes removed from `main`. |
 
-The former top-level `compress_*` helpers have already moved to
-`tools/artifacts/` because they build or optimize reviewed documentation and
-release-preview artifacts.
+Preview compression now belongs to the repository-hygiene command as
+`tools/release/check_repository_size_manifest.py compress-previews`. This keeps
+mutation opt-in while size policy, release-asset provenance, and preview
+selection share one manifest owner.
 
 Move or delete scripts that are only local probes, historical audits, blocked
 campaign launchers, or one-off debugging helpers. If a removed script may be
