@@ -1351,3 +1351,17 @@ under 5 minutes.
   were terminated and the prototype was removed. No solver claim or default is
   changed; any revisit must run damping and candidate modes under supervised
   office resources and retain the unchanged matrix-free outer residual gate.
+
+- 2026-07-13: Completed the supervised office A/B audit for that low-moment
+  correction at the full tracked resolutions. For KBM at ``Nl=16, Nm=48,
+  Nz=96`` and the reference-aligned shift ``0.21944-1.14065i``, damping returned
+  residual ``0.790`` in 66.6 s while the correction worsened it to ``0.976`` in
+  106.2 s and selected a different damped branch. For ETG at ``Nl=24, Nm=8,
+  Nz=96`` and shift ``+14.94i``, damping returned ``0.954`` in 30.6 s; the
+  correction reached ``0.850`` in 45.2 s but changed the branch and remained
+  far above the unchanged ``0.1`` gate. Replacing JAX's inner GMRES with SOLVAX
+  GMRES was also insufficient: ETG returned residual ``0.806`` in 38.3 s and
+  KBM ``0.744`` in 84.2 s, both on different branches. No experimental solver
+  code is promoted. The next admissible design must improve full physical
+  residual, branch identity, and runtime together rather than only the nested
+  linear-solve diagnostic.

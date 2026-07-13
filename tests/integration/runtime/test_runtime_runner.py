@@ -80,7 +80,7 @@ def _base_runtime_cfg() -> RuntimeConfig:
     )
 
 
-def _gx_c_rand_pairs(seed: int, count: int) -> np.ndarray:
+def _glibc_random_pairs_reference(seed: int, count: int) -> np.ndarray:
     rand_max = float((1 << 31) - 1)
     seed_use = 1 if int(seed) == 0 else int(seed)
     state = np.zeros(344 + 2 * count, dtype=np.uint64)
@@ -101,7 +101,7 @@ def _gx_c_rand_pairs(seed: int, count: int) -> np.ndarray:
     return out
 
 
-def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
+def test_runtime_linear_cyclone_etg_kbm_time_smoke() -> None:
     ion = RuntimeSpeciesConfig(
         name="ion",
         charge=1.0,
@@ -168,7 +168,7 @@ def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
             ky_target=ky,
             Nl=4,
             Nm=6,
-            solver="krylov",
+            solver="time",
         )
         assert np.isfinite(res.gamma)
         assert np.isfinite(res.omega)
@@ -3294,7 +3294,7 @@ def test_runtime_init_all_applies_gx_moment_scaling_multimode_random() -> None:
     assert np.isclose(amp_qpar / amp_density, 1.0 / np.sqrt(6.0))
 
 
-def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
+def test_runtime_random_multimode_init_matches_glibc_random_sequence() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
@@ -3329,7 +3329,7 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
     for (kx_i, ky_i), (ra, rb) in zip(
         active_modes,
         cfg.init.init_amp
-        * _gx_c_rand_pairs(int(cfg.init.random_seed), len(active_modes)),
+        * _glibc_random_pairs_reference(int(cfg.init.random_seed), len(active_modes)),
         strict=True,
     ):
         vals = ((rb + 1j * ra) if kx_i == 0 else (ra + 1j * rb)) * z_phase
@@ -3361,7 +3361,7 @@ def test_runtime_dealiased_initial_mode_pairs_match_dealiased_loop_bounds() -> N
 
 def test_runtime_centered_glibc_random_pairs_match_glibc_reference() -> None:
     vals = _centered_glibc_random_pairs(22, 5)
-    ref = _gx_c_rand_pairs(22, 5)
+    ref = _glibc_random_pairs_reference(22, 5)
 
     assert np.allclose(vals, ref)
 
@@ -3379,7 +3379,7 @@ def test_runtime_periodic_zp_from_grid_uses_discrete_period_not_endpoint_span() 
     assert np.isclose(zp, 1.0, atol=2.0e-4)
 
 
-def test_runtime_random_multimode_zero_kx_matches_gx_overwrite_order() -> None:
+def test_runtime_random_multimode_zero_kx_matches_reference_overwrite_order() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         grid=GridConfig(Nx=6, Ny=8, Nz=4, Lx=6.28, Ly=6.28, boundary="periodic"),
@@ -3406,7 +3406,7 @@ def test_runtime_random_multimode_zero_kx_matches_gx_overwrite_order() -> None:
         )
     )[0, 0, 0]
 
-    ra, rb = _gx_c_rand_pairs(22, 1)[0]
+    ra, rb = _glibc_random_pairs_reference(22, 1)[0]
     assert np.allclose(g0[1, 0, :], (rb + 1j * ra) * np.ones_like(g0[1, 0, :]))
 
 
