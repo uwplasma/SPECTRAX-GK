@@ -388,19 +388,21 @@ identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This
 establishes a workload crossover, not general strong scaling or an end-to-end
 GPU integration-speedup claim.
 
-The first mixed species--Hermite route is intentionally narrower. Request
-``backend="electrostatic_species_hermite_streaming"`` with
+The mixed species--Hermite route partitions both kinetic species and Hermite
+moments. Request
+``backend="electrostatic_species_hermite"`` with
 ``axis="species_hermite"`` and four devices to evaluate the periodic,
-streaming-only two-species RHS on a ``(species, m)=(2,2)`` mesh. Quasineutrality
+collision-free electrostatic two-species RHS on a ``(species, m)=(2,2)`` mesh.
+Quasineutrality
 reduces density over both mesh axes, polarization over species only, and the
-Hermite ladder exchanges one boundary moment within each species row. A
-four-logical-CPU gate matches the serial production RHS and field solve. This
-same scoped RHS reaches ``5.29x`` versus the serial JIT on the tracked host;
-the above-ideal value is consistent with reduced per-device working sets and
-is not a general strong-scaling result. Euler and RK2 trajectories are
-identity-gated; the tracked 100-step Euler profile is state/field exact and
-reaches ``1.68x``. Adiabatic quasineutrality is also RHS-identity-gated. This
-remains a scoped periodic streaming contract: linked boundaries, drifts,
+Hermite ladder exchanges one boundary moment within each species row. Width-one
+and width-two exchanges also apply the production mirror, curvature, and
+grad-:math:`B` equations; global Hermite indices place the diamagnetic drive at
+the correct moments. Isolated term gates and their combined RHS match the
+serial production equations, and Euler/RK2 trajectories pass state and field
+identity on four logical CPUs. The older streaming-only artifact recorded
+``5.29x`` RHS and ``1.68x`` integration speedups, but those numbers are not
+automatically transferred to the broader operator. Linked boundaries,
 collisions, other integrators, and all GPU claims remain fail-closed. The office
 host has only two GPUs, so no mixed-mesh GPU claim can be tested there.
 

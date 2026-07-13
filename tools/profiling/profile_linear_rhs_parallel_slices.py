@@ -228,14 +228,14 @@ def profile_linear_rhs_parallel_slices(
     else:
         state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
         geom = None
-    terms = _streaming_terms() if axis_name == "species_hermite" else _terms()
+    terms = _terms()
     parallel_cfg = RuntimeParallelConfig(
         strategy="velocity",
         backend=(
             "auto"
             if axis_name == "species"
             else (
-                "electrostatic_species_hermite_streaming"
+                "electrostatic_species_hermite"
                 if axis_name == "species_hermite"
                 else "electrostatic_linear_slices"
             )
@@ -407,7 +407,7 @@ def profile_linear_rhs_parallel_slices(
             "claim_scope": (
                 "end-to-end explicit electrostatic "
                 + (
-                    "mixed species-Hermite streaming integration"
+                    "mixed species-Hermite collision-free electrostatic integration"
                     if axis_name == "species_hermite"
                     else "species integration"
                 )
@@ -438,7 +438,7 @@ def profile_linear_rhs_parallel_slices(
         {"route": "sharded", "median_s": sharded_median, "samples_s": sharded_samples},
     ]
     claim_scope = (
-        "engineering timing for the periodic electrostatic streaming-only mixed "
+        "engineering timing for the periodic collision-free electrostatic mixed "
         "species-Hermite RHS with a separately reported exact-workload integration "
         "gate; not a GPU or general scaling claim"
         if axis_name == "species_hermite"

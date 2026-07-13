@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 95% | Fixed-step species-pmap reverse mode and adaptive Diffrax forward JVPs have observable-level finite-difference gates; next add a bounded-memory adaptive reverse policy and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 80% | The 2x2 species-Hermite periodic streaming route passes RHS, Euler/RK2, adiabatic-field, and 100-step 1.68x CPU gates; extend linked-boundary and drift/collision coverage next. |
+| Production parallelization | 85% | The 2x2 species-Hermite route now passes isolated and combined streaming/mirror/curvature/grad-B/diamagnetic RHS gates plus Euler/RK2 identity; refresh the full-operator profile, then extend linked-boundary and collision coverage. |
 | Performance/release claims | 96% | Mixed species-Hermite evidence is exact at 5.29x RHS/1.68x integration for one scoped CPU workload; refresh the broader panel and keep all claims workload-specific. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -949,3 +949,12 @@ under 5 minutes.
   Adaptive reverse mode remains unpromoted after an exploratory probe exceeded
   the bounded local memory envelope; the next route must use an explicit
   checkpointed/direct adjoint rather than relying on accidental controller AD.
+- 2026-07-12: Replaced the streaming-only mixed backend with the clearer
+  ``electrostatic_species_hermite`` route and extended the same 2x2 mesh through
+  the complete collision-free electrostatic linear operator. Width-one and
+  width-two Hermite exchanges now cover mirror and curvature coupling; grad-B
+  remains local in Hermite space, and global mode indices place diamagnetic
+  drives. Isolated term, combined RHS, automatic dispatch, Euler, and RK2 gates
+  match the serial production equations on four logical CPUs. The earlier
+  streaming timing is retained only as historical scoped evidence until a
+  revision-pinned full-operator profile is generated.
