@@ -206,7 +206,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 50% | Reusable null-space/invariant/free-energy gates now cover the long-wavelength model, and nonlinear splitting no longer drops field-particle corrections; implement and gate species-coupled Dougherty before Sugama/Coulomb promotion. |
+| Advanced collision operators | 55% | Long-wavelength null-space/invariant/free-energy and direct finite-b equation gates cover the shipped model, and splitting preserves field-particle terms; implement and gate species-coupled Dougherty before Sugama/Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -281,6 +281,15 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Corrected the finite-Larmor-radius collision claim against
+  Mandell, Dorland & Landreman (2018). Finite-``b`` guiding-centre moments are
+  not locally conserved because collisions are local in real space; this is not
+  a coefficient residual to tune away. Added a direct equations (3.38)--(3.42)
+  gate covering diagonal damping, parallel/perpendicular flow restoration, and
+  temperature restoration at ``b=0.7``, plus negative quadratic free-energy
+  response. The next model remains genuinely species-coupled Dougherty, then
+  Sugama/Coulomb.
 
 - 2026-07-13: Removed the experimental VMEC-JAX WOUT metadata patcher. Current
   VMEC-JAX computes and tests ``Aminor_p``, ``Rmajor_p``, ``aspect``, and

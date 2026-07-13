@@ -374,6 +374,72 @@ def test_long_wavelength_local_maxwellian_is_collision_null_space():
     np.testing.assert_allclose(np.asarray(contribution), 0.0, atol=2.0e-7)
 
 
+def test_finite_larmor_collision_matches_published_moment_equations():
+    """Check Mandell et al. (2018), equations (3.38)--(3.42), at finite b."""
+
+    nl, nm = 4, 5
+    b = jnp.asarray([[[[0.7]]]], dtype=jnp.float32)
+    Jl = jnp.moveaxis(J_l_all(b, nl - 1), 0, 1)
+    Jl_m1 = jnp.pad(Jl[:, :-1], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+    Jl_p1 = jnp.pad(Jl[:, 1:], ((0, 0), (0, 1), (0, 0), (0, 0), (0, 0)))
+    JlB = Jl + Jl_m1
+    ell = jnp.arange(nl, dtype=jnp.float32)[None, :, None, None, None]
+    temperature_coeff = ell * Jl_m1 + 2.0 * ell * Jl + (ell + 1.0) * Jl_p1
+    state = (
+        jnp.arange(nl * nm, dtype=jnp.float32).reshape(1, nl, nm, 1, 1, 1)
+        + 0.2j
+    ).astype(jnp.complex64)
+    nu = jnp.asarray([0.3], dtype=jnp.float32)
+
+    u_parallel = jnp.sum(Jl * state[:, :, 1], axis=1)
+    u_perpendicular = jnp.sqrt(b) * jnp.sum(JlB * state[:, :, 0], axis=1)
+    temperature = (
+        jnp.sqrt(2.0) / 3.0 * jnp.sum(Jl * state[:, :, 2], axis=1)
+        + 2.0 / 3.0 * jnp.sum(temperature_coeff * state[:, :, 0], axis=1)
+    )
+    eigenvalues = jnp.asarray(
+        [[0.7 + 2 * ell_index + m for m in range(nm)] for ell_index in range(nl)],
+        dtype=jnp.float32,
+    )
+    expected = -nu[:, None, None, None, None, None] * eigenvalues[
+        None, :, :, None, None, None
+    ] * state
+    expected = expected.at[:, :, 0].add(
+        nu[:, None, None, None, None]
+        * (
+            jnp.sqrt(b) * JlB * u_perpendicular[:, None]
+            + 2.0 * temperature_coeff * temperature[:, None]
+        )
+    )
+    expected = expected.at[:, :, 1].add(
+        nu[:, None, None, None, None] * Jl * u_parallel[:, None]
+    )
+    expected = expected.at[:, :, 2].add(
+        nu[:, None, None, None, None]
+        * jnp.sqrt(2.0)
+        * Jl
+        * temperature[:, None]
+    )
+    contribution = collisions_contribution(
+        state,
+        G=state,
+        Jl=Jl,
+        JlB=JlB,
+        b=b,
+        nu=nu,
+        lb_lam=jnp.asarray(
+            [[2 * ell_index + m for m in range(nm)] for ell_index in range(nl)],
+            dtype=jnp.float32,
+        ),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(contribution), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6
+    )
+    assert float(collision_quadratic_rate(state, contribution)) < 0.0
+
+
 def test_collision_diagnostics_validate_shapes_and_weights():
     state = jnp.ones((2, 3, 1, 1, 1), dtype=jnp.complex64)
     contribution = -state

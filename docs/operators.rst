@@ -270,14 +270,19 @@ species-sharded RHS helper remains collision-free; use
 ``integrate_linear(..., parallel=RuntimeParallelConfig(strategy="velocity",
 axis="species", num_devices=2))`` for the validated collisional route.
 
-The conservation claim is explicitly long-wavelength. At
+The guiding-centre invariant gate is explicitly long-wavelength. At
 :math:`k_\perp\rho=0`, a five-step gate starts from populated high moments,
 requires a nonzero collision response, and preserves each species' density,
 parallel-momentum, and temperature-like moments in both serial and decomposed
-integration. At finite :math:`k_\perp\rho`, the current finite-Larmor-radius
-field-particle correction is not exactly conservative; those residuals remain
-a blocker for promoting this baseline to a complete gyrokinetic Landau/Sugama
-operator.
+integration. At finite :math:`k_\perp\rho`, guiding-centre density, momentum,
+and energy are not locally conserved; collisions are local in real space, and
+the gyrocentre change is nonlocal. This is physical behavior of the published
+model, not a residual to tune away. A direct finite-:math:`b` gate checks every
+term of equations (3.38)--(3.42), including parallel/perpendicular flow and
+temperature restoration. Promotion to Landau/Sugama remains blocked because
+those operators contain different velocity-dependent test-particle and
+species-coupled field-particle physics, not because this model should be forced
+to conserve finite-:math:`b` guiding-centre moments.
 
 The same enclosing route is gated for Hermite/Laguerre hypercollisions with
 explicitly populated high moments and nonzero ``nu_hyper_l``/``nu_hyper_m``.
