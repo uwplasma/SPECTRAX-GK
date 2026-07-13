@@ -368,6 +368,14 @@ species-axis ``pmap``. Quasineutrality uses ``lax.psum``; all remaining terms
 stay local to their species. A three-step two-A4000 gate agrees with serial
 final state to ``4.61e-8`` relative and field history to ``1.59e-9`` relative.
 Euler, RK2, and sampled field histories are gated; IMEX remains fail-closed.
+The fixed-step route also preserves reverse-mode differentiation through the
+compiled species ``pmap``. A physical two-species gate differentiates a fixed
+linear projection of the evolved ion mode with respect to
+:math:`R/L_{T_i}` and agrees with a centered finite difference to one percent
+in float32. Host staging happens before the differentiated trajectory; traced
+parameters are never converted through NumPy. This is a derivative-identity
+contract for the explicit electrostatic route, not a claim for adaptive
+controllers, IMEX, electromagnetic terms, or device initialization.
 The medium grid remains overhead-limited, while a 68 MiB large state passes
 identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This
 establishes a workload crossover, not general strong scaling or an end-to-end

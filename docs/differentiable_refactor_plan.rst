@@ -530,6 +530,15 @@ Every promoted differentiable workflow should declare:
 - whether the observable is a production physics observable or a reduced
   differentiable proxy.
 
+Parallel trajectories follow the same rule. The production two-species
+electrostatic fixed-step integrator now has a reverse-mode parameter-gradient
+gate through its enclosing ``pmap``: a thermodynamic-drive derivative agrees
+with centered finite differences in float32. Input placement remains outside
+the differentiated function, and traced parameters bypass host conversion.
+This evidence does not promote adaptive-controller, IMEX, electromagnetic, or
+mixed species--Hermite derivatives; those paths remain fail-closed until each
+has an observable-level finite-difference or tangent gate.
+
 Generic structured derivatives should use reviewed SOLVAX primitives when
 their contracts pass the required dtype and transformation gates. In
 particular, memory-chunked Jacobians are preferred when an unchunked

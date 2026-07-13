@@ -205,10 +205,10 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
-| Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
+| Differentiable API clarity | 93% | The explicit electrostatic species-pmap trajectory has a reverse-mode/finite-difference parameter gate; next add adaptive-controller derivative policy gates and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 37% | Built-in conserving and high-mode hypercollision terms run in the explicit species pmap; next add decomposed invariant artifacts, then species-coupled Dougherty, Sugama, and linearized Coulomb models. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 67% | The two-species explicit pmap includes conserving and high-mode collision terms; obtain an uncontended large GPU integration profile, then gate electromagnetic or mixed Hermite routing. |
+| Production parallelization | 68% | The two-species explicit pmap includes conserving/high-mode collision terms and a reverse-mode parameter gate; obtain an uncontended large GPU integration profile, then gate electromagnetic or mixed Hermite routing. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -890,3 +890,10 @@ under 5 minutes.
   operator is demonstrably nonzero and three-step evolution matches serial on
   logical CPUs and both office GPUs, extending the decomposed dissipation
   contract beyond the low-order conserving correction.
+- 2026-07-12: Preserved reverse-mode differentiation through the enclosing
+  species ``pmap`` by keeping traced parameters out of the one-time host
+  staging boundary. A two-species explicit electrostatic trajectory now
+  differentiates a fixed ion-mode projection with respect to
+  ``R_over_LTi``; the tangent agrees with centered finite differences to one
+  percent in float32. Adaptive, IMEX, and electromagnetic derivatives remain
+  explicitly outside this gate.

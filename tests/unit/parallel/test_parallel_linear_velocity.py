@@ -1497,6 +1497,61 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         )
 
 
+def test_species_pmap_parameter_gradient_matches_centered_difference() -> None:
+    from spectraxgk.linear import integrate_linear
+
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires two logical CPU devices or two accelerators")
+    state, cache, params, grid, geom = _small_kinetic_electron_problem()
+    terms = _electrostatic_slice_terms()
+    parallel = SimpleNamespace(
+        strategy="velocity", backend="auto", axis="species", num_devices=2
+    )
+    prepared_state, prepared_cache, prepared_params = (
+        linear_parallel_electrostatic.prepare_electrostatic_species_inputs(
+            state,
+            cache,
+            params,
+            devices=devices[:2],
+            replicate_cache=False,
+        )
+    )
+
+    def objective(ion_temperature_gradient):
+        dynamic_params = replace(
+            prepared_params,
+            R_over_LTi=jnp.stack(
+                (ion_temperature_gradient, jnp.zeros_like(ion_temperature_gradient))
+            ),
+        )
+        final_state, _fields = integrate_linear(
+            prepared_state,
+            grid,
+            geom,
+            dynamic_params,
+            dt=5.0e-4,
+            steps=2,
+            method="euler",
+            cache=prepared_cache,
+            terms=terms,
+            parallel=parallel,
+        )
+        mode = final_state[0, 0, 0, 1, 0, :]
+        probe = jnp.exp(1j * jnp.linspace(0.0, 1.0, mode.size, dtype=mode.real.dtype))
+        return jnp.real(jnp.vdot(probe, mode))
+
+    point = jnp.asarray(6.9, dtype=jnp.float32)
+    tangent = jax.grad(objective)(point)
+    eps = jnp.asarray(5.0e-2, dtype=point.dtype)
+    finite_difference = (objective(point + eps) - objective(point - eps)) / (2.0 * eps)
+
+    assert float(jnp.abs(tangent)) > 1.0e-12
+    np.testing.assert_allclose(
+        np.asarray(tangent), np.asarray(finite_difference), rtol=1.0e-2, atol=1.0e-8
+    )
+
+
 def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
     state, cache, params = _small_periodic_field_problem()
     plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
