@@ -1506,7 +1506,7 @@ artifacts, use:
 
 - ``tools/comparison/compare_runtime.py stress-matrix`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/campaigns/run_validation_campaigns.py imported-linear-targeted`` (generic per-``ky`` targeted imported-linear wrapper)
-- ``tools/comparison/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
+- ``tools/comparison/compare_gx_imported_linear.py window`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
 - ``tools/campaigns/run_validation_campaigns.py kbm-lowky-extractor`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/comparison/build_exact_state_audit.py run`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/comparison/build_exact_state_audit.py report`` (no-rerun W7-X exact-state convention audit panel)
@@ -1544,7 +1544,8 @@ contract with ``gaussian_init = true``, ``init_single = false``,
 the final heat-flux point within a few percent of GX.
 
 The targeted imported-linear wrapper and the underlying
-``compare_gx_imported_linear.py`` comparator now support two important controls
+``compare_gx_imported_linear.py`` owns the ``fields``, ``growth-dump``, and
+``window`` comparison modes. Its field comparator supports two important controls
 for honest stress-lane scoring without changing the default full-window
 behavior:
 

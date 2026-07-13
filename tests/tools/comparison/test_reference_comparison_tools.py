@@ -3,19 +3,19 @@
 from __future__ import annotations
 
 
-# ---- test_compare_gx_imported_growth_dump.py ----
+# ---- imported-linear growth-dump mode ----
 
 from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
-from compare_gx_imported_growth_dump import (
+from compare_gx_imported_linear import (
     _expand_gx_restart_state_to_full_positive_ky,
     _load_growth_dt,
     _load_gx_restart_state,
     _load_gx_restart_time,
-    build_parser as growth_dump_build_parser,
+    build_growth_dump_parser as growth_dump_build_parser,
 )
 
 
@@ -4360,8 +4360,8 @@ from pathlib import Path
 
 
 def test_imported_window_parser_accepts_required_args() -> None:
-    mod = load_comparison_tool("compare_gx_imported_window")
-    args = mod.build_parser().parse_args(
+    mod = load_comparison_tool("compare_gx_imported_linear")
+    args = mod.build_window_parser().parse_args(
         [
             "--gx-dir",
             "/tmp/gx",

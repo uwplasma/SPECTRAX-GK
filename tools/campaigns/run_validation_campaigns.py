@@ -332,6 +332,7 @@ def main_imported_linear_targeted(argv: list[str] | None = None) -> int:
         cmd = [
             sys.executable,
             str(here.parent / "comparison" / "compare_gx_imported_linear.py"),
+            "fields",
             "--gx",
             str(gx),
             "--geometry-file",

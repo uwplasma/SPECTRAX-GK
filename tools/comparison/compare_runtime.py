@@ -102,6 +102,7 @@ def _run_linear_stress_case(
         [
             sys.executable,
             str(Path(__file__).resolve().parent / "compare_gx_imported_linear.py"),
+            "fields",
             "--gx", str(output),
             "--geometry-file", str(output),
             "--gx-input", str(input_file),
