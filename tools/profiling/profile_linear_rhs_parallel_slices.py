@@ -439,7 +439,8 @@ def profile_linear_rhs_parallel_slices(
     ]
     claim_scope = (
         "engineering timing for the periodic electrostatic streaming-only mixed "
-        "species-Hermite RHS; not an integration, GPU, or general scaling claim"
+        "species-Hermite RHS with a separately reported exact-workload integration "
+        "gate; not a GPU or general scaling claim"
         if axis_name == "species_hermite"
         else (
             "engineering timing for the current opt-in electrostatic linear-slices "
