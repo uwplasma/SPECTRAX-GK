@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 95% | Fixed-step species-pmap reverse mode and adaptive Diffrax forward JVPs have observable-level finite-difference gates; next add a bounded-memory adaptive reverse policy and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 90% | The 2x2 species-Hermite route covers all electrostatic terms except the conserving collision operator and linked boundaries; implement those two collective-heavy contracts next. |
+| Production parallelization | 94% | The periodic 2x2 species-Hermite route covers the complete electrostatic operator including conserving collisions; linked boundaries and four-device GPU evidence remain. |
 | Performance/release claims | 96% | The full mixed operator records 3.11x RHS but 0.97x integration throughput on one scoped CPU workload; no end-to-end speedup is claimed, and broader panels remain workload-specific. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -980,3 +980,12 @@ under 5 minutes.
   in a 147 s bounded gate. Conserving collisions and linked boundaries remain
   fail-closed because they require additional cross-shard moment or topology
   collectives.
+- 2026-07-12: Closed the standard conserving-collision equation path on the
+  mixed mesh. Species-local :math:`m=0,1,2` density, momentum, and temperature
+  moments are reduced only over the Hermite axis, preserving separate unequal
+  ion/electron collision rates. The nonzero isolated operator and a combined
+  all-electrostatic Euler/RK2 trajectory match serial on four logical CPUs in a
+  265 s bounded gate. Pre-expanded collision matrices remain fail-closed; the
+  promoted implementation is the standard factorized operator used by runtime
+  cases. Production parallelization is now limited primarily by linked
+  boundary topology and unavailable four-device GPU hardware.

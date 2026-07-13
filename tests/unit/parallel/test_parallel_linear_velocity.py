@@ -109,8 +109,8 @@ def test_linear_parallel_term_classifiers_cover_release_routes() -> None:
     assert linear_parallel._is_mixed_electrostatic_terms(
         replace(_electrostatic_slice_terms(), hypercollisions=1.0)
     )
-    assert not linear_parallel._is_mixed_electrostatic_terms(
-        LinearTerms(collisions=1.0)
+    assert linear_parallel._is_mixed_electrostatic_terms(
+        replace(_electrostatic_slice_terms(), collisions=1.0)
     )
 
 
@@ -1380,17 +1380,20 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
         hypercollisions_kz=0.4,
         D_hyper=0.02,
         damp_ends_amp=0.1,
+        nu=jnp.asarray([0.1, 0.2]),
     )
     dissipative_cache = replace(
         cache,
         damp_profile=jnp.linspace(0.2, 1.0, cache.damp_profile.size),
     )
     dissipation_cases = {
+        "conserving_collisions": replace(zero_terms, collisions=1.0),
         "hypercollisions": replace(zero_terms, hypercollisions=1.0),
         "hyperdiffusion": replace(zero_terms, hyperdiffusion=1.0),
         "end_damping": replace(zero_terms, end_damping=1.0),
         "combined_local_dissipation": replace(
             _electrostatic_slice_terms(),
+            collisions=1.0,
             hypercollisions=1.0,
             hyperdiffusion=1.0,
             end_damping=1.0,
