@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
+
 import jax.numpy as jnp
 import pytest
+import solvax
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
@@ -16,6 +19,15 @@ from spectraxgk.linear import (
 )
 import spectraxgk.solvers.linear.krylov as lk
 import spectraxgk.solvers.linear.krylov_algorithms as ka
+
+
+def test_published_solvax_contract_matches_consumed_interfaces() -> None:
+    """Keep the numerical dependency within its downstream-tested release line."""
+
+    release = tuple(int(part) for part in version("solvax").split(".")[:3])
+    assert (0, 7, 3) <= release < (0, 8, 0)
+    for name in ("gmres", "linear_solve", "tridiagonal_solve", "chunked_jacfwd"):
+        assert callable(getattr(solvax, name))
 
 
 def _tiny_krylov_setup(*, linked: bool = False):

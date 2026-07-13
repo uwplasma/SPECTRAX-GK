@@ -118,8 +118,10 @@ delete generic solver code from SPECTRAX-GK, not add a second abstraction layer.
 The integration is pinned to reviewed releases, never an unversioned Git
 dependency. SOLVAX 0.6.0 was reviewed in PR 2, passed its minimum/current JAX
 matrix plus office GPU compatibility gates, and was published to PyPI on
-2026-07-11. The PEP 561 packaging correction was released as 0.6.1, so
-SPECTRAX-GK requires ``solvax>=0.6.1,<0.7``. The first
+2026-07-11. The PEP 561 packaging correction was released as 0.6.1. The
+published 0.7.3 release subsequently passed 227 downstream structured-solver,
+IMEX, geometry-gradient, and implicit-objective checks on the current JAX
+stack, so SPECTRAX-GK now requires ``solvax>=0.7.3,<0.8``. The first
 downstream tranche owns only the Hermite-line tridiagonal layout conversion and
 the geometry-Jacobian chunk policy; local physics coefficients, diagnostics,
 and Krylov policy remain unchanged until their separate gates pass.
@@ -1440,3 +1442,20 @@ under 5 minutes.
   ``high-grid-admission`` payload is built. Metadata-only differentiability and
   portfolio checks therefore run in the pre-install repository-hygiene job
   without importing JAX.
+
+- 2026-07-13: Re-probed both office comparison binaries under explicit local
+  CUDA/cuBLAS, cuTENSOR, NCCL, HDF5, and GSL library roots. Linkage resolves and
+  the Cyclone s-alpha input reaches geometry initialization, but the
+  clean-revision binary fails a parallel-NetCDF operation on a serial-opened
+  file and the instrumented binary aborts on an HDF5 1.10.7/1.14.5 mismatch.
+  The capability matrix now records these exact runtime blockers rather than
+  the older missing-library shorthand; no new comparison output is admitted.
+
+- 2026-07-13: Admitted the published SOLVAX 0.7.3 release after its four
+  consumed interfaces and the 228-test structured-solver, IMEX, linear and
+  nonlinear helper, implicit-objective, and differentiable-geometry suite
+  passed on the current JAX stack. The dependency contract is now
+  ``solvax>=0.7.3,<0.8`` and has an executable interface/version gate. The
+  audit also found and fixed one SPECTRAX-GK facade regression: the canonical
+  ``CollisionInvariantRates`` record had not been re-exported from the linear
+  term facade after consolidation.

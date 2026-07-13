@@ -134,10 +134,14 @@ The promoted comparison contract was audited at GX revision ``bc2fe552``. A
 fresh office clone confirms that revision and has aggregate source fingerprint
 ``sha256:bfaaadfa...20b``. The long-lived instrumented office source tree is not
 a Git checkout and has fingerprint ``sha256:436e403e...a004``; these two
-provenances must not be interchanged. Its existing executable currently has
-missing NCCL, cuTENSOR, HDF5, and GSL shared-library dependencies and must be
-rebuilt in a complete toolchain before new runtime comparisons; source-level
-feature and decomposition inspection is unaffected. GX remains the mature baseline for conventional GPU nonlinear
+provenances must not be interchanged. Explicit office library roots resolve
+cuBLAS, cuTENSOR, NCCL, HDF5, and GSL linkage, but a fresh bounded Cyclone probe
+still does not produce a valid runtime artifact: the clean-revision executable
+fails a parallel-NetCDF operation on a serial-opened file, while the
+instrumented executable aborts because its HDF5 1.10.7 headers are paired with
+the HDF5 1.14.5 runtime. A clean, consistently linked rebuild is therefore
+required before new runtime comparisons; source-level feature and decomposition
+inspection is unaffected. GX remains the mature baseline for conventional GPU nonlinear
 initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
 distinct validated scope is its Python/JAX API, differentiable objectives,
 implicit gradient paths, CPU execution, and in-memory ``vmec_jax``/
