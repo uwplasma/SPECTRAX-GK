@@ -209,7 +209,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Advanced collision operators | 37% | Built-in conserving and high-mode hypercollision terms run in the explicit species pmap; next add decomposed invariant artifacts, then species-coupled Dougherty, Sugama, and linearized Coulomb models. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 71% | The two-species explicit pmap includes conserving/high-mode collision terms, electromagnetic fields, and a reverse-mode parameter gate; obtain an uncontended large GPU integration profile, then design mixed Hermite routing. |
-| Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
+| Performance/release claims | 95% | The refreshed CPU species artifact is identity-exact at 3.41x RHS/0.96x integration; refresh the broader multi-case panel and keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
 
@@ -905,3 +905,11 @@ under 5 minutes.
   integration locally; the exact pushed commit is validated separately on the
   two-A4000 office stack. The broader electromagnetic derivative and mixed
   species--Hermite lanes remain fail-closed.
+- 2026-07-12: Removed integration-only parallel overhead by returning the
+  replicated field history once and applying ``sample_stride`` inside the
+  mapped scan instead of computing and storing diagnostics on every step. The
+  exact ``2x4x16x64x1x64`` logical-CPU artifact remains state/field exact,
+  improves isolated RHS throughput to ``3.41x``, and moves 100-step
+  end-to-end throughput from ``0.91x`` to ``0.96x``. Since the latter remains
+  below one, no integration speedup is claimed. A larger office rerun was
+  externally contended and is retained only as transient debugging evidence.

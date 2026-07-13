@@ -3,7 +3,7 @@
   "atol": 2e-05,
   "claim_scope": "engineering timing for the current opt-in electrostatic linear-slices route; not a publication speedup claim",
   "decomposition_axis": "species",
-  "git_revision": "a407cad7473533a2536b740006c9002375dd2c23",
+  "git_revision": "777bd13f7cbc371634a3682e8f8157940180c7cb",
   "grid": {
     "Nx": 1,
     "Ny_actual": 64,
@@ -12,25 +12,33 @@
   },
   "identity_passed": true,
   "integration": {
+    "claim_scope": "end-to-end explicit electrostatic species integration for this exact grid, step count, device stack, and revision",
     "dt": 1e-07,
     "field_history_identity": {
       "max_abs_error": 0.0,
       "max_rel_error": 0.0
     },
-    "parallel_median_s": 0.5746286250650883,
+    "identity_passed": true,
+    "parallel_median_s": 0.5707030002959073,
     "parallel_samples_s": [
-      0.5746286250650883,
-      0.5741589162498713,
-      0.5800357502885163
+      0.560914124827832,
+      0.5995335830375552,
+      0.602266791742295,
+      0.5696942089125514,
+      0.5707030002959073
     ],
-    "repeats": 3,
-    "serial_median_s": 0.5250340830534697,
+    "repeats": 5,
+    "sample_stride": 1,
+    "serial_median_s": 0.549099207855761,
     "serial_samples_s": [
-      0.5250340830534697,
-      0.5432025827467442,
-      0.5102478750050068
+      0.5500810421071947,
+      0.549099207855761,
+      0.5425531668588519,
+      0.5465865838341415,
+      0.5507835834287107
     ],
-    "speedup": 0.9136928794558381,
+    "speedup": 0.9621452972405179,
+    "speedup_passed": false,
     "state_identity": {
       "max_abs_error": 0.0,
       "max_rel_error": 0.0
@@ -50,32 +58,32 @@
   "requested_devices": 2,
   "rows": [
     {
-      "median_s": 0.008708250243216753,
+      "median_s": 0.008657959289848804,
       "route": "serial",
       "samples_s": [
-        0.00870566675439477,
-        0.008954333141446114,
-        0.008708250243216753,
-        0.008655416779220104,
-        0.008770625106990337
+        0.008657959289848804,
+        0.008581208065152168,
+        0.008533417247235775,
+        0.008678958285599947,
+        0.00874087493866682
       ]
     },
     {
-      "median_s": 0.0028407908976078033,
+      "median_s": 0.002535917330533266,
       "route": "sharded",
       "samples_s": [
-        0.003163292072713375,
-        0.002379083074629307,
-        0.0028407908976078033,
-        0.002537874970585108,
-        0.0029357089661061764
+        0.002598416991531849,
+        0.002607791218906641,
+        0.002535917330533266,
+        0.0024751657620072365,
+        0.002419459167867899
       ]
     }
   ],
   "rtol": 2e-06,
-  "serial_median_s": 0.008708250243216753,
-  "sharded_median_s": 0.0028407908976078033,
-  "speedup": 3.065431619958325,
+  "serial_median_s": 0.008657959289848804,
+  "sharded_median_s": 0.002535917330533266,
+  "speedup": 3.414133097165341,
   "state_shape": [
     2,
     4,

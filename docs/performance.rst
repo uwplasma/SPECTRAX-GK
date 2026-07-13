@@ -1005,8 +1005,11 @@ regenerated with:
 The same profiler can include a full fixed-step integration gate with
 ``--integration-steps``. The tracked two-logical-CPU artifact uses 100 Euler
 steps on a ``2x4x16x64x1x64`` state. The enclosing ``pmap`` agrees exactly with
-serial state and field histories, while its ``0.91x`` end-to-end throughput is
-still overhead-limited. It is stored in
+serial state and field histories. After removing replicated field-history
+output and aligning sampled diagnostics with the serial policy, the refreshed
+artifact reaches ``3.41x`` for isolated RHS calls and ``0.96x`` for the complete
+100-step trajectory. It therefore remains a correctness and crossover
+artifact, not an end-to-end speedup claim. It is stored in
 ``docs/_static/linear_rhs_species_profile_cpu.json`` and regenerated with:
 
 .. code-block:: bash
@@ -1014,7 +1017,8 @@ still overhead-limited. It is stored in
    python tools/profiling/profile_linear_rhs_parallel_slices.py \
      --axis species --platform cpu --logical-devices 2 \
      --nl 4 --nm 16 --ny 64 --nz 64 --warmups 2 --repeats 5 \
-     --integration-steps 100 --integration-repeats 3 \
+     --integration-steps 100 --integration-repeats 5 \
+     --integration-sample-stride 1 \
      --out-prefix /tmp/linear_rhs_species_profile_cpu
 
 An uncontended two-GPU integration artifact is still required before promoting
