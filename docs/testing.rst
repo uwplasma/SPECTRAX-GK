@@ -832,12 +832,13 @@ family matrix report into ``docs/_static``, and then regenerates the
 manuscript-readiness, pre-manuscript closure, and closure runbook artifacts. Use
 ``--skip-dashboard-regeneration`` only for import-path debugging or tests.
 
-``tools/campaigns/prepare_external_vmec_holdout_from_screen.py`` is the selector that
-feeds that generator. It reads the tracked linear candidate screen, skips
-excluded or already-audited cases, resolves the chosen VMEC file from the local
-``vmec_jax`` checkout, and writes the next bounded holdout ladder plus a JSON
-selection summary. This removes another manual step from the external-VMEC
-nonlinear campaign and makes office reruns deterministic.
+``tools/artifacts/build_external_vmec_holdout_runbook.py`` is the single selector
+that feeds that generator. It reads the tracked linear candidate screen and the
+current calibration-gap report, rejects stable, near-marginal, failed, and
+already-represented families according to the documented policy, and emits the
+replayable ``write_external_vmec_holdout_configs.py`` command. This keeps
+candidate selection deterministic without maintaining a second, weaker
+largest-growth selector.
 
 ``tools/artifacts/build_external_vmec_holdout_runbook.py`` is stricter than a positive
 growth-rate sorter. It requires a configurable minimum screened growth rate

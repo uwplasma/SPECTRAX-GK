@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 77% | Runtime comparisons and VMEC state-mapping campaigns now have one owner per domain; the obsolete approximate WOUT metadata patcher is removed; continue toward the enforced 99-file target. |
+| Tool consolidation | 79% | Runtime comparisons and VMEC state-mapping campaigns now have one owner per domain; obsolete metadata and duplicate holdout selectors are removed; continue toward the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,13 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Removed the duplicate external-VMEC holdout selector. The
+  maintained runbook already reads the candidate screen, incorporates the
+  calibration-gap report, rejects stable and near-marginal rows, accounts for
+  represented and failed geometry families, and emits the canonical config
+  generator command. Deleting the weaker largest-growth selector leaves one
+  scientific policy owner and reduces the tool inventory to 128.
 
 - 2026-07-13: Corrected the finite-Larmor-radius collision claim against
   Mandell, Dorland & Landreman (2018). Finite-``b`` guiding-centre moments are
