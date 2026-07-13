@@ -18,6 +18,8 @@ from spectraxgk.operators.nonlinear import policies as nonlinear_helpers
 from spectraxgk.operators.nonlinear import projection as nonlinear_projection
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
+from spectraxgk.diagnostics.transport import heat_flux_species
+from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
@@ -45,6 +47,7 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_imex_cached,
     integrate_nonlinear_imex_diagnostics,
     integrate_nonlinear_sheared,
+    integrate_nonlinear_sheared_transport,
     maybe_emit_nonlinear_progress,
     run_sampled_explicit_diagnostic_scan,
     sampled_scan_intervals,
@@ -736,6 +739,154 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
             method="rk4",
             cache=cache,
         )
+
+
+def _small_sheared_transport_case():
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=4,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="periodic",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(
+        rho_star=1.0,
+        nu_hyper=0.0,
+        nu_hyper_m=0.0,
+        R_over_LTi=2.0,
+        R_over_Ln=0.5,
+    )
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=4)
+    state = jnp.zeros((1, 4, 4, 4, 4), dtype=jnp.complex64)
+    state = state.at[0, 0, 1, 0, :].set(
+        jnp.asarray([0.2 + 0.1j, 0.1 - 0.05j, 0.15 + 0.02j, 0.07 - 0.03j])
+    )
+    state = state.at[0, 2, 1, 1, :].set(0.03 + 0.02j)
+    terms = TermConfig(collisions=0.0, hypercollisions=0.0, end_damping=0.0)
+    return grid, geom, params, cache, state, terms
+
+
+def test_sheared_transport_trace_matches_canonical_final_heat_flux() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+
+    trace = integrate_nonlinear_sheared_transport(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=3,
+        shear_rate=0.0,
+        cache=cache,
+        terms=terms,
+    )
+
+    np.testing.assert_allclose(trace.time, [0.02, 0.04, 0.06], rtol=1.0e-6)
+    assert trace.heat_flux.shape == (3, 1)
+    _, flux_fac = fieldline_quadrature_weights(geom, grid)
+    _, final_fields = nonlinear_mod.nonlinear_rhs_cached(
+        trace.final_state,
+        cache,
+        params,
+        terms,
+        compressed_real_fft=False,
+    )
+    apar = jnp.zeros_like(final_fields.phi)
+    bpar = jnp.zeros_like(final_fields.phi)
+    expected = heat_flux_species(
+        trace.final_state,
+        final_fields.phi,
+        apar,
+        bpar,
+        cache,
+        grid,
+        params,
+        flux_fac,
+    )
+    np.testing.assert_allclose(trace.heat_flux[-1], expected, rtol=2.0e-6, atol=2.0e-7)
+
+
+def test_sheared_transport_scale_does_not_change_trajectory() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+
+    base = integrate_nonlinear_sheared_transport(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=2,
+        shear_rate=0.2,
+        cache=cache,
+        terms=terms,
+    )
+    scaled = integrate_nonlinear_sheared_transport(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=2,
+        shear_rate=0.2,
+        cache=cache,
+        terms=terms,
+        flux_scale=3.0,
+    )
+    fast = integrate_nonlinear_sheared_transport(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=2,
+        shear_rate=0.2,
+        cache=cache,
+        terms=terms,
+        differentiable=False,
+    )
+
+    np.testing.assert_allclose(scaled.final_state, base.final_state, atol=2.0e-7)
+    np.testing.assert_allclose(scaled.heat_flux, 3.0 * base.heat_flux, atol=2.0e-7)
+    np.testing.assert_allclose(fast.final_state, base.final_state, atol=2.0e-7)
+    np.testing.assert_allclose(fast.heat_flux, base.heat_flux, atol=2.0e-7)
+
+
+def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+
+    def objective(shear_rate):
+        trace = integrate_nonlinear_sheared_transport(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=3,
+            shear_rate=shear_rate,
+            cache=cache,
+            terms=terms,
+        )
+        return jnp.mean(trace.heat_flux)
+
+    shear_rate = jnp.asarray(0.2, dtype=jnp.float32)
+    _, tangent = jax.jvp(
+        objective,
+        (shear_rate,),
+        (jnp.ones_like(shear_rate),),
+    )
+    gradient = jax.grad(objective)(shear_rate)
+    step = jnp.asarray(0.05, dtype=shear_rate.dtype)
+    finite_difference = (
+        objective(shear_rate + step) - objective(shear_rate - step)
+    ) / (2.0 * step)
+
+    assert np.isfinite(float(gradient))
+    np.testing.assert_allclose(tangent, gradient, rtol=3.0e-5, atol=1.0e-11)
+    np.testing.assert_allclose(gradient, finite_difference, rtol=5.0e-3, atol=1.0e-10)
 
 
 def test_sheared_rk2_recovers_second_order_on_physical_rhs() -> None:

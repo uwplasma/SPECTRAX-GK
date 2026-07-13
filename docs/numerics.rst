@@ -269,11 +269,24 @@ than 20% when :math:`\gamma_E=1`. This is the expected decorrelation direction
 when the shearing rate exceeds the instability rate [Biglari90]_ [Waltz95]_,
 but it is not a nonlinear transport validation.
 
+:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_transport` records the
+canonical per-species gyro-Bohm heat flux at every accepted fixed step. It uses
+the same flux-surface quadrature and transport kernel as production nonlinear
+diagnostics and evaluates that kernel with the instantaneous sheared cache. The
+returned ``ShearedTransportTrace`` stores only the final distribution plus time,
+and heat-flux traces, avoiding distribution- and field-history allocations.
+Its default ``differentiable=True`` path traces the JAX-native field solve so
+both forward JVP and reverse gradient reach the transport objective; both agree
+with a centered finite difference in the validated mini-case. Setting
+``differentiable=False`` selects the faster custom-VJP production field solve,
+and a numerical-identity gate confirms that this policy switch does not alter
+the trajectory or heat flux.
+
 This fixed-step path is a numerical foundation, not the production model. The
 compressed-real FFT rejects radial phases, and non-twist and linked boundaries
 fail closed because their Hermitian and boundary phases are not implemented.
-Adaptive/IMEX routing, linear suppression, saturated transport, and
-matched-code gates remain mandatory before enabling flow shear in input files.
+Adaptive/IMEX routing, saturated transport, and matched-comparison gates remain
+mandatory before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
 ------------------------------

@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/cache/split-phase bracket plus periodic research RK2 trajectory validated | complete adaptive/IMEX/compressed/linked routing and physics gates before shipping |
+| Equilibrium ExB flow shear | coordinate/cache/split-phase bracket, periodic RK2 trajectory, canonical heat-flux trace, linear suppression, and transport-objective AD gates validated | complete adaptive/IMEX/compressed/linked routing plus saturated-transport and matched-comparison gates before shipping |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1587,3 +1587,13 @@ under 5 minutes.
   ``0.02`` to ``0.01``; ``gamma_E=1`` lowers the refined final norm by more than
   20%. This literature-consistent suppression direction is admitted only as a
   linear pilot, not as saturated-transport evidence.
+
+- 2026-07-13: Added canonical sampled transport to the periodic flow-shear
+  trajectory without retaining the kinetic-state history. The trace uses the
+  production flux-surface weights, instantaneous sheared cache, and per-species
+  gyro-Bohm heat-flux kernel. A separate JAX-native field-solve policy now makes
+  the complete RK2/remap/cache/field/transport objective differentiable in both
+  forward and reverse mode; JVP and gradient agree with each other and with the
+  converged centered finite-difference plateau. The faster custom-VJP policy is
+  numerically identical. This closes transport instrumentation and derivative
+  plumbing, but not the required saturated-transport or matched-comparison gate.
