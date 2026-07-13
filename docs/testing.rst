@@ -241,7 +241,7 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.diagnostics.zonal_validation.tail_trace_metrics`
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/artifacts/build_zonal_flow_artifacts.py`` with ``response-csv`` and ``response-output`` modes
-- ``tools/artifacts/generate_miller_zonal_response_panel.py``
+- ``tools/artifacts/build_zonal_flow_artifacts.py miller-panel``
 - ``tools/artifacts/generate_w7x_zonal_response_panel.py``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py contract``
 - ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py moment-tail``
@@ -258,7 +258,7 @@ observable, reference, absolute/relative tolerance, and pass/fail convention.
 The companion coverage manifest should be updated when a new gate helper,
 artifact script, or refactor extraction changes module ownership or test
 responsibility.
-``tools/artifacts/generate_miller_zonal_response_panel.py`` now writes the first such
+``tools/artifacts/build_zonal_flow_artifacts.py miller-panel`` now writes the first such
 gate report into its JSON metadata for the residual, GAM frequency, and signed
 GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
 ``tools/artifacts/generate_linear_reference_overlays.py kbm`` writes the same gate structure for
@@ -900,7 +900,7 @@ observable for the final paper lane.
 
 The first case-specific shaped-Miller pilot for this lane is now reproducible
 through ``benchmarks/runtime_miller_zonal_response.toml`` and
-``tools/artifacts/generate_miller_zonal_response_panel.py``. Its frozen artifact lives in
+``tools/artifacts/build_zonal_flow_artifacts.py miller-panel``. Its frozen artifact lives in
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
 is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
 ``k_xρ_i≈0.05``, ``k_y=0``, and an initial ion-density perturbation.  It uses

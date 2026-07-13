@@ -2292,8 +2292,8 @@ def test_build_zonal_flow_objective_gate_fail_policy_rejects_missing_damping(
         )
 
 
-def test_generate_miller_zonal_response_panel_main(tmp_path: Path, monkeypatch) -> None:
-    mod = load_artifact_tool("generate_miller_zonal_response_panel")
+def test_build_zonal_flow_miller_panel(tmp_path: Path, monkeypatch) -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
 
     config = tmp_path / "pilot.toml"
     config.write_text(
@@ -2374,21 +2374,20 @@ diagnostics = true
         return object(), {"out": str(path)}
 
     monkeypatch.setattr(mod, "run_runtime_nonlinear_with_artifacts", _fake_run)
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            str(mod.__file__),
-            "--config",
-            str(config),
-            "--out-bundle",
-            str(out_bundle),
-            "--out-png",
-            str(out_png),
-        ],
+    assert (
+        mod.main(
+            [
+                "miller-panel",
+                "--config",
+                str(config),
+                "--out-bundle",
+                str(out_bundle),
+                "--out-png",
+                str(out_png),
+            ]
+        )
+        == 0
     )
-
-    assert mod.main() == 0
     assert out_png.exists()
     assert out_png.with_suffix(".pdf").exists()
     assert out_png.with_suffix(".csv").exists()

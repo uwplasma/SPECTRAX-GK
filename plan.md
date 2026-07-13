@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 96% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 113 tools remain against the enforced 99-file target. |
+| Tool consolidation | 97% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 112 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1319,3 +1319,11 @@ under 5 minutes.
   ``ZBC(1,1)`` value. The weighted state-control short-bracket launcher now
   uses the same public-API writer, eliminating the same stale dependency and
   silent-mode risk there. The tool inventory is now 131.
+
+- 2026-07-13: Consolidated the Merlo Case-III Miller zonal-response generator
+  into ``build_zonal_flow_artifacts.py miller-panel``. The unified command now
+  owns CSV, saved-output, optimization-gate, and literature-gated Miller
+  zonal-response artifacts without changing the Merlo normalization, fit
+  policy, or JSON schema. The physical runtime-to-NetCDF regression gate is
+  retained, figures are explicitly closed after writing, and the tool inventory
+  falls to ``112`` against the enforced ``99`` target.
