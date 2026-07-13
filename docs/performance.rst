@@ -1005,7 +1005,7 @@ regenerated with:
 The same profiler can include a full fixed-step integration gate with
 ``--integration-steps``. The tracked two-logical-CPU artifact uses 100 Euler
 steps on a ``2x4x16x64x1x64`` state. The enclosing ``pmap`` agrees exactly with
-serial state and field histories, while its ``0.94x`` end-to-end throughput is
+serial state and field histories, while its ``0.91x`` end-to-end throughput is
 still overhead-limited. It is stored in
 ``docs/_static/linear_rhs_species_profile_cpu.json`` and regenerated with:
 

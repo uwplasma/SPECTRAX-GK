@@ -870,6 +870,11 @@ under 5 minutes.
   the mature named-collective ``pmap`` path passes one-, three-, and nine-step
   state/field identity, RK2, and sampled-history gates. Field sampling now
   performs quasineutrality only instead of assembling a redundant RHS. The
-  clean logical-CPU 100-step artifact is identity-exact and records ``0.94x``;
+  clean logical-CPU 100-step artifact is identity-exact and records ``0.91x``;
   the available GPU integration timings were externally contended and are not
   used for a speedup claim.
+- 2026-07-12: Removed a redundant full-RHS assembly from serial linear
+  diagnostics. Fixed-step integration now calls the dedicated field solve after
+  advancing state; the matched 100-step CPU profile preserves exact state and
+  field histories while reducing serial wall time by about four percent. The
+  species ``pmap`` already used the same field-only sampling policy.
