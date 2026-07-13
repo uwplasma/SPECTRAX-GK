@@ -1264,6 +1264,15 @@ under 5 minutes.
   Hermite-line factorization as a complex shift preconditioner worsened the
   residual to ``0.951`` and was removed. ETG therefore remains on its validated
   time-integrated path pending a dedicated complex block preconditioner.
+- 2026-07-13: Tested a direct complex damping-plus-streaming Hermite-line
+  shift-invert factorization at full tracked resolution. The corrected KBM
+  probe worsened from damping-preconditioned residual ``0.884`` to ``0.993``
+  and selected a damped branch; the ETG ``k_y rho_i=15`` probe worsened from
+  ``0.634`` to ``0.968`` and selected the wrong high-frequency branch. The
+  implementation was removed. These controlled negative results narrow the
+  next design to a field-coupled low-moment Schur/block preconditioner rather
+  than another scalar Hermite factorization; unchanged outer residual gates
+  remain authoritative.
 - 2026-07-13: Re-ran all fast release, performance, parallel-artifact, and
   repository-size checks. Technical release status is ``100%`` with all five
   active scoped manuscript lanes closed, and the tracked tree is ``47.94 MB``
