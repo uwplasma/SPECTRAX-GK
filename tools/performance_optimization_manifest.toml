@@ -298,6 +298,7 @@ artifact_paths = [
   "docs/_static/linear_rhs_parallel_slices_profile_gpu.png",
   "docs/_static/linear_rhs_parallel_slices_profile_gpu.json",
   "docs/_static/linear_rhs_species_profile_gpu.json",
+  "docs/_static/linear_rhs_species_profile_cpu.json",
   "docs/_static/linear_rhs_parallel_slices_sweep.png",
   "docs/_static/linear_rhs_parallel_slices_sweep.json",
   "docs/_static/linear_rhs_parallel_slices_sweep.csv",

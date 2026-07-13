@@ -358,11 +358,15 @@ until matched artifacts pass their own gates.
 On the office JAX 0.6.2/CUDA stack, device-to-device resharding of an existing
 single-GPU array did not preserve the second device's input. The production
 integrator therefore stages species-dependent state/cache arrays from host
-memory exactly once before JIT, then preserves that sharding across compiled
-steps. A three-step two-A4000 gate agrees with serial final state to
-``4.61e-8`` relative and field history to ``1.59e-9`` relative. The medium grid remains overhead-limited, while a 68 MiB large state passes
-identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This establishes
-a workload crossover, not general strong scaling.
+memory exactly once, then encloses the complete explicit time loop in a
+species-axis ``pmap``. Quasineutrality uses ``lax.psum``; all remaining terms
+stay local to their species. A three-step two-A4000 gate agrees with serial
+final state to ``4.61e-8`` relative and field history to ``1.59e-9`` relative.
+Euler, RK2, and sampled field histories are gated; IMEX remains fail-closed.
+The medium grid remains overhead-limited, while a 68 MiB large state passes
+identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This
+establishes a workload crossover, not general strong scaling or an end-to-end
+GPU integration-speedup claim.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate collisions, linked boundaries,

@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 55% | The two-species electrostatic fixed-step route is CPU/GPU identity-gated and reaches 1.16x on the large two-A4000 RHS profile; next fuse integration into one manual-axis program and gate collision/EM or mixed Hermite routing. |
+| Production parallelization | 60% | The two-species explicit integrator now encloses its loop in a correct species-axis pmap; obtain an uncontended large GPU integration profile, then gate collision/EM or mixed Hermite routing. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -864,3 +864,12 @@ under 5 minutes.
   ``2x8x32x128x1x128`` run passes at ``5.26e-8`` relative and improves warm RHS
   time from 8.21 to 7.11 ms (``1.16x``). This is a scoped workload crossover,
   not a broad strong-scaling claim.
+- 2026-07-12: Replaced the correct but launch-limited species host loop with a
+  single enclosing ``pmap``. Combining ``shard_map`` collectives with either
+  ``scan`` or ``fori_loop`` corrupted the electron shard on office JAX 0.6.2;
+  the mature named-collective ``pmap`` path passes one-, three-, and nine-step
+  state/field identity, RK2, and sampled-history gates. Field sampling now
+  performs quasineutrality only instead of assembling a redundant RHS. The
+  clean logical-CPU 100-step artifact is identity-exact and records ``0.94x``;
+  the available GPU integration timings were externally contended and are not
+  used for a speedup claim.

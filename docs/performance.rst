@@ -1002,6 +1002,25 @@ regenerated with:
      --nl 8 --nm 32 --ny 128 --nz 128 --warmups 2 --repeats 10 \
      --out-prefix /tmp/linear_rhs_species_profile_gpu
 
+The same profiler can include a full fixed-step integration gate with
+``--integration-steps``. The tracked two-logical-CPU artifact uses 100 Euler
+steps on a ``2x4x16x64x1x64`` state. The enclosing ``pmap`` agrees exactly with
+serial state and field histories, while its ``0.94x`` end-to-end throughput is
+still overhead-limited. It is stored in
+``docs/_static/linear_rhs_species_profile_cpu.json`` and regenerated with:
+
+.. code-block:: bash
+
+   python tools/profiling/profile_linear_rhs_parallel_slices.py \
+     --axis species --platform cpu --logical-devices 2 \
+     --nl 4 --nm 16 --ny 64 --nz 64 --warmups 2 --repeats 5 \
+     --integration-steps 100 --integration-repeats 3 \
+     --out-prefix /tmp/linear_rhs_species_profile_cpu
+
+An uncontended two-GPU integration artifact is still required before promoting
+an end-to-end species-parallel speedup; concurrent office workloads invalidated
+the available timing samples but not their host-reduced identity checks.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 
