@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 81% | Runtime comparisons, VMEC state mapping, holdout selection, and nonlinear-gradient evidence now have one owner per domain; continue toward the enforced 99-file target. |
+| Tool consolidation | 83% | Runtime comparisons, VMEC state mapping, holdout selection, and nonlinear-gradient evidence now have one owner per domain; an orphan nonlinear comparator is removed; continue toward the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,13 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Removed the orphan nonlinear comparison executable. It was absent
+  from the benchmark manifest and documentation and retained a second
+  CSV/NetCDF parser plus print-only early/late tolerance policy. The maintained
+  nonlinear diagnostics comparator owns trace and resolved-spectrum comparison,
+  while the nonlinear-window gate owns native-window statistics and release
+  acceptance. Tool inventory is 126.
 
 - 2026-07-13: Consolidated the nonlinear-gradient evidence chain. Central
   finite-difference, variance-reduction planning, and independent control-mean
