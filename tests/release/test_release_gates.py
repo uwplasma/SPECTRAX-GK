@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-# ---- test_check_quasilinear_calibration_inputs.py ----
+# ---- quasilinear calibration-input provenance gates ----
 
 """Tests for quasilinear calibration input validation gates."""
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 def _load_quasilinear_tool_module():
-    return load_release_tool("check_quasilinear_calibration_inputs")
+    return load_release_tool("check_quasilinear_promotion_guardrails")
 
 
 def _write_report(path: Path, artifact: str, *, split: str = "holdout") -> None:

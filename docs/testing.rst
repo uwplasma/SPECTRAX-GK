@@ -868,7 +868,7 @@ writes a case-local ``panel.png`` and the final ladder command writes
 office runs from overwriting the frozen documentation figure before the
 candidate passes the residual, late-envelope, and moment-tail screens.
 
-``tools/release/check_quasilinear_calibration_inputs.py`` is the corresponding
+``tools/release/check_quasilinear_promotion_guardrails.py calibration-inputs`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
 requires every non-audit nonlinear artifact to match a passed nonlinear gate.
 This makes validation provenance executable: finite-but-unconverged pilots can
