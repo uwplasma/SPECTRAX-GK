@@ -737,8 +737,8 @@ Run the complete comparison with:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_qa_low_turbulence_comparison.py --pdf
-   python tools/artifacts/build_qa_low_turbulence_time_horizon_audit.py --pdf
+   python tools/artifacts/build_qa_transport_validation_artifacts.py comparison --pdf
+   python tools/artifacts/build_qa_transport_validation_artifacts.py horizon-audit --pdf
 
 The command writes:
 
@@ -1546,8 +1546,8 @@ Implementation Map
 ~~~~~~~~~~~~~~~~~~
 
 - Core reduced model: :mod:`spectraxgk.objectives.qa_low_turbulence`
-- Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/artifacts/build_qa_low_turbulence_comparison.py>`
-- Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/artifacts/build_qa_low_turbulence_time_horizon_audit.py>`
+- Artifact builder: :download:`build_qa_transport_validation_artifacts.py <../tools/artifacts/build_qa_transport_validation_artifacts.py>` (``comparison`` mode)
+- Time-horizon audit builder: the same command's ``horizon-audit`` mode
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`
 - Nonlinear landscape admission builder: :download:`build_nonlinear_transport_admission.py landscape <../tools/artifacts/build_nonlinear_transport_admission.py>`
 - Reduced nonlinear-audit prelaunch builder:

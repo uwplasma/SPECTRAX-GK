@@ -32,11 +32,11 @@ def _fast_config() -> QALowTurbulenceConfig:
 
 
 def _load_tool_module():
-    return load_artifact_tool("build_qa_low_turbulence_comparison")
+    return load_artifact_tool("build_qa_transport_validation_artifacts")
 
 
 def _load_time_horizon_tool_module():
-    return load_artifact_tool("build_qa_low_turbulence_time_horizon_audit")
+    return load_artifact_tool("build_qa_transport_validation_artifacts")
 
 
 def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None:
@@ -125,7 +125,9 @@ def test_qa_low_turbulence_artifact_tool_writes_json_csv_and_png(
     payload = qa_low_turbulence_comparison_payload(
         _fast_config(), finite_difference_workers=1
     )
-    paths = mod.write_artifacts(payload, tmp_path / "qa_panel.png", write_pdf=False)
+    paths = mod.write_comparison_artifacts(
+        payload, tmp_path / "qa_panel.png", write_pdf=False
+    )
 
     assert Path(paths["png"]).exists()
     assert Path(paths["json"]).exists()
@@ -170,7 +172,9 @@ def test_qa_low_turbulence_time_horizon_tool_recommends_t400(tmp_path: Path) -> 
         horizons=(150.0, 200.0, 300.0, 400.0),
         nonlinear_dt=0.20,
     )
-    paths = mod.write_artifacts(payload, tmp_path / "horizon", write_pdf=False)
+    paths = mod.write_horizon_artifacts(
+        payload, tmp_path / "horizon", write_pdf=False
+    )
 
     assert payload["passed"] is True
     assert Path(paths["json"]).exists()
