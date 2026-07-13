@@ -182,6 +182,19 @@ For scan workloads, the default path is custom fixed-step ``imex2`` with
 throughput for multi-ky scans. Diffrax adaptive stepping remains available as
 an optional mode through ``TimeConfig.use_diffrax=True``.
 
+Adaptive differentiation is an explicit API policy rather than an accidental
+property of the controller. For a low-dimensional tangent direction, call
+:func:`spectraxgk.solvers.time.integrate_linear_diffrax` with
+``derivative_mode="forward"``. This selects native JAX rules and supports a
+JVP through the accepted adaptive trajectory. The release gate uses a nonzero
+thermodynamic-drive tangent: it agrees with a centered finite difference to
+``1.9e-5`` relative error, and changing ``rtol`` from ``1e-3`` to ``3e-4``
+changes the objective and tangent by less than ``2e-4`` relative. The default
+``derivative_mode="reverse"`` retains the custom-VJP field solve used by
+fixed-step scalar objectives. Adaptive reverse-mode objectives are not yet a
+promoted workflow because a bounded-memory adjoint/checkpoint policy has not
+passed the same observable-level gate.
+
 Nonlinear FFT bracket
 ---------------------
 

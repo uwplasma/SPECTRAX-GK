@@ -55,6 +55,65 @@ def _tiny_diffrax_setup(nx: int = 2, ny: int = 3, nz: int = 8):
     return grid, geom, params, G
 
 
+def test_adaptive_linear_forward_jvp_matches_centered_difference() -> None:
+    grid, geom, params, _template = _tiny_diffrax_setup(nx=1, ny=2, nz=4)
+    state = jnp.zeros(
+        (1, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
+    state = state.at[0, 0, 1, 0, :].set(0.2 * jnp.exp(1j * z))
+    probe = jnp.exp(1j * jnp.linspace(0.0, 1.0, grid.z.size))
+
+    def objective(omega_star_scale, rtol=1.0e-3):
+        final_state, _phi = integrate_linear_diffrax(
+            state,
+            grid,
+            geom,
+            replace(params, omega_star_scale=omega_star_scale),
+            dt=0.02,
+            steps=2,
+            method="Tsit5",
+            adaptive=True,
+            rtol=rtol,
+            atol=1.0e-6,
+            max_steps=100,
+            progress_bar=False,
+            jit=False,
+            derivative_mode="forward",
+        )
+        return jnp.real(jnp.vdot(probe, final_state[0, 0, 1, 0, :]))
+
+    point = jnp.asarray(1.0, dtype=jnp.float32)
+    value, tangent = jax.jvp(objective, (point,), (jnp.ones_like(point),))
+    epsilon = jnp.asarray(5.0e-2, dtype=point.dtype)
+    finite_difference = (objective(point + epsilon) - objective(point - epsilon)) / (
+        2.0 * epsilon
+    )
+    tightened_value, tightened_tangent = jax.jvp(
+        lambda x: objective(x, 3.0e-4),
+        (point,),
+        (jnp.ones_like(point),),
+    )
+
+    assert float(jnp.abs(tangent)) > 1.0e-4
+    assert float(tangent) == pytest.approx(float(finite_difference), rel=1.0e-3)
+    assert float(tightened_value) == pytest.approx(float(value), rel=2.0e-4)
+    assert float(tightened_tangent) == pytest.approx(float(tangent), rel=2.0e-4)
+
+    with pytest.raises(ValueError, match="derivative_mode"):
+        integrate_linear_diffrax(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=1,
+            derivative_mode="unsupported",
+            progress_bar=False,
+            jit=False,
+        )
+
+
 def test_diffrax_helper_functions() -> None:
     dfx, eqx = _require_diffrax()
     assert dfx is not None

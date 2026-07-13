@@ -205,7 +205,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
-| Differentiable API clarity | 93% | The explicit electrostatic species-pmap trajectory has a reverse-mode/finite-difference parameter gate; next add adaptive-controller derivative policy gates and held-out implicit-VJP transport objectives. |
+| Differentiable API clarity | 95% | Fixed-step species-pmap reverse mode and adaptive Diffrax forward JVPs have observable-level finite-difference gates; next add a bounded-memory adaptive reverse policy and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 80% | The 2x2 species-Hermite periodic streaming route passes RHS, Euler/RK2, adiabatic-field, and 100-step 1.68x CPU gates; extend linked-boundary and drift/collision coverage next. |
@@ -940,3 +940,12 @@ under 5 minutes.
   ``5.29x``. Adiabatic quasineutrality also matches serial at RHS level. Linked
   boundaries, drifts, collisions, other methods, and four-device GPU evidence
   remain explicitly outside the claim.
+- 2026-07-12: Made the Diffrax derivative policy explicit. The default
+  ``derivative_mode="reverse"`` preserves the custom-VJP field solve, while
+  ``"forward"`` uses native JAX rules through fixed or adaptive trajectories.
+  A nonzero adaptive Tsit5 thermodynamic-drive JVP agrees with centered finite
+  differences to ``1.9e-5`` relative and is stable when ``rtol`` is tightened
+  from ``1e-3`` to ``3e-4``. The focused Diffrax shard passes 14 tests in 54 s.
+  Adaptive reverse mode remains unpromoted after an exploratory probe exceeded
+  the bounded local memory envelope; the next route must use an explicit
+  checkpointed/direct adjoint rather than relying on accidental controller AD.

@@ -534,10 +534,14 @@ Parallel trajectories follow the same rule. The production two-species
 electrostatic fixed-step integrator now has a reverse-mode parameter-gradient
 gate through its enclosing ``pmap``: a thermodynamic-drive derivative agrees
 with centered finite differences in float32. Input placement remains outside
-the differentiated function, and traced parameters bypass host conversion.
-This evidence does not promote adaptive-controller, IMEX, electromagnetic, or
-mixed species--Hermite derivatives; those paths remain fail-closed until each
-has an observable-level finite-difference or tangent gate.
+the differentiated function, and traced parameters bypass host conversion. A
+separate adaptive Diffrax gate now promotes low-dimensional forward-mode JVPs:
+``derivative_mode="forward"`` uses native JAX rules through the accepted Tsit5
+trajectory, agrees with centered finite differences to ``1.9e-5`` relative,
+and remains stable when the controller tolerance is tightened. Reverse-mode
+adaptive objectives, IMEX trajectories, electromagnetic trajectories, and
+mixed species--Hermite derivatives remain fail-closed until each has a
+bounded-memory observable-level finite-difference or tangent gate.
 
 Generic structured derivatives should use reviewed SOLVAX primitives when
 their contracts pass the required dtype and transformation gates. In
