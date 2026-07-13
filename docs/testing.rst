@@ -244,11 +244,11 @@ The first reusable tooling for this lane now exists:
 - ``tools/artifacts/generate_miller_zonal_response_panel.py``
 - ``tools/artifacts/generate_w7x_zonal_response_panel.py``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py contract``
-- ``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py``
+- ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py moment-tail``
 - ``tools/artifacts/plot_w7x_zonal_closure_ladder.py``
 - ``tools/campaigns/write_w7x_zonal_closure_sweep.py``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py state-convention``
-- ``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py``
+- ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py sweep``
 - ``tools/artifacts/build_zonal_flow_artifacts.py objective-gate``
 - ``tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py``
 
@@ -1015,7 +1015,7 @@ artifacts into ``docs/_static/w7x_zonal_contract_audit.png``. That panel is a
 publication-facing diagnostic of the open mismatch rather than a release gate;
 its JSON metadata has ``gate_index_include=false`` so the validation index does
 not count it as closed.
-``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py`` adds a no-rerun velocity-space
+``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py moment-tail`` adds a no-rerun velocity-space
 audit at ``docs/_static/w7x_zonal_moment_tail_audit.png``. It shows that the
 long ``Nl=8``, ``Nm=32`` traces have large late normalized-trace standard
 deviations and non-negligible final high-Hermite/high-Laguerre free-energy
@@ -1048,7 +1048,7 @@ volume-average helper diagnostics agree with manual reductions to about
 volume-weighted level is ``0.28450 init_amp``; that explicit difference is why
 the paper-facing observable must remain ``Phi_zonal_line_kxt`` normalized by
 its first nonzero sample.
-``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py`` then performs the bounded
+The ``sweep`` mode of the same command then performs the bounded
 recurrence sweep requested for the paper lane without changing initializer or
 normalization conventions. Moment resolution and closure source are varied
 separately at ``k_x rho_i=0.07`` over the common ``t v_t/a <= 100`` window.

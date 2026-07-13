@@ -3406,7 +3406,7 @@ def test_w7x_zonal_contract_audit_rows_and_main(tmp_path: Path) -> None:
 
 
 # W7-X zonal moment-tail audit assertions
-def _plot_w7x_zonal_moment_tail_audit_output(
+def _w7x_zonal_moment_tail_output(
     path: Path, *, kx_target: float = 0.07, nm: int = 8, nl: int = 4
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -3433,11 +3433,11 @@ def _plot_w7x_zonal_moment_tail_audit_output(
 
 
 def test_w7x_zonal_moment_tail_loads_rows_and_main(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_w7x_zonal_moment_tail_audit")
+    mod = load_artifact_tool("build_w7x_zonal_recurrence_artifacts")
     run_dir = tmp_path / "run"
-    _plot_w7x_zonal_moment_tail_audit_output(run_dir / "w7x_test4_kx070.out.nc")
+    _w7x_zonal_moment_tail_output(run_dir / "w7x_test4_kx070.out.nc")
 
-    rows, heatmap = mod.load_audit_rows(
+    rows, heatmap = mod.load_tail_rows(
         [("synthetic", run_dir)],
         kx_values=(0.07,),
         tail_fraction=0.3,
@@ -3456,6 +3456,7 @@ def test_w7x_zonal_moment_tail_loads_rows_and_main(tmp_path: Path) -> None:
     out_png = tmp_path / "audit.png"
     rc = mod.main(
         [
+            "moment-tail",
             "--run",
             "synthetic",
             str(run_dir),
@@ -3476,7 +3477,7 @@ def test_w7x_zonal_moment_tail_loads_rows_and_main(tmp_path: Path) -> None:
 
 
 # W7-X zonal recurrence sweep assertions
-def _plot_w7x_zonal_recurrence_sweep_reference(path: Path, *, kx: float = 0.07) -> None:
+def _w7x_zonal_recurrence_reference(path: Path, *, kx: float = 0.07) -> None:
     t = np.linspace(0.0, 20.0, 21)
     rows = []
     for code, offset in (("stella", -0.01), ("GENE", 0.01)):
@@ -3492,7 +3493,7 @@ def _plot_w7x_zonal_recurrence_sweep_reference(path: Path, *, kx: float = 0.07) 
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def _plot_w7x_zonal_recurrence_sweep_output(
+def _w7x_zonal_recurrence_output(
     path: Path, *, kx: float = 0.07, nm: int = 8, nl: int = 4, offset: float = 0.0
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -3519,13 +3520,13 @@ def _plot_w7x_zonal_recurrence_sweep_output(
 
 
 def test_w7x_zonal_recurrence_sweep_builds_rows_and_main(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_w7x_zonal_recurrence_sweep")
+    mod = load_artifact_tool("build_w7x_zonal_recurrence_artifacts")
     reference = tmp_path / "reference.csv"
     out_a = tmp_path / "moment" / "a.out.nc"
     out_b = tmp_path / "closure" / "b.out.nc"
-    _plot_w7x_zonal_recurrence_sweep_reference(reference)
-    _plot_w7x_zonal_recurrence_sweep_output(out_a, nm=8, nl=4, offset=0.02)
-    _plot_w7x_zonal_recurrence_sweep_output(out_b, nm=12, nl=6, offset=0.01)
+    _w7x_zonal_recurrence_reference(reference)
+    _w7x_zonal_recurrence_output(out_a, nm=8, nl=4, offset=0.02)
+    _w7x_zonal_recurrence_output(out_b, nm=12, nl=6, offset=0.01)
 
     reference_t, reference_y = mod.load_reference_trace(reference, 0.07)
     rows, traces = mod.build_sweep(
@@ -3550,6 +3551,7 @@ def test_w7x_zonal_recurrence_sweep_builds_rows_and_main(tmp_path: Path) -> None
     out_png = tmp_path / "recurrence.png"
     rc = mod.main(
         [
+            "sweep",
             "--reference-traces",
             str(reference),
             "--run",
@@ -3576,15 +3578,16 @@ def test_w7x_zonal_recurrence_sweep_builds_rows_and_main(tmp_path: Path) -> None
 
 
 def test_w7x_zonal_recurrence_sweep_allows_one_sweep_family(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_w7x_zonal_recurrence_sweep")
+    mod = load_artifact_tool("build_w7x_zonal_recurrence_artifacts")
     reference = tmp_path / "reference.csv"
     out_nc = tmp_path / "closure" / "b.out.nc"
-    _plot_w7x_zonal_recurrence_sweep_reference(reference)
-    _plot_w7x_zonal_recurrence_sweep_output(out_nc, nm=12, nl=6, offset=0.01)
+    _w7x_zonal_recurrence_reference(reference)
+    _w7x_zonal_recurrence_output(out_nc, nm=12, nl=6, offset=0.01)
 
     out_png = tmp_path / "closure_only.png"
     rc = mod.main(
         [
+            "sweep",
             "--reference-traces",
             str(reference),
             "--run",
