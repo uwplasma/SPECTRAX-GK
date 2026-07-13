@@ -38,7 +38,7 @@ from spectraxgk.terms.linear_terms import (
     collision_invariant_rates,
     collision_quadratic_rate,
     collisions_contribution,
-    conservative_dougherty_cross_moments,
+    conservative_full_f_dougherty_cross_moments,
     multispecies_collision_invariant_rates,
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
@@ -505,7 +505,7 @@ def test_multispecies_collision_diagnostic_uses_physical_moment_weights():
         )
 
 
-def test_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -> None:
+def test_full_f_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -> None:
     """Francisquez et al. (2022), equations (2.11)--(2.12)."""
 
     density = jnp.asarray([1.0, 0.8], dtype=jnp.float32)
@@ -513,7 +513,7 @@ def test_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -> None:
     flow = jnp.asarray([0.3, -0.2], dtype=jnp.float32)
     thermal = jnp.asarray([0.7, 1.4], dtype=jnp.float32)
     nu = jnp.asarray([[0.0, 0.25], [0.6, 0.0]], dtype=jnp.float32)
-    targets = conservative_dougherty_cross_moments(
+    targets = conservative_full_f_dougherty_cross_moments(
         flow,
         thermal,
         density=density,
@@ -545,7 +545,7 @@ def test_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -> None:
     assert bool(jnp.all(target_thermal > 0.0))
 
     derivative = jax.grad(
-        lambda u0: conservative_dougherty_cross_moments(
+        lambda u0: conservative_full_f_dougherty_cross_moments(
             flow.at[0].set(u0),
             thermal,
             density=density,
@@ -554,14 +554,14 @@ def test_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -> None:
         ).thermal_speed_sq[0, 1]
     )(flow[0])
     centered = (
-        conservative_dougherty_cross_moments(
+        conservative_full_f_dougherty_cross_moments(
             flow.at[0].add(1.0e-3),
             thermal,
             density=density,
             mass=mass,
             collision_frequency=nu,
         ).thermal_speed_sq[0, 1]
-        - conservative_dougherty_cross_moments(
+        - conservative_full_f_dougherty_cross_moments(
             flow.at[0].add(-1.0e-3),
             thermal,
             density=density,
@@ -572,10 +572,10 @@ def test_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -> None:
     np.testing.assert_allclose(derivative, centered, rtol=2.0e-4, atol=2.0e-5)
 
 
-def test_dougherty_cross_moments_equal_species_limit_and_shapes() -> None:
+def test_full_f_dougherty_cross_moments_equal_species_limit_and_shapes() -> None:
     flow = jnp.asarray([0.4, -0.2])
     thermal = jnp.asarray([0.6, 1.0])
-    targets = conservative_dougherty_cross_moments(
+    targets = conservative_full_f_dougherty_cross_moments(
         flow,
         thermal,
         density=jnp.ones(2),
@@ -592,7 +592,7 @@ def test_dougherty_cross_moments_equal_species_limit_and_shapes() -> None:
     np.testing.assert_allclose(targets.thermal_speed_sq.diagonal(), thermal)
 
     with pytest.raises(ValueError, match="collision_frequency must have shape"):
-        conservative_dougherty_cross_moments(
+        conservative_full_f_dougherty_cross_moments(
             flow,
             thermal,
             density=jnp.ones(2),
@@ -600,7 +600,7 @@ def test_dougherty_cross_moments_equal_species_limit_and_shapes() -> None:
             collision_frequency=jnp.ones((2, 1)),
         )
     with pytest.raises(ValueError, match="collision_frequency must be non-negative"):
-        conservative_dougherty_cross_moments(
+        conservative_full_f_dougherty_cross_moments(
             flow,
             thermal,
             density=jnp.ones(2),

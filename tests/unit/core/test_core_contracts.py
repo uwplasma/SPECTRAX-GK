@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import io
+import subprocess
+import sys
 from contextlib import redirect_stdout
 
 import jax.numpy as jnp
@@ -304,6 +306,25 @@ def test_extension_point_protocols_accept_structural_implementations() -> None:
     assert isinstance(ToyDiagnostic(), Diagnostic)
     assert isinstance(ToyObjective(), Objective)
     assert isinstance(ToyWriter(), ArtifactWriter)
+
+
+def test_linear_terms_import_has_no_facade_order_dependency() -> None:
+    """Low-level term imports must work in a fresh interpreter."""
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "from spectraxgk.terms.linear_terms import "
+                "conservative_full_f_dougherty_cross_moments"
+            ),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_velocity_basis_orthonormality_and_validation() -> None:

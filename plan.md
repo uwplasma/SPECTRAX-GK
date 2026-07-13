@@ -206,7 +206,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 68% | Long-wavelength and finite-b gates cover the shipped model; exact conservative cross-species Dougherty primitive moments pass arbitrary-mass conservation and AD gates, and custom operators now receive the post-field Hamiltonian response. Derive the normalization-consistent multispecies Hermite--Laguerre projection and close entropy/relaxation/transport gates before Sugama/Coulomb promotion. |
+| Advanced collision operators | 67% | Long-wavelength and finite-b gates cover the shipped model; full-f multispecies Dougherty primitive moments pass arbitrary-mass conservation and AD gates, and custom operators receive the post-field Hamiltonian response. Implement the published linearized Sugama/Coulomb Hermite--Laguerre coefficients and close adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -282,6 +282,20 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-13: Corrected the advanced-collision roadmap after a primary-source
+  audit. Francisquez et al. (2022) derive a nonlinear full-:math:`f`
+  multispecies Dougherty operator, while SPECTRAX-GK evolves a linearized
+  delta-:math:`f` gyrokinetic state. Renamed the reference kernel to
+  ``conservative_full_f_dougherty_cross_moments`` and documented that its exact
+  primitive targets cannot be inserted directly into the shipped linearized
+  field-particle correction. The runtime lane now targets the published
+  linearized gyro-moment Sugama/Coulomb coefficients; a multispecies Dougherty
+  runtime variant requires its own explicit delta-:math:`f` projection.
+  A fresh-interpreter import check also exposed and fixed a circular dependency
+  introduced by post-field collision context construction; ``build_H`` is now
+  resolved only when the optional custom operator runs, and a subprocess
+  regression gate protects low-level term imports from facade order.
+
 - 2026-07-13: Removed the backend-free synthetic stellarator portfolio panel,
   generator, and three tracked companions. The objective reducer remains unit
   tested, while paper-facing documentation and coverage ownership now point to
@@ -299,7 +313,7 @@ That topology is the reference design for the production parallel lane.
   operator sees :math:`H=G+J_0\phi/T` and preserve weighted replacement,
   hypercollision independence, shape rejection, JIT integration, and protocol
   behavior. All 62 linear integration tests and warning-strict documentation
-  pass. The exact Francisquez cross moments are not inserted directly into the
+  pass. The exact full-f Francisquez cross moments are not inserted directly into the
   existing self-collision restoration because that would mix primitive and
   normalized gyrokinetic moments without a derivation; the complete projected
   operator remains explicitly blocked on conservation and entropy gates.
@@ -310,8 +324,8 @@ That topology is the reference design for the production parallel lane.
   trailing spatial samples; rejects statically invalid density, mass,
   temperature, and rate inputs; and passes pairwise momentum/energy,
   equal-species, positivity, shape, and AD/finite-difference gates. This closes
-  the cross-moment mathematics needed by a multispecies Dougherty operator but
-  does not yet promote the complete gyroaveraged collision RHS.
+  a nonlinear full-f reference contract. They do not promote or directly
+  parameterize the linearized gyroaveraged collision RHS.
 
 - 2026-07-13: Promoted VMEC and Miller EIK generation from a maintainer artifact
   script to the installed ``spectraxgk geometry`` executable. Both backends now

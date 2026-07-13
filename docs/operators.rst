@@ -268,8 +268,8 @@ The model is promotable only when every particle rate and both summed rates
 vanish to discretization tolerance. This diagnostic is implemented and
 autodiff-tested; it does not by itself promote a multispecies collision model.
 
-The first exact implementation step toward that model is
-``conservative_dougherty_cross_moments``. For directed collision rates
+As a separate full-distribution reference utility,
+``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments
 
 .. math::
@@ -288,17 +288,20 @@ The first exact implementation step toward that model is
 
 These are equations (2.11)--(2.12) of the
 `improved multispecies Dougherty derivation <https://doi.org/10.1017/S0022377822000289>`_.
-The JAX implementation accepts arbitrary mass ratios and directed rates, keeps
+Francisquez et al. derive a nonlinear full-:math:`f` Fokker--Planck model,
+whereas SPECTRAX-GK evolves a linearized delta-:math:`f` gyrokinetic state. The
+JAX implementation accepts arbitrary mass ratios and directed rates, keeps
 zero-rate and self pairs unchanged, and is equation-gated for pairwise momentum
 and energy conservation, the equal-species limit, positive target temperature,
-and AD/finite-difference agreement. It computes the exact cross moments needed
-by the future gyroaveraged operator; it is not by itself a collision RHS or a
-runtime model-selection claim.
+and AD/finite-difference agreement. It supports derivation checks and future
+full-:math:`f` work; it must not be inserted directly into the shipped
+linearized field-particle restoration.
 
-The next model tier inserts these cross moments into the species-coupled
-gyroaveraged Dougherty operator. The
-research tier after that is the linearized gyrokinetic Sugama/Coulomb operator
-in the Hermite--Laguerre moment basis. Promotion requires discrete Maxwellian
+The next runtime model tier follows the published linearized gyrokinetic
+Sugama/Coulomb operators in the Hermite--Laguerre moment basis. A linearized
+multispecies Dougherty variant is admissible only after its delta-:math:`f`
+projection is derived explicitly; the full-:math:`f` primitive targets are not
+used as a shortcut. Promotion requires discrete Maxwellian
 null-space, particle conservation per species, total momentum and energy
 conservation, adjointness, non-positive entropy production, velocity-resolution
 convergence, collisional ITG, conductivity, and zonal-flow damping gates.
@@ -306,6 +309,7 @@ convergence, collisional ITG, conductivity, and zonal-flow damping gates.
 Relevant derivations and verification targets include the
 `Laguerre--Hermite pseudo-spectral formulation <https://doi.org/10.1017/S0022377818000041>`_,
 the `advanced linearized gyrokinetic moment operators <https://arxiv.org/abs/2104.11480>`_,
+the `improved Sugama moment implementation <https://arxiv.org/abs/2202.06293>`_,
 and the `local collisional ITG study <https://arxiv.org/abs/2201.02860>`_.
 
 Controls:
