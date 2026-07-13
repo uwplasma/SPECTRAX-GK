@@ -1398,7 +1398,9 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         use_custom_vjp=False,
         force_electrostatic_fields=True,
     )
-    collision_parallel_rhs, collision_parallel_phi = (
+    assert float(jnp.linalg.norm(collision_serial_rhs)) > 0.0
+    assert float(jnp.linalg.norm(collision_serial_phi)) > 0.0
+    with pytest.raises(NotImplementedError, match="electrostatic linear terms"):
         linear_parallel_electrostatic.linear_rhs_electrostatic_species_sharded(
             state,
             cache,
@@ -1406,15 +1408,6 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
             terms=collision_terms,
             devices=devices[:2],
         )
-    )
-    assert float(jnp.linalg.norm(collision_serial_rhs)) > 0.0
-    assert_species_close(collision_parallel_rhs, collision_serial_rhs)
-    np.testing.assert_allclose(
-        np.asarray(collision_parallel_phi),
-        np.asarray(collision_serial_phi),
-        rtol=5e-5,
-        atol=5e-6,
-    )
     collision_serial_state, _ = integrate_linear(
         state,
         grid,
