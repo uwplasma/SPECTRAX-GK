@@ -128,9 +128,8 @@ def _build_species_problem(*, nx: int, ny: int, nz: int, nl: int, nm: int):
         beta=0.0,
         fapar=0.0,
     )
-    cache = build_linear_cache(
-        grid, SAlphaGeometry.from_config(cfg.geometry), params, Nl=nl, Nm=nm
-    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    cache = build_linear_cache(grid, geom, params, Nl=nl, Nm=nm)
     shape = (2, nl, nm, grid.ky.size, grid.kx.size, grid.z.size)
     rng = np.random.default_rng(20260712)
     state = jnp.asarray(
@@ -141,7 +140,7 @@ def _build_species_problem(*, nx: int, ny: int, nz: int, nl: int, nm: int):
         ),
         dtype=jnp.complex64,
     )
-    return state, cache, params, grid
+    return state, cache, params, grid, geom
 
 
 def _time_callable(fn: Callable[[], Any], *, repeats: int) -> tuple[list[float], Any]:
@@ -169,6 +168,9 @@ def profile_linear_rhs_parallel_slices(
     atol: float,
     rtol: float,
     axis: str = "hermite",
+    integration_steps: int = 0,
+    integration_repeats: int = 3,
+    integration_dt: float = 1.0e-7,
 ) -> dict[str, object]:
     """Time serial and velocity-sharded electrostatic linear-slices RHS calls."""
 
@@ -187,8 +189,15 @@ def profile_linear_rhs_parallel_slices(
         raise ValueError("axis must be 'hermite' or 'species'")
     if axis_name == "species" and int(requested_devices) != 2:
         raise ValueError("species profiling requires exactly two devices")
-    builder = _build_species_problem if axis_name == "species" else build_problem
-    state, cache, params, grid = builder(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
+    if int(integration_steps) < 0 or int(integration_repeats) < 1:
+        raise ValueError("integration_steps must be nonnegative and repeats positive")
+    if axis_name == "species":
+        state, cache, params, grid, geom = _build_species_problem(
+            nx=nx, ny=ny, nz=nz, nl=nl, nm=nm
+        )
+    else:
+        state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
+        geom = None
     terms = _terms()
     parallel_cfg = RuntimeParallelConfig(
         strategy="velocity",
@@ -287,6 +296,55 @@ def profile_linear_rhs_parallel_slices(
         abs_err <= float(atol) and rel_err <= float(rtol) and phi_abs_err <= float(atol)
     )
 
+    integration: dict[str, object] | None = None
+    if axis_name == "species" and int(integration_steps) > 0:
+        from spectraxgk.linear import integrate_linear
+
+        def integrate(parallel):
+            return integrate_linear(
+                state,
+                grid,
+                geom,
+                params,
+                dt=float(integration_dt),
+                steps=int(integration_steps),
+                method="euler",
+                cache=cache,
+                terms=terms,
+                parallel=parallel,
+            )
+
+        _block_until_ready(integrate(None))
+        _block_until_ready(integrate(parallel_cfg))
+        serial_integration, serial_integrated = _time_callable(
+            lambda: integrate(None), repeats=int(integration_repeats)
+        )
+        parallel_integration, parallel_integrated = _time_callable(
+            lambda: integrate(parallel_cfg), repeats=int(integration_repeats)
+        )
+        serial_state_out, serial_phi_out = map(np.asarray, serial_integrated)
+        parallel_state_out, parallel_phi_out = map(np.asarray, parallel_integrated)
+
+        def host_error(reference: np.ndarray, observed: np.ndarray) -> dict[str, float]:
+            error = float(np.max(np.abs(reference - observed)))
+            scale = float(np.max(np.abs(reference)))
+            return {"max_abs_error": error, "max_rel_error": error / max(scale, 1e-30)}
+
+        serial_integration_median = float(median(serial_integration))
+        parallel_integration_median = float(median(parallel_integration))
+        integration = {
+            "steps": int(integration_steps),
+            "dt": float(integration_dt),
+            "repeats": int(integration_repeats),
+            "serial_samples_s": serial_integration,
+            "parallel_samples_s": parallel_integration,
+            "serial_median_s": serial_integration_median,
+            "parallel_median_s": parallel_integration_median,
+            "speedup": serial_integration_median / parallel_integration_median,
+            "state_identity": host_error(serial_state_out, parallel_state_out),
+            "field_history_identity": host_error(serial_phi_out, parallel_phi_out),
+        }
+
     rows = [
         {"route": "serial", "median_s": serial_median, "samples_s": serial_samples},
         {"route": "sharded", "median_s": sharded_median, "samples_s": sharded_samples},
@@ -325,6 +383,7 @@ def profile_linear_rhs_parallel_slices(
             "atol": float(atol),
             "rtol": float(rtol),
             "rows": rows,
+            "integration": integration,
             "notes": (
                 "Both routes are warmed before timing. The serial route uses the production JIT path; "
                 + (
@@ -587,6 +646,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--nz", type=int, default=32)
     parser.add_argument("--warmups", type=int, default=1)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--integration-steps", type=int, default=0)
+    parser.add_argument("--integration-repeats", type=int, default=3)
+    parser.add_argument("--integration-dt", type=float, default=1.0e-7)
     parser.add_argument("--atol", type=float, default=2.0e-5)
     parser.add_argument("--rtol", type=float, default=2.0e-6)
     return parser
@@ -628,6 +690,9 @@ def main_profile(argv: list[str] | None = None) -> int:
         atol=float(args.atol),
         rtol=float(args.rtol),
         axis=str(args.axis),
+        integration_steps=int(args.integration_steps),
+        integration_repeats=int(args.integration_repeats),
+        integration_dt=float(args.integration_dt),
     )
     paths = write_artifacts(summary, args.out_prefix)
     print(
