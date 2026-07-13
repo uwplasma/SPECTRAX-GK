@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 98% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 104 tools remain against the enforced 99-file target. |
+| Tool consolidation | 98% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, and performance/scaling release checks now have one owner per domain; 103 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -908,7 +908,7 @@ ruff check src tests tools
 python tools/release/check_package_architecture_manifest.py
 python tools/release/check_validation_coverage_manifest.py
 python tools/release/check_differentiable_refactor_manifest.py
-python tools/release/check_performance_optimization_manifest.py
+python tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only
 python tools/release/check_repository_size_manifest.py
 pytest -q -o addopts= tests/tools tests/release --maxfail=1
 ```
@@ -1395,3 +1395,10 @@ under 5 minutes.
   publication-window gates separate from equation-level bracket diagnostics,
   while sharing runtime geometry and normalization imports. The full comparison
   suite remains at 115 passed with one expected skip; tool inventory is 104.
+
+- 2026-07-13: Consolidated profiling-manifest validation into
+  ``check_parallel_scaling_artifacts.py --performance-manifest-only``. The
+  unified release owner now validates both the declared CPU/GPU optimization
+  campaign and its tracked scaling evidence while retaining independently
+  callable validation functions for focused tests. CI and release readiness use
+  the same command, and tool inventory falls to 103.

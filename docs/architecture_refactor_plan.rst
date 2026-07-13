@@ -75,7 +75,7 @@ and campaign code:
 - 96 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and artifact/tool families were consolidated.
-- 104 Python tool scripts and zero flat top-level ``tools/*.py`` files after
+- 103 Python tool scripts and zero flat top-level ``tools/*.py`` files after
   removing package-marker modules and moving release, comparison, artifact,
   campaign, profiling, benchmark, generator, compression-helper, reference-helper,
   diagnostic, linear-validation, and VMEC-helper scripts into purpose folders.

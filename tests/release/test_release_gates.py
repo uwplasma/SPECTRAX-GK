@@ -478,7 +478,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "codecov/codecov-action",
                 "tools/release/check_parallel_scaling_artifacts.py",
                 "tools/release/check_package_architecture_manifest.py",
-                "tools/release/check_performance_optimization_manifest.py",
+                "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
                 "tools/release/check_quasilinear_promotion_guardrails.py",
                 "tools/release/check_vmec_boozer_gates.py differentiability-claim",
                 "tools/artifacts/build_parallelization_completion_status.py",
@@ -515,7 +515,7 @@ coverage:
         "tools/release/check_repository_size_manifest.py\n"
         "tools/release/check_repository_size_manifest.py release-artifacts\n"
         "tools/release/check_package_architecture_manifest.py\n"
-        "tools/release/check_performance_optimization_manifest.py\n"
+        "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only\n"
         "tools/release/check_parallel_scaling_artifacts.py\n"
         "tools/release/check_quasilinear_promotion_guardrails.py\n"
         "tools/release/check_vmec_boozer_gates.py differentiability-claim\n"
@@ -1395,7 +1395,7 @@ def _load_differentiable_refactor_tool():
 
 
 def _load_performance_manifest_tool():
-    return load_release_tool("check_performance_optimization_manifest")
+    return load_release_tool("check_parallel_scaling_artifacts")
 
 
 def _load_validation_coverage_tool():
@@ -1956,7 +1956,7 @@ def test_performance_manifest_main_writes_summary_json(tmp_path: Path) -> None:
     mod = _load_performance_manifest_tool()
     out_json = tmp_path / "summary.json"
 
-    assert mod.main(["--out-json", str(out_json)]) == 0
+    assert mod.run_performance_manifest(["--out-json", str(out_json)]) == 0
 
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert payload["n_lanes"] >= 5
