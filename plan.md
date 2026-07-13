@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/remap/AD kernel validated; production routing absent | complete cache/RHS routing and physics gates before shipping |
+| Equilibrium ExB flow shear | coordinate/remap plus periodic dynamic-cache/AD kernels validated; timestep routing absent | complete integrator/linked-boundary routing and physics gates before shipping |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1561,3 +1561,11 @@ under 5 minutes.
   runtime admission remains blocked until all kx-dependent linear,
   gyroaverage, field-solve, linked-boundary, and nonlinear quantities are
   updated and linear-suppression/nonlinear-transport comparison gates pass.
+
+- 2026-07-13: Added one fail-closed owner for periodic sheared-``kx`` cache
+  updates. It rebuilds perpendicular metrics, drift frequencies, gyroaverages,
+  Bessel tables, field-solve inputs, bracket multipliers, and hyperdiffusion
+  from a two-dimensional effective ``kx`` grid. Zero-shear cache arrays and the
+  assembled linear RHS reproduce the static path, while a nonzero-shear JVP
+  agrees with the stable centered-FD plateau. Linked and non-twist boundaries
+  intentionally raise until their boundary phase and integration policy land.

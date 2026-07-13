@@ -589,6 +589,124 @@ def test_build_linear_cache_periodic_non_twist_uses_geometry_shear() -> None:
     assert np.all(np.isfinite(np.asarray(cache.gb_d)))
 
 
+def test_sheared_kx_cache_zero_shear_identity_and_tangent() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="periodic",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(rho_star=1.0, nu_hyper=0.0, nu_hyper_m=0.0)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
+
+    identity = linear_cache.update_linear_cache_for_sheared_kx(
+        cache,
+        grid,
+        geom,
+        params,
+        cache.kx_grid,
+    )
+    for name in (
+        "kx_grid",
+        "kperp2",
+        "cv_d",
+        "gb_d",
+        "omega_d",
+        "b",
+        "Jl",
+        "JlB",
+        "laguerre_j0",
+        "laguerre_j1_over_alpha",
+    ):
+        np.testing.assert_allclose(
+            np.asarray(getattr(identity, name)),
+            np.asarray(getattr(cache, name)),
+            rtol=2.0e-6,
+            atol=2.0e-7,
+        )
+
+    G = (
+        jnp.arange(2 * 3 * 4 * 4 * 8, dtype=jnp.float32).reshape(2, 3, 4, 4, 8)
+        / 1000.0
+    ).astype(jnp.complex64)
+    rhs_base, phi_base = linear_rhs_cached(G, cache, params, use_jit=False)
+    rhs_identity, phi_identity = linear_rhs_cached(
+        G,
+        identity,
+        params,
+        use_jit=False,
+    )
+    np.testing.assert_allclose(rhs_identity, rhs_base, rtol=3.0e-6, atol=3.0e-7)
+    np.testing.assert_allclose(phi_identity, phi_base, rtol=3.0e-6, atol=3.0e-7)
+
+    def observable(shift: jnp.ndarray) -> jnp.ndarray:
+        effective_kx = cache.kx_grid - shift * cache.ky_grid
+        updated = linear_cache.update_linear_cache_for_sheared_kx(
+            cache,
+            grid,
+            geom,
+            params,
+            effective_kx,
+        )
+        return jnp.sum(updated.kperp2) + 0.1 * jnp.sum(updated.Jl)
+
+    shift = jnp.asarray(0.17, dtype=jnp.float32)
+    tangent = jax.jvp(observable, (shift,), (jnp.ones_like(shift),))[1]
+    step = jnp.asarray(5.0e-3, dtype=jnp.float32)
+    finite_difference = (observable(shift + step) - observable(shift - step)) / (
+        2.0 * step
+    )
+    np.testing.assert_allclose(tangent, finite_difference, rtol=5.0e-4)
+
+    linked_grid = replace(grid, boundary="linked")
+    with pytest.raises(NotImplementedError, match="periodic standard flux tube"):
+        linear_cache.update_linear_cache_for_sheared_kx(
+            cache,
+            linked_grid,
+            geom,
+            params,
+            cache.kx_grid,
+        )
+    with pytest.raises(ValueError, match="shape \(ky, kx\)"):
+        linear_cache.update_linear_cache_for_sheared_kx(
+            cache,
+            grid,
+            geom,
+            params,
+            cache.kx,
+        )
+
+
+def test_hyperdiffusion_accepts_sheared_two_dimensional_kx() -> None:
+    G = jnp.ones((1, 1, 4, 4, 2), dtype=jnp.complex64)
+    kx = jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32)
+    ky = jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32)
+    mask = jnp.ones((4, 4), dtype=bool)
+    kwargs = {
+        "ky": ky,
+        "dealias_mask": mask,
+        "D_hyper": jnp.asarray(0.1),
+        "p_hyper_kperp": jnp.asarray(2.0),
+        "weight": jnp.asarray(1.0),
+    }
+    one_dimensional = linear_dissipation.hyperdiffusion_contribution(
+        G,
+        kx=kx,
+        **kwargs,
+    )
+    two_dimensional = linear_dissipation.hyperdiffusion_contribution(
+        G,
+        kx=jnp.broadcast_to(kx[None, :], mask.shape),
+        **kwargs,
+    )
+    np.testing.assert_allclose(two_dimensional, one_dimensional)
+
+
 def test_build_linear_cache_rejects_traced_shear_for_twist_shift_geometry() -> None:
     grid = build_spectral_grid(
         GridConfig(

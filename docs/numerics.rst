@@ -248,11 +248,16 @@ and the radial scale against centered finite differences.
 The integer nearest-mode decision is piecewise constant and therefore uses a
 stopped tangent. Continuous effective wavenumbers and phases remain
 differentiable between the measure-zero remap events. This kernel is not yet a
-shipped equilibrium-flow-shear model: production routing must also update every
-:math:`k_x`-dependent gyroaverage, drift, field-solve, linked-boundary, and
-nonlinear-bracket quantity during integration. Linear suppression, saturated
-transport, and matched-code gates remain mandatory before enabling it in input
-files.
+shipped equilibrium-flow-shear model. The periodic-boundary cache updater
+:func:`spectraxgk.operators.linear.cache_builder.update_linear_cache_for_sheared_kx`
+already rebuilds :math:`k_\perp^2`, drift frequencies, gyroaverages, Bessel
+tables, field-solve inputs, bracket multipliers, and hyperdiffusion from the
+two-dimensional effective :math:`k_x` grid. Its zero-shear arrays and complete
+linear RHS reproduce the static-cache path, and its nonzero-shear tangent agrees
+with finite differences. Non-twist and linked boundaries fail closed because
+their boundary phase is not implemented. Production timestep routing, linear
+suppression, saturated transport, and matched-code gates remain mandatory
+before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
 ------------------------------
