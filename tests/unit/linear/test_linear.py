@@ -751,6 +751,75 @@ def test_full_f_dougherty_cross_moments_equal_species_limit_and_shapes() -> None
         )
 
 
+@pytest.mark.parametrize("velocity_dimensions", [1, 2, 3])
+def test_full_f_dougherty_cross_moments_conserve_each_multispecies_pair(
+    velocity_dimensions: int,
+) -> None:
+    """Francisquez equations (2.11)--(2.12) conserve every species pair."""
+
+    flow = jnp.asarray(
+        [[0.3, -0.2, 0.5], [-0.4, 0.1, 0.2], [0.8, -0.5, 0.0]],
+        dtype=jnp.float32,
+    )
+    thermal = jnp.asarray(
+        [[0.7, 0.9, 1.1], [1.2, 0.6, 0.5], [0.4, 1.5, 0.8]],
+        dtype=jnp.float32,
+    )
+    density = jnp.asarray([1.0, 0.8, 1.3], dtype=jnp.float32)
+    mass = jnp.asarray([4.0, 1.0, 2.0], dtype=jnp.float32)
+    frequency = jnp.asarray(
+        [[0.0, 0.20, 0.10], [0.35, 0.0, 0.15], [0.22, 0.18, 0.0]],
+        dtype=jnp.float32,
+    )
+    targets = conservative_full_f_dougherty_cross_moments(
+        flow,
+        thermal,
+        density=density,
+        mass=mass,
+        collision_frequency=frequency,
+        velocity_dimensions=velocity_dimensions,
+    )
+
+    for species in range(3):
+        for partner in range(species + 1, 3):
+            rate_s = mass[species] * density[species] * frequency[species, partner]
+            rate_r = mass[partner] * density[partner] * frequency[partner, species]
+            momentum_change = rate_s * (
+                targets.parallel_flow[species, partner] - flow[species]
+            ) + rate_r * (
+                targets.parallel_flow[partner, species] - flow[partner]
+            )
+            energy_change = rate_s * (
+                velocity_dimensions
+                * (targets.thermal_speed_sq[species, partner] - thermal[species])
+                + flow[species]
+                * (targets.parallel_flow[species, partner] - flow[species])
+            ) + rate_r * (
+                velocity_dimensions
+                * (targets.thermal_speed_sq[partner, species] - thermal[partner])
+                + flow[partner]
+                * (targets.parallel_flow[partner, species] - flow[partner])
+            )
+            np.testing.assert_allclose(momentum_change, 0.0, atol=2.0e-7)
+            np.testing.assert_allclose(energy_change, 0.0, atol=3.0e-7)
+
+    offset = jnp.asarray(1.7, dtype=flow.dtype)
+    shifted = conservative_full_f_dougherty_cross_moments(
+        flow + offset,
+        thermal,
+        density=density,
+        mass=mass,
+        collision_frequency=frequency,
+        velocity_dimensions=velocity_dimensions,
+    )
+    np.testing.assert_allclose(
+        shifted.parallel_flow, targets.parallel_flow + offset, atol=2.0e-7
+    )
+    np.testing.assert_allclose(
+        shifted.thermal_speed_sq, targets.thermal_speed_sq, atol=2.0e-7
+    )
+
+
 def test_collisions_contribution_accepts_low_rank_lb_lam():
     H = jnp.ones((1, 1, 2, 1, 1, 1), dtype=jnp.complex64)
     out = collisions_contribution(

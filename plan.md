@@ -1522,3 +1522,10 @@ under 5 minutes.
   ``test_linear_streaming.py`` owner, and the zero-weight benchmark guard
   patches ``streaming_ladder_term`` rather than the removed adapter. The
   release path contract plus focused streaming regressions pass 19/19.
+
+- 2026-07-13: Extended the Francisquez full-``f`` primitive-target gate beyond
+  the two-species scalar derivation check. A three-species, multi-sample matrix
+  now verifies pairwise momentum and energy conservation for ``d_v=1,2,3`` and
+  Galilean invariance, while the documentation continues to block any claim
+  that these targets constitute a complete distribution-space collision
+  operator. All 19 focused collision integration tests pass.

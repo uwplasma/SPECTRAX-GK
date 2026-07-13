@@ -349,10 +349,12 @@ their own ITG, zonal, conductivity, entropy, and convergence gates.
 cross-species primitive-moment targets in equations (2.11)--(2.12) of
 `Francisquez et al. (2022) <https://doi.org/10.1017/S0022377822000289>`_. The
 tests check those formulas directly, pairwise momentum and energy conservation,
-positive target temperatures, equal-species limits, and AD/FD agreement. It is
-useful when developing a future nonlinear full-distribution collision operator,
-but it is not itself that operator and is not routed through the current
-delta-f gyrokinetic evolution.
+positive target temperatures, equal-species limits, and AD/FD agreement. The
+multispecies gate covers several spatial samples and :math:`d_v=1,2,3`, and
+checks that a uniform velocity offset shifts only the target flow. It is useful
+when developing a future nonlinear full-distribution collision operator, but it
+is not itself that operator and is not routed through the current delta-f
+gyrokinetic evolution.
 
 The full finite-Larmor-radius coefficient formulas contain deeply nested,
 cancellation-sensitive sums. Following the implementation guidance in the

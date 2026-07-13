@@ -293,9 +293,11 @@ whereas SPECTRAX-GK evolves a linearized delta-:math:`f` gyrokinetic state. The
 JAX implementation accepts arbitrary mass ratios and directed rates, keeps
 zero-rate and self pairs unchanged, and is equation-gated for pairwise momentum
 and energy conservation, the equal-species limit, positive target temperature,
-and AD/finite-difference agreement. It supports derivation checks and future
-full-:math:`f` work; it must not be inserted directly into the shipped
-linearized field-particle restoration.
+and AD/finite-difference agreement. A three-species, multi-sample gate also
+checks every interacting pair for :math:`d_v=1,2,3` and verifies Galilean
+invariance of the target flow and thermal speed. It supports derivation checks
+and future full-:math:`f` work; it must not be inserted directly into the
+shipped linearized field-particle restoration.
 
 The next runtime model tier follows the published linearized gyrokinetic
 Sugama/Coulomb operators in the Hermite--Laguerre moment basis. A linearized
