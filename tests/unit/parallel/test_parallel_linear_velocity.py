@@ -1283,15 +1283,14 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
             devices=devices[:2],
         )
     )
-    routed_rhs, routed_phi = linear_parallel.linear_rhs_parallel_cached(
-        state,
-        cache,
-        params,
-        terms=terms,
-        parallel=SimpleNamespace(
-            strategy="velocity", backend="auto", axis="species", num_devices=2
-        ),
+    parallel = SimpleNamespace(
+        strategy="velocity", backend="auto", axis="species", num_devices=2
     )
+    routed_rhs, routed_phi = jax.jit(
+        lambda value: linear_parallel.linear_rhs_parallel_cached(
+            value, cache, params, terms=terms, parallel=parallel
+        )
+    )(state)
 
     np.testing.assert_allclose(
         np.asarray(observed_phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
