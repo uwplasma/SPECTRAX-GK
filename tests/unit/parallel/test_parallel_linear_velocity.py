@@ -2937,3 +2937,214 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_rejects_ungated_
             terms=LinearTerms(collisions=1.0),
             parallel=auto_parallel,
         )
+
+
+def test_fused_electrostatic_kernel_term_sum_and_finite_quasineutrality(
+    monkeypatch,
+) -> None:
+    """The fused local kernel must equal the sum of its physical RHS terms."""
+
+    full_state = (
+        jnp.arange(2 * 4 * 2 * 1 * 4, dtype=jnp.float32).reshape((2, 4, 2, 1, 4))
+        * (1.0e-3 + 2.0e-4j)
+    ).astype(jnp.complex64)
+    local_state = full_state[:, :2]
+    cache = _cache_for_richer_state(Jl=0.2 * _cache_for_richer_state().Jl)
+    params = LinearParams(
+        charge_sign=1.0,
+        density=1.0,
+        tau_e=1.0,
+        tz=1.0,
+        vth=1.2,
+        R_over_LTi=2.5,
+        R_over_Ln=0.8,
+        omega_d_scale=0.7,
+        omega_star_scale=1.1,
+        kpar_scale=0.9,
+    )
+    route = SimpleNamespace(
+        local_m=2,
+        prev_pairs=((0, 1),),
+        next_pairs=((1, 0),),
+    )
+
+    monkeypatch.setattr(jax.lax, "axis_index", lambda _name: jnp.asarray(0))
+    monkeypatch.setattr(jax.lax, "psum", lambda value, _name: value)
+    monkeypatch.setattr(
+        jax.lax,
+        "ppermute",
+        lambda value, _name, _pairs: jnp.zeros_like(value),
+    )
+
+    all_terms = _electrostatic_slice_terms()
+    data = linear_parallel_electrostatic._fused_electrostatic_constants(
+        full_state, cache, params, all_terms, local_m=2
+    )
+    combined_rhs, phi = (
+        linear_parallel_electrostatic._fused_electrostatic_rhs_kernel(
+            local_state, data, route, axis_name="m"
+        )
+    )
+
+    contributions = []
+    term_names = ("streaming", "mirror", "curvature", "gradb", "diamagnetic")
+    for term_name in term_names:
+        term_values = {name: 0.0 for name in term_names}
+        term_values[term_name] = 1.0
+        weights = replace(all_terms, **term_values)
+        term_data = linear_parallel_electrostatic._fused_electrostatic_constants(
+            full_state, cache, params, weights, local_m=2
+        )
+        term_rhs, term_phi = (
+            linear_parallel_electrostatic._fused_electrostatic_rhs_kernel(
+                local_state, term_data, route, axis_name="m"
+            )
+        )
+        contributions.append(term_rhs)
+        np.testing.assert_allclose(np.asarray(term_phi), np.asarray(phi))
+
+    assert combined_rhs.shape == local_state.shape
+    assert phi.shape == local_state.shape[-3:]
+    assert np.isfinite(np.asarray(combined_rhs)).all()
+    assert np.isfinite(np.asarray(phi)).all()
+    np.testing.assert_allclose(
+        np.asarray(combined_rhs),
+        np.asarray(sum(contributions, jnp.zeros_like(combined_rhs))),
+        rtol=3.0e-6,
+        atol=3.0e-7,
+    )
+    np.testing.assert_array_equal(
+        np.asarray(
+            linear_parallel_electrostatic._fused_hermite_shift(
+                local_state,
+                offset=0,
+                axis_name="m",
+                prev_pairs=route.prev_pairs,
+                next_pairs=route.next_pairs,
+            )
+        ),
+        np.asarray(local_state),
+    )
+
+
+def test_fused_electrostatic_route_rejects_invalid_decompositions() -> None:
+    state = jnp.zeros((2, 4, 2, 1, 4), dtype=jnp.complex64)
+    device = jax.devices()[0]
+
+    with pytest.raises(ValueError, match="more than one Hermite"):
+        linear_parallel_electrostatic._fused_electrostatic_route_setup(
+            state,
+            plan=SimpleNamespace(chunks={"m": 1}, active_axes=("m",)),
+            devices=[device],
+            axis_name="m",
+        )
+    with pytest.raises(ValueError, match="divide evenly"):
+        linear_parallel_electrostatic._fused_electrostatic_route_setup(
+            state,
+            plan=SimpleNamespace(chunks={"m": 3}, active_axes=("m",)),
+            devices=[device, device, device],
+            axis_name="m",
+        )
+    with pytest.raises(NotImplementedError, match="only an active 'm' axis"):
+        linear_parallel_electrostatic._fused_electrostatic_route_setup(
+            state,
+            plan=SimpleNamespace(chunks={"m": 2}, active_axes=("l", "m")),
+            devices=[device, device],
+            axis_name="m",
+        )
+    with pytest.raises(ValueError, match="not enough devices"):
+        linear_parallel_electrostatic._fused_electrostatic_route_setup(
+            state,
+            plan=SimpleNamespace(chunks={"m": 2}, active_axes=("m",)),
+            devices=[device],
+            axis_name="m",
+        )
+
+    if len(jax.devices()) >= 2:
+        route = linear_parallel_electrostatic._fused_electrostatic_route_setup(
+            state,
+            plan=SimpleNamespace(chunks={"m": 2}, active_axes=("m",)),
+            devices=jax.devices()[:2],
+            axis_name="m",
+        )
+        assert route.local_m == 2
+        assert route.prev_pairs == ((0, 1),)
+        assert route.next_pairs == ((1, 0),)
+
+
+def test_bounded_mixed_species_hermite_rhs_matches_serial_operator() -> None:
+    """One complete mixed RHS compile must preserve the serial equations."""
+
+    from spectraxgk.linear import linear_rhs_cached
+
+    devices = jax.devices()
+    if len(devices) < 4:
+        pytest.skip("requires four logical CPU devices or accelerators")
+    state, cache, params, _grid, _geom = _small_kinetic_electron_problem()
+    terms = _streaming_only_terms()
+
+    expected_rhs, expected_phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    observed_rhs, observed_phi = (
+        linear_parallel_streaming.linear_rhs_electrostatic_species_hermite_sharded(
+            state,
+            cache,
+            params,
+            terms=terms,
+            devices=devices[:4],
+        )
+    )
+
+    assert float(jnp.linalg.norm(expected_rhs)) > 0.0
+    np.testing.assert_allclose(
+        np.asarray(observed_phi), np.asarray(expected_phi), rtol=3.0e-6, atol=3.0e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(observed_rhs), np.asarray(expected_rhs), rtol=4.0e-5, atol=4.0e-6
+    )
+
+
+def test_bounded_species_sharded_rhs_matches_serial_operator() -> None:
+    """One complete species-sharded compile must preserve the serial equations."""
+
+    from spectraxgk.linear import linear_rhs_cached
+
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires two logical CPU devices or accelerators")
+    state, cache, params, _grid, _geom = _small_kinetic_electron_problem()
+    terms = _electrostatic_slice_terms()
+
+    expected_rhs, expected_phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    observed_rhs, observed_phi = (
+        linear_parallel_electrostatic.linear_rhs_electrostatic_species_sharded(
+            state,
+            cache,
+            params,
+            terms=terms,
+            devices=devices[:2],
+        )
+    )
+
+    assert float(jnp.linalg.norm(expected_rhs)) > 0.0
+    np.testing.assert_allclose(
+        np.asarray(observed_phi), np.asarray(expected_phi), rtol=3.0e-6, atol=3.0e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(observed_rhs), np.asarray(expected_rhs), rtol=4.0e-5, atol=4.0e-6
+    )

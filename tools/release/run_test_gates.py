@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -26,7 +27,21 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     "test_stellarator_artifact_tools.py",
     "test_diffrax_integrators_core.py",
     "test_nonlinear.py",
+    "test_parallel_linear_velocity.py",
     "test_runtime_runner.py",
+}
+
+WIDE_COVERAGE_LOGICAL_CPU_DEVICES = {
+    # Exercise the real species/Hermite collectives and serial-identity gates.
+    # The flag must be present before JAX is imported by the pytest subprocess.
+    "test_parallel_linear_velocity.py": 4,
+}
+
+WIDE_COVERAGE_LOGICAL_CPU_SELECTIONS = {
+    "test_parallel_linear_velocity.py": (
+        "bounded_mixed_species_hermite_rhs_matches_serial_operator",
+        "bounded_species_sharded_rhs_matches_serial_operator",
+    ),
 }
 
 
@@ -211,6 +226,24 @@ def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
     return shards
 
 
+def wide_coverage_environment(shard: list[Path]) -> dict[str, str] | None:
+    """Return the pre-import environment required by a coverage shard."""
+
+    logical_cpu_devices = max(
+        (WIDE_COVERAGE_LOGICAL_CPU_DEVICES.get(path.name, 0) for path in shard),
+        default=0,
+    )
+    if not logical_cpu_devices:
+        return None
+    env = os.environ.copy()
+    flag = f"--xla_force_host_platform_device_count={logical_cpu_devices}"
+    current_flags = env.get("XLA_FLAGS", "")
+    if "xla_force_host_platform_device_count" not in current_flags:
+        env["XLA_FLAGS"] = f"{current_flags} {flag}".strip()
+    env["JAX_PLATFORMS"] = "cpu"
+    return env
+
+
 def discover_coverage_data(root: Path = REPO_ROOT) -> list[Path]:
     """Return coverage.py data files under ``root`` without descending into docs."""
 
@@ -294,10 +327,16 @@ def write_json(path: Path, payload: dict[str, object]) -> None:
     )
 
 
-def _run(cmd: list[str], *, timeout: int | None, cwd: Path) -> None:
+def _run(
+    cmd: list[str],
+    *,
+    timeout: int | None,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+) -> None:
     print("+ " + " ".join(cmd), flush=True)
     try:
-        subprocess.run(cmd, cwd=cwd, timeout=timeout, check=True)
+        subprocess.run(cmd, cwd=cwd, timeout=timeout, check=True, env=env)
     except subprocess.TimeoutExpired as exc:
         raise SystemExit(
             f"command timed out after {timeout}s: {' '.join(cmd)}"
@@ -449,7 +488,7 @@ def main_wide(argv: list[str] | None = None) -> int:
         if not shard:
             continue
         rel = [str(path.relative_to(REPO_ROOT)) for path in shard]
-        cmd = [
+        coverage_cmd = [
             sys.executable,
             "-m",
             "coverage",
@@ -462,10 +501,29 @@ def main_wide(argv: list[str] | None = None) -> int:
             "--maxfail=1",
             "--disable-warnings",
             *args.pytest_arg,
-            *rel,
         ]
+        cmd = [*coverage_cmd, *rel]
         print(f"running coverage shard {idx + 1}/{len(shards)}", flush=True)
         _run(cmd, timeout=int(args.timeout), cwd=REPO_ROOT)
+        for path in shard:
+            for selection in WIDE_COVERAGE_LOGICAL_CPU_SELECTIONS.get(
+                path.name, ()
+            ):
+                print(
+                    f"running logical-CPU coverage selection: {selection}",
+                    flush=True,
+                )
+                _run(
+                    [
+                        *coverage_cmd,
+                        str(path.relative_to(REPO_ROOT)),
+                        "-k",
+                        selection,
+                    ],
+                    timeout=int(args.timeout),
+                    cwd=REPO_ROOT,
+                    env=wide_coverage_environment([path]),
+                )
 
     if args.skip_combine:
         return 0
