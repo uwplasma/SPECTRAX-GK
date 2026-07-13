@@ -205,7 +205,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
-| Differentiable API clarity | 98% | Fixed-step pmap reverse mode plus adaptive forward JVP and checkpointed reverse gradients pass observable-level FD gates; held-out implicit-VJP transport remains. |
+| Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
@@ -1004,3 +1004,11 @@ under 5 minutes.
   ``1.9e-5`` relative. Direct non-checkpointed adaptive reverse remains
   unpromoted after exceeding the local memory envelope, so documentation now
   distinguishes these policies rather than making a generic adaptive-AD claim.
+- 2026-07-13: Closed the held-out nonlinear IMEX transport derivative gate.
+  A nonzero electrostatic ion heat flux after three nonlinear IMEX steps now
+  differentiates through the physical field diagnostic, cache rebuilt from
+  ``R/L_Ti``, and the parameter-dependent matrix-free SOLVAX solve. The
+  implicit VJP agrees with centered finite differences to about ``9e-6``
+  relative and is unchanged when the Krylov tolerance tightens from ``1e-6``
+  to ``1e-7``. This closes the bounded equation-level API contract without
+  promoting short endpoints as converged turbulent transport averages.

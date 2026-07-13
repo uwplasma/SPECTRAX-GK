@@ -8,6 +8,8 @@ import jax.numpy as jnp
 import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.diagnostics.transport import heat_flux_total
+from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
 from spectraxgk.solvers.time.explicit import _linear_frequency_bound
 from spectraxgk.core.grid import build_spectral_grid
@@ -218,6 +220,82 @@ def test_nonlinear_imex_parameter_gradient_rebuilds_operator() -> None:
     assert float(gradient) != 0.0
     np.testing.assert_allclose(
         np.asarray(gradient), np.asarray(centered_fd), rtol=2.0e-2, atol=1.0e-16
+    )
+
+
+def test_nonlinear_imex_heat_flux_gradient_matches_finite_difference() -> None:
+    """Implicit VJPs should differentiate a physical endpoint heat flux."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = ensure_flux_tube_geometry_data(
+        SAlphaGeometry.from_config(cfg.geometry), grid.z
+    )
+    base_params = LinearParams()
+    initial_state = jnp.zeros(
+        (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64
+    )
+    profile = 1.0e-3 * (1.0 + 0.2 * jnp.cos(grid.z))
+    initial_state = initial_state.at[0, 0, 1, 0, :].set(
+        profile * (1.0 + 0.35j * jnp.sin(grid.z))
+    )
+    initial_state = initial_state.at[1, 0, 1, 0, :].set(profile * (0.2 + 0.4j))
+    terms = TermConfig(nonlinear=1.0)
+    _volume_factor, flux_factor = fieldline_quadrature_weights(geom, grid)
+
+    def endpoint_heat_flux(rlt: jnp.ndarray, tolerance: float) -> jnp.ndarray:
+        params = replace(base_params, R_over_LTi=rlt)
+        cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+        operator = build_nonlinear_imex_operator(
+            initial_state,
+            cache,
+            params,
+            dt=0.02,
+            terms=terms,
+            implicit_preconditioner="damping",
+        )
+        final_state, fields = integrate_nonlinear_imex_cached(
+            initial_state,
+            cache,
+            params,
+            dt=0.02,
+            steps=3,
+            terms=terms,
+            implicit_operator=operator,
+            implicit_preconditioner="damping",
+            implicit_tol=tolerance,
+            implicit_maxiter=30,
+            compressed_real_fft=False,
+        )
+        return heat_flux_total(
+            final_state,
+            fields.phi[-1],
+            fields.apar[-1],
+            fields.bpar[-1],
+            cache,
+            grid,
+            params,
+            flux_factor,
+        )
+
+    rlt = jnp.asarray(6.9)
+    value, gradient = jax.value_and_grad(endpoint_heat_flux, argnums=0)(rlt, 1.0e-6)
+    step = jnp.asarray(0.05)
+    centered_fd = (
+        endpoint_heat_flux(rlt + step, 1.0e-6) - endpoint_heat_flux(rlt - step, 1.0e-6)
+    ) / (2 * step)
+    tight_gradient = jax.grad(endpoint_heat_flux, argnums=0)(rlt, 1.0e-7)
+
+    assert bool(jnp.isfinite(value))
+    assert bool(jnp.isfinite(gradient))
+    assert float(value) != 0.0
+    assert float(gradient) != 0.0
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(centered_fd), rtol=2.0e-2, atol=1.0e-13
+    )
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(tight_gradient), rtol=2.0e-3, atol=1.0e-13
     )
 
 

@@ -394,6 +394,14 @@ Noisy nonlinear transport objectives
   nonlinear turbulent-flux optimization claim from startup windows or reduced
   proxies.
 
+Implicit nonlinear transport derivatives
+  Fixed-step IMEX scans route matrix-free solves through SOLVAX implicit VJPs.
+  A deterministic electrostatic endpoint heat-flux gate rebuilds the physical
+  cache and implicit operator from ``R/L_Ti`` and checks the reverse derivative
+  against centered finite differences and a tighter Krylov tolerance. This is
+  an equation-level derivative verification, not evidence that a short
+  endpoint observable represents a converged turbulent transport average.
+
 Method admission gates
   A differentiated observable is accepted only when it records the method,
   static/dynamic arguments, branch or controller assumptions, FD/JVP/VJP or

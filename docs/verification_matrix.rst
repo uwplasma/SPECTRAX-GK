@@ -385,7 +385,12 @@ Autodiff Validation
    * - Sensitivity analysis
      - ``gamma``, ``omega``, transport windows
      - finite-difference / complex-step / tangent consistency
-     - Open
+     - Closed for fixed-step equation-level observables; open for converged
+       long-window turbulent transport
+   * - Nonlinear IMEX implicit VJP
+     - electrostatic endpoint ion heat flux versus ``R/L_Ti``
+     - centered finite difference + Krylov-tolerance stability
+     - Closed as a bounded derivative gate; not a saturated-transport claim
    * - Two-mode inverse problem
      - planted parameter recovery
      - gradient check + covariance estimate
