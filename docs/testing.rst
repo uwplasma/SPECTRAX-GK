@@ -243,11 +243,11 @@ The first reusable tooling for this lane now exists:
 - ``tools/artifacts/build_zonal_flow_artifacts.py`` with ``response-csv`` and ``response-output`` modes
 - ``tools/artifacts/generate_miller_zonal_response_panel.py``
 - ``tools/artifacts/generate_w7x_zonal_response_panel.py``
-- ``tools/artifacts/plot_w7x_zonal_contract_audit.py``
+- ``tools/artifacts/build_w7x_zonal_validation_artifacts.py contract``
 - ``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py``
 - ``tools/artifacts/plot_w7x_zonal_closure_ladder.py``
 - ``tools/campaigns/write_w7x_zonal_closure_sweep.py``
-- ``tools/artifacts/plot_w7x_zonal_state_convention_audit.py``
+- ``tools/artifacts/build_w7x_zonal_validation_artifacts.py state-convention``
 - ``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py``
 - ``tools/artifacts/build_zonal_flow_artifacts.py objective-gate``
 - ``tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py``
@@ -1010,7 +1010,7 @@ low-moment audit reached the digitized windows but flipped the residual sign at
 therefore not restart diagnostic continuity; it is the W7-X zonal damping,
 closure, and velocity-space recurrence behavior under the paper-facing
 line-first normalization.
-``tools/artifacts/plot_w7x_zonal_contract_audit.py`` turns the same tracked CSV/JSON
+``tools/artifacts/build_w7x_zonal_validation_artifacts.py contract`` turns the same tracked CSV/JSON
 artifacts into ``docs/_static/w7x_zonal_contract_audit.png``. That panel is a
 publication-facing diagnostic of the open mismatch rather than a release gate;
 its JSON metadata has ``gate_index_include=false`` so the validation index does
@@ -1038,7 +1038,7 @@ Laguerre-Hermite closures show the same pattern: strong tail suppression with
 no simultaneous improvement of trace error and late envelope. The ladder is
 therefore a documented negative result for these bounded closure families, not
 a hidden validation setting.
-``tools/artifacts/plot_w7x_zonal_state_convention_audit.py`` closes the state-level
+The ``state-convention`` mode of the same command closes the state-level
 initializer and observable convention layer for the same paper-facing setup.
 At ``k_x rho_i=0.07``, ``Nl=16``, and ``Nm=64``, the recovered Gaussian
 potential has relative ``L2`` error ``1.85e-6``, off-target spectral potential

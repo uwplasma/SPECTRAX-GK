@@ -3273,7 +3273,7 @@ def test_w7x_zonal_closure_ladder_builds_rows_and_main(tmp_path: Path) -> None:
 
 
 # W7-X zonal contract audit assertions
-def _plot_w7x_zonal_contract_audit_inputs(
+def _w7x_zonal_contract_audit_inputs(
     tmp_path: Path,
 ) -> tuple[Path, Path, Path, Path, Path]:
     reference_trace_rows = []
@@ -3358,9 +3358,9 @@ def _plot_w7x_zonal_contract_audit_inputs(
 
 
 def test_w7x_zonal_contract_audit_rows_and_main(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_w7x_zonal_contract_audit")
+    mod = load_artifact_tool("build_w7x_zonal_validation_artifacts")
     ref_traces, ref_residuals, summary, traces, compare = (
-        _plot_w7x_zonal_contract_audit_inputs(tmp_path)
+        _w7x_zonal_contract_audit_inputs(tmp_path)
     )
     rows = mod.load_audit_rows(compare)
 
@@ -3373,6 +3373,7 @@ def test_w7x_zonal_contract_audit_rows_and_main(tmp_path: Path) -> None:
     out_json = tmp_path / "audit.json"
     rc = mod.main(
         [
+            "contract",
             "--reference-traces",
             str(ref_traces),
             "--reference-residuals",
@@ -3603,7 +3604,7 @@ def test_w7x_zonal_recurrence_sweep_allows_one_sweep_family(tmp_path: Path) -> N
 
 
 # W7-X zonal state-convention assertions
-def _plot_w7x_zonal_state_convention_audit_cfg() -> RuntimeConfig:
+def _w7x_zonal_state_convention_audit_cfg() -> RuntimeConfig:
     return RuntimeConfig(
         grid=GridConfig(
             Nx=6, Ny=4, Nz=32, Lx=2.0 * np.pi / 0.07, Ly=62.8, boundary="periodic"
@@ -3631,9 +3632,9 @@ def _plot_w7x_zonal_state_convention_audit_cfg() -> RuntimeConfig:
 def test_w7x_zonal_state_convention_audit_closes_synthetic_phi_state(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_w7x_zonal_state_convention_audit")
+    mod = load_artifact_tool("build_w7x_zonal_validation_artifacts")
     audit = mod.build_state_audit(
-        _plot_w7x_zonal_state_convention_audit_cfg(),
+        _w7x_zonal_state_convention_audit_cfg(),
         kx_target=0.07,
         ky_target=0.0,
         Nl=2,
@@ -3648,7 +3649,7 @@ def test_w7x_zonal_state_convention_audit_closes_synthetic_phi_state(
     assert row["line_first_initial_over_init_amp"] < 1.0
 
     out_png = tmp_path / "state.png"
-    mod.write_outputs(
+    mod.write_state_outputs(
         audit,
         out_png=out_png,
         out_csv=out_png.with_suffix(".csv"),

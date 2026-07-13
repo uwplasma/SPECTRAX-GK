@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 95% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 115 tools remain against the enforced 99-file target. |
+| Tool consolidation | 96% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 114 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1251,6 +1251,13 @@ under 5 minutes.
   plotting ownership. The generic NetCDF loader now has a physical diagnostic
   name rather than comparison-code terminology, and tool inventory falls to
   ``115``.
+- 2026-07-13: Consolidated the W7-X zonal literature-contract and
+  initializer/observable convention audits under
+  ``build_w7x_zonal_validation_artifacts.py``. The ``contract`` mode remains
+  explicitly open against digitized long-window traces, while
+  ``state-convention`` retains its closed state-level gate. Recurrence,
+  closure, and moment-tail hypotheses remain separate owners; inventory falls
+  to ``114``.
 - 2026-07-13: Repaired the exact-state comparison orchestrator after its move
   into ``tools/campaigns``. It had still searched for comparison commands in
   the campaign directory and built ``PYTHONPATH`` from ``tools/``; checked
