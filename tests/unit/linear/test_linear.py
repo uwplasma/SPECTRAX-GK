@@ -31,7 +31,7 @@ from spectraxgk.linear import (
     quasineutrality_phi,
     streaming_term,
 )
-from spectraxgk.terms.operators import grad_z_linked_fft
+from spectraxgk.operators.linear.streaming import grad_z_linked_fft
 from spectraxgk.core.velocity import J_l_all
 from spectraxgk.solvers.linear.krylov import dominant_eigenpair
 from spectraxgk.terms.linear_terms import (

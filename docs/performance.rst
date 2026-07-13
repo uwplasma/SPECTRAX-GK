@@ -834,7 +834,7 @@ terms until each path has its own identity gate.
 The periodic linear-streaming microkernel gate then adds the spectral
 parallel derivative along the field-line direction and compares the resulting
 ``shard_map`` path directly against the production
-``spectraxgk.terms.operators.streaming_term``:
+``spectraxgk.operators.linear.streaming.streaming_ladder_term``:
 
 .. image:: _static/periodic_streaming_microkernel_gate.png
    :alt: SPECTRAX-GK periodic streaming microkernel identity gate

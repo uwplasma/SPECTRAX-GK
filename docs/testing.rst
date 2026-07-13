@@ -1290,7 +1290,7 @@ performance claims:
   writes ``docs/_static/electrostatic_diamagnetic_gate.{png,pdf,csv,json}``.
 - ``tools/artifacts/generate_velocity_parallel_gates.py periodic-streaming`` adds the periodic
   spectral parallel derivative and compares the shard-map path directly
-  against ``spectraxgk.terms.operators.streaming_term``. Its artifact
+  against ``spectraxgk.operators.linear.streaming.streaming_ladder_term``. Its artifact
   ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``
   gates the first opt-in linear streaming microkernel before full RHS wiring.
 - ``tools/artifacts/generate_linear_rhs_parallel_gates.py streaming`` routes the same sharded
@@ -1761,7 +1761,7 @@ coverage gate for ``spectraxgk.terms``:
 .. code-block:: bash
 
    pytest -q tests/unit/operators/test_terms_assembly.py \
-          tests/unit/operators/test_terms_operators.py \
+          tests/unit/operators/test_linear_streaming.py \
           tests/unit/operators/test_terms_fields.py \
           tests/unit/solvers/test_nonlinear_explicit_scan.py \
           --maxfail=1 --disable-warnings \

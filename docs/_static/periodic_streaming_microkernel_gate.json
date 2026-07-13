@@ -53,7 +53,7 @@
       16
     ]
   },
-  "reference_source": "spectraxgk.terms.operators.streaming_term",
+  "reference_source": "spectraxgk.operators.linear.streaming.streaming_ladder_term",
   "requested_devices": 2,
   "rows": [
     {

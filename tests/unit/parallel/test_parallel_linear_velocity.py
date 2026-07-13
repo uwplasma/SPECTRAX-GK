@@ -176,7 +176,7 @@ def test_streaming_velocity_sharded_route_validates_shape_and_returns_zero_phi(
 
 
 def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> None:
-    import spectraxgk.terms.operators as operators
+    import spectraxgk.operators.linear.streaming as operators
     import spectraxgk.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
@@ -2565,7 +2565,7 @@ def test_hermite_streaming_ladder_shard_map_matches_reference_when_logical_devic
 
 def test_periodic_streaming_reference_matches_production_streaming_term() -> None:
     from spectraxgk.core.velocity import hermite_ladder_coeffs
-    from spectraxgk.terms.operators import streaming_term
+    from spectraxgk.operators.linear.streaming import streaming_ladder_term
 
     ns, nl, nm, ny, nx, nz = 1, 2, 4, 2, 1, 8
     z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
@@ -2578,7 +2578,7 @@ def test_periodic_streaming_reference_matches_production_streaming_term() -> Non
     vth = jnp.asarray([1.5], dtype=jnp.float32)
 
     observed = periodic_streaming_reference(state, kz=kz, vth=vth)
-    expected = streaming_term(
+    expected = streaming_ladder_term(
         state,
         kz=kz,
         vth=vth.reshape((1, 1, 1, 1, 1, 1)),

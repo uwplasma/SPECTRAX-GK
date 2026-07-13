@@ -1470,3 +1470,13 @@ under 5 minutes.
   gives ``(gamma, omega)=(0.095109, 0.297253)`` at ``ky=0.3``, within 2.24% and
   5.41% of the tracked reference. A regression now keeps this benchmark on the
   measured terminal window.
+
+- 2026-07-13: Removed duplicate velocity and field-line algebra from
+  ``terms/operators.py`` and ``operators/linear/moments.py``. Spatial/linked
+  derivatives, zero-padded shifts, Hermite/Laguerre multiplication, and the
+  precomputed-coefficient ``streaming_ladder_term`` now have one owner in
+  ``operators.linear.streaming``; the moment module retains field coupling and
+  a small user-facing streaming adapter. The tranche removes 58 net lines,
+  keeps the source-file target unchanged, and passes 172 selected operator,
+  linear, and parallel tests plus strict architecture and coverage-manifest
+  ownership gates.

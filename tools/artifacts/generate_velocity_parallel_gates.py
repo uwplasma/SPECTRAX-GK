@@ -334,13 +334,13 @@ def _production_streaming_term(state: Any, *, kz: Any, vth: float) -> Any:
     import jax.numpy as jnp
 
     from spectraxgk.core.velocity import hermite_ladder_coeffs
-    from spectraxgk.terms.operators import streaming_term
+    from spectraxgk.operators.linear.streaming import streaming_ladder_term
 
     nm = int(state.shape[-4])
     sqrt_p, sqrt_m = hermite_ladder_coeffs(nm - 1)
     sqrt_p = sqrt_p[:nm].reshape((1, 1, nm, 1, 1, 1))
     sqrt_m = sqrt_m[:nm].reshape((1, 1, nm, 1, 1, 1))
-    return streaming_term(
+    return streaming_ladder_term(
         state,
         kz=kz,
         vth=jnp.asarray(vth, dtype=jnp.float32).reshape((1, 1, 1, 1, 1, 1)),
@@ -426,7 +426,7 @@ def build_periodic_streaming_microkernel_gate(
         {
             "case": "Periodic streaming microkernel shard_map identity gate",
             "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
-            "reference_source": "spectraxgk.terms.operators.streaming_term",
+            "reference_source": "spectraxgk.operators.linear.streaming.streaming_ladder_term",
             "claim_scope": "linear streaming microkernel identity gate, not a full RHS or nonlinear speedup claim",
             "state_shape": shape,
             "vth": float(vth),

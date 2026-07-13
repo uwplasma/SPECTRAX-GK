@@ -9,7 +9,7 @@ import pytest
 import spectraxgk.terms as term_pkg
 from spectraxgk.core.velocity import hermite_ladder_coeffs
 from spectraxgk.terms.config import FieldState, TermConfig
-from spectraxgk.terms.operators import (
+from spectraxgk.operators.linear.streaming import (
     _check_positive,
     abs_z_linked_fft,
     apply_hermite_v,
@@ -18,7 +18,7 @@ from spectraxgk.terms.operators import (
     grad_z_linked_fft,
     grad_z_periodic,
     shift_axis,
-    streaming_term,
+    streaming_ladder_term,
 )
 
 
@@ -288,13 +288,13 @@ def test_streaming_term_periodic_and_linked_paths() -> None:
     sqrt_m = sqrt_m[:nm].reshape((1, 1, nm, 1, 1, 1))
     vth = jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32)
 
-    out_periodic = streaming_term(H, kz=kz, vth=vth, sqrt_p=sqrt_p, sqrt_m=sqrt_m)
+    out_periodic = streaming_ladder_term(H, kz=kz, vth=vth, sqrt_p=sqrt_p, sqrt_m=sqrt_m)
     assert out_periodic.shape == H.shape
     assert jnp.isfinite(out_periodic).all()
 
     idx_map = jnp.asarray([[0, 1]], dtype=jnp.int32)
     kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2 * nz, d=dz)
-    out_linked = streaming_term(
+    out_linked = streaming_ladder_term(
         H,
         kz=kz,
         vth=vth,
@@ -321,7 +321,7 @@ def test_streaming_term_linked_fd_and_errors() -> None:
     kx_link_plus = jnp.asarray([[1, 0]], dtype=jnp.int32)
     kx_link_minus = jnp.asarray([[1, 0]], dtype=jnp.int32)
     kx_mask = jnp.asarray([[True, True]])
-    out = streaming_term(
+    out = streaming_ladder_term(
         H,
         kz=kz,
         vth=vth,
@@ -338,11 +338,11 @@ def test_streaming_term_linked_fd_and_errors() -> None:
     assert jnp.isfinite(out).all()
 
     with pytest.raises(ValueError):
-        streaming_term(
+        streaming_ladder_term(
             H, kz=kz, vth=vth, sqrt_p=sqrt_p, sqrt_m=sqrt_m, use_twist_shift=True
         )
     with pytest.raises(ValueError):
-        streaming_term(
+        streaming_ladder_term(
             H,
             kz=kz,
             vth=vth,
@@ -352,7 +352,7 @@ def test_streaming_term_linked_fd_and_errors() -> None:
             use_twist_shift=True,
         )
     with pytest.raises(ValueError):
-        streaming_term(
+        streaming_ladder_term(
             H,
             kz=kz,
             vth=vth,

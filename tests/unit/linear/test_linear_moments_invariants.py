@@ -7,7 +7,7 @@ import numpy as np
 
 from spectraxgk.core.velocity import hermite_ladder_coeffs
 import spectraxgk.operators.linear.moments as linear_moments
-from spectraxgk.terms import operators as term_operators
+import spectraxgk.operators.linear.streaming as streaming_operators
 
 
 def _complex_state(shape: tuple[int, ...]) -> jnp.ndarray:
@@ -30,38 +30,42 @@ def _operator_matrix(fn, shape: tuple[int, ...]) -> np.ndarray:
     return np.stack(cols, axis=1)
 
 
-def test_linear_moments_and_term_operators_share_velocity_space_algebra() -> None:
-    """Linear moment and term paths must keep identical recurrences."""
+def test_linear_moments_reuse_canonical_velocity_space_algebra() -> None:
+    """Moment assembly must reuse, rather than copy, velocity recurrences."""
 
     state = _complex_state((2, 4, 5, 2, 3, 4))
+    assert linear_moments.shift_axis is streaming_operators.shift_axis
+    assert linear_moments.apply_hermite_v is streaming_operators.apply_hermite_v
+    assert linear_moments.apply_hermite_v2 is streaming_operators.apply_hermite_v2
+    assert linear_moments.apply_laguerre_x is streaming_operators.apply_laguerre_x
 
     np.testing.assert_allclose(
         np.asarray(linear_moments.shift_axis(state, 1, axis=-4)),
-        np.asarray(term_operators.shift_axis(state, 1, axis=-4)),
+        np.asarray(streaming_operators.shift_axis(state, 1, axis=-4)),
         rtol=0.0,
         atol=0.0,
     )
     np.testing.assert_allclose(
         np.asarray(linear_moments.shift_axis(state, -2, axis=-5)),
-        np.asarray(term_operators.shift_axis(state, -2, axis=-5)),
+        np.asarray(streaming_operators.shift_axis(state, -2, axis=-5)),
         rtol=0.0,
         atol=0.0,
     )
     np.testing.assert_allclose(
         np.asarray(linear_moments.apply_hermite_v(state)),
-        np.asarray(term_operators.apply_hermite_v(state)),
+        np.asarray(streaming_operators.apply_hermite_v(state)),
         rtol=1.0e-6,
         atol=1.0e-6,
     )
     np.testing.assert_allclose(
         np.asarray(linear_moments.apply_hermite_v2(state)),
-        np.asarray(term_operators.apply_hermite_v2(state)),
+        np.asarray(streaming_operators.apply_hermite_v2(state)),
         rtol=1.0e-6,
         atol=1.0e-6,
     )
     np.testing.assert_allclose(
         np.asarray(linear_moments.apply_laguerre_x(state)),
-        np.asarray(term_operators.apply_laguerre_x(state)),
+        np.asarray(streaming_operators.apply_laguerre_x(state)),
         rtol=1.0e-6,
         atol=1.0e-6,
     )
@@ -99,7 +103,7 @@ def test_periodic_streaming_matches_terms_path_and_conserves_quadratic_norm() ->
     linear_path = linear_moments.streaming_term(state, dz=dz, vth=vth)
     sqrt_p, sqrt_m = hermite_ladder_coeffs(nm - 1)
     sqrt_shape = (1, 1, nm, 1, 1, 1)
-    modular = term_operators.streaming_term(
+    modular = streaming_operators.streaming_ladder_term(
         state,
         kz=kz,
         vth=vth.reshape((ns, 1, 1, 1, 1, 1)),
