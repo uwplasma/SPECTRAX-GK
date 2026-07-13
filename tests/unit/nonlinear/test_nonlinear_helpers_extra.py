@@ -830,6 +830,33 @@ def test_sheared_transport_trace_matches_canonical_final_heat_flux() -> None:
     np.testing.assert_allclose(trace.heat_flux[-1], expected, rtol=2.0e-6, atol=2.0e-7)
 
 
+def test_sheared_transport_preserves_x64_scan_carry_dtype() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+
+    enable_x64 = getattr(jax, "enable_x64", None)
+    if enable_x64 is None:
+        enable_x64 = jax.experimental.enable_x64
+    with enable_x64():
+        state64 = state.astype(jnp.complex128)
+        trace = integrate_nonlinear_sheared_transport(
+            state64,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=2,
+            shear_rate=0.01,
+            method="rk3",
+            cache=cache,
+            terms=terms,
+            differentiable=False,
+            fixed_dt=False,
+        )
+
+    assert trace.final_state.dtype == jnp.complex128
+    assert np.isfinite(np.asarray(trace.heat_flux)).all()
+
+
 def test_sheared_transport_scale_does_not_change_trajectory() -> None:
     grid, geom, params, cache, state, terms = _small_sheared_transport_case()
 
@@ -1115,7 +1142,7 @@ def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement()
 
     amplitudes: dict[tuple[float, float], float] = {}
     for dt in (0.02, 0.01):
-        for shear_rate in (0.0, 1.0):
+        for shear_rate in (0.0, 0.5):
             _, fields = integrate_nonlinear_sheared(
                 jnp.asarray(initial.copy()),
                 grid,
@@ -1130,11 +1157,11 @@ def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement()
             )
             amplitudes[(dt, shear_rate)] = float(jnp.linalg.norm(fields.phi[-1]))
 
-    for shear_rate in (0.0, 1.0):
+    for shear_rate in (0.0, 0.5):
         coarse = amplitudes[(0.02, shear_rate)]
         fine = amplitudes[(0.01, shear_rate)]
         assert abs(coarse - fine) / fine < 0.01
-    assert amplitudes[(0.01, 1.0)] / amplitudes[(0.01, 0.0)] < 0.8
+    assert amplitudes[(0.01, 0.5)] / amplitudes[(0.01, 0.0)] < 0.8
 
 
 def test_build_nonlinear_diagnostic_setup_uses_injected_policy() -> None:

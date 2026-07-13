@@ -1662,3 +1662,12 @@ under 5 minutes.
   separation. A synthetic resolved reduction passes while a drifting treatment
   fails closed; the wider 58-test transport-window tranche and focused MyPy
   checks pass. This is diagnostic infrastructure, not a flow-shear promotion.
+
+- 2026-07-13: The first clean x64 office relaunch failed before stepping because
+  the initial endpoint derivative entered the JAX scan as ``complex64`` while
+  the requested state carry was ``complex128``. The endpoint policy now casts
+  the initial derivative exactly as it already cast subsequent derivatives; an
+  adaptive-RK3 x64 regression preserves the final-state dtype. A stale linear
+  suppression test was also corrected from a shear that removed its sole mode
+  beyond the retained two-thirds band to a resolved ``gamma_E=0.5`` point; the
+  latter is timestep-converged to 0.4% and suppresses amplitude by 22%.
