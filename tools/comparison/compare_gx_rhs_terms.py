@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare GX RHS term dumps against SPECTRAX term contributions."""
+"""Write and compare term-resolved RHS diagnostic dumps."""
 
 from __future__ import annotations
 
@@ -20,6 +20,12 @@ from spectraxgk.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
+    KINETIC_OMEGA_D_SCALE,
+    KINETIC_OMEGA_STAR_SCALE,
+    KINETIC_RHO_STAR,
+    TEM_OMEGA_D_SCALE,
+    TEM_OMEGA_STAR_SCALE,
+    TEM_RHO_STAR,
     _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
@@ -50,13 +56,22 @@ from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.core.species import build_linear_params
 
-from tools.comparison.compare_gx_imported_linear import (
-    _load_gx_input_contract,
-    _read_gx_output_bool,
-    _resolve_imported_boundary,
-    _resolve_imported_real_fft_ny,
-    _resolve_internal_geometry_source,
-)
+try:
+    from tools.comparison.compare_gx_imported_linear import (
+        _load_gx_input_contract,
+        _read_gx_output_bool,
+        _resolve_imported_boundary,
+        _resolve_imported_real_fft_ny,
+        _resolve_internal_geometry_source,
+    )
+except ModuleNotFoundError:  # Direct execution adds this script directory.
+    from compare_gx_imported_linear import (  # type: ignore[no-redef]
+        _load_gx_input_contract,
+        _read_gx_output_bool,
+        _resolve_imported_boundary,
+        _resolve_imported_real_fft_ny,
+        _resolve_internal_geometry_source,
+    )
 
 
 def _load_shape(path: Path) -> dict[str, int]:
@@ -480,7 +495,7 @@ def _build_imported_compare_context(
     return gx_contract, geom, grid_full, params, linear_terms_to_term_config(terms)
 
 
-def main() -> None:
+def run_compare(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args()
 
@@ -702,6 +717,276 @@ def main() -> None:
             _summary("apar", apar, spectrax_apar)
         if spectrax_bpar is not None:
             _summary("bpar", bpar, spectrax_bpar)
+
+
+def _case_config(name: str, args) -> tuple[object, object, int, float, float, float]:
+    case = name.lower()
+    if case == "cyclone":
+        cfg = CycloneBaseCase(
+            grid=GridConfig(
+                Nx=args.Nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=args.Lx,
+                Ly=args.Ly,
+                boundary=args.boundary,
+                y0=args.y0,
+                ntheta=args.ntheta,
+                nperiod=args.nperiod,
+            )
+        )
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
+        params = LinearParams(
+            R_over_Ln=cfg.model.R_over_Ln,
+            R_over_LTi=cfg.model.R_over_LTi,
+            R_over_LTe=cfg.model.R_over_LTe,
+            omega_d_scale=CYCLONE_OMEGA_D_SCALE,
+            omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
+            rho_star=CYCLONE_RHO_STAR,
+            kpar_scale=float(geom.gradpar()),
+            nu=cfg.model.nu_i,
+            damp_ends_amp=0.0,
+            damp_ends_widthfrac=0.0,
+        )
+        params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
+        return (
+            cfg,
+            params,
+            0,
+            CYCLONE_OMEGA_D_SCALE,
+            CYCLONE_OMEGA_STAR_SCALE,
+            CYCLONE_RHO_STAR,
+        )
+    if case == "etg":
+        cfg, _ = load_runtime_from_toml(
+            Path(__file__).resolve().parents[2]
+            / "examples/linear/axisymmetric/etg.toml"
+        )
+        cfg = replace(
+            cfg,
+            grid=GridConfig(
+                Nx=args.Nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=args.Lx,
+                Ly=args.Ly,
+                boundary=args.boundary,
+                y0=args.y0,
+                ntheta=args.ntheta,
+                nperiod=args.nperiod,
+            ),
+            species=(replace(cfg.species[0], tprim=float(args.R_over_LTe)),),
+        )
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
+        return (
+            cfg,
+            params,
+            0,
+            float(params.omega_d_scale),
+            float(params.omega_star_scale),
+            float(params.rho_star),
+        )
+    if case == "kinetic":
+        cfg, _raw = load_runtime_from_toml(
+            Path(__file__).resolve().parents[2]
+            / "examples"
+            / "linear"
+            / "axisymmetric"
+            / "runtime_kinetic_electron.toml"
+        )
+        cfg = replace(
+            cfg,
+            grid=GridConfig(
+                Nx=args.Nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=args.Lx,
+                Ly=args.Ly,
+                boundary=args.boundary,
+                y0=args.y0,
+                ntheta=args.ntheta,
+                nperiod=args.nperiod,
+            ),
+            geometry=replace(cfg.geometry, drift_scale=args.drift_scale),
+        )
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
+        return (
+            cfg,
+            params,
+            1,
+            KINETIC_OMEGA_D_SCALE,
+            KINETIC_OMEGA_STAR_SCALE,
+            KINETIC_RHO_STAR,
+        )
+    if case == "tem":
+        cfg, _raw = load_runtime_from_toml(
+            Path(__file__).resolve().parents[2]
+            / "examples"
+            / "linear"
+            / "axisymmetric"
+            / "runtime_tem.toml"
+        )
+        cfg = replace(
+            cfg,
+            grid=GridConfig(
+                Nx=args.Nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=args.Lx,
+                Ly=args.Ly,
+                boundary=args.boundary,
+                y0=args.y0,
+                ntheta=args.ntheta,
+                nperiod=args.nperiod,
+            ),
+            geometry=replace(cfg.geometry, drift_scale=args.drift_scale),
+        )
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
+        return cfg, params, 1, TEM_OMEGA_D_SCALE, TEM_OMEGA_STAR_SCALE, TEM_RHO_STAR
+    if case == "kbm":
+        cfg = KBMBaseCase(
+            grid=GridConfig(
+                Nx=args.Nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=args.Lx,
+                Ly=args.Ly,
+                boundary=args.boundary,
+                y0=args.y0,
+                ntheta=args.ntheta,
+                nperiod=args.nperiod,
+            )
+        )
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
+        params = _two_species_params(
+            cfg.model,
+            kpar_scale=float(geom.gradpar()),
+            omega_d_scale=KBM_OMEGA_D_SCALE,
+            omega_star_scale=KBM_OMEGA_STAR_SCALE,
+            rho_star=KBM_RHO_STAR,
+            damp_ends_amp=0.0,
+            damp_ends_widthfrac=0.0,
+            nhermite=args.Nm,
+        )
+        return cfg, params, 0, KBM_OMEGA_D_SCALE, KBM_OMEGA_STAR_SCALE, KBM_RHO_STAR
+    raise ValueError(f"Unknown case '{name}'")
+
+
+def _build_seed_state(
+    *,
+    cfg,
+    geom,
+    grid,
+    params,
+    Nl: int,
+    Nm: int,
+    init_species_index: int,
+) -> np.ndarray:
+    """Build a single- or multi-species startup state matching ``params``."""
+
+    G0_single = _build_initial_condition(
+        grid,
+        geom,
+        ky_index=0,
+        kx_index=0,
+        Nl=Nl,
+        Nm=Nm,
+        init_cfg=cfg.init,
+    )
+    ns = int(np.atleast_1d(np.asarray(params.charge_sign)).shape[0])
+    if ns == 1:
+        return np.asarray(G0_single, dtype=np.complex64)
+    if init_species_index < 0 or init_species_index >= ns:
+        raise ValueError("init_species_index out of range for multi-species seed")
+    G0 = np.zeros(
+        (ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+    )
+    G0[int(init_species_index)] = np.asarray(G0_single, dtype=np.complex64)
+    return G0
+
+
+def run_write(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", type=str, default="cyclone")
+    parser.add_argument("--ky", type=float, default=0.3)
+    parser.add_argument("--Nx", type=int, default=1)
+    parser.add_argument("--Ny", type=int, default=24)
+    parser.add_argument("--Nz", type=int, default=96)
+    parser.add_argument("--Lx", type=float, default=62.8)
+    parser.add_argument("--Ly", type=float, default=62.8)
+    parser.add_argument("--boundary", type=str, default="linked")
+    parser.add_argument("--y0", type=float, default=20.0)
+    parser.add_argument("--ntheta", type=int, default=32)
+    parser.add_argument("--nperiod", type=int, default=2)
+    parser.add_argument("--Nl", type=int, default=48)
+    parser.add_argument("--Nm", type=int, default=16)
+    parser.add_argument("--drift-scale", type=float, default=1.0)
+    parser.add_argument("--R_over_LTe", type=float, default=6.0)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args(argv)
+
+    cfg, params, _init_species_index, *_ = _case_config(args.case, args)
+    geom = SAlphaGeometry.from_config(
+        replace(cfg.geometry, drift_scale=args.drift_scale)
+    )
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
+    grid = select_ky_grid(grid_full, ky_index)
+
+    G0 = _build_seed_state(
+        cfg=cfg,
+        geom=geom,
+        grid=grid,
+        params=params,
+        Nl=args.Nl,
+        Nm=args.Nm,
+        init_species_index=_init_species_index,
+    )
+    cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
+    term_cfg = TermConfig()
+    rhs_total, fields, contrib = assemble_rhs_terms_cached(
+        G0, cache, params, terms=term_cfg
+    )
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(
+        out,
+        rhs_total=np.asarray(rhs_total),
+        phi=np.asarray(fields.phi),
+        apar=np.asarray(fields.apar) if fields.apar is not None else None,
+        bpar=np.asarray(fields.bpar) if fields.bpar is not None else None,
+        streaming=np.asarray(contrib["streaming"]),
+        mirror=np.asarray(contrib["mirror"]),
+        curvature=np.asarray(contrib["curvature"]),
+        gradb=np.asarray(contrib["gradb"]),
+        diamagnetic=np.asarray(contrib["diamagnetic"]),
+        collisions=np.asarray(contrib["collisions"]),
+        hypercollisions=np.asarray(contrib["hypercollisions"]),
+        end_damping=np.asarray(contrib["end_damping"]),
+    )
+    print(f"Wrote {out}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Dispatch RHS diagnostic writing or comparison."""
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=("compare", "write"))
+    args, remainder = parser.parse_known_args(argv)
+    if args.mode == "compare":
+        run_compare(remainder)
+    else:
+        run_write(remainder)
 
 
 if __name__ == "__main__":

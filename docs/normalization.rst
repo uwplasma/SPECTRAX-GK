@@ -140,7 +140,7 @@ the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
 - ``bessel_bmag_power = 0`` (no extra :math:`B` scaling inside the Bessel argument)
 
 The Cyclone base case defaults follow this benchmark setting, and the
-``compare_gx_rhs_terms.py`` comparison tool assumes the same normalization.
+``compare_gx_rhs_terms.py compare`` assumes the same normalization.
 
 Sign conventions
 ----------------

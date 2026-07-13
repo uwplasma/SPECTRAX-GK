@@ -1432,7 +1432,8 @@ published benchmarks and trend tests:
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
 - **GX term-by-term audit**: use the term-dump tooling to compare SPECTRAX-GK
   streaming and linear-kernel RHS components against GX for a single Cyclone
-  state (see ``tools/comparison/write_rhs_term_diagnostics.py`` and ``tools/comparison/compare_gx_rhs_terms.py``).
+  state (see ``tools/comparison/compare_gx_rhs_terms.py write`` and
+  ``tools/comparison/compare_gx_rhs_terms.py compare``).
 - **GX nonlinear term audit (KBM/Cyclone)**: compare nonlinear
   derivative, bracket, electromagnetic split, and total RHS dumps using
   ``tools/comparison/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders

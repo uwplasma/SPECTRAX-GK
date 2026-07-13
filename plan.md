@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 98% | Runtime comparisons, imported-linear fields/growth/windows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 106 tools remain against the enforced 99-file target. |
+| Tool consolidation | 98% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS write/compare workflows, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, and validation traceability now have one owner per domain; 105 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1381,3 +1381,10 @@ under 5 minutes.
   import; benchmark manifests and campaign launchers now name their mode. The
   complete comparison-tool suite passes 115 tests with one expected skip, and
   tool inventory falls from 108 to 106.
+
+- 2026-07-13: Consolidated term-resolved RHS dump generation and comparison
+  under ``compare_gx_rhs_terms.py`` with explicit ``write`` and ``compare``
+  modes. The shared owner preserves Cyclone, ETG, KBM, kinetic-electron, and TEM
+  initialization policies while keeping binary-state comparison helpers
+  importable by exact-state tooling. The complete 115-test comparison suite
+  remains green with one expected skip, and tool inventory falls to 105.

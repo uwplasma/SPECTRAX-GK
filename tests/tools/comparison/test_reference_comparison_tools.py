@@ -3134,7 +3134,7 @@ def test_ky_diagnostics_etg_uses_canonical_boltzmann_ion_contract() -> None:
 
 
 def test_rhs_term_diagnostics_etg_uses_canonical_runtime_contract() -> None:
-    from tools.comparison import write_rhs_term_diagnostics as mod
+    from tools.comparison import compare_gx_rhs_terms as mod
 
     args = type(
         "Args",
@@ -3166,7 +3166,7 @@ def test_rhs_term_diagnostics_etg_uses_canonical_runtime_contract() -> None:
 
 
 def test_write_rhs_term_diagnostics_seed_state_handles_multispecies_tem() -> None:
-    from tools.comparison import write_rhs_term_diagnostics as mod
+    from tools.comparison import compare_gx_rhs_terms as mod
 
     args = type(
         "Args",
