@@ -183,8 +183,10 @@ parallelization option unless the run also has a matched scaling artifact.
 Increase ``dt_max`` explicitly only when you intentionally trade strict
 comparison matching for throughput.
 
-Nonlinear collision/hypercollision splitting is enabled with
-``collision_split = true``. The ``collision_scheme`` key selects the update:
+Diagonal nonlinear hypercollision splitting is enabled with
+``collision_split = true``. The conserving collision operator remains in the
+RHS because its field-particle correction is not diagonal. The
+``collision_scheme`` key selects the hypercollision update:
 ``implicit`` (backward-Euler), ``exp`` (exact diagonal exponential), and
 ``sts``/``rkc`` aliases (treated as stabilized explicit/exponential updates for
 diagonal operators).

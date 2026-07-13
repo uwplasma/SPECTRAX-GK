@@ -206,7 +206,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
+| Advanced collision operators | 50% | Reusable null-space/invariant/free-energy gates now cover the long-wavelength model, and nonlinear splitting no longer drops field-particle corrections; implement and gate species-coupled Dougherty before Sugama/Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -281,6 +281,16 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Closed a collision-splitting correctness gap. The nonlinear split
+  policy previously removed the complete conserving collision contribution but
+  advanced only diagonal damping, omitting its low-order field-particle terms.
+  It now splits only diagonal hypercollisions and leaves conserving collisions
+  in the explicit/IMEX RHS. Added a structural ``SplitCollisionOperator``
+  contract plus reusable long-wavelength invariant and quadratic free-energy
+  diagnostics. Literature-anchored tests verify density, parallel momentum,
+  thermal energy, the local-Maxwellian null space, and dissipative response at
+  ``b=0``; finite-``b`` Sugama/Coulomb promotion remains explicitly open.
 
 - 2026-07-12: Migrated the reference-aligned kinetic-electron scan to a
   canonical runtime TOML and deleted its named linear/scan engine, hidden seed

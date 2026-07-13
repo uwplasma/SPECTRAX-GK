@@ -658,7 +658,7 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
     damp = _collision_damping(
         cache, params, term_cfg, jnp.float32, squeeze_species=False
     )
-    np.testing.assert_allclose(np.asarray(damp), 0.5 * 0.1 + 2.0 * 3.0)
+    np.testing.assert_allclose(np.asarray(damp), 2.0 * 3.0)
 
     cache6 = SimpleNamespace(lb_lam=jnp.ones((1, 2, 2, 1, 1, 1), dtype=jnp.float32))
     monkeypatch.setattr(
@@ -690,7 +690,7 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
         squeeze_species=True,
     )
     assert squeezed_low_rank.shape == (2, 2, 1, 1, 1)
-    np.testing.assert_allclose(np.asarray(squeezed_low_rank), 1.4)
+    np.testing.assert_allclose(np.asarray(squeezed_low_rank), 1.0)
 
     monkeypatch.setattr(
         "spectraxgk.operators.nonlinear.policies._build_implicit_operator",
@@ -738,7 +738,7 @@ def test_build_nonlinear_collision_split_policy_controls_rhs_terms() -> None:
     )
 
     assert active.active is True
-    assert active.rhs_terms.collisions == 0.0
+    assert active.rhs_terms.collisions == term_cfg.collisions
     assert active.rhs_terms.hypercollisions == 0.0
     assert active.rhs_terms.nonlinear == term_cfg.nonlinear
     np.testing.assert_allclose(np.asarray(active.damping), [2.0])

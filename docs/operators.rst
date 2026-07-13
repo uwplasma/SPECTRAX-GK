@@ -200,9 +200,11 @@ paths:
 
 - ``apply(state, cache, parameters)`` for the complete unit-weight RHS,
   including low-rank or dense field-particle terms;
-- an optional ``split_step`` only when the model supplies a mathematically
-  valid exact or implicit update. Diagonal hypercollision splitting must not be
-  reused for a non-diagonal conserving operator.
+- ``SplitCollisionOperator.split_step(state, dt, cache, parameters)`` as an
+  optional contract only when the model supplies a mathematically valid exact
+  or implicit finite-time update. The runtime does not automatically route this
+  method yet. Diagonal hypercollision splitting must not be reused for a
+  non-diagonal conserving operator.
 
 The first path is available from Python through
 ``nonlinear_rhs_cached(..., collision_operator=operator)``. The callback must
@@ -226,6 +228,20 @@ This is an extension contract, not a claim that a Sugama or full linearized
 Coulomb model is already shipped. TOML selection and split integration remain
 disabled until an operator passes the conservation and entropy gates below.
 
+The built-in ``collision_split`` policy consequently splits only diagonal
+hypercollisions. The conserving collision term remains in the Runge--Kutta or
+IMEX RHS, including its field-particle corrections. Earlier implementations
+removed the complete collision RHS and advanced only its diagonal part; that
+violated the stated conservation model and is no longer supported.
+
+``collision_invariant_rates`` returns the discrete long-wavelength density,
+parallel-momentum, and thermal-energy rates of a state-shaped contribution.
+``collision_quadratic_rate`` evaluates
+:math:`\operatorname{Re}\langle H,C[H]\rangle` with optional species/spatial
+weights. Release tests use these functions to verify a local-Maxwellian null
+space, all three fluid invariants, and dissipative non-fluid response at
+:math:`b=0`.
+
 The next model tier is a species-coupled conserving Dougherty operator. The
 research tier after that is the linearized gyrokinetic Sugama/Coulomb operator
 in the Hermite--Laguerre moment basis. Promotion requires discrete Maxwellian
@@ -234,7 +250,7 @@ conservation, adjointness, non-positive entropy production, velocity-resolution
 convergence, collisional ITG, conductivity, and zonal-flow damping gates.
 
 Relevant derivations and verification targets include the
-`Laguerre--Hermite pseudo-spectral formulation <https://doi.org/10.1017/S0022377818000339>`_,
+`Laguerre--Hermite pseudo-spectral formulation <https://doi.org/10.1017/S0022377818000041>`_,
 the `advanced linearized gyrokinetic moment operators <https://arxiv.org/abs/2104.11480>`_,
 and the `local collisional ITG study <https://arxiv.org/abs/2201.02860>`_.
 

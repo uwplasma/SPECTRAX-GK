@@ -36,6 +36,7 @@ from spectraxgk.core.extension_points import (
     LinearRHS,
     NonlinearRHS,
     Objective,
+    SplitCollisionOperator,
 )
 from spectraxgk.core.grid import (
     SpectralGrid,
@@ -259,6 +260,10 @@ def test_extension_point_protocols_accept_structural_implementations() -> None:
         def apply(self, state, geometry, parameters):
             return state
 
+    class ToySplitCollision(ToyCollision):
+        def split_step(self, state, dt, geometry, parameters):
+            return state
+
     class ToyFieldSolver:
         def solve_fields(self, distribution, geometry, parameters):
             return {"phi": distribution}
@@ -282,6 +287,8 @@ def test_extension_point_protocols_accept_structural_implementations() -> None:
     assert isinstance(ToyBasis(), BasisFamily)
     assert isinstance(ToyGeometry(), GeometryProvider)
     assert isinstance(ToyCollision(), CollisionOperator)
+    assert isinstance(ToySplitCollision(), SplitCollisionOperator)
+    assert not isinstance(ToyCollision(), SplitCollisionOperator)
     assert isinstance(ToyFieldSolver(), FieldSolver)
     assert isinstance(ToyRHS(), LinearRHS)
     assert isinstance(ToyRHS(), NonlinearRHS)

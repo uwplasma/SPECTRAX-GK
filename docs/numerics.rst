@@ -343,6 +343,14 @@ appropriate for differentiable collision-model research because state, cache,
 and parameter arrays remain inside the JAX trace while artifact writing and
 configuration parsing remain outside it.
 
+An operator may additionally satisfy ``SplitCollisionOperator`` by defining
+``split_step(state, dt, cache, parameters)``. This advertises a valid
+finite-time update; the general runtime does not route it until the
+operator-specific invariant and entropy gates pass. Built-in
+``collision_split`` applies only to diagonal hypercollisions. Conserving
+collisions stay in the assembled RHS so their low-order field-particle terms
+cannot be dropped by diagonal operator splitting.
+
 Gyroaverage and polarization
 ----------------------------
 

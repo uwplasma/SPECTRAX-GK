@@ -15,8 +15,6 @@ from spectraxgk.solvers.time.explicit import _linear_frequency_bound
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (
-    _apply_collision_split,
-    _collision_damping,
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_explicit_diagnostics,
@@ -606,8 +604,8 @@ def test_integrate_nonlinear_collision_split_sts():
     assert np.isfinite(np.asarray(diag.Wg_t)).all()
 
 
-def test_nonlinear_collision_split_does_not_double_count_explicit_collisions():
-    """Explicit nonlinear diagnostics path should remove split collisions from the RHS."""
+def test_nonlinear_split_keeps_conserving_collisions_in_explicit_rhs():
+    """A diagonal split must not discard collision field-particle corrections."""
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -650,11 +648,17 @@ def test_nonlinear_collision_split_does_not_double_count_explicit_collisions():
         collision_scheme="exp",
     )
 
-    damping = _collision_damping(
-        cache, params, terms, jnp.float32, squeeze_species=True
-    )
-    expected = _apply_collision_split(
-        G, damping, jnp.asarray(0.05, dtype=jnp.float32), "exp"
+    _t, _diag, expected, _fields = integrate_nonlinear_explicit_diagnostics_state(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=1,
+        method="rk3",
+        cache=cache,
+        terms=terms,
+        collision_split=False,
     )
 
     np.testing.assert_allclose(

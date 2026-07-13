@@ -1,5 +1,6 @@
 """Linear operator tests for the flux-tube electrostatic model."""
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -33,7 +34,11 @@ from spectraxgk.linear import (
 from spectraxgk.terms.operators import grad_z_linked_fft
 from spectraxgk.core.velocity import J_l_all
 from spectraxgk.solvers.linear.krylov import dominant_eigenpair
-from spectraxgk.terms.linear_terms import collisions_contribution
+from spectraxgk.terms.linear_terms import (
+    collision_invariant_rates,
+    collision_quadratic_rate,
+    collisions_contribution,
+)
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
 from spectraxgk.terms.config import TermConfig
 
@@ -285,6 +290,101 @@ def test_collisions_include_low_order_conservation_correction():
     assert jnp.allclose(out[0, 0, 0, 0, 0, 0], 4.0)
     assert jnp.allclose(out[0, 0, 1, 0, 0, 0], 1.5)
     assert jnp.allclose(out[0, 0, 2, 0, 0, 0], 5.0)
+
+
+def test_long_wavelength_collision_invariants_and_free_energy_rate():
+    """The Mandell-Dorland-Landreman model conserves fluid moments at b=0."""
+
+    shape = (2, 3, 5, 1, 1, 2)
+    state = jnp.arange(np.prod(shape), dtype=jnp.float32).reshape(shape)
+    state = state.astype(jnp.complex64) + 0.1j
+    Jl = jnp.zeros((2, 3, 1, 1, 2), dtype=jnp.float32).at[:, 0].set(1.0)
+    JlB = Jl.at[:, 1].set(1.0)
+    eigenvalues = jnp.asarray(
+        [[2 * ell + m for m in range(5)] for ell in range(3)], dtype=jnp.float32
+    )
+    contribution = collisions_contribution(
+        state,
+        G=state,
+        Jl=Jl,
+        JlB=JlB,
+        b=jnp.zeros((2, 1, 1, 2), dtype=jnp.float32),
+        nu=jnp.asarray([0.2, 0.35], dtype=jnp.float32),
+        lb_lam=eigenvalues,
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    rates = collision_invariant_rates(contribution)
+    np.testing.assert_allclose(np.asarray(rates.density), 0.0, atol=2.0e-5)
+    np.testing.assert_allclose(
+        np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-5
+    )
+    np.testing.assert_allclose(np.asarray(rates.thermal_energy), 0.0, atol=2.0e-5)
+    quadratic_rate = collision_quadratic_rate(state, contribution)
+    assert float(quadratic_rate) < 0.0
+
+    def apply_collision(value):
+        return collisions_contribution(
+            value,
+            G=value,
+            Jl=Jl,
+            JlB=JlB,
+            b=jnp.zeros((2, 1, 1, 2), dtype=jnp.float32),
+            nu=jnp.asarray([0.2, 0.35], dtype=jnp.float32),
+            lb_lam=eigenvalues,
+            weight=jnp.asarray(1.0, dtype=jnp.float32),
+        )
+
+    probe = jnp.flip(state, axis=(1, 2)) + 0.2j
+    np.testing.assert_allclose(
+        np.asarray(jnp.vdot(state, apply_collision(probe))),
+        np.asarray(jnp.vdot(contribution, probe)),
+        rtol=2.0e-6,
+        atol=2.0e-5,
+    )
+    rate_gradient = jax.grad(
+        lambda scale: collision_quadratic_rate(
+            scale * state, apply_collision(scale * state)
+        )
+    )(jnp.asarray(1.0, dtype=jnp.float32))
+    np.testing.assert_allclose(
+        np.asarray(rate_gradient), 2.0 * np.asarray(quadratic_rate), rtol=2.0e-6
+    )
+
+
+def test_long_wavelength_local_maxwellian_is_collision_null_space():
+    state = jnp.zeros((1, 2, 3, 1, 1, 1), dtype=jnp.complex64)
+    state = state.at[:, 0, 0].set(1.2)
+    state = state.at[:, 0, 1].set(-0.4)
+    state = state.at[:, 0, 2].set(0.7 / jnp.sqrt(2.0))
+    state = state.at[:, 1, 0].set(0.7)
+    Jl = jnp.zeros((1, 2, 1, 1, 1), dtype=jnp.float32).at[:, 0].set(1.0)
+    JlB = Jl.at[:, 1].set(1.0)
+    contribution = collisions_contribution(
+        state,
+        G=state,
+        Jl=Jl,
+        JlB=JlB,
+        b=jnp.zeros((1, 1, 1, 1), dtype=jnp.float32),
+        nu=jnp.asarray([0.3], dtype=jnp.float32),
+        lb_lam=jnp.asarray([[0.0, 1.0, 2.0], [2.0, 3.0, 4.0]]),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    np.testing.assert_allclose(np.asarray(contribution), 0.0, atol=2.0e-7)
+
+
+def test_collision_diagnostics_validate_shapes_and_weights():
+    state = jnp.ones((2, 3, 1, 1, 1), dtype=jnp.complex64)
+    contribution = -state
+    rate = collision_quadratic_rate(state, contribution, weights=2.0)
+    np.testing.assert_allclose(np.asarray(rate), -12.0)
+    with pytest.raises(ValueError, match="same shape"):
+        collision_quadratic_rate(state, contribution[..., 0])
+    with pytest.raises(ValueError, match="five or six"):
+        collision_invariant_rates(jnp.ones((2, 3, 1)))
+    with pytest.raises(ValueError, match="Nl >= 2"):
+        collision_invariant_rates(jnp.ones((1, 2, 1, 1, 1)))
 
 
 def test_collisions_contribution_accepts_low_rank_lb_lam():
