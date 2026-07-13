@@ -57,7 +57,7 @@ Date: 2026-07-13.
 | Installable source Python files | 226 | reviewed domain ownership | closed |
 | Source modules above 1000 lines | 0 | 0 unreviewed | closed |
 | Public/compatibility facade maximum | 472 lines | <=500 lines | closed |
-| Tool Python files | 132 | <=99 grouped commands; no duplicate owners | active |
+| Tool Python files | 131 | <=99 grouped commands; no duplicate owners | active |
 | Test Python files | 96 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 74% | Runtime startup, diagnostic-state, and evolution-window comparisons now share one subcommand owner; continue with another evidence-linked command family toward the enforced 99-file target. |
+| Tool consolidation | 75% | Runtime comparisons and symmetric/asymmetric VMEC state-mapping campaigns now have one owner per domain; continue with another evidence-linked command family toward the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1053,3 +1053,16 @@ under 5 minutes.
   one, lowering the tool inventory from 134 to 132. The architecture manifest
   now enforces the honest ``<=99`` final target instead of treating 134 as
   complete, while the normal no-regression check remains green.
+- 2026-07-13: Consolidated the symmetric and ``LASYM=true`` VMEC
+  state-to-input mapping launchers into the explicit ``symmetric`` and
+  ``asymmetric`` subcommands of ``write_vmec_state_mapping_campaign.py``.
+  Their coefficient restrictions, output schemas, plots, and fail-closed
+  mapping claims remain separate, while admitted-control parsing and command
+  ownership are shared. The merge exposed and repaired an upstream API and
+  physics bug: current ``vmec_jax`` uses the public ``VmecInput`` API, and a
+  requested asymmetric mode outside the seed ``NTOR/MPOL`` extent must expand
+  all boundary/axis arrays before writing or the parser silently discards it.
+  A round-trip test now proves ``LASYM=true``, ``NTOR=1``, and the requested
+  ``ZBC(1,1)`` value. The weighted state-control short-bracket launcher now
+  uses the same public-API writer, eliminating the same stale dependency and
+  silent-mode risk there. The tool inventory is now 131.

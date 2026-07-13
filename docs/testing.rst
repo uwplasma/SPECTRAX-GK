@@ -644,7 +644,7 @@ write checked short-bracket launch manifests from these mapped input
 directions, but long-window nonlinear-gradient promotion still requires actual
 nonlinear finite-difference evidence.
 
-``tools/campaigns/write_vmec_state_to_input_mapping_campaign.py`` is the launch-plan
+``tools/campaigns/write_vmec_state_mapping_campaign.py symmetric`` is the launch-plan
 artifact for that missing step. It consumes the QL seed screen, writes
 baseline/plus/minus VMEC input decks for candidate perturbable coefficients,
 and records the planned response-matrix protocol. The tracked
@@ -666,7 +666,7 @@ negative result is useful evidence: the current stellarator-symmetric
 ``RBC/ZBS`` directions cannot be used to launch the asymmetric ``Rsin/Zcos``
 nonlinear-gradient controls.
 
-``tools/campaigns/write_vmec_asymmetric_state_to_input_mapping_campaign.py`` is the
+``tools/campaigns/write_vmec_state_mapping_campaign.py asymmetric`` is the
 symmetry-compatible follow-up launch writer. It reads the same QL seed screen,
 sets ``LASYM = .TRUE.``, inserts explicit zero-baseline ``RBS/ZBC`` coefficients
 when needed, and writes matched baseline/plus/minus VMEC decks with absolute
@@ -679,6 +679,14 @@ uses four candidate ``RBS/ZBC`` directions. After the twelve generated
 the measured Jacobian has rank ``2``, condition number about ``1.02``, and no
 mapping blockers, so the runbook can produce explicit short-bracket command
 fragments for both admitted state controls.
+
+Both state-mapping subcommands and the weighted short-bracket launcher use the
+public ``vmec_jax.VmecInput`` read/write API. If a requested boundary mode lies
+outside the seed input's ``NTOR`` or ``MPOL`` extent, the writer expands all
+four boundary arrays and the associated axis arrays before inserting the
+coefficient. Round-trip tests then re-read the generated deck and verify
+``LASYM``, mode extent, and coefficient value; a textual coefficient that the
+VMEC parser would discard is not accepted as launch evidence.
 
 ``tools/campaigns/write_vmec_state_control_short_bracket_launch.py`` consumes that
 passing runbook and writes the next launch contract:

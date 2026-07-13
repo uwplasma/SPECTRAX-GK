@@ -33,8 +33,15 @@ from tools.campaigns.write_nonlinear_turbulence_gradient_campaign import (
 )  # noqa: E402
 from tools.campaigns.write_vmec_boundary_campaigns import (  # noqa: E402
     CoefficientSpec,
+    _coefficient_rows,
     _json_clean,
     _parse_coefficient_spec,
+)
+from tools.campaigns.write_vmec_state_mapping_campaign import (  # noqa: E402
+    _ensure_vmec_mode_extents,
+    _import_vmec_input,
+    _vmec_input_coefficient_value,
+    _write_vmec_input_coefficients,
 )
 
 
@@ -52,26 +59,6 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _slug(raw: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", raw.lower()).strip("_")
-
-
-def _import_namelist():
-    try:
-        from vmec_jax import namelist
-    except Exception as exc:  # pragma: no cover - environment-specific
-        raise RuntimeError(
-            "vmec_jax.namelist is required to write VMEC launch decks"
-        ) from exc
-    return namelist
-
-
-def _coefficient_value(indata: Any, spec: CoefficientSpec) -> tuple[float, bool]:
-    family_values = indata.indexed.get(spec.family)
-    if not isinstance(family_values, dict):
-        return 0.0, True
-    key = (spec.m, spec.n)
-    if key not in family_values:
-        return 0.0, True
-    return float(family_values[key]), False
 
 
 def _terms_from_control(row: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
@@ -168,18 +155,28 @@ def _write_one_control(
     output_min_window_samples: int,
     output_min_abs_window_mean: float,
 ) -> dict[str, Any]:
-    namelist = _import_namelist()
     state_parameter = str(control["state_parameter"])
     terms = _terms_from_control(control)
-    base_indata = namelist.read_indata(str(baseline_input))
+    VmecInput = _import_vmec_input()
+    baseline_text = baseline_input.read_text(encoding="utf-8")
+    base_indata = _ensure_vmec_mode_extents(
+        VmecInput.from_file(baseline_input),
+        tuple(term["spec"] for term in terms),
+    )
     force_lasym = any(term["spec"].family in {"RBS", "ZBC"} for term in terms)
-    baseline_lasym = bool(base_indata.get_bool("LASYM"))
+    baseline_lasym = bool(base_indata.lasym)
 
     rows: list[dict[str, Any]] = []
     base_values: dict[CoefficientSpec, float] = {}
     for term in terms:
         spec = term["spec"]
-        base_value, inserted_missing = _coefficient_value(base_indata, spec)
+        explicit_rows = _coefficient_rows(baseline_text, spec)
+        if len(explicit_rows) > 1:
+            raise ValueError(
+                f"coefficient {spec.label} appears {len(explicit_rows)} times"
+            )
+        base_value = _vmec_input_coefficient_value(base_indata, spec)
+        inserted_missing = not explicit_rows
         base_values[spec] = base_value
         delta_value = float(alpha_delta) * float(term["weight"])
         rows.append(
@@ -206,17 +203,19 @@ def _write_one_control(
     input_files: dict[str, Path] = {}
     wout_files: dict[str, Path] = {}
     for state, sign in states.items():
-        indata = namelist.read_indata(str(baseline_input))
-        if force_lasym:
-            indata.scalars["LASYM"] = True
+        controlled_values: dict[CoefficientSpec, float] = {}
         for term in terms:
             spec = term["spec"]
-            value = base_values[spec] + sign * float(alpha_delta) * float(
+            controlled_values[spec] = base_values[spec] + sign * float(alpha_delta) * float(
                 term["weight"]
             )
-            indata.indexed.setdefault(spec.family, {})[(spec.m, spec.n)] = float(value)
         input_file = _input_path(out_dir, case, state)
-        namelist.write_indata(str(input_file), indata)
+        _write_vmec_input_coefficients(
+            base_indata,
+            input_file,
+            controlled_values,
+            force_lasym=force_lasym,
+        )
         input_files[state] = input_file
         wout_files[state] = _wout_path(out_dir, case, state)
 

@@ -406,14 +406,14 @@ def test_profile_direction_writer_rejects_ambiguous_or_unusable_controls(
 def test_state_to_input_mapping_campaign_writes_fail_closed_launch_artifacts(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_state_to_input_mapping_campaign")
+    mod = load_campaign_tool("write_vmec_state_mapping_campaign")
     ql_path = tmp_path / "ql_seed_screen.json"
     baseline = tmp_path / "input.final"
     ql_path.write_text(json.dumps(_ql_seed_screen()), encoding="utf-8")
     baseline.write_text(_symmetric_state_input_text(), encoding="utf-8")
     out_prefix = tmp_path / "state_to_input_mapping"
 
-    rc = mod.main(
+    rc = mod.main_symmetric(
         [
             str(ql_path),
             "--baseline-input",
@@ -466,7 +466,7 @@ def test_state_to_input_mapping_campaign_writes_fail_closed_launch_artifacts(
 
 
 def test_state_to_input_mapping_campaign_validates_controls(tmp_path: Path) -> None:
-    mod = load_campaign_tool("write_vmec_state_to_input_mapping_campaign")
+    mod = load_campaign_tool("write_vmec_state_mapping_campaign")
     baseline = tmp_path / "input.final"
     baseline.write_text(_symmetric_state_input_text(), encoding="utf-8")
 
@@ -512,14 +512,14 @@ def test_asymmetric_campaign_writes_lasym_true_inserted_coefficients(
     tmp_path: Path,
 ) -> None:
     pytest.importorskip("vmec_jax")
-    mod = load_campaign_tool("write_vmec_asymmetric_state_to_input_mapping_campaign")
+    mod = load_campaign_tool("write_vmec_state_mapping_campaign")
     ql_path = tmp_path / "ql_seed_screen.json"
     baseline = tmp_path / "input.final"
     ql_path.write_text(json.dumps(_ql_seed_screen()), encoding="utf-8")
     baseline.write_text(_asymmetric_input_text(), encoding="utf-8")
     out_prefix = tmp_path / "asymmetric_state_to_input_mapping"
 
-    rc = mod.main(
+    rc = mod.main_asymmetric(
         [
             str(ql_path),
             "--baseline-input",
@@ -569,7 +569,21 @@ def test_asymmetric_campaign_writes_lasym_true_inserted_coefficients(
     assert all(row["inserted_missing_coefficient"] for row in payload["input_directions"])
     assert "LASYM = .TRUE." in rbs_baseline
     assert "RBS(1,1) = 0.0000000000000000E+00" in rbs_baseline
-    assert "ZBC(1,1) = 1.0000000000000000E-03" in zbc_plus
+    boundary = load_campaign_tool("write_vmec_boundary_campaigns")
+    assert boundary._coefficient_value(
+        zbc_plus, boundary._parse_coefficient_spec("ZBC(1,1)")
+    ) == pytest.approx(1.0e-3)
+    from vmec_jax import VmecInput
+
+    parsed = VmecInput.from_file(
+        tmp_path
+        / "campaign_inputs"
+        / "zbc_1_1"
+        / "input.qa_asym_state_map_zbc_1_1_plus_delta"
+    )
+    assert parsed.lasym is True
+    assert parsed.ntor == 1
+    assert parsed.zbc[1 + parsed.ntor, 1] == pytest.approx(1.0e-3)
     assert "--max-iter 4200" in payload["vmec_run_commands"][0]
     assert "vmec_response_artifact_missing" in payload["blockers"]
     assert out_prefix.with_suffix(".csv").exists()
@@ -578,7 +592,7 @@ def test_asymmetric_campaign_writes_lasym_true_inserted_coefficients(
 
 
 def test_asymmetric_campaign_validates_candidate_coefficients(tmp_path: Path) -> None:
-    mod = load_campaign_tool("write_vmec_asymmetric_state_to_input_mapping_campaign")
+    mod = load_campaign_tool("write_vmec_state_mapping_campaign")
     baseline = tmp_path / "input.final"
     baseline.write_text(_asymmetric_input_text(), encoding="utf-8")
 
@@ -676,9 +690,12 @@ def test_state_control_short_bracket_writer_inserts_weighted_lasym_inputs(
     assert payload["launches"][0]["generated_lasym"] is True
     assert payload["launches"][0]["alpha_delta"] == pytest.approx(0.001)
     assert "LASYM = .TRUE." in plus
-    assert "RBS(1,1) = 1.5000000000000000E-03" in plus
-    assert "ZBC(1,1) = -2.5000000000000001E-04" in plus
-    assert "RBS(1,1) = -1.5000000000000000E-03" in minus
+    boundary = load_campaign_tool("write_vmec_boundary_campaigns")
+    rbs = boundary._parse_coefficient_spec("RBS(1,1)")
+    zbc = boundary._parse_coefficient_spec("ZBC(1,1)")
+    assert boundary._coefficient_value(plus, rbs) == pytest.approx(1.5e-3)
+    assert boundary._coefficient_value(plus, zbc) == pytest.approx(-2.5e-4)
+    assert boundary._coefficient_value(minus, rbs) == pytest.approx(-1.5e-3)
     assert "--outdir . --fast" in payload["vmec_run_commands"][0]
     assert (
         "write_nonlinear_turbulence_gradient_campaign.py"
