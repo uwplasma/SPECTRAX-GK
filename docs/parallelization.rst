@@ -344,6 +344,8 @@ The currently gated communication and call-graph layers are:
 - periodic streaming microkernel and streaming-only linear-RHS call graph;
 - electrostatic streaming, drift-slice, diamagnetic-drive, and composed
   single-species periodic electrostatic linear-slices gates.
+- a four-device ``2 species x 2 Hermite`` periodic electrostatic streaming
+  RHS gate with species field reductions and Hermite-neighbor exchange.
 
 The opt-in species route now executes the complete electrostatic linear-slice
 RHS with one species per device. It performs the shared quasineutrality
@@ -361,9 +363,8 @@ annotations. The enclosing ``pmap`` also uses the production electromagnetic
 field equations: density, parallel-current, polarization, and perpendicular-
 pressure moments are reduced with ``lax.psum`` before local RHS assembly. A
 nonzero-:math:`A_\parallel`, nonzero-:math:`B_\parallel` three-step trajectory
-is identity-gated against serial integration. Mixed species--Hermite meshes and
-a broad speedup claim remain out of scope until matched artifacts pass their
-own gates.
+is identity-gated against serial integration. A broad speedup claim remains out
+of scope until matched artifacts pass their own gates.
 
 On the office JAX 0.6.2/CUDA stack, device-to-device resharding of an existing
 single-GPU array did not preserve the second device's input. The production
@@ -387,9 +388,21 @@ identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This
 establishes a workload crossover, not general strong scaling or an end-to-end
 GPU integration-speedup claim.
 
+The first mixed species--Hermite route is intentionally narrower. Request
+``backend="electrostatic_species_hermite_streaming"`` with
+``axis="species_hermite"`` and four devices to evaluate the periodic,
+streaming-only two-species RHS on a ``(species, m)=(2,2)`` mesh. Quasineutrality
+reduces density over both mesh axes, polarization over species only, and the
+Hermite ladder exchanges one boundary moment within each species row. A
+four-logical-CPU gate matches the serial production RHS and field solve. This
+is a diagnostic equation/communication contract: adiabatic closure, linked
+boundaries, drifts, collisions, time integration, and speedup remain
+fail-closed. The office host has only two GPUs, so no mixed-mesh GPU claim can
+be tested on that machine.
+
 These gates validate communication and numerical identity for bounded linear or
-microkernel paths. They do not validate linked boundaries, mixed
-species--Hermite decomposition, multi-species nonlinear field solves, nonlinear
+microkernel paths. They do not validate linked boundaries, complete mixed
+species--Hermite integration, multi-species nonlinear field solves, nonlinear
 brackets, or nonlinear transport speedup unless those paths have their own
 identity gates and profiler artifacts.
 
@@ -409,6 +422,8 @@ Use the following rules when writing docs, release notes, or papers:
   identity-gated, but do not claim speedup until its matched workload profile
   passes. Other velocity-space ``shard_map`` work remains communication-gated
   and opt-in.
+- Call the mixed species--Hermite streaming backend diagnostic and
+  identity-gated, not a production integrator or speedup path.
 - Do not claim nonlinear speedup from sharding, velocity decomposition, spectral
   toggles, or linear-slice profiles without passing identity gates and fresh
   profiler artifacts for the exact workload, backend, device count, software

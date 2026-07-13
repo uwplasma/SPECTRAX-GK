@@ -102,6 +102,24 @@ def _terms() -> Any:
     )
 
 
+def _streaming_terms() -> Any:
+    from spectraxgk.linear import LinearTerms
+
+    return LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+
 def _build_species_problem(*, nx: int, ny: int, nz: int, nl: int, nm: int):
     import jax.numpy as jnp
 
@@ -187,10 +205,14 @@ def profile_linear_rhs_parallel_slices(
             f"requested {requested_devices} {platform_name} devices, but only {len(device_list)} are available"
         )
     axis_name = str(axis).strip().lower().replace("-", "_")
-    if axis_name not in {"hermite", "species"}:
-        raise ValueError("axis must be 'hermite' or 'species'")
+    if axis_name not in {"hermite", "species", "species_hermite"}:
+        raise ValueError("axis must be 'hermite', 'species', or 'species_hermite'")
     if axis_name == "species" and int(requested_devices) != 2:
         raise ValueError("species profiling requires exactly two devices")
+    if axis_name == "species_hermite" and int(requested_devices) != 4:
+        raise ValueError(
+            "mixed species-Hermite profiling requires exactly four devices"
+        )
     if (
         int(integration_steps) < 0
         or int(integration_repeats) < 1
@@ -199,17 +221,25 @@ def profile_linear_rhs_parallel_slices(
         raise ValueError(
             "integration_steps must be nonnegative and repeats/sample stride positive"
         )
-    if axis_name == "species":
+    if axis_name in {"species", "species_hermite"}:
         state, cache, params, grid, geom = _build_species_problem(
             nx=nx, ny=ny, nz=nz, nl=nl, nm=nm
         )
     else:
         state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
         geom = None
-    terms = _terms()
+    terms = _streaming_terms() if axis_name == "species_hermite" else _terms()
     parallel_cfg = RuntimeParallelConfig(
         strategy="velocity",
-        backend="auto" if axis_name == "species" else "electrostatic_linear_slices",
+        backend=(
+            "auto"
+            if axis_name == "species"
+            else (
+                "electrostatic_species_hermite_streaming"
+                if axis_name == "species_hermite"
+                else "electrostatic_linear_slices"
+            )
+        ),
         axis=axis_name,
         num_devices=len(device_list),
     )
@@ -228,6 +258,35 @@ def profile_linear_rhs_parallel_slices(
                 state, cache, params, devices=device_list
             )
         )
+        serial_compiled = jax.jit(
+            lambda value: linear_rhs_cached(
+                value,
+                serial_cache,
+                serial_params,
+                terms=terms,
+                use_jit=False,
+                use_custom_vjp=False,
+                force_electrostatic_fields=True,
+            )
+        )
+        sharded_compiled = jax.jit(
+            lambda value: linear_rhs_parallel_cached(
+                value,
+                sharded_cache,
+                sharded_params,
+                terms=terms,
+                parallel=parallel_cfg,
+                use_custom_vjp=False,
+            )
+        )
+
+        def serial_call():
+            return serial_compiled(serial_state)
+
+        def sharded_call():
+            return sharded_compiled(sharded_state)
+
+    elif axis_name == "species_hermite":
         serial_compiled = jax.jit(
             lambda value: linear_rhs_cached(
                 value,
@@ -662,7 +721,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_PREFIX)
     parser.add_argument("--platform", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--logical-devices", type=int, default=2)
-    parser.add_argument("--axis", choices=("hermite", "species"), default="hermite")
+    parser.add_argument(
+        "--axis",
+        choices=("hermite", "species", "species_hermite"),
+        default="hermite",
+    )
     parser.add_argument("--nl", type=int, default=4)
     parser.add_argument("--nm", type=int, default=16)
     parser.add_argument("--ny", type=int, default=8)

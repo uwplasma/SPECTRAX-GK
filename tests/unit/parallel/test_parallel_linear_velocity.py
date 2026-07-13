@@ -1256,6 +1256,91 @@ def test_species_sharded_phi_matches_production_quasineutrality() -> None:
     )
 
 
+def test_mixed_species_hermite_streaming_matches_serial_production_route() -> None:
+    from spectraxgk.linear import integrate_linear, linear_rhs_cached
+
+    devices = jax.devices()
+    if len(devices) < 4:
+        pytest.skip("requires four logical CPU devices or accelerators")
+    template, cache, params, _grid, _geom = _small_kinetic_electron_problem()
+    rng = np.random.default_rng(20260712)
+    state = jnp.asarray(
+        1.0e-3
+        * (
+            rng.standard_normal(template.shape)
+            + 1j * rng.standard_normal(template.shape)
+        ),
+        dtype=template.dtype,
+    )
+    terms = _streaming_only_terms()
+    expected_rhs, expected_phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    observed_rhs, observed_phi = (
+        linear_parallel_streaming.linear_rhs_streaming_electrostatic_species_hermite_sharded(
+            state,
+            cache,
+            params,
+            species_chunks=2,
+            hermite_chunks=2,
+            devices=devices[:4],
+        )
+    )
+    routed_rhs, routed_phi = linear_parallel.linear_rhs_parallel_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="electrostatic_species_hermite_streaming",
+            axis="species_hermite",
+            num_devices=4,
+        ),
+    )
+
+    for phi in (observed_phi, routed_phi):
+        np.testing.assert_allclose(
+            np.asarray(phi), np.asarray(expected_phi), rtol=3e-6, atol=3e-6
+        )
+    for rhs in (observed_rhs, routed_rhs):
+        np.testing.assert_allclose(
+            np.asarray(rhs), np.asarray(expected_rhs), rtol=4e-5, atol=4e-6
+        )
+
+    with pytest.raises(NotImplementedError, match="adiabatic closure"):
+        linear_parallel_streaming.linear_rhs_streaming_electrostatic_species_hermite_sharded(
+            state,
+            cache,
+            replace(params, tau_e=1.0),
+            devices=devices[:4],
+        )
+    with pytest.raises(NotImplementedError, match="scan-level identity"):
+        integrate_linear(
+            state,
+            _grid,
+            _geom,
+            params,
+            dt=1e-5,
+            steps=1,
+            method="euler",
+            cache=cache,
+            terms=terms,
+            parallel=SimpleNamespace(
+                strategy="velocity",
+                backend="electrostatic_species_hermite_streaming",
+                axis="species_hermite",
+                num_devices=4,
+            ),
+        )
+
+
 def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     from spectraxgk.linear import linear_rhs_cached
 

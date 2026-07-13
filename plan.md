@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 93% | The explicit electrostatic species-pmap trajectory has a reverse-mode/finite-difference parameter gate; next add adaptive-controller derivative policy gates and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 71% | The two-species explicit pmap includes conserving/high-mode collision terms, electromagnetic fields, and a reverse-mode parameter gate; obtain an uncontended large GPU integration profile, then design mixed Hermite routing. |
+| Production parallelization | 74% | A 2x2 species-Hermite streaming RHS now passes four-device CPU identity; extend its field/boundary/term coverage before time-integration or speedup promotion. |
 | Performance/release claims | 95% | The refreshed CPU species artifact is identity-exact at 3.41x RHS/0.96x integration; refresh the broader multi-case panel and keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -920,3 +920,10 @@ under 5 minutes.
   found finite-``b`` residuals at a few percent of the collision RHS norm, so
   the documentation now limits conservation claims to ``k_perp*rho=0`` and
   keeps finite-Larmor-radius repair open.
+- 2026-07-12: Implemented the first mixed species--Hermite equation path on a
+  four-device ``(species,m)=(2,2)`` mesh. Electrostatic density and polarization
+  moments use correctly scoped named reductions, Hermite neighbors exchange
+  within each species row, and global ``m`` indices select the field drive.
+  Direct and explicit-backend calls match the serial periodic streaming RHS on
+  four logical CPUs. Adiabatic closure and all broader terms fail closed; the
+  two-GPU office host cannot validate this four-device GPU topology.
