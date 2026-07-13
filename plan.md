@@ -1719,3 +1719,41 @@ under 5 minutes.
   at ``max-parallel=8`` without weakening the combined 95% package gate. A
   workflow contract now keeps the matrix cardinality, test command, label, and
   coverage-combine command synchronized.
+
+- 2026-07-13: Isolated ``test_nonlinear.py`` as the fifth compile-heavy wide-
+  coverage owner after its former mixed shard completed all tests at 294.9 s but
+  crossed the 300-second process cap while writing coverage. The replacement
+  mixed shard passes 141 tests in 23.1 s and the isolated nonlinear shard passes
+  24 tests in 115.4 s. The current CI run has all quick, docs/package, MyPy,
+  fast-coverage, and 24 wide shards green while the aggregate coverage job
+  combines their data.
+
+- 2026-07-13: Closed the periodic research path's internal saturated-transport
+  gate at full ``64x64x24``, ``Nl=4``, ``Nm=8`` resolution with adaptive Heun
+  RK3 and x64 precision. Independently accepted ``t=[240,300]`` windows give
+  ``Q_i=10.5009 +/- 0.0949`` without shear and ``9.8603 +/- 0.0569`` at
+  ``gamma_E=0.01``: a ``6.10%`` reduction separated by ``5.79`` combined SEMs.
+  Starts from ``t=240`` through ``280`` retain a positive ``4.46--6.28%``
+  reduction. The model remains unshipped pending the matched external response,
+  linked-boundary, compressed-real, and IMEX gates.
+
+- 2026-07-13: Completed one clean matched ``t=300`` comparison pair from
+  identical initial states on the two office A4000 GPUs rather than attempting
+  another unsafe restart from output that does not contain the distribution
+  state. Both ``t=[240,300]`` windows pass the independent stationarity and
+  uncertainty gates. Their heat fluxes are ``5.9963 +/- 0.0321`` without shear
+  and ``6.0014 +/- 0.0416`` with shear, a ``-0.084%`` reduction separated by
+  only ``-0.10`` combined SEM. This conflicts with the internal ``6.10%``
+  reduction and is retained as negative evidence: flow shear remains unshipped,
+  and the next research action is a state-level full-complex/compressed-real
+  treatment-delta audit at remap boundaries, not another long transport run.
+
+- 2026-07-13: The first 24-shard CI run passed every test, documentation,
+  package, typing, and coverage shard but exposed a single-device coverage blind
+  spot in the real species/Hermite collective kernels, leaving the aggregate at
+  94%. The parallel owner is now isolated and supplements its ordinary shard
+  with two bounded identity tests in fresh four-logical-CPU subprocesses. A
+  reconstructed combination of the unchanged CI data and these supplements
+  reports ``28,093`` statements with ``1,271`` missed (``95.48%``), while each
+  supplemental process completes in under 20 seconds without the out-of-memory
+  behavior of running the complete file with four devices.

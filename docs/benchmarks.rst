@@ -118,9 +118,10 @@ actually use the same physical and numerical contract.
      - policy tests plus fixed-aspect W7-X/HSX comparison lanes
    * - Equilibrium :math:`E\times B` flow shear
      - coordinate kernel validated; model unshipped
-     - zero-shear, shearing-wave, remap/dealias, and AD/FD gates pass; complete
-       cache routing, linear suppression, nonlinear transport, and matched
-       comparison gates remain required
+     - zero-shear, shearing-wave, remap/dealias, cache, linear-suppression,
+       AD/FD, and periodic saturated-transport gates pass; the clean matched
+       ``t=300`` comparison is stationary but fails the response-parity gate,
+       while linked-boundary, compressed-real, and IMEX gates remain required
    * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
      - not shipped
      - separate reduced models are outside the full-gyrokinetic release claim

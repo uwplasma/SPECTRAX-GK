@@ -335,13 +335,35 @@ its uncertainty separation uses the quadrature sum of the two block/bootstrap
 SEMs. A drifting source window therefore blocks a treatment claim even when its
 provisional mean is lower.
 
+The first full-grid internal transport campaign uses ``64x64x24`` spatial
+resolution, ``Nl=4``, ``Nm=8``, periodic ``x0=y0=28.2``, adaptive Heun RK3,
+``dt_max=0.02``, and x64 precision. Over the independently selected
+``t=[240,300]`` window, both the unsheared and ``gamma_E=0.01`` traces pass the
+finite-sample, 12-block, running-drift, terminal-mean, and bootstrap-SEM gates.
+Their heat fluxes are ``10.5009 +/- 0.0949`` and ``9.8603 +/- 0.0569``, giving a
+``6.10%`` reduction with ``5.79`` quadrature-SEM separation. Moving the lower
+window bound from ``t=240`` through ``t=280`` preserves the reduction direction
+(``4.46--6.28%``). This closes the internal saturated-transport check for the
+periodic research path.
+
+A clean matched comparison campaign used the same ``64x64x24``, ``Nl=4``,
+``Nm=8``, periodic-domain contract and evolved both references from identical
+initial states to ``t=300``. Over ``t=[240,300]``, the comparison traces pass the
+same finite-sample, stationarity, and uncertainty checks but give
+``5.9963 +/- 0.0321`` without shear and ``6.0014 +/- 0.0416`` with shear. The
+corresponding ``-0.084%`` reduction is only ``-0.10`` combined SEM and disagrees
+with the internal ``6.10%`` response. This is negative parity evidence, not a
+flow-suppression result. The discrepancy must be localized at state level before
+the matched-code, linked-boundary, compressed-real, or IMEX gates can pass, so
+no input-file flow-shear option is enabled.
+
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
 definitions. This path is a numerical foundation, not the production model. The
 compressed-real FFT rejects radial phases, and non-twist and linked boundaries
 fail closed because their Hermitian and boundary phases are not implemented.
-IMEX routing and a passed saturated-transport/matched-comparison artifact remain
-mandatory before enabling flow shear in input files.
+IMEX routing and resolution of the failed matched-response gate remain mandatory
+before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
 ------------------------------
