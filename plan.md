@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 50% | The two-species electrostatic fixed-step route is CPU/GPU identity-gated; next fuse species integration into one manual-axis program and add collision/EM or mixed Hermite routing only when large-workload profiles can plausibly beat one GPU. |
+| Production parallelization | 55% | The two-species electrostatic fixed-step route is CPU/GPU identity-gated and reaches 1.16x on the large two-A4000 RHS profile; next fuse integration into one manual-axis program and gate collision/EM or mixed Hermite routing. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -860,6 +860,7 @@ under 5 minutes.
   resharding defect, and a compiled host-controlled step loop avoids corruption
   of the electron carry under nested ``lax.scan``/``shard_map``. Three Euler
   steps agree with serial state/field histories to ``4.61e-8``/``1.59e-9``
-  relative. A reproducible ``2x4x16x64x1x64`` profile passes RHS identity at
-  ``5.16e-8`` relative but records only ``0.40x`` two-GPU throughput, so no
-  species-decomposition speedup is claimed.
+  relative. The medium profile remains overhead-limited, but the clean
+  ``2x8x32x128x1x128`` run passes at ``5.26e-8`` relative and improves warm RHS
+  time from 8.21 to 7.11 ms (``1.16x``). This is a scoped workload crossover,
+  not a broad strong-scaling claim.

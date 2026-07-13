@@ -360,8 +360,9 @@ single-GPU array did not preserve the second device's input. The production
 integrator therefore stages species-dependent state/cache arrays from host
 memory exactly once before JIT, then preserves that sharding across compiled
 steps. A three-step two-A4000 gate agrees with serial final state to
-``4.61e-8`` relative and field history to ``1.59e-9`` relative. The medium-grid
-profile is slower than one GPU, so correctness is promoted but speedup is not.
+``4.61e-8`` relative and field history to ``1.59e-9`` relative. The medium grid remains overhead-limited, while a 68 MiB large state passes
+identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This establishes
+a workload crossover, not general strong scaling.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate collisions, linked boundaries,
