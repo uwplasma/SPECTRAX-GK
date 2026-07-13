@@ -75,7 +75,7 @@ def test_plot_scaling_panels_independent_ky_defaults_and_rows(tmp_path: Path) ->
 def test_eigenfunction_diagnostics_tool_writes_summary_and_overlay(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_eigenfunction_diagnostics")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
 
     summary_csv = tmp_path / "overlap.csv"
     summary_csv.write_text(

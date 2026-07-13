@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 87% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, and geometry generation now have one owner per domain; 123 tools remain against the enforced 99-file target. |
+| Tool consolidation | 88% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, and linear-reference plotting now have one owner per domain; 122 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,12 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Folded the standalone eigenfunction-diagnostics plotter into the
+  existing linear-reference artifact command. ``overlap-summary``,
+  ``reference-overlay``, ``kbm``, and ``w7x`` now share one owner and the same
+  plotting kernels; focused artifact reproduction passes and the duplicate
+  script is removed. Tool inventory and its no-regression baseline are 122.
 
 - 2026-07-13: Corrected the advanced-collision roadmap after a primary-source
   audit. Francisquez et al. (2022) derive a nonlinear full-:math:`f`

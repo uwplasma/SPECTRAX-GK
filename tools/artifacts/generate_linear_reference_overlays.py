@@ -4,6 +4,8 @@
 Subcommands:
   kbm   Run the KBM raw eigenfunction overlay against a frozen reference.
   w7x   Run the W7-X imported-geometry overlay against a frozen reference.
+  overlap-summary   Plot overlap and relative-L2 values from a candidate table.
+  reference-overlay Plot a saved mode against a frozen reference bundle.
 """
 
 from __future__ import annotations
@@ -44,7 +46,10 @@ from tools.comparison.compare_gx_kbm import (  # noqa: E402
     _prepare_gx_reference,
     _runtime_config_from_kbm_case,
 )
-from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
+from spectraxgk.artifacts.plotting import (  # noqa: E402
+    eigenfunction_overlap_summary_figure,
+    eigenfunction_reference_overlay_figure,
+)
 from spectraxgk.diagnostics.modes import (  # noqa: E402
     compare_eigenfunctions,
     load_eigenfunction_reference_bundle,
@@ -76,6 +81,13 @@ W7X_EIGENFUNCTION_GATE_TOLERANCES = {
     "min_overlap": 0.95,
     "max_relative_l2": 0.25,
 }
+DEFAULT_OVERLAP_CSV = (
+    ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv"
+)
+DEFAULT_OVERLAP_OUT = ROOT / "docs" / "_static" / "kbm_eigenfunction_overlap_summary.png"
+DEFAULT_REFERENCE_OVERLAY_OUT = (
+    ROOT / "docs" / "_static" / "eigenfunction_reference_overlay.png"
+)
 
 
 def _artifact_path(path: Path | str) -> str:
@@ -84,6 +96,105 @@ def _artifact_path(path: Path | str) -> str:
         return candidate.resolve().relative_to(ROOT.resolve()).as_posix()
     except ValueError:
         return str(path)
+
+
+def load_eigenfunction_csv(path: Path) -> tuple[np.ndarray, np.ndarray]:
+    """Load a complex mode from the documented eigenfunction CSV schema."""
+
+    data = np.genfromtxt(path, delimiter=",", names=True, dtype=float)
+    required = {"z", "eigen_real", "eigen_imag"}
+    names = set(data.dtype.names or ())
+    if not required.issubset(names):
+        raise ValueError("eigenfunction CSV must contain z,eigen_real,eigen_imag columns")
+    theta = np.asarray(data["z"], dtype=float)
+    mode = np.asarray(data["eigen_real"], dtype=float) + 1j * np.asarray(
+        data["eigen_imag"], dtype=float
+    )
+    return theta, mode
+
+
+def plot_saved_reference_overlay(
+    *,
+    reference: Path,
+    spectrax: Path,
+    out: Path = DEFAULT_REFERENCE_OVERLAY_OUT,
+    title: str = "Eigenfunction overlay against frozen reference",
+) -> dict[str, str]:
+    """Write a phase-aligned saved-mode overlay."""
+
+    bundle = load_eigenfunction_reference_bundle(reference)
+    theta, mode = load_eigenfunction_csv(spectrax)
+    fig, _axes = eigenfunction_reference_overlay_figure(
+        theta, mode, bundle.theta, bundle.mode, title=title
+    )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, dpi=220, bbox_inches="tight")
+    pdf = out.with_suffix(".pdf")
+    if out.suffix.lower() != ".pdf":
+        fig.savefig(pdf, bbox_inches="tight")
+    return {"png_or_pdf": str(out), "pdf": str(pdf)}
+
+
+def plot_overlap_summary(
+    *,
+    csv: Path = DEFAULT_OVERLAP_CSV,
+    out: Path = DEFAULT_OVERLAP_OUT,
+    title: str = "KBM eigenfunction overlap against reference",
+) -> dict[str, str]:
+    """Write overlap and relative-L2 panels from a candidate table."""
+
+    table = pd.read_csv(csv)
+    if "selected" in table.columns:
+        table = table[table["selected"].astype(bool)]
+    required = {"ky", "eig_overlap_gx", "eig_rel_l2"}
+    missing = required.difference(table.columns)
+    if missing:
+        raise SystemExit(f"missing required columns: {sorted(missing)}")
+    table = table[
+        np.isfinite(table["eig_overlap_gx"]) & np.isfinite(table["eig_rel_l2"])
+    ].sort_values("ky")
+    fig, _axes = eigenfunction_overlap_summary_figure(
+        np.asarray(table["ky"], dtype=float),
+        np.asarray(table["eig_overlap_gx"], dtype=float),
+        np.asarray(table["eig_rel_l2"], dtype=float),
+        title=title,
+    )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, dpi=220, bbox_inches="tight")
+    pdf = out.with_suffix(".pdf")
+    fig.savefig(pdf, bbox_inches="tight")
+    return {"png": str(out), "pdf": str(pdf)}
+
+
+def build_reference_overlay_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Plot a saved mode against a reference bundle.")
+    parser.add_argument("reference", type=Path)
+    parser.add_argument("spectrax", type=Path)
+    parser.add_argument("--out", type=Path, default=DEFAULT_REFERENCE_OVERLAY_OUT)
+    parser.add_argument("--title", default="Eigenfunction overlay against frozen reference")
+    return parser
+
+
+def build_overlap_summary_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Plot eigenfunction candidate metrics.")
+    parser.add_argument("--csv", type=Path, default=DEFAULT_OVERLAP_CSV)
+    parser.add_argument("--out", type=Path, default=DEFAULT_OVERLAP_OUT)
+    parser.add_argument("--title", default="KBM eigenfunction overlap against reference")
+    return parser
+
+
+def main_reference_overlay(argv: list[str] | None = None) -> int:
+    args = build_reference_overlay_parser().parse_args(argv)
+    plot_saved_reference_overlay(
+        reference=args.reference, spectrax=args.spectrax, out=args.out, title=args.title
+    )
+    return 0
+
+
+def main_overlap_summary(argv: list[str] | None = None) -> int:
+    args = build_overlap_summary_parser().parse_args(argv)
+    plot_overlap_summary(csv=args.csv, out=args.out, title=args.title)
+    return 0
 
 
 def _selected_candidate_row(candidate_csv: Path, ky: float) -> pd.Series:
@@ -685,7 +796,9 @@ def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
         parser = argparse.ArgumentParser(description=__doc__)
-        parser.add_argument("command", choices=("kbm", "w7x"))
+        parser.add_argument(
+            "command", choices=("kbm", "w7x", "overlap-summary", "reference-overlay")
+        )
         parser.print_help()
         return 2
     command, rest = tokens[0], tokens[1:]
@@ -693,6 +806,10 @@ def main(argv: list[str] | None = None) -> int:
         return main_kbm(rest)
     if command == "w7x":
         return main_w7x(rest)
+    if command == "overlap-summary":
+        return main_overlap_summary(rest)
+    if command == "reference-overlay":
+        return main_reference_overlay(rest)
     raise SystemExit(f"unknown command: {command}")
 
 
