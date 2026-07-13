@@ -1,6 +1,7 @@
 """Executable tests for basic command execution."""
 
 import argparse
+from dataclasses import dataclass
 import os
 import sys
 import tomllib
@@ -171,6 +172,83 @@ def test_cli_runtime_toml_dispatch_is_uniform() -> None:
     assert _is_runtime_toml({}) is True
     assert _toml_shorthand_command({"physics": {}}) == "run"
     assert _toml_shorthand_command({"case": "cyclone"}) == "run"
+
+
+def test_cli_geometry_routes_vmec_and_miller_backends(
+    capsys, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    @dataclass(frozen=True)
+    class _GeometryConfig:
+        geometry_helper_python: str | None = None
+        geometry_helper_repo: str | None = None
+
+    @dataclass(frozen=True)
+    class _RuntimeConfig:
+        geometry: _GeometryConfig
+
+    cfg = _RuntimeConfig(geometry=_GeometryConfig())
+    loaded_configs: list[Path] = []
+    calls: list[tuple[str, object, Path | None, bool]] = []
+
+    def _load_runtime(path):
+        loaded_configs.append(Path(path))
+        return cfg, {"source": str(path)}
+
+    def _vmec(runtime_cfg, *, output_path, force):
+        calls.append(("vmec", runtime_cfg, output_path, force))
+        return tmp_path / "vmec.eik.nc"
+
+    def _miller(runtime_cfg, *, output_path, force):
+        calls.append(("miller", runtime_cfg, output_path, force))
+        return tmp_path / "miller.eiknc.nc"
+
+    monkeypatch.setattr(cli, "load_runtime_from_toml", _load_runtime)
+    monkeypatch.setattr(cli, "generate_runtime_vmec_eik", _vmec)
+    monkeypatch.setattr(cli, "generate_runtime_miller_eik", _miller)
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spectraxgk",
+            "geometry",
+            "vmec",
+            "--config",
+            str(tmp_path / "vmec.toml"),
+            "--out",
+            str(tmp_path / "vmec.nc"),
+            "--force",
+        ],
+    )
+    assert main() == 0
+    assert calls[-1] == ("vmec", cfg, tmp_path / "vmec.nc", True)
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spectraxgk",
+            "geometry",
+            "miller",
+            "--config",
+            str(tmp_path / "miller.toml"),
+            "--out",
+            str(tmp_path / "miller.nc"),
+            "--geometry-helper-python",
+            "python3.12",
+            "--geometry-helper-repo",
+            str(tmp_path / "helper"),
+        ],
+    )
+    assert main() == 0
+    kind, runtime_cfg, output_path, force = calls[-1]
+    assert kind == "miller"
+    assert output_path == tmp_path / "miller.nc"
+    assert force is False
+    assert runtime_cfg.geometry.geometry_helper_python == "python3.12"
+    assert runtime_cfg.geometry.geometry_helper_repo == str(tmp_path / "helper")
+    assert loaded_configs == [tmp_path / "vmec.toml", tmp_path / "miller.toml"]
+    assert "vmec.eik.nc" in capsys.readouterr().out
 
 
 def test_direct_config_shorthand_args_resolve_command_and_guards(

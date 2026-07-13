@@ -432,10 +432,10 @@ Miller inputs when the external helper scripts are available:
    vmec_jax input.NuhrenbergZille_1988_QHS
    cd ../..
    export SPECTRAX_BOOZ_XFORM_JAX_PATH=/absolute/or/relative/booz_xform_jax
-   python tools/artifacts/generate_geometry_eik.py vmec \
+   spectraxgk geometry vmec \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
-   python tools/artifacts/generate_geometry_eik.py miller \
+   spectraxgk geometry miller \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml
 
 Benchmark and scan helpers

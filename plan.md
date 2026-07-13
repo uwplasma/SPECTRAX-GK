@@ -282,6 +282,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-13: Promoted VMEC and Miller EIK generation from a maintainer artifact
+  script to the installed ``spectraxgk geometry`` executable. Both backends now
+  share the explicit ``--config``/``--out``/``--force`` contract; Miller keeps
+  its optional helper interpreter and repository controls, while the ambiguous
+  legacy positional config was removed. Tests moved to the executable suite,
+  documentation now teaches the public command, and tool inventory is 124. The
+  new nested command exposed an obsolete top-level argparse positional that
+  greedily consumed explicit subcommands; direct TOML shorthand already has a
+  pre-parser, so removing the unused positional repairs explicit nested command
+  dispatch without changing ``spectraxgk case.toml``.
+
 - 2026-07-13: Removed the orphan nonlinear comparison executable. It was absent
   from the benchmark manifest and documentation and retained a second
   CSV/NetCDF parser plus print-only early/late tolerance policy. The maintained

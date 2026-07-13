@@ -618,9 +618,9 @@ on the exact dumped GX state: ``kperp2``, ``fluxfac``, ``phi``, ``Wg``,
 
 Two user-facing entry points now exercise that bridge:
 
-- ``tools/artifacts/generate_geometry_eik.py vmec --config ...`` generates a compatible
+- ``spectraxgk geometry vmec --config ...`` generates a compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
-- ``tools/artifacts/generate_geometry_eik.py miller ...`` generates a compatible
+- ``spectraxgk geometry miller --config ...`` generates a compatible
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
 - ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear

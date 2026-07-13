@@ -10,7 +10,6 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from dataclasses import dataclass
 
 import matplotlib
 from PIL import Image
@@ -462,80 +461,6 @@ def test_benchmark_atlas_convergence_gate_threshold_is_inclusive(
         max_rel_change=0.05,
     )
     assert reports["cyclone_resolution_convergence"]["passed"] is False
-
-
-def test_generate_geometry_eik_routes_vmec_and_miller_subcommands(
-    tmp_path: Path, monkeypatch
-) -> None:
-    mod = load_artifact_tool("generate_geometry_eik")
-
-    @dataclass(frozen=True)
-    class _GeometryConfig:
-        geometry_helper_python: str | None = None
-        geometry_helper_repo: str | None = None
-
-    @dataclass(frozen=True)
-    class _RuntimeConfig:
-        geometry: _GeometryConfig
-
-    cfg = _RuntimeConfig(geometry=_GeometryConfig())
-    loaded_configs: list[Path] = []
-    calls: list[tuple[str, object, Path | None, bool]] = []
-
-    def _load_runtime(path):
-        loaded_configs.append(Path(path))
-        return cfg, {"source": str(path)}
-
-    def _vmec(runtime_cfg, *, output_path, force):
-        calls.append(("vmec", runtime_cfg, output_path, force))
-        return tmp_path / "vmec.eik.nc"
-
-    def _miller(runtime_cfg, *, output_path, force):
-        calls.append(("miller", runtime_cfg, output_path, force))
-        return tmp_path / "miller.eiknc.nc"
-
-    monkeypatch.setattr(mod, "load_runtime_from_toml", _load_runtime)
-    monkeypatch.setattr(mod, "generate_runtime_vmec_eik", _vmec)
-    monkeypatch.setattr(mod, "generate_runtime_miller_eik", _miller)
-
-    assert (
-        mod.main(
-            [
-                "vmec",
-                "--config",
-                str(tmp_path / "vmec.toml"),
-                "--out",
-                str(tmp_path / "vmec.nc"),
-                "--force",
-            ]
-        )
-        == 0
-    )
-    assert calls[-1] == ("vmec", cfg, tmp_path / "vmec.nc", True)
-
-    assert (
-        mod.main(
-            [
-                "miller",
-                "--config",
-                str(tmp_path / "miller.toml"),
-                "--out",
-                str(tmp_path / "miller.nc"),
-                "--geometry-helper-python",
-                "python3.12",
-                "--geometry-helper-repo",
-                str(tmp_path / "helper"),
-            ]
-        )
-        == 0
-    )
-    kind, runtime_cfg, output_path, force = calls[-1]
-    assert kind == "miller"
-    assert output_path == tmp_path / "miller.nc"
-    assert force is False
-    assert runtime_cfg.geometry.geometry_helper_python == "python3.12"
-    assert runtime_cfg.geometry.geometry_helper_repo == str(tmp_path / "helper")
-    assert loaded_configs == [tmp_path / "vmec.toml", tmp_path / "miller.toml"]
 
 
 def test_error_anatomy_report_and_cli_lock_fail_closed_residual_story(
