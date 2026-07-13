@@ -8,6 +8,7 @@ import csv
 import json
 import math
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -27,6 +28,17 @@ DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "linear_rhs_parallel_slices_pr
 DEFAULT_SWEEP_PREFIX = (
     REPO_ROOT / "docs" / "_static" / "linear_rhs_parallel_slices_sweep"
 )
+
+
+def _git_revision() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
 
 
 def _json_clean(value: Any) -> Any:
@@ -295,6 +307,9 @@ def profile_linear_rhs_parallel_slices(
                 "Nz": int(grid.z.size),
             },
             "platform": platform_name,
+            "git_revision": _git_revision(),
+            "jax_version": jax.__version__,
+            "python_version": sys.version.split()[0],
             "requested_devices": int(requested_devices),
             "actual_devices": len(device_list),
             "warmups": int(warmups),
@@ -312,7 +327,11 @@ def profile_linear_rhs_parallel_slices(
             "rows": rows,
             "notes": (
                 "Both routes are warmed before timing. The serial route uses the production JIT path; "
-                "the sharded route uses the cached fused Hermite shard-map callable."
+                + (
+                    "the species route compiles a host-prepared two-device shard-map callable."
+                    if axis_name == "species"
+                    else "the sharded route uses the cached fused Hermite shard-map callable."
+                )
             ),
         }
     )
