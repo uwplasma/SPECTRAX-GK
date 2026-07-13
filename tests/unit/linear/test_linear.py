@@ -881,9 +881,7 @@ def test_implicit_preconditioner_linked_hermite_line_coarse_shape_and_finite():
     assert jnp.all(jnp.isfinite(jnp.real(z)))
 
 
-def test_shift_invert_preconditioner_rejects_unconverged_outer_pair():
-    """A completed inner solve must not promote a large-residual Ritz pair."""
-
+def _streaming_shift_invert_setup():
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=16, Lx=6.28, Ly=6.28)
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
@@ -913,6 +911,41 @@ def test_shift_invert_preconditioner_rejects_unconverged_outer_pair():
         apar=0.0,
         bpar=0.0,
     )
+    return v0, cache, params, terms
+
+
+def test_shift_invert_nearest_pair_passes_physical_outer_residual():
+    """Nearest-shift selection should admit a converged streaming Ritz pair."""
+
+    v0, cache, params, terms = _streaming_shift_invert_setup()
+    eigenvalue, eigenvector = dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms,
+        method="shift_invert",
+        krylov_dim=4,
+        restarts=1,
+        shift=0.5j,
+        shift_source="reference",
+        shift_tol=1.0e-4,
+        shift_maxiter=30,
+        shift_restart=20,
+        shift_solve_method="batched",
+        shift_preconditioner="damping",
+        shift_selection="nearest",
+        shift_outer_residual_tol=0.06,
+        mode_family="none",
+        fallback_method="none",
+    )
+    assert jnp.isfinite(eigenvalue)
+    assert jnp.all(jnp.isfinite(eigenvector))
+
+
+def test_shift_invert_preconditioner_rejects_unconverged_outer_pair():
+    """A completed inner solve must not promote a large-residual Ritz pair."""
+
+    v0, cache, params, terms = _streaming_shift_invert_setup()
     with pytest.raises(RuntimeError, match="failed the outer residual gate"):
         dominant_eigenpair(
             v0,

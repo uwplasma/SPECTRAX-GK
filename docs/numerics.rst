@@ -278,6 +278,11 @@ end-to-end JAX differentiability:
   threshold with ``KrylovConfig.shift_outer_residual_tol``; the default is
   ``0.1``. Rejected primary and fallback pairs raise instead of returning a
   plausible frequency with an unconverged eigenvector.
+- **Physical Ritz refinement**: after selecting a shift-invert Ritz vector,
+  the solver recomputes its eigenvalue with the physical-operator Rayleigh
+  quotient. For a fixed vector this scalar minimizes the Euclidean residual;
+  it removes avoidable error from mapping an inexact inverse Ritz value through
+  ``lambda = sigma + 1 / mu``. The outer residual gate remains mandatory.
 - **Targeted shift-invert mode selection**: set ``KrylovConfig.mode_family``
   (for example ``"cyclone"``, ``"etg"``, ``"kbm"``) and
   ``KrylovConfig.shift_selection`` to stabilize branch selection in stiff

@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
-| Structured solver ownership | 94% | Develop a residual-convergent restart/preconditioner for shift-invert; the corrected complex Ritz and fail-closed outer-residual contracts now prevent invalid branch promotion. |
+| Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 40% | Long-wavelength density/momentum/temperature invariants now pass in serial and species pmap; quantify and repair finite-Larmor-radius residuals before species-coupled Dougherty, Sugama, or linearized Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
@@ -1012,3 +1012,10 @@ under 5 minutes.
   relative and is unchanged when the Krylov tolerance tightens from ``1e-6``
   to ``1e-7``. This closes the bounded equation-level API contract without
   promoting short endpoints as converged turbulent transport averages.
+- 2026-07-13: Refined every selected shift-invert Ritz value with the physical
+  operator Rayleigh quotient. This scalar minimizes the Euclidean eigenpair
+  residual for the fixed Ritz vector and removes avoidable error from mapping
+  an inexact inverse Ritz value through ``lambda = sigma + 1 / mu``. A resolved
+  streaming case improves from ``0.0655`` to ``0.0472`` and passes a ``0.06``
+  nearest-shift gate, while the deliberately under-resolved targeted case still
+  fails closed. KBM remains unpromoted pending a stronger restart/preconditioner.

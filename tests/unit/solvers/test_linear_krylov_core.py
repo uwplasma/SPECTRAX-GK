@@ -125,6 +125,29 @@ def test_ritz_vector_uses_complex_eigenvector_without_conjugation() -> None:
     assert jnp.allclose(vector, expected)
 
 
+def test_rayleigh_quotient_minimizes_fixed_vector_residual(monkeypatch) -> None:
+    matrix = jnp.asarray(
+        [[1.0 + 0.2j, 0.4 - 0.1j], [-0.3 + 0.5j, 2.0 - 0.4j]],
+        dtype=jnp.complex64,
+    )
+    vector = jnp.asarray([1.0 + 0.3j, -0.2 + 0.7j], dtype=jnp.complex64)
+    monkeypatch.setattr(
+        ka,
+        "_apply_operator",
+        lambda state, _cache, _params, _terms: matrix @ state,
+    )
+
+    eigenvalue = ka._rayleigh_quotient(vector, None, None, None)
+    operator_vector = matrix @ vector
+    residual = jnp.linalg.norm(operator_vector - eigenvalue * vector)
+    perturbed_residual = jnp.linalg.norm(
+        operator_vector - (eigenvalue + 0.3 - 0.2j) * vector
+    )
+
+    assert jnp.isfinite(eigenvalue)
+    assert residual < perturbed_residual
+
+
 def test_shift_invert_spectrum_rejects_arnoldi_breakdown_values() -> None:
     eigvals = jnp.asarray([0.0 + 0.0j, 0.5 - 0.25j], dtype=jnp.complex64)
     sigma = jnp.asarray(0.1 - 0.2j, dtype=jnp.complex64)
