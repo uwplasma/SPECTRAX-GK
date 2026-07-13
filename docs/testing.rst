@@ -240,7 +240,7 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.diagnostics.zonal_validation.reference_residual_table`
 - :func:`spectraxgk.diagnostics.zonal_validation.tail_trace_metrics`
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
-- ``tools/artifacts/plot_zonal_flow_response.py`` with ``csv`` and ``output`` modes
+- ``tools/artifacts/build_zonal_flow_artifacts.py`` with ``response-csv`` and ``response-output`` modes
 - ``tools/artifacts/generate_miller_zonal_response_panel.py``
 - ``tools/artifacts/generate_w7x_zonal_response_panel.py``
 - ``tools/artifacts/plot_w7x_zonal_contract_audit.py``
@@ -249,7 +249,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/campaigns/write_w7x_zonal_closure_sweep.py``
 - ``tools/artifacts/plot_w7x_zonal_state_convention_audit.py``
 - ``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py``
-- ``tools/artifacts/build_zonal_flow_objective_gate.py``
+- ``tools/artifacts/build_zonal_flow_artifacts.py objective-gate``
 - ``tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be

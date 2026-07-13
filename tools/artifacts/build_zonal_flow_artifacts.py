@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a zonal-flow objective-row artifact from validated response summaries."""
+"""Build zonal-response figures and optimization-row artifacts."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
+import sys
 from typing import Any
 
 import matplotlib
@@ -15,7 +16,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.nonlinear_diagnostics import (  # noqa: E402
+    load_diagnostic_time_series,
+)
+from spectraxgk.artifacts.plotting import (  # noqa: E402
+    set_plot_style,
+    zonal_flow_response_figure,
+)
+from spectraxgk.diagnostics.zonal_validation import (  # noqa: E402
+    zonal_flow_response_metrics,
+)
 from spectraxgk.objectives.zonal import (  # noqa: E402
     ZonalFlowObjectiveConfig,
     zonal_flow_objective_artifact_from_records,
@@ -27,6 +37,174 @@ DEFAULT_COMPARISON = ROOT / "docs" / "_static" / "w7x_zonal_reference_compare.cs
 DEFAULT_OUT_JSON = ROOT / "docs" / "_static" / "zonal_flow_objective_gate.json"
 DEFAULT_OUT_CSV = ROOT / "docs" / "_static" / "zonal_flow_objective_gate.csv"
 DEFAULT_OUT_PNG = ROOT / "docs" / "_static" / "zonal_flow_objective_gate.png"
+
+
+def _add_response_metric_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--tail-fraction", type=float, default=0.3)
+    parser.add_argument("--initial-fraction", type=float, default=0.1)
+    parser.add_argument(
+        "--initial-policy",
+        choices=("window_abs_mean", "first_abs"),
+        default="window_abs_mean",
+    )
+    parser.add_argument("--peak-fit-max-peaks", type=int, default=None)
+    parser.add_argument(
+        "--damping-fit-mode",
+        choices=("combined_envelope", "branchwise_extrema"),
+        default="combined_envelope",
+    )
+    parser.add_argument(
+        "--frequency-fit-mode",
+        choices=("peak_spacing", "hilbert_phase"),
+        default="peak_spacing",
+    )
+    parser.add_argument("--fit-window-tmin", type=float, default=None)
+    parser.add_argument("--fit-window-tmax", type=float, default=None)
+    parser.add_argument("--hilbert-trim-fraction", type=float, default=0.2)
+
+
+def _response_metrics(args: argparse.Namespace, t: np.ndarray, response: np.ndarray):
+    return zonal_flow_response_metrics(
+        t,
+        response,
+        tail_fraction=float(args.tail_fraction),
+        initial_fraction=float(args.initial_fraction),
+        initial_policy=str(args.initial_policy),
+        peak_fit_max_peaks=args.peak_fit_max_peaks,
+        damping_fit_mode=str(args.damping_fit_mode),
+        frequency_fit_mode=str(args.frequency_fit_mode),
+        fit_window_tmin=args.fit_window_tmin,
+        fit_window_tmax=args.fit_window_tmax,
+        hilbert_trim_fraction=float(args.hilbert_trim_fraction),
+    )
+
+
+def _response_payload(metrics) -> dict[str, object]:
+    return {
+        "initial_level": metrics.initial_level,
+        "initial_policy": metrics.initial_policy,
+        "residual_level": metrics.residual_level,
+        "residual_std": metrics.residual_std,
+        "response_rms": metrics.response_rms,
+        "gam_frequency": metrics.gam_frequency,
+        "gam_damping_rate": metrics.gam_damping_rate,
+        "damping_method": metrics.damping_method,
+        "frequency_method": metrics.frequency_method,
+        "peak_count": metrics.peak_count,
+        "peak_fit_count": metrics.peak_fit_count,
+        "tmin": metrics.tmin,
+        "tmax": metrics.tmax,
+        "fit_tmin": metrics.fit_tmin,
+        "fit_tmax": metrics.fit_tmax,
+    }
+
+
+def _write_response_panel(
+    *, t: np.ndarray, response: np.ndarray, out: Path, title: str, metrics
+) -> None:
+    fig, _axes = zonal_flow_response_figure(
+        t, response, metrics=metrics, title=title
+    )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, dpi=220, bbox_inches="tight")
+    if out.suffix.lower() != ".pdf":
+        fig.savefig(out.with_suffix(".pdf"), bbox_inches="tight")
+    plt.close(fig)
+
+
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _build_response_csv_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Plot a t,response CSV artifact.")
+    parser.add_argument("csv", type=Path)
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "docs" / "_static" / "zonal_flow_response.png",
+    )
+    parser.add_argument("--title", default="Zonal-flow response")
+    _add_response_metric_args(parser)
+    return parser
+
+
+def _build_response_output_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Plot a saved zonal diagnostic.")
+    parser.add_argument("output", type=Path)
+    parser.add_argument("--var", default="Phi2_zonal_t")
+    parser.add_argument("--kx-index", type=int, default=None)
+    parser.add_argument(
+        "--component", choices=("real", "imag", "abs", "complex"), default="real"
+    )
+    parser.add_argument("--align-phase", action="store_true")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "docs" / "_static" / "zonal_flow_response_from_output.png",
+    )
+    parser.add_argument("--csv-out", type=Path, default=None)
+    parser.add_argument("--title", default=None)
+    _add_response_metric_args(parser)
+    return parser
+
+
+def _main_response_csv(argv: list[str]) -> int:
+    args = _build_response_csv_parser().parse_args(argv)
+    data = np.genfromtxt(args.csv, delimiter=",", names=True, dtype=float)
+    if {"t", "response"} - set(data.dtype.names or ()):
+        raise ValueError("CSV must contain columns t,response")
+    t = np.asarray(data["t"], dtype=float)
+    response = np.asarray(data["response"], dtype=float)
+    metrics = _response_metrics(args, t, response)
+    _write_response_panel(
+        t=t, response=response, out=args.out, title=args.title, metrics=metrics
+    )
+    _write_json(args.out.with_suffix(".json"), _response_payload(metrics))
+    return 0
+
+
+def _main_response_output(argv: list[str]) -> int:
+    args = _build_response_output_parser().parse_args(argv)
+    series = load_diagnostic_time_series(
+        args.output,
+        variable=args.var,
+        kx_index=args.kx_index,
+        component=args.component,
+        align_phase=bool(args.align_phase),
+    )
+    if np.iscomplexobj(series.values):
+        raise ValueError(
+            "zonal-response plotting requires a real extracted component"
+        )
+    metrics = _response_metrics(args, series.t, series.values)
+    _write_response_panel(
+        t=series.t,
+        response=series.values,
+        out=args.out,
+        title=args.title or f"{args.var} response",
+        metrics=metrics,
+    )
+    csv_out = args.csv_out or args.out.with_suffix(".csv")
+    csv_out.parent.mkdir(parents=True, exist_ok=True)
+    np.savetxt(
+        csv_out,
+        np.column_stack([series.t, series.values]),
+        delimiter=",",
+        header="t,response",
+        comments="",
+    )
+    payload = {
+        "source_path": series.source_path,
+        "variable": series.variable,
+        **_response_payload(metrics),
+        "notes": (
+            "Phi2_zonal_t is a zonal-energy proxy. Prefer Phi_zonal_mode_kxt "
+            "with a selected kx and phase alignment for signed response studies."
+        ),
+    }
+    _write_json(args.out.with_suffix(".json"), payload)
+    return 0
 
 
 def _repo_relative(path: Path | str) -> str:
@@ -224,7 +402,7 @@ def _plot_payload(path: Path, payload: dict[str, object]) -> None:
     plt.close(fig)
 
 
-def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+def _parse_objective_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--summary-csv", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--comparison-csv", type=Path, default=DEFAULT_COMPARISON)
@@ -258,8 +436,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = _parse_args(argv)
+def _main_objective_gate(argv: list[str]) -> int:
+    args = _parse_objective_args(argv)
     records = records_from_w7x_summary(
         args.summary_csv,
         comparison_csv=args.comparison_csv,
@@ -309,6 +487,24 @@ def main(argv: list[str] | None = None) -> int:
         f"json={_repo_relative(args.out_json)}"
     )
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    tokens = list(sys.argv[1:] if argv is None else argv)
+    if not tokens:
+        print(
+            "usage: build_zonal_flow_artifacts.py "
+            "{response-csv,response-output,objective-gate} ..."
+        )
+        return 2
+    command, rest = tokens[0], tokens[1:]
+    if command == "response-csv":
+        return _main_response_csv(rest)
+    if command == "response-output":
+        return _main_response_output(rest)
+    if command == "objective-gate":
+        return _main_objective_gate(rest)
+    raise SystemExit(f"unknown command: {command}")
 
 
 if __name__ == "__main__":  # pragma: no cover

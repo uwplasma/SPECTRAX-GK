@@ -2070,7 +2070,7 @@ def test_transport_audit_redesign_can_fail_on_required_redesign(
 def test_plot_zonal_flow_response_output_subcommand(
     tmp_path: Path, monkeypatch
 ) -> None:
-    mod = load_artifact_tool("plot_zonal_flow_response")
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
 
     data_path = tmp_path / "diag.out.nc"
     with nc.Dataset(data_path, "w") as ds:
@@ -2084,7 +2084,9 @@ def test_plot_zonal_flow_response_output_subcommand(
 
     out = tmp_path / "zf_from_output.png"
     monkeypatch.setattr(
-        sys, "argv", [str(mod.__file__), "output", str(data_path), "--out", str(out)]
+        sys,
+        "argv",
+        [str(mod.__file__), "response-output", str(data_path), "--out", str(out)],
     )
 
     assert mod.main() == 0
@@ -2103,7 +2105,7 @@ def test_plot_zonal_flow_response_output_subcommand(
 def test_plot_zonal_flow_response_output_subcommand_complex_mode_history(
     tmp_path: Path, monkeypatch
 ) -> None:
-    mod = load_artifact_tool("plot_zonal_flow_response")
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
 
     data_path = tmp_path / "diag.out.nc"
     with nc.Dataset(data_path, "w") as ds:
@@ -2124,7 +2126,7 @@ def test_plot_zonal_flow_response_output_subcommand_complex_mode_history(
         "argv",
         [
             str(mod.__file__),
-            "output",
+            "response-output",
             str(data_path),
             "--var",
             "Phi_zonal_mode_kxt",
@@ -2148,7 +2150,7 @@ def test_plot_zonal_flow_response_output_subcommand_complex_mode_history(
 
 
 def test_plot_zonal_flow_response_csv_subcommand(tmp_path: Path, monkeypatch) -> None:
-    mod = load_artifact_tool("plot_zonal_flow_response")
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
 
     csv_path = tmp_path / "response.csv"
     _write_csv(
@@ -2163,7 +2165,9 @@ def test_plot_zonal_flow_response_csv_subcommand(tmp_path: Path, monkeypatch) ->
     )
     out = tmp_path / "zf_csv.png"
     monkeypatch.setattr(
-        sys, "argv", [str(mod.__file__), "csv", str(csv_path), "--out", str(out)]
+        sys,
+        "argv",
+        [str(mod.__file__), "response-csv", str(csv_path), "--out", str(out)],
     )
 
     assert mod.main() == 0
@@ -2176,7 +2180,7 @@ def test_plot_zonal_flow_response_csv_subcommand(tmp_path: Path, monkeypatch) ->
 def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_zonal_flow_objective_gate")
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
     summary = tmp_path / "summary.csv"
     comparison = tmp_path / "compare.csv"
     _write_csv(
@@ -2209,6 +2213,7 @@ def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(
 
     rc = mod.main(
         [
+            "objective-gate",
             "--summary-csv",
             str(summary),
             "--comparison-csv",
@@ -2248,7 +2253,7 @@ def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(
 def test_build_zonal_flow_objective_gate_fail_policy_rejects_missing_damping(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_zonal_flow_objective_gate")
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
     summary = tmp_path / "summary.csv"
     _write_csv(
         summary,
@@ -2265,6 +2270,7 @@ def test_build_zonal_flow_objective_gate_fail_policy_rejects_missing_damping(
     with pytest.raises(ValueError, match="missing finite damping_rate"):
         mod.main(
             [
+                "objective-gate",
                 "--summary-csv",
                 str(summary),
                 "--comparison-csv",

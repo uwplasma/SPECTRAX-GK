@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 88% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, and linear-reference plotting now have one owner per domain; 122 tools remain against the enforced 99-file target. |
+| Tool consolidation | 89% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, geometry generation, linear-reference plotting, and zonal-response artifacts now have one owner per domain; 121 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -281,6 +281,13 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Consolidated zonal-response plotting and optimization-row
+  generation under ``build_zonal_flow_artifacts.py``. The explicit
+  ``response-csv``, ``response-output``, and ``objective-gate`` modes preserve
+  separate data and promotion policies while sharing extraction, metric, and
+  plotting ownership. Five focused behavior gates pass, the standalone
+  response plotter is removed, and the tool inventory is now 121.
 
 - 2026-07-13: Folded the standalone eigenfunction-diagnostics plotter into the
   existing linear-reference artifact command. ``overlap-summary``,

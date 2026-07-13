@@ -2143,7 +2143,7 @@ The CI-scale gate is:
 .. code-block:: bash
 
    pytest -q tests/unit/objectives/test_autodiff_solver_objectives.py tests/tools/artifacts/test_general_artifact_tools.py
-   python tools/artifacts/build_zonal_flow_objective_gate.py
+   python tools/artifacts/build_zonal_flow_artifacts.py objective-gate
 
 The test exercises the optimization contract that the literature motivates:
 larger residuals and lower damping lower the scalar objective, the
@@ -2151,7 +2151,7 @@ surface/field-line/wavenumber portfolio shape is explicit, and the resulting
 row map passes AD/finite-difference and conditioning checks before optimizer
 use.
 
-``tools/artifacts/build_zonal_flow_objective_gate.py`` is the artifact bridge from
+``tools/artifacts/build_zonal_flow_artifacts.py objective-gate`` is the artifact bridge from
 validated zonal-response outputs to optimizer rows.  It currently emits a
 W7-X diagnostic artifact from ``w7x_zonal_response_panel.csv`` and
 ``w7x_zonal_reference_compare.csv``.  Because the frozen W7-X trace still has
