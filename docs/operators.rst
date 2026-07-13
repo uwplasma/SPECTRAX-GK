@@ -260,6 +260,14 @@ This verifies that the decomposed operator damps its intended high-order
 subspace while retaining serial evolution identity; it is separate from the
 low-order conserving collision correction above.
 
+Electromagnetic species decomposition reuses the serial field equations rather
+than maintaining a second approximation. Local density, parallel-current,
+polarization, and perpendicular-pressure moments are summed over the local
+species axis and then reduced across the named device axis. The resulting
+``phi``, ``apar``, and ``bpar`` are shared by each local RHS assembly. A
+two-species gate requires nonzero magnetic fields and serial/decomposed
+trajectory identity; it does not yet cover mixed species--Hermite meshes.
+
 Hypercollisions
 ---------------
 

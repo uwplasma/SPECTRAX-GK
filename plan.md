@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Differentiable API clarity | 93% | The explicit electrostatic species-pmap trajectory has a reverse-mode/finite-difference parameter gate; next add adaptive-controller derivative policy gates and held-out implicit-VJP transport objectives. |
 | Advanced collision operators | 37% | Built-in conserving and high-mode hypercollision terms run in the explicit species pmap; next add decomposed invariant artifacts, then species-coupled Dougherty, Sugama, and linearized Coulomb models. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
-| Production parallelization | 68% | The two-species explicit pmap includes conserving/high-mode collision terms and a reverse-mode parameter gate; obtain an uncontended large GPU integration profile, then gate electromagnetic or mixed Hermite routing. |
+| Production parallelization | 71% | The two-species explicit pmap includes conserving/high-mode collision terms, electromagnetic fields, and a reverse-mode parameter gate; obtain an uncontended large GPU integration profile, then design mixed Hermite routing. |
 | Performance/release claims | 94% | Refresh the broader multi-case runtime/memory panel; keep cold executable, warm Python, and parallel scaling claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
 | CI/release hygiene | 98% | Verify the corrected fast-coverage owner test on the current CI run; retain the green 95% wide gate. |
@@ -897,3 +897,11 @@ under 5 minutes.
   ``R_over_LTi``; the tangent agrees with centered finite differences to one
   percent in float32. Adaptive, IMEX, and electromagnetic derivatives remain
   explicitly outside this gate.
+- 2026-07-12: Extended the same species ``pmap`` through the production
+  electromagnetic field equations without duplicating their physics. Serial
+  species sums are now optionally followed by named ``psum`` reductions for
+  density, polarization, parallel current, and perpendicular pressure. A
+  two-species trajectory with nonzero ``apar`` and ``bpar`` matches serial
+  integration locally; the exact pushed commit is validated separately on the
+  two-A4000 office stack. The broader electromagnetic derivative and mixed
+  species--Hermite lanes remain fail-closed.

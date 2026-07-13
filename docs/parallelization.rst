@@ -357,8 +357,13 @@ collision contribution with independent species rates and the high-mode
 Hermite/Laguerre hypercollision operator. Nonzero collision-only and populated
 high-moment three-step CPU/GPU gates match serial. The standalone ``shard_map`` RHS keeps
 collisions fail-closed because JAX 0.6.2 cannot reconcile its conditional VMA
-annotations. Electromagnetic fields, mixed species--Hermite meshes, and a broad
-speedup claim remain out of scope until matched artifacts pass their own gates.
+annotations. The enclosing ``pmap`` also uses the production electromagnetic
+field equations: density, parallel-current, polarization, and perpendicular-
+pressure moments are reduced with ``lax.psum`` before local RHS assembly. A
+nonzero-:math:`A_\parallel`, nonzero-:math:`B_\parallel` three-step trajectory
+is identity-gated against serial integration. Mixed species--Hermite meshes and
+a broad speedup claim remain out of scope until matched artifacts pass their
+own gates.
 
 On the office JAX 0.6.2/CUDA stack, device-to-device resharding of an existing
 single-GPU array did not preserve the second device's input. The production
@@ -375,17 +380,18 @@ linear projection of the evolved ion mode with respect to
 in float32. Host staging happens before the differentiated trajectory; traced
 parameters are never converted through NumPy. This is a derivative-identity
 contract for the explicit electrostatic route, not a claim for adaptive
-controllers, IMEX, electromagnetic terms, or device initialization.
+controllers, IMEX, electromagnetic parameter derivatives, or device
+initialization.
 The medium grid remains overhead-limited, while a 68 MiB large state passes
 identity and reaches a scoped ``1.16x`` two-GPU warm-RHS speedup. This
 establishes a workload crossover, not general strong scaling or an end-to-end
 GPU integration-speedup claim.
 
 These gates validate communication and numerical identity for bounded linear or
-microkernel paths. They do not validate collisions, linked boundaries,
-electromagnetic terms, multi-species nonlinear field solves, nonlinear brackets,
-or nonlinear transport speedup unless those paths have their own identity gates
-and profiler artifacts.
+microkernel paths. They do not validate linked boundaries, mixed
+species--Hermite decomposition, multi-species nonlinear field solves, nonlinear
+brackets, or nonlinear transport speedup unless those paths have their own
+identity gates and profiler artifacts.
 
 Claim rules
 -----------

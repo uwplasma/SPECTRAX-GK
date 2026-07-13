@@ -1469,19 +1469,54 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
         parallel=parallel,
     )
     assert_species_close(hyper_parallel_state, hyper_serial_state)
-    with pytest.raises(NotImplementedError, match="electrostatic field terms"):
-        integrate_linear(
-            state,
-            grid,
-            geom,
-            params,
-            dt=1e-5,
-            steps=1,
-            method="euler",
-            cache=cache,
-            terms=replace(terms, apar=1.0),
-            parallel=parallel,
-        )
+    from spectraxgk.operators.linear.params import linear_terms_to_term_config
+    from spectraxgk.terms.assembly import compute_fields_cached
+
+    ky = min(1, grid.ky.size - 1)
+    electromagnetic_state = state.at[:, 0, 1, ky, 0, :].set(0.03 + 0.02j)
+    electromagnetic_params = replace(params, beta=0.01, fapar=1.0)
+    electromagnetic_terms = replace(terms, apar=1.0, bpar=1.0)
+    electromagnetic_fields = compute_fields_cached(
+        electromagnetic_state,
+        cache,
+        electromagnetic_params,
+        terms=linear_terms_to_term_config(electromagnetic_terms),
+        use_custom_vjp=False,
+    )
+    assert float(jnp.linalg.norm(electromagnetic_fields.apar)) > 0.0
+    assert float(jnp.linalg.norm(electromagnetic_fields.bpar)) > 0.0
+    electromagnetic_serial_state, electromagnetic_serial_phi = integrate_linear(
+        electromagnetic_state,
+        grid,
+        geom,
+        electromagnetic_params,
+        dt=1e-6,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=electromagnetic_terms,
+    )
+    electromagnetic_parallel_state, electromagnetic_parallel_phi = integrate_linear(
+        electromagnetic_state,
+        grid,
+        geom,
+        electromagnetic_params,
+        dt=1e-6,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=electromagnetic_terms,
+        parallel=parallel,
+    )
+    assert_species_close(
+        electromagnetic_parallel_state, electromagnetic_serial_state, rtol=8e-5
+    )
+    np.testing.assert_allclose(
+        np.asarray(electromagnetic_parallel_phi),
+        np.asarray(electromagnetic_serial_phi),
+        rtol=8e-5,
+        atol=8e-6,
+    )
     with pytest.raises(NotImplementedError, match="species-parallel IMEX"):
         integrate_linear(
             state,
