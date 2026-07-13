@@ -59,8 +59,8 @@ def test_explicit_nonlinear_integrator_applies_custom_collision_each_step():
     G0 = jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
 
     class DragCollision:
-        def apply(self, state, _cache, _parameters):
-            return -3.0 * state
+        def apply(self, context):
+            return -3.0 * context.distribution
 
     terms = TermConfig(
         streaming=0.0,

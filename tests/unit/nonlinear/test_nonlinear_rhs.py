@@ -87,7 +87,7 @@ def test_nonlinear_rhs_cached_impl_skips_bracket_when_disabled() -> None:
 
 def test_nonlinear_rhs_cached_impl_accepts_custom_collision_operator() -> None:
     G = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
-    fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64))
+    fields = FieldState(phi=2.0 * jnp.ones((1, 1, 2), dtype=jnp.complex64))
     seen: dict[str, object] = {}
 
     def linear_rhs(G_in, _cache, _params, terms, **_kwargs):
@@ -96,10 +96,12 @@ def test_nonlinear_rhs_cached_impl_accepts_custom_collision_operator() -> None:
         return 2.0 * G_in, fields
 
     class DragCollision:
-        def apply(self, state, cache, parameters):
-            seen["cache"] = cache
-            seen["parameters"] = parameters
-            return -3.0 * state
+        def apply(self, context):
+            seen["cache"] = context.cache
+            seen["parameters"] = context.parameters
+            seen["fields"] = context.fields
+            seen["hamiltonian"] = context.hamiltonian
+            return -3.0 * context.distribution
 
     cache = _minimal_cache()
     parameters = SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0]))
@@ -117,6 +119,8 @@ def test_nonlinear_rhs_cached_impl_accepts_custom_collision_operator() -> None:
     assert seen["hypercollision_weight"] == 0.75
     assert seen["cache"] is cache
     assert seen["parameters"] is parameters
+    assert seen["fields"] is fields
+    np.testing.assert_allclose(np.asarray(seen["hamiltonian"]), 3.0)
     np.testing.assert_allclose(np.asarray(rhs), 1.25)
 
 
@@ -125,8 +129,8 @@ def test_nonlinear_rhs_cached_impl_rejects_invalid_collision_shape() -> None:
     fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64))
 
     class InvalidCollision:
-        def apply(self, state, _cache, _parameters):
-            return state[..., 0]
+        def apply(self, context):
+            return context.distribution[..., 0]
 
     with pytest.raises(ValueError, match="same state shape"):
         nonlinear_rhs_cached_impl(

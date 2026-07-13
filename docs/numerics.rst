@@ -327,7 +327,7 @@ Custom collision operators
 --------------------------
 
 Python workflows may supply any JAX-compatible object implementing
-``apply(state, cache, parameters)`` to ``linear_rhs``, ``linear_rhs_cached``,
+``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the
 ``collision_operator`` keyword. The returned array is the unit-weight
 collisional contribution and must match the distribution-state shape. The
@@ -343,8 +343,13 @@ appropriate for differentiable collision-model research because state, cache,
 and parameter arrays remain inside the JAX trace while artifact writing and
 configuration parsing remain outside it.
 
+The context contains both the evolved distribution :math:`G` and the
+post-field Hamiltonian response :math:`H`, plus the solved fields, cache, and
+parameters. This is required for gyroaveraged field-particle terms and keeps
+the callback differentiable without repeating the field solve.
+
 An operator may additionally satisfy ``SplitCollisionOperator`` by defining
-``split_step(state, dt, cache, parameters)``. This advertises a valid
+``split_step(context, dt)``. This advertises a valid
 finite-time update; the general runtime does not route it until the
 operator-specific invariant and entropy gates pass. Built-in
 ``collision_split`` applies only to diagonal hypercollisions. Conserving

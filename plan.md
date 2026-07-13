@@ -201,12 +201,12 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 83% | Runtime comparisons, VMEC state mapping, holdout selection, and nonlinear-gradient evidence now have one owner per domain; an orphan nonlinear comparator is removed; continue toward the enforced 99-file target. |
+| Tool consolidation | 86% | Runtime comparisons, VMEC state mapping, holdout selection, nonlinear-gradient evidence, transport admission, and geometry generation now have one owner per domain; 124 tools remain against the enforced 99-file target. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 65% | Long-wavelength and finite-b gates cover the shipped model; exact conservative cross-species Dougherty primitive moments now pass arbitrary-mass conservation and AD gates. Insert them into the gyroaveraged Hermite--Laguerre RHS and close entropy/relaxation/transport gates before Sugama/Coulomb promotion. |
+| Advanced collision operators | 68% | Long-wavelength and finite-b gates cover the shipped model; exact conservative cross-species Dougherty primitive moments pass arbitrary-mass conservation and AD gates, and custom operators now receive the post-field Hamiltonian response. Derive the normalization-consistent multispecies Hermite--Laguerre projection and close entropy/relaxation/transport gates before Sugama/Coulomb promotion. |
 | Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -281,6 +281,20 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-13: Replaced the pre-field, distribution-only collision callback with
+  a typed post-field ``CollisionContext`` carrying :math:`G`, :math:`H`, solved
+  fields, cache, and parameters. Linear and nonlinear RHS routes disable the
+  built-in term before assembly, then evaluate the custom operator with the
+  same electrostatic/electromagnetic field policy; normal runs pay no new cost
+  and extension runs do not repeat the field solve. Focused tests prove the
+  operator sees :math:`H=G+J_0\phi/T` and preserve weighted replacement,
+  hypercollision independence, shape rejection, JIT integration, and protocol
+  behavior. All 62 linear integration tests and warning-strict documentation
+  pass. The exact Francisquez cross moments are not inserted directly into the
+  existing self-collision restoration because that would mix primitive and
+  normalized gyrokinetic moments without a derivation; the complete projected
+  operator remains explicitly blocked on conservation and entropy gates.
 
 - 2026-07-13: Implemented the exact conservative cross-species primitive
   moments from equations (2.11)--(2.12) of Francisquez et al. (2022). The JAX

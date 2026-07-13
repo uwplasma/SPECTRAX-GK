@@ -29,6 +29,7 @@ from spectraxgk.core.contracts import (
 from spectraxgk.core.extension_points import (
     ArtifactWriter,
     BasisFamily,
+    CollisionContext,
     CollisionOperator,
     Diagnostic,
     FieldSolver,
@@ -257,12 +258,12 @@ def test_extension_point_protocols_accept_structural_implementations() -> None:
             return {"geometry": parameters}
 
     class ToyCollision:
-        def apply(self, state, geometry, parameters):
-            return state
+        def apply(self, context):
+            return context.distribution
 
     class ToySplitCollision(ToyCollision):
-        def split_step(self, state, dt, geometry, parameters):
-            return state
+        def split_step(self, context, dt):
+            return context.distribution
 
     class ToyFieldSolver:
         def solve_fields(self, distribution, geometry, parameters):
@@ -284,6 +285,14 @@ def test_extension_point_protocols_accept_structural_implementations() -> None:
         def write(self, payload, destination):
             return {"destination": destination, "payload": payload}
 
+    context = CollisionContext(
+        distribution=jnp.ones(1),
+        hamiltonian=2.0 * jnp.ones(1),
+        fields={"phi": jnp.zeros(1)},
+        cache={"Jl": jnp.ones(1)},
+        parameters={"nu": 0.1},
+    )
+    assert jnp.allclose(ToyCollision().apply(context), context.distribution)
     assert isinstance(ToyBasis(), BasisFamily)
     assert isinstance(ToyGeometry(), GeometryProvider)
     assert isinstance(ToyCollision(), CollisionOperator)

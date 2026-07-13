@@ -1004,8 +1004,8 @@ def test_linear_cached_rhs_replaces_builtin_collision_operator():
     )
 
     class DragCollision:
-        def apply(self, state, _cache, _parameters):
-            return -3.0 * state
+        def apply(self, context):
+            return -3.0 * context.distribution
 
     dG, _ = linear_rhs_cached(
         G,
@@ -1027,8 +1027,8 @@ def test_linear_cached_rhs_rejects_invalid_collision_shape():
     cache = build_linear_cache(grid, geom, params, Nl=1, Nm=2)
 
     class InvalidCollision:
-        def apply(self, state, _cache, _parameters):
-            return state[..., 0]
+        def apply(self, context):
+            return context.distribution[..., 0]
 
     with pytest.raises(ValueError, match="same state shape"):
         linear_rhs_cached(
@@ -1049,8 +1049,8 @@ def test_linear_integrator_applies_custom_collision_each_step():
     G0 = jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
 
     class DragCollision:
-        def apply(self, state, _cache, _parameters):
-            return -3.0 * state
+        def apply(self, context):
+            return -3.0 * context.distribution
 
     terms = LinearTerms(
         streaming=0.0,

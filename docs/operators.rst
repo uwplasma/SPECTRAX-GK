@@ -196,11 +196,13 @@ This is a conserving Lenard--Bernstein/Dougherty-like model, not a complete
 linearized gyrokinetic Landau operator. The low-order field-particle correction
 is important: the operator cannot be represented only by a diagonal damping
 array. The implementation contract for collision extensions therefore has two
-paths:
+paths. Both receive a post-field ``CollisionContext`` so finite-Larmor-radius
+models can distinguish the evolved distribution :math:`G` from the
+Hamiltonian response :math:`H`:
 
-- ``apply(state, cache, parameters)`` for the complete unit-weight RHS,
+- ``apply(context)`` for the complete unit-weight RHS,
   including low-rank or dense field-particle terms;
-- ``SplitCollisionOperator.split_step(state, dt, cache, parameters)`` as an
+- ``SplitCollisionOperator.split_step(context, dt)`` as an
   optional contract only when the model supplies a mathematically valid exact
   or implicit finite-time update. The runtime does not automatically route this
   method yet. Diagonal hypercollision splitting must not be reused for a
@@ -215,15 +217,24 @@ hypercollisions remain independent:
 .. code-block:: python
 
    class CollisionModel:
-       def apply(self, state, cache, parameters):
-           return collision_rhs(state, cache, parameters)
+       def apply(self, context):
+           return collision_rhs(
+               context.distribution,
+               context.hamiltonian,
+               context.cache,
+               context.parameters,
+           )
 
    rhs, fields = nonlinear_rhs_cached(
        state, cache, parameters, terms,
        collision_operator=CollisionModel(),
    )
 
-The callback is traced by JAX, so its array operations remain differentiable.
+The callback is evaluated after the field solve and traced by JAX, so its array
+operations remain differentiable. ``context.fields`` carries ``phi``, ``apar``,
+and ``bpar``; ``context.hamiltonian`` uses the same enabled-field policy as the
+gyrokinetic RHS. This avoids silently replacing a finite-:math:`b`
+field-particle model by a :math:`G`-only approximation.
 This is an extension contract, not a claim that a Sugama or full linearized
 Coulomb model is already shipped. TOML selection and split integration remain
 disabled until an operator passes the conservation and entropy gates below.
