@@ -57,7 +57,7 @@ Date: 2026-07-13.
 | Installable source Python files | 226 | reviewed domain ownership | closed |
 | Source modules above 1000 lines | 0 | 0 unreviewed | closed |
 | Public/compatibility facade maximum | 472 lines | <=500 lines | closed |
-| Tool Python files | 129 | <=99 grouped commands; no duplicate owners | active |
+| Tool Python files | 99 | <=99 grouped commands; no duplicate owners | closed |
 | Test Python files | 96 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -208,8 +208,8 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 70% | The shipped model now has an independent Appendix-C equation kernel plus production equivalence, invariant, dissipation, and AD gates; finite-b and full-f reference gates remain scoped, and custom operators receive the post-field Hamiltonian response. Build the published linearized Sugama/Coulomb Hermite--Laguerre coefficients with an offline multiple-precision generator and checksummed tables, then close symmetry, adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
-| Nonlinear GPU performance | 96% | Use the admitted memory/streaming profiles to target bracket kernels; require fresh identity and memory evidence for every optimization. |
+| Advanced collision operators | 78% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, AD, and full-f primitive-target gates. A complete linearized Sugama/Coulomb model remains a separate research lane requiring generated coefficients plus symmetry, adjointness, entropy, relaxation, conductivity, ITG, zonal, and convergence gates. |
+| Nonlinear GPU performance | 97% | The bracket has one numerical owner and a clean A4000 profile; an identity-breaking FFT-layout rewrite was rejected. Require fresh identity and memory evidence for every future optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
 | Docs/readme release pass | 100% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
@@ -1537,3 +1537,9 @@ under 5 minutes.
   GPUs were concurrently occupied at 100% by unrelated work; no contaminated
   GPU row is admitted. The clean A4000 profile at ``694fbc42`` remains the
   current hot-path evidence, and no new speedup claim is made.
+
+- 2026-07-13: Re-ran the bounded release-equivalent surface after the streaming,
+  collision, and bracket changes. Both architecture policies, release readiness,
+  Ruff, strict Sphinx, wheel/sdist construction, and Twine metadata pass. The
+  source/test/tool inventories are ``226/96/99``; the plan's stale 129-tool row
+  was corrected. GitHub CI for the final checkpoint is pending, not assumed.
