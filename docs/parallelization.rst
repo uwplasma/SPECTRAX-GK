@@ -395,13 +395,14 @@ streaming-only two-species RHS on a ``(species, m)=(2,2)`` mesh. Quasineutrality
 reduces density over both mesh axes, polarization over species only, and the
 Hermite ladder exchanges one boundary moment within each species row. A
 four-logical-CPU gate matches the serial production RHS and field solve. This
-same scoped RHS reaches ``5.13x`` versus the serial JIT on the tracked host;
+same scoped RHS reaches ``5.29x`` versus the serial JIT on the tracked host;
 the above-ideal value is consistent with reduced per-device working sets and
-is not a general strong-scaling result. This is a diagnostic
-equation/communication contract: adiabatic closure, linked
-boundaries, drifts, collisions, time integration, and speedup remain
-fail-closed outside that exact RHS artifact. The office host has only two GPUs,
-so no mixed-mesh GPU claim can be tested on that machine.
+is not a general strong-scaling result. Euler and RK2 trajectories are
+identity-gated; the tracked 100-step Euler profile is state/field exact and
+reaches ``1.68x``. Adiabatic quasineutrality is also RHS-identity-gated. This
+remains a scoped periodic streaming contract: linked boundaries, drifts,
+collisions, other integrators, and all GPU claims remain fail-closed. The office
+host has only two GPUs, so no mixed-mesh GPU claim can be tested there.
 
 These gates validate communication and numerical identity for bounded linear or
 microkernel paths. They do not validate linked boundaries, complete mixed
@@ -425,8 +426,9 @@ Use the following rules when writing docs, release notes, or papers:
   identity-gated, but do not claim speedup until its matched workload profile
   passes. Other velocity-space ``shard_map`` work remains communication-gated
   and opt-in.
-- Call the mixed species--Hermite streaming backend diagnostic and
-  identity-gated, not a production integrator or speedup path.
+- Call the mixed species--Hermite streaming backend scoped and identity-gated
+  for periodic Euler/RK2 integration. Quote speedup only for its exact tracked
+  four-logical-CPU workload.
 - Do not claim nonlinear speedup from sharding, velocity decomposition, spectral
   toggles, or linear-slice profiles without passing identity gates and fresh
   profiler artifacts for the exact workload, backend, device count, software

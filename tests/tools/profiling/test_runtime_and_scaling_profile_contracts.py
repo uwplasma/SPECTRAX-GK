@@ -428,12 +428,18 @@ def test_tracked_mixed_species_hermite_profile_is_scoped_and_identity_gated() ->
     assert payload["requested_devices"] == 4
     assert payload["actual_devices"] == 4
     assert payload["identity_passed"] is True
-    assert payload["integration"] is None
+    integration = payload["integration"]
+    assert integration["identity_passed"] is True
+    assert integration["speedup_passed"] is True
+    assert integration["speedup"] > 1.0
+    assert integration["state_identity"]["max_abs_error"] <= payload["atol"]
+    assert integration["field_history_identity"]["max_abs_error"] <= payload["atol"]
+    assert "mixed species-Hermite streaming integration" in integration["claim_scope"]
     assert payload["max_rel_error"] <= payload["rtol"]
     assert payload["max_abs_error"] <= payload["atol"]
     assert payload["max_phi_abs_error"] <= payload["atol"]
     assert payload["speedup"] > 1.0
-    assert "not an integration, GPU, or general scaling claim" in payload["claim_scope"]
+    assert "not a GPU or general scaling claim" in payload["claim_scope"]
     assert len(payload["git_revision"]) == 40
 
 
