@@ -289,6 +289,14 @@ That topology is the reference design for the production parallel lane.
   generator command. Deleting the weaker largest-growth selector leaves one
   scientific policy owner and reduces the tool inventory to 128.
 
+- 2026-07-13: Added the physically weighted multispecies collision-invariant
+  diagnostic required before implementing species-coupled field-particle
+  terms. It checks particle conservation for every species and total parallel
+  momentum and thermal energy with the code's species normalization; an AD gate
+  verifies the diagnostic remains differentiable. This deliberately precedes,
+  rather than substitutes for, the mass/temperature-ratio-dependent Sugama or
+  Coulomb operator.
+
 - 2026-07-13: Corrected the finite-Larmor-radius collision claim against
   Mandell, Dorland & Landreman (2018). Finite-``b`` guiding-centre moments are
   not locally conserved because collisions are local in real space; this is not

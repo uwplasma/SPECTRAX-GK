@@ -242,6 +242,21 @@ weights. Release tests use these functions to verify a local-Maxwellian null
 space, all three fluid invariants, and dissipative non-fluid response at
 :math:`b=0`.
 
+``multispecies_collision_invariant_rates`` supplies the stricter acceptance
+contract for a species-coupled model. For species-normalized coefficients it
+returns each particle-density rate and the physically weighted sums
+
+.. math::
+
+   \dot P_\parallel = \sum_s n_s\sqrt{m_s T_s}\,\dot N_s^{10},
+   \qquad
+   \dot E = \sum_s n_s T_s
+   \left(\sqrt{2}\,\dot N_s^{20}+2\dot N_s^{01}\right).
+
+The model is promotable only when every particle rate and both summed rates
+vanish to discretization tolerance. This diagnostic is implemented and
+autodiff-tested; it does not by itself promote a multispecies collision model.
+
 The next model tier is a species-coupled conserving Dougherty operator. The
 research tier after that is the linearized gyrokinetic Sugama/Coulomb operator
 in the Hermite--Laguerre moment basis. Promotion requires discrete Maxwellian

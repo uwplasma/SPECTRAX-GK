@@ -38,6 +38,7 @@ from spectraxgk.terms.linear_terms import (
     collision_invariant_rates,
     collision_quadratic_rate,
     collisions_contribution,
+    multispecies_collision_invariant_rates,
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
 from spectraxgk.terms.config import TermConfig
@@ -451,6 +452,56 @@ def test_collision_diagnostics_validate_shapes_and_weights():
         collision_invariant_rates(jnp.ones((2, 3, 1)))
     with pytest.raises(ValueError, match="Nl >= 2"):
         collision_invariant_rates(jnp.ones((1, 2, 1, 1, 1)))
+
+
+def test_multispecies_collision_diagnostic_uses_physical_moment_weights():
+    """Cross-species gates conserve particles and total momentum/energy."""
+
+    contribution = jnp.zeros((2, 2, 3, 1, 1, 1), dtype=jnp.complex64)
+    density = jnp.asarray([2.0, 0.5], dtype=jnp.float32)
+    mass = jnp.asarray([4.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.0, 9.0], dtype=jnp.float32)
+    momentum_weights = density * jnp.sqrt(mass * temperature)
+    energy_weights = density * temperature
+
+    contribution = contribution.at[0, 0, 1].set(0.75)
+    contribution = contribution.at[1, 0, 1].set(
+        -0.75 * momentum_weights[0] / momentum_weights[1]
+    )
+    contribution = contribution.at[0, 0, 2].set(0.4 / jnp.sqrt(2.0))
+    contribution = contribution.at[1, 1, 0].set(
+        -0.2 * energy_weights[0] / energy_weights[1]
+    )
+    rates = multispecies_collision_invariant_rates(
+        contribution, density=density, mass=mass, temperature=temperature
+    )
+
+    np.testing.assert_allclose(np.asarray(rates.particle_density), 0.0, atol=1.0e-7)
+    np.testing.assert_allclose(
+        np.asarray(rates.total_parallel_momentum), 0.0, atol=1.0e-7
+    )
+    np.testing.assert_allclose(
+        np.asarray(rates.total_thermal_energy), 0.0, atol=1.0e-7
+    )
+    energy_gradient = jax.grad(
+        lambda scale: jnp.real(
+            multispecies_collision_invariant_rates(
+                scale * contribution,
+                density=density,
+                mass=mass,
+                temperature=temperature,
+            ).total_thermal_energy.sum()
+        )
+    )(jnp.asarray(1.0, dtype=jnp.float32))
+    np.testing.assert_allclose(np.asarray(energy_gradient), 0.0, atol=1.0e-7)
+
+    with pytest.raises(ValueError, match="mass must have length 2"):
+        multispecies_collision_invariant_rates(
+            contribution,
+            density=density,
+            mass=jnp.asarray([1.0]),
+            temperature=temperature,
+        )
 
 
 def test_collisions_contribution_accepts_low_rank_lb_lam():
