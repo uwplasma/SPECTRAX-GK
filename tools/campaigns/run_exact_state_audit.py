@@ -25,6 +25,10 @@ from typing import Any
 from spectraxgk.workflows.runtime.toml import load_toml
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+COMPARISON_TOOL_DIR = REPO_ROOT / "tools" / "comparison"
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
@@ -59,6 +63,15 @@ def _tool_env(repo_root: Path) -> dict[str, str]:
         entries.append(existing)
     env["PYTHONPATH"] = os.pathsep.join(entries)
     return env
+
+
+def _comparison_tool_path(name: str) -> Path:
+    """Return one checked comparison command from the repository tool layout."""
+
+    path = COMPARISON_TOOL_DIR / name
+    if not path.is_file():
+        raise FileNotFoundError(f"comparison tool does not exist: {path}")
+    return path
 
 
 def _run_tool(
@@ -144,9 +157,6 @@ def main() -> None:
     selected = [args.lane] if args.lane is not None else list(lanes.keys())
     out_root = args.outdir.expanduser().resolve()
     py = str(args.python)
-    here = Path(__file__).resolve().parent
-    repo_root = here.parent
-
     summary: dict[str, Any] = {"manifest": str(manifest_path), "lanes": {}}
 
     for lane_key in selected:
@@ -172,12 +182,12 @@ def main() -> None:
             lane_summary["env"] = env_updates
 
         with _temporary_env(env_updates):
-            tool_env = _tool_env(repo_root)
+            tool_env = _tool_env(REPO_ROOT)
             if "startup" in cfg:
                 st = cfg["startup"]
                 cmd = [
                     py,
-                    str(here / "compare_gx_runtime_startup.py"),
+                    str(_comparison_tool_path("compare_gx_runtime_startup.py")),
                     "--gx-dir",
                     str(
                         _resolve_manifest_path(st["gx_dir"], manifest_dir=manifest_dir)
@@ -194,14 +204,17 @@ def main() -> None:
                 if "y0" in st:
                     cmd += ["--y0", str(st["y0"])]
                 lane_summary["startup"] = _run_tool(
-                    cmd, cwd=here, log_path=out_dir / "startup.log", env=tool_env
+                    cmd,
+                    cwd=COMPARISON_TOOL_DIR,
+                    log_path=out_dir / "startup.log",
+                    env=tool_env,
                 )
 
             if "diag_state" in cfg:
                 ds = cfg["diag_state"]
                 cmd = [
                     py,
-                    str(here / "compare_gx_runtime_diag_state.py"),
+                    str(_comparison_tool_path("compare_gx_runtime_diag_state.py")),
                     "--gx-dir",
                     str(
                         _resolve_manifest_path(ds["gx_dir"], manifest_dir=manifest_dir)
@@ -218,14 +231,17 @@ def main() -> None:
                 if "y0" in ds:
                     cmd += ["--y0", str(ds["y0"])]
                 lane_summary["diag_state"] = _run_tool(
-                    cmd, cwd=here, log_path=out_dir / "diag_state.log", env=tool_env
+                    cmd,
+                    cwd=COMPARISON_TOOL_DIR,
+                    log_path=out_dir / "diag_state.log",
+                    env=tool_env,
                 )
 
             if "window" in cfg:
                 w = cfg["window"]
                 cmd = [
                     py,
-                    str(here / "compare_gx_runtime_window.py"),
+                    str(_comparison_tool_path("compare_gx_runtime_window.py")),
                     "--gx-dir",
                     str(_resolve_manifest_path(w["gx_dir"], manifest_dir=manifest_dir)),
                     "--gx-out",
@@ -246,7 +262,10 @@ def main() -> None:
                 if "y0" in w:
                     cmd += ["--y0", str(w["y0"])]
                 lane_summary["window"] = _run_tool(
-                    cmd, cwd=here, log_path=out_dir / "window.log", env=tool_env
+                    cmd,
+                    cwd=COMPARISON_TOOL_DIR,
+                    log_path=out_dir / "window.log",
+                    env=tool_env,
                 )
 
         summary["lanes"][lane_key] = lane_summary

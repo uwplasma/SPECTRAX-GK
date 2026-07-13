@@ -8,10 +8,28 @@ import tomllib
 import pytest
 
 from tools.campaigns.run_exact_state_audit import (
+    COMPARISON_TOOL_DIR,
+    REPO_ROOT,
+    _comparison_tool_path,
     _resolve_manifest_path,
     _tool_env,
     build_parser,
 )
+
+
+def test_exact_state_tool_layout_resolves_repository_commands() -> None:
+    repo = Path(__file__).resolve().parents[3]
+    assert REPO_ROOT == repo
+    assert COMPARISON_TOOL_DIR == repo / "tools" / "comparison"
+    for name in (
+        "compare_gx_runtime_startup.py",
+        "compare_gx_runtime_diag_state.py",
+        "compare_gx_runtime_window.py",
+    ):
+        assert _comparison_tool_path(name) == COMPARISON_TOOL_DIR / name
+
+    with pytest.raises(FileNotFoundError, match="comparison tool does not exist"):
+        _comparison_tool_path("missing.py")
 
 
 def test_run_exact_state_audit_parser_accepts_core_args() -> None:

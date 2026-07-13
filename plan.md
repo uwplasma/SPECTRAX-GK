@@ -201,7 +201,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
+| Tool consolidation | 72% | The exact-state orchestrator now resolves purpose-folder commands correctly; split shared command engines before deleting more wrappers so grouped owners stay below the architecture size limit. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 96% | Physical Rayleigh refinement lowers shift-invert residuals without weakening rejection; a residual-convergent KBM restart/preconditioner remains before broad branch promotion. |
@@ -1019,3 +1019,9 @@ under 5 minutes.
   streaming case improves from ``0.0655`` to ``0.0472`` and passes a ``0.06``
   nearest-shift gate, while the deliberately under-resolved targeted case still
   fails closed. KBM remains unpromoted pending a stronger restart/preconditioner.
+- 2026-07-13: Repaired the exact-state comparison orchestrator after its move
+  into ``tools/campaigns``. It had still searched for comparison commands in
+  the campaign directory and built ``PYTHONPATH`` from ``tools/``; checked
+  repository/comparison roots now make all three command paths executable, and
+  nine focused tests pass. The architecture snapshot now records the actual
+  134-tool inventory instead of the stale 213-script migration count.
