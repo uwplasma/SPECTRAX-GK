@@ -1037,6 +1037,30 @@ def test_sheared_transport_preserves_x64_scan_carry_dtype() -> None:
     assert np.isfinite(np.asarray(trace.heat_flux)).all()
 
 
+def test_sheared_imex_promotes_complex64_input_to_x64_operator_dtype() -> None:
+    grid, geom, params, _cache, state, terms = _small_sheared_transport_case()
+    enable_x64 = getattr(jax, "enable_x64", None)
+    if enable_x64 is None:
+        enable_x64 = jax.experimental.enable_x64
+    with enable_x64():
+        cache = build_linear_cache(grid, geom, params, Nl=1, Nm=4)
+        trace = integrate_nonlinear_sheared_transport(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=1,
+            shear_rate=0.01,
+            method="imex",
+            cache=cache,
+            terms=terms,
+        )
+
+    assert trace.final_state.dtype == jnp.complex128
+    assert np.isfinite(np.asarray(trace.heat_flux)).all()
+
+
 def test_sheared_transport_scale_does_not_change_trajectory() -> None:
     grid, geom, params, cache, state, terms = _small_sheared_transport_case()
 

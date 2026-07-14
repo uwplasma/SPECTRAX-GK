@@ -2006,3 +2006,12 @@ under 5 minutes.
   and custom collision operators remain fail-closed. Flow shear remains absent
   from input files until the full-resolution fixed-step matched-response window
   is closed.
+
+- 2026-07-14: The first clean full-grid A4000/x64 sheared-IMEX probe found a
+  dtype-policy bug before taking a timestep: a runtime-built ``complex64``
+  initial state entered an implicit operator whose x64 state was
+  ``complex128``. The sheared scan now follows the established implicit-solver
+  precision policy and casts the endpoint warm start and right-hand side to the
+  operator dtype. A dedicated x64 regression starts from ``complex64``, returns
+  ``complex128``, and preserves finite transport; the forward/reverse transport
+  gradient gate remains passed.
