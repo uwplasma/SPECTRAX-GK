@@ -222,6 +222,92 @@ def test_collision_matrix_kperp_interpolation_species_jvp_and_validation() -> No
         interpolate_collision_moment_matrix(grid, species_table, jnp.ones((3, 1)))
 
 
+def test_multispecies_collision_pair_table_interpolates_and_applies_in_jax() -> None:
+    """Ordered-pair finite-b tables retain pair identity and the b=0 invariants."""
+
+    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
+    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    matrix_zero = assemble_drift_kinetic_improved_sugama_matrix(
+        density, mass, temperature
+    )
+    grid = jnp.asarray([0.0, 0.5, 1.0], dtype=jnp.float32)
+    pair_slopes = jnp.asarray([[0.2, -0.1], [0.35, 0.15]], dtype=jnp.float32)
+    table = jnp.stack(
+        [
+            matrix_zero
+            * (1.0 + value * pair_slopes[..., None, None])
+            for value in grid
+        ],
+        axis=2,
+    )
+    target = jnp.asarray(
+        [[[[0.0, 0.25]]], [[[0.75, 1.0]]]], dtype=jnp.float32
+    )
+    interpolated = jax.jit(
+        lambda value: interpolate_collision_moment_matrix(grid, table, value)
+    )(target)
+    factors = 1.0 + pair_slopes[..., None, None, None] * target[:, None, ...]
+    expected = matrix_zero[..., None, None, None] * factors[:, :, None, None, ...]
+    np.testing.assert_allclose(interpolated, expected, rtol=2.0e-6, atol=2.0e-6)
+
+    state = (
+        1.0e-2
+        * (
+            jnp.arange(2 * 2 * 4 * 2, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 2)
+            + 0.13j
+        )
+    ).astype(jnp.complex64)
+    applied = jax.jit(apply_multispecies_collision_moment_matrix)(
+        state, interpolated
+    )
+    for spatial_index in range(2):
+        direct = apply_multispecies_collision_moment_matrix(
+            state[..., spatial_index : spatial_index + 1],
+            expected[..., spatial_index : spatial_index + 1],
+        )
+        np.testing.assert_allclose(
+            applied[..., spatial_index : spatial_index + 1],
+            direct,
+            rtol=2.0e-6,
+            atol=2.0e-6,
+        )
+
+    zero_matrix = interpolate_collision_moment_matrix(
+        grid, table, jnp.asarray(0.0, dtype=jnp.float32)
+    )
+    zero_contribution = apply_multispecies_collision_moment_matrix(state, zero_matrix)
+    zero_rates = multispecies_collision_invariant_rates(
+        zero_contribution,
+        density=density,
+        mass=mass,
+        temperature=temperature,
+    )
+    np.testing.assert_allclose(zero_rates.particle_density, 0.0, atol=2.0e-6)
+    np.testing.assert_allclose(zero_rates.total_parallel_momentum, 0.0, atol=4.0e-6)
+    np.testing.assert_allclose(zero_rates.total_thermal_energy, 0.0, atol=1.0e-5)
+
+    direction = jnp.asarray(
+        [[[[0.0, 0.2]]], [[[-0.1, 0.0]]]], dtype=jnp.float32
+    )
+    tangent = jax.jvp(
+        lambda value: interpolate_collision_moment_matrix(grid, table, value),
+        (target,),
+        (direction,),
+    )[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        interpolate_collision_moment_matrix(grid, table, target + step * direction)
+        - interpolate_collision_moment_matrix(grid, table, target - step * direction)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=6.0e-4, atol=6.0e-4)
+
+    with pytest.raises(ValueError, match="equal target/source axes"):
+        interpolate_collision_moment_matrix(grid, table[:, :1], jnp.asarray(0.4))
+    with pytest.raises(ValueError, match="target-species-leading"):
+        interpolate_collision_moment_matrix(grid, table, jnp.ones((3, 1)))
+
+
 def test_collision_table_converges_for_physical_finite_larmor_operator() -> None:
     """Held-out Mandell finite-b matrices converge at interpolation design order."""
 

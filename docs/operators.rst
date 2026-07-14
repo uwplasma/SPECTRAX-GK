@@ -346,12 +346,19 @@ shared or one matrix per species in JAX, and restores the state layout.
 ``interpolate_collision_moment_matrix`` provides the finite-:math:`b` runtime
 boundary: it linearly interpolates a strictly increasing :math:`k_\perp` table
 on device, clamps only outside the generated range, and accepts either one
-shared table or an explicit table per species. The resulting matrix may vary at
-every perpendicular/parallel grid point without leaving traced JAX execution.
+shared table, an explicit table per species, or an ordered target/source pair
+table with shape ``(target, source, kperp, moment, moment)``. Pair tables use
+the target species' :math:`k_\perp` field, matching the species-dependent
+gyroradius convention, and return the spatial matrix layout consumed directly
+by ``apply_multispecies_collision_moment_matrix``. The resulting matrix may
+vary at every perpendicular/parallel grid point without leaving traced JAX
+execution.
 Tests require node and endpoint identity, generated-table/direct-equation
 identity for both models, species-local spatial application, and JVP/finite-
 difference agreement through state amplitude, collision frequency, and an
-interior :math:`k_\perp` target. A separate held-out gate constructs matrices
+interior :math:`k_\perp` target. The ordered-pair gate additionally checks JIT
+application, pair-block identity, zero-:math:`b` multispecies invariants, and
+target-species-leading spatial interpolation. A separate held-out gate constructs matrices
 from the implemented Mandell--Dorland--Landreman finite-Larmor-radius collision
 equations, never from the interpolator, and recovers the expected second-order
 table-spacing convergence against direct operator evaluations.

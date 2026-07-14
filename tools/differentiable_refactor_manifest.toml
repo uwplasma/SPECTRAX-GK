@@ -1926,15 +1926,18 @@ module = "spectraxgk.operators.linear.cache_arrays"
 source_path = "src/spectraxgk/operators/linear/cache_arrays.py"
 facade_module = "spectraxgk.operators.linear"
 status = "active"
-responsibility = "moment, damping, end-damping, and gyroaverage array factories used by linear and nonlinear operators"
+responsibility = "moment, damping, gyroaverage, and provenance-checked collision matrix factories, interpolation, and application used by linear and nonlinear operators"
 moved_exports = [
   "_build_end_damping_profile_array",
   "_build_gyroaverage_cache_arrays",
   "_build_low_rank_moment_cache_arrays",
   "collision_damping",
   "hypercollision_damping",
+  "interpolate_collision_moment_matrix",
+  "apply_collision_moment_matrix",
+  "apply_multispecies_collision_moment_matrix",
 ]
-fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/operators/test_operator_kernels.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

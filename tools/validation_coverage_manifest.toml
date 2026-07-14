@@ -330,14 +330,17 @@ reference_anchors = [
 physics_contracts = [
   "cached gyroaverages, drifts, magnetic geometry, and damping factors preserve the operator seen by RHS kernels",
   "species-dependent collision and hypercollision factors keep the intended multi-species broadcast semantics",
+  "ordered target/source finite-wavelength collision tables preserve the zero-kperp multispecies invariant boundary before any full Sugama/Coulomb promotion",
 ]
 numerics_contracts = [
   "LinearCache remains a stable JAX pytree with deterministic flatten/unflatten ordering",
   "cache builders preserve dtype policy, linked-boundary metadata, dealias masks, and moment-space array shapes",
+  "shared, per-species, and ordered-pair collision tables interpolate and differentiate on device with explicit target-species spatial semantics",
 ]
 fast_tests = [
   "tests/unit/linear/test_linear.py",
   "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/operators/test_operator_kernels.py",
   "tests/unit/geometry/test_geometry.py",
 ]
 artifact_paths = [
