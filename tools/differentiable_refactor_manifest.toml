@@ -439,19 +439,6 @@ fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.diagnostics.growth_series"
-source_path = "src/spectraxgk/diagnostics/growth_series.py"
-facade_module = "spectraxgk.diagnostics.growth_rates"
-status = "active"
-responsibility = "instantaneous and windowed growth/frequency extraction from resolved mode time series"
-moved_exports = [
-  "instantaneous_growth_rate_from_phi",
-  "windowed_growth_rate_from_omega_series",
-]
-fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.geometry.analytic"
 source_path = "src/spectraxgk/geometry/analytic.py"
 facade_module = "spectraxgk.geometry.core"

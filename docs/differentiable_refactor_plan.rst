@@ -166,9 +166,9 @@ dependency/policy helpers, linear save paths, streaming fits, and nonlinear
 paths live in focused owner modules.
 Growth diagnostics follow the same rule: ``diagnostics.growth_rates`` remains
 the stable public facade for examples and runtime workflows, while
-``diagnostics.growth_fit``, ``diagnostics.growth_windows``, and
-``diagnostics.growth_series`` own least-squares fitting, automatic fit-window
-selection, and resolved mode-series diagnostics.
+``diagnostics.growth_fit`` and ``diagnostics.growth_windows`` own reusable
+least-squares fitting and automatic fit-window selection; resolved mode-series
+diagnostics stay with their public ``diagnostics.growth_rates`` owner.
 Validation gates now live in one physical diagnostics owner:
 ``diagnostics.validation_gates`` owns frozen metric/result containers, scalar
 tolerance evaluation, JSON serialization, and physics/numerics report builders.

@@ -264,7 +264,6 @@ owned_modules = [
   "spectraxgk.diagnostics.analysis",
   "spectraxgk.diagnostics.growth_fit",
   "spectraxgk.diagnostics.growth_rates",
-  "spectraxgk.diagnostics.growth_series",
   "spectraxgk.diagnostics.growth_windows",
   "spectraxgk.diagnostics.modes",
   "spectraxgk.core.velocity",

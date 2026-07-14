@@ -113,7 +113,6 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``diagnostics/growth_rates.py``
    - ``diagnostics/growth_fit.py``
    - ``diagnostics/growth_windows.py``
-   - ``diagnostics/growth_series.py``
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/diagnostic_arrays.py``
    - ``workflows/runtime/results.py``
@@ -168,7 +167,7 @@ Physics / Numerics / IO Map
      - ``api/__init__.py``
      - compact lazy public export registry, top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
    * - Diagnostic extraction and growth-rate fitting
-     - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``, ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, ``diagnostics/growth_series.py``, ``diagnostics/quasilinear_transport.py``
+     - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``, ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, ``diagnostics/quasilinear_transport.py``
      - mode selection, eigenfunction extraction, least-squares growth/frequency fitting, automatic fit-window selection, quasilinear transport weights and saturation helpers, late-time growth/frequency tests
    * - Artifacts and plots
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
@@ -219,8 +218,8 @@ Completed extractions:
 - mode selection/eigenfunction extraction and late-time growth/frequency
   fitting:
   ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``,
-  ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, and
-  ``diagnostics/growth_series.py``. The public ``diagnostics.analysis`` and
+  ``diagnostics/growth_fit.py``, and ``diagnostics/growth_windows.py``. The
+  public ``diagnostics.analysis`` and
   ``diagnostics.growth_rates`` modules remain small facades over focused
   diagnostic owners. Fit-window selection keeps argument validation,
   least-squares scoring, amplitude/slope thresholds, candidate-window search,

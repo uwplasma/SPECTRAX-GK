@@ -22,13 +22,12 @@ from spectraxgk.diagnostics.analysis import (
 )
 
 
-def test_growth_rate_public_facades_point_to_focused_modules() -> None:
-    """Growth diagnostics keep stable imports while implementation owners split."""
+def test_growth_rate_public_facades_point_to_numerical_owners() -> None:
+    """Growth diagnostics keep stable imports with one owner per algorithm."""
 
     import spectraxgk.diagnostics.analysis as analysis
     import spectraxgk.diagnostics.growth_fit as growth_fit
     import spectraxgk.diagnostics.growth_rates as growth_rates
-    import spectraxgk.diagnostics.growth_series as growth_series
     import spectraxgk.diagnostics.growth_windows as growth_windows
 
     assert growth_rates.fit_growth_rate is growth_fit.fit_growth_rate
@@ -40,13 +39,11 @@ def test_growth_rate_public_facades_point_to_focused_modules() -> None:
         growth_rates.select_fit_window_loglinear
         is growth_windows.select_fit_window_loglinear
     )
-    assert (
-        growth_rates.instantaneous_growth_rate_from_phi
-        is growth_series.instantaneous_growth_rate_from_phi
+    assert growth_rates.instantaneous_growth_rate_from_phi.__module__ == (
+        "spectraxgk.diagnostics.growth_rates"
     )
-    assert (
-        growth_rates.windowed_growth_rate_from_omega_series
-        is growth_series.windowed_growth_rate_from_omega_series
+    assert growth_rates.windowed_growth_rate_from_omega_series.__module__ == (
+        "spectraxgk.diagnostics.growth_rates"
     )
     assert analysis.fit_growth_rate is growth_rates.fit_growth_rate
     assert analysis.fit_growth_rate_auto is growth_rates.fit_growth_rate_auto

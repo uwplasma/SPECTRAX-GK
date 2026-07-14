@@ -652,12 +652,6 @@ Growth-Rate Fit Windows
 .. automodule:: spectraxgk.diagnostics.growth_windows
    :members:
 
-Growth-Rate Time Series
------------------------
-
-.. automodule:: spectraxgk.diagnostics.growth_series
-   :members:
-
 Runtime Output Plots
 --------------------
 
