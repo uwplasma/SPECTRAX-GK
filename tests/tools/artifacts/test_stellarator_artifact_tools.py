@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_status_readiness_artifacts.py ----
 
 """Tests for status, readiness, and closure artifact dashboards."""
@@ -3985,7 +3984,6 @@ def test_strategy_report_cli_writes_artifacts(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".png").exists()
 
 
-
 def test_default_candidate_sources_are_authoritative_sidecar_or_payload_fallback() -> (
     None
 ):
@@ -3995,7 +3993,9 @@ def test_default_candidate_sources_are_authoritative_sidecar_or_payload_fallback
     assert "vmec_jax_qa_transport_authoritative_sidecar" in str(
         candidate_mod.DEFAULT_TRANSPORT_DIR
     )
-    assert "vmec_jax_qa_promotion_smoke" not in str(candidate_mod.DEFAULT_CONSTRAINTS_DIR)
+    assert "vmec_jax_qa_promotion_smoke" not in str(
+        candidate_mod.DEFAULT_CONSTRAINTS_DIR
+    )
     assert "vmec_jax_qa_promotion_smoke" not in str(candidate_mod.DEFAULT_TRANSPORT_DIR)
     assert (
         candidate_mod.DEFAULT_PAYLOAD_JSON.name
@@ -4298,7 +4298,6 @@ def test_candidate_comparison_plot_handles_normalized_gate_metrics(
 
     assert out.exists()
     assert out.stat().st_size > 0
-
 
 
 def _candidate(
@@ -4738,7 +4737,6 @@ def test_parse_args_accepts_campaign_admission_json(
     args = status_mod._parse_args()
 
     assert args.campaign_admission_json == campaign
-
 
 
 def _write_case(
@@ -5228,7 +5226,6 @@ def test_payload_records_normalized_optimizer_comparison_metadata(
     assert payload["summary"]["strict_nonlinear_audit_policy"]["window_tmin"] == 1100.0
 
 
-
 def test_gradient_diagnostic_defaults_to_multisample_transport_contract(
     tmp_path: Path,
 ) -> None:
@@ -5301,8 +5298,12 @@ def test_gradient_diagnostic_records_sample_coverage(
         return Path(out_json)
 
     monkeypatch.setattr(gradient_mod, "_build_stage", fake_stage_builder)
-    monkeypatch.setattr(gradient_mod, "build_boundary_transport_gradient_report", fake_report)
-    monkeypatch.setattr(gradient_mod, "write_boundary_transport_gradient_report", fake_write)
+    monkeypatch.setattr(
+        gradient_mod, "build_boundary_transport_gradient_report", fake_report
+    )
+    monkeypatch.setattr(
+        gradient_mod, "write_boundary_transport_gradient_report", fake_write
+    )
 
     rc = gradient_mod.main(
         [
@@ -5580,12 +5581,10 @@ def test_gradient_diagnostic_surface_chunking_aggregates_raw_weighted_gradient(
 """Tests for VMEC artifact reports outside the VMEC/Boozer aggregate suite."""
 
 
-
 from netCDF4 import Dataset
 import pytest
 
 from support.paths import load_artifact_tool
-
 
 
 # External VMEC replicate ensemble assertions
@@ -5743,73 +5742,53 @@ def test_replicate_ensemble_tool_handles_requested_window_outside_trace(
     assert (out_dir / "replicate_ensemble_gate.png").exists()
 
 
-def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(
+@pytest.mark.parametrize(
+    ("filename", "baseline_dt", "expected"),
+    [
+        (
+            "demo_nonlinear_t100_n64_seed32_dt0p04.out.nc",
+            0.05,
+            ("seed_timestep", "seed32_dt0p04", 32, 0.04),
+        ),
+        (
+            "demo_nonlinear_t250_n48_dt0p01_gpu.out.nc",
+            0.05,
+            ("timestep", "dt0p01", 22, 0.01),
+        ),
+        (
+            "solovev_reference_repair_dt002_amp1em5_n48_seed31.out.nc",
+            0.02,
+            ("seed", "seed31", 31, 0.02),
+        ),
+        (
+            "solovev_reference_repair_dt002_amp1em5_n48_dt0p01_gpu.out.nc",
+            0.02,
+            ("timestep", "dt0p01", 22, 0.01),
+        ),
+    ],
+    ids=["joint", "device_suffix", "protocol_dt_seed", "protocol_dt_timestep"],
+)
+def test_replicate_ensemble_tool_parses_variant_contract(
     tmp_path: Path,
+    filename: str,
+    baseline_dt: float,
+    expected: tuple[str, str, int, float],
 ) -> None:
     mod = load_artifact_tool("build_external_vmec_replicate_ensemble")
+    axis, label, seed, timestep = expected
+
     variant = mod._variant_from_path(
-        tmp_path / "demo_nonlinear_t100_n64_seed32_dt0p04.out.nc",
+        tmp_path / filename,
         baseline_seed=22,
-        baseline_dt=0.05,
+        baseline_dt=baseline_dt,
     )
 
     assert variant == {
-        "variant_axis": "seed_timestep",
-        "variant_label": "seed32_dt0p04",
-        "seed": 32,
-        "dt": 0.04,
-        "variant": {"seed": 32, "timestep": 0.04},
-    }
-
-
-def test_replicate_ensemble_tool_parses_timestep_variant_with_device_suffix(
-    tmp_path: Path,
-) -> None:
-    mod = load_artifact_tool("build_external_vmec_replicate_ensemble")
-    variant = mod._variant_from_path(
-        tmp_path / "demo_nonlinear_t250_n48_dt0p01_gpu.out.nc",
-        baseline_seed=22,
-        baseline_dt=0.05,
-    )
-
-    assert variant == {
-        "variant_axis": "timestep",
-        "variant_label": "dt0p01",
-        "seed": 22,
-        "dt": 0.01,
-        "variant": {"seed": 22, "timestep": 0.01},
-    }
-
-
-def test_replicate_ensemble_tool_ignores_protocol_dt_in_case_slug(
-    tmp_path: Path,
-) -> None:
-    mod = load_artifact_tool("build_external_vmec_replicate_ensemble")
-
-    seed_variant = mod._variant_from_path(
-        tmp_path / "solovev_reference_repair_dt002_amp1em5_n48_seed31.out.nc",
-        baseline_seed=22,
-        baseline_dt=0.02,
-    )
-    timestep_variant = mod._variant_from_path(
-        tmp_path / "solovev_reference_repair_dt002_amp1em5_n48_dt0p01_gpu.out.nc",
-        baseline_seed=22,
-        baseline_dt=0.02,
-    )
-
-    assert seed_variant == {
-        "variant_axis": "seed",
-        "variant_label": "seed31",
-        "seed": 31,
-        "dt": 0.02,
-        "variant": {"seed": 31, "timestep": 0.02},
-    }
-    assert timestep_variant == {
-        "variant_axis": "timestep",
-        "variant_label": "dt0p01",
-        "seed": 22,
-        "dt": 0.01,
-        "variant": {"seed": 22, "timestep": 0.01},
+        "variant_axis": axis,
+        "variant_label": label,
+        "seed": seed,
+        "dt": timestep,
+        "variant": {"seed": seed, "timestep": timestep},
     }
 
 
@@ -5895,7 +5874,13 @@ def test_build_collection_main_writes_json(tmp_path: Path) -> None:
     )
 
     rc = load_artifact_tool("build_vmec_state_to_input_mapping_response").main(
-        ["boundary-chain-collection", "--probe-json", str(first), "--out-json", str(out)]
+        [
+            "boundary-chain-collection",
+            "--probe-json",
+            str(first),
+            "--out-json",
+            str(out),
+        ]
     )
 
     payload = json.loads(out.read_text(encoding="utf-8"))

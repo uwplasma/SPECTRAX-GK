@@ -2075,3 +2075,10 @@ under 5 minutes.
   builders directly from their focused owners. This lowers the source target
   from 224 to 223 files and removes 102 lines of aggregation without changing
   the reduced model or its explicitly scoped validation claims.
+
+- 2026-07-14: Began line-oriented test consolidation without deleting
+  scientific gates. Four external-VMEC replicate filename/protocol cases now
+  share one parameterized contract covering joint seed/timestep labels, device
+  suffixes, and protection against protocol ``dt`` tokens in case slugs. The
+  collected behavioral cases increase from three tests to four parameter rows
+  while repeated setup and assertions are removed.
