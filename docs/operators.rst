@@ -395,6 +395,19 @@ projection, verifies the reported sub-0.1% tail at :math:`b=1,N=3`, and checks
 JIT and JVP/finite-difference agreement. This validates one generator building
 block; it does not supply the collision-specific coupling coefficients.
 
+``associated_bessel_laguerre_coefficients`` implements the complete
+equation-(2.12) prefactor for arbitrary non-negative Bessel order :math:`m`,
+
+.. math::
+
+   A_n^m(b)=\frac{n!}{(n+m)!}\left(\frac{b}{2}\right)^m K_n(b).
+
+Direct reconstructions of :math:`J_m(b\sqrt{x})` for :math:`m=0,1,2` agree
+with an independent special-function implementation over the tested
+wavenumber and velocity domain. This closes the Bessel-expansion layer used by
+the collision sums, but not the speed-function or test-/field-particle
+contractions themselves.
+
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.

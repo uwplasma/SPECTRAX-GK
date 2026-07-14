@@ -627,9 +627,11 @@ The exact Bessel--Laguerre kernel entering those sums is already implemented as
 avoids factorial overflow, and is independently checked by velocity-space
 quadrature and the finite-:math:`b` truncation behavior reported by
 `Frei et al. (2021) <https://doi.org/10.1017/S0022377821000761>`_. The
-collision-specific test- and field-particle sums remain offline-generator work;
-the presence of this kernel must not be interpreted as a complete finite-
-:math:`b` Sugama or Coulomb operator.
+associated-Laguerre prefactors for :math:`J_m`, :math:`m=0,1,2`, additionally
+reconstruct the independent Bessel functions over velocity space. The
+collision-specific speed-function and test-/field-particle sums remain
+offline-generator work; these expansion primitives must not be interpreted as
+a complete finite-:math:`b` Sugama or Coulomb operator.
 
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,

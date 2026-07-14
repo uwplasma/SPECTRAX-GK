@@ -9,12 +9,13 @@ import jax.numpy as jnp
 import jax.scipy.linalg
 import numpy as np
 import pytest
-from scipy.special import eval_laguerre, j0
+from scipy.special import eval_genlaguerre, eval_laguerre, j0, jv
 
 from spectraxgk.config import GridConfig
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import (
     J_l_all,
+    associated_bessel_laguerre_coefficients,
     bessel_laguerre_kernels,
     gamma0,
     sum_Jl2,
@@ -152,6 +153,43 @@ def test_bessel_laguerre_kernel_convergence_and_derivative() -> None:
 
     with pytest.raises(ValueError, match="n_max"):
         bessel_laguerre_kernels(b, -1)
+
+
+@pytest.mark.parametrize("bessel_order", [0, 1, 2])
+def test_associated_bessel_laguerre_expansion_recovers_bessel_function(
+    bessel_order: int,
+) -> None:
+    """Frei et al. Eq. (2.12) must reconstruct J_m over velocity space."""
+    b_values = np.asarray([0.0, 0.5, 1.0, 2.0])
+    x = np.linspace(0.0, 8.0, 41)
+    coefficients = np.asarray(
+        jax.jit(
+            lambda value: associated_bessel_laguerre_coefficients(
+                value, bessel_order, 24
+            )
+        )(jnp.asarray(b_values))
+    )
+    polynomials = np.stack([eval_genlaguerre(n, bessel_order, x) for n in range(25)])
+    reconstructed = x[None, :] ** (0.5 * bessel_order) * np.einsum(
+        "nb,nx->bx", coefficients, polynomials
+    )
+    expected = jv(bessel_order, b_values[:, None] * np.sqrt(x[None, :]))
+    np.testing.assert_allclose(reconstructed, expected, rtol=3.0e-5, atol=3.0e-6)
+
+    if bessel_order == 0:
+        np.testing.assert_allclose(
+            coefficients,
+            np.asarray(bessel_laguerre_kernels(jnp.asarray(b_values), 24)),
+            rtol=2.0e-6,
+            atol=2.0e-7,
+        )
+
+
+def test_associated_bessel_laguerre_coefficients_validate_orders() -> None:
+    with pytest.raises(ValueError, match="bessel_order"):
+        associated_bessel_laguerre_coefficients(jnp.asarray(1.0), -1, 2)
+    with pytest.raises(ValueError, match="n_max"):
+        associated_bessel_laguerre_coefficients(jnp.asarray(1.0), 0, -1)
 
 
 @pytest.mark.parametrize(
