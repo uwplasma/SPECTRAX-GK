@@ -204,8 +204,8 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
-| Test consolidation | 94% | The 96-file topology target is met, and the suite is down to 93,940 lines. The largest artifact-tool owner is 6,227 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols now use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
-| Source consolidation | 98.2% | The 223-file/zero-exception architecture gate passes after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver policy, and removing private compatibility exports from solver and operator facades. The package has 88,099 lines and no module at the 1,000-line ceiling; continue reducing the remaining near-ceiling owners without flattening meaningful staging boundaries. |
+| Test consolidation | 94% | The 96-file topology target is met, and the suite has 93,977 lines after canonical-owner injection replaced facade monkeypatch synchronization. The largest artifact-tool owner is 6,227 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols now use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
+| Source consolidation | 98.5% | The 223-file/zero-exception architecture gate passes after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver policy, and removing private compatibility exports from solver, operator, and VMEC transport facades. The package has 87,983 lines and no module at the 1,000-line ceiling; continue reducing near-ceiling owners without flattening meaningful staging boundaries. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 98% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and target/source species/spatial JAX application reproduce the direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring arbitrary generated couplings plus conductivity, ITG, zonal, and convergence gates. |
@@ -2227,3 +2227,18 @@ under 5 minutes.
   passes. Package source falls to 88,099 lines. A call-graph audit retained the
   near-ceiling cache-builder stages because each owns a coherent array-build or
   linked-boundary setup phase rather than compatibility forwarding.
+
+- 2026-07-14: Removed runtime dependency synchronization from the public
+  ``objectives.vmec_transport`` facade. The facade falls from 253 to 137 lines
+  and now exports only seven supported optimizer-facing names; backend lookup,
+  differentiable sample-table kernels, and branch-locality gates are injected
+  and tested at their canonical config/table/branch owners. This deletes 116
+  package lines and eliminates mutation of implementation-module globals from
+  the differentiable objective path. All 145 focused objective, campaign-tool,
+  and public-boundary cases pass. Updating the clean local ``vmec_jax`` checkout
+  also exposed an upstream API-generation change: current ``main`` uses
+  ``VmecInput``/``solve_equilibrium``/``opt.least_squares`` and no longer ships
+  the old ``FixedBoundaryVMEC``/``LeastSquaresProblem`` protocol. Migrating the
+  QA campaign and examples to that current, substantially simpler protocol is
+  the next compatibility and source-reduction tranche; old API emulation will
+  not be added to package source.

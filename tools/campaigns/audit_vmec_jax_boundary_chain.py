@@ -44,8 +44,10 @@ from build_vmec_jax_transport_gradient_diagnostic import (
 from spectraxgk.geometry.vmec_boundary_chain import build_boundary_chain_summary  # noqa: E402
 from spectraxgk.objectives.vmec_transport import (  # noqa: E402
     VMECJAXTransportObjectiveConfig,
-    _reference_wout_from_context,
     vmec_jax_transport_growth_branch_locality_report_from_states,
+)
+from spectraxgk.objectives.vmec_transport_config import (  # noqa: E402
+    _reference_wout_from_context,
 )
 from vmec_jax.discrete_adjoint import (  # noqa: E402
     checkpoint_tape_state_jvp_columns,

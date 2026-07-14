@@ -774,6 +774,13 @@ state and WOUT gates share one JSON schema and threshold semantics.
 ``spectraxgk.objectives.vmec_transport_admission`` owns transport-admission
 policy dataclasses, reduced transport metric selection, multi-surface/
 field-line/``k_y`` sample coverage, and promoted transport-candidate selection.
+The public ``spectraxgk.objectives.vmec_transport`` module contains only the
+optimizer callback and supported objective exports. Optional-backend path
+policy lives in ``vmec_transport_config``, differentiable sample-table and
+reduction kernels live in ``vmec_transport_tables``, and eigenbranch-locality
+gates live in ``vmec_transport_branch``. Tests and developer extensions inject
+dependencies at those owners; the public facade does not synchronize or mutate
+implementation-module globals at runtime.
 ``spectraxgk.diagnostics.stellarator_transport_reports`` owns report-style
 nonlinear transport diagnostics: landscape admission, reduced prelaunch gates,
 next-campaign admission, and matched nonlinear audit redesign. The public

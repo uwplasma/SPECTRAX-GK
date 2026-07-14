@@ -12,6 +12,7 @@ import pytest
 import spectraxgk.config as public_config
 import spectraxgk.linear as public_linear
 import spectraxgk.nonlinear as public_nonlinear
+import spectraxgk.objectives.vmec_transport as public_vmec_transport
 import spectraxgk.operators.linear as public_linear_operators
 import spectraxgk.operators.nonlinear.policies as public_nonlinear_policies
 from spectraxgk.config import (
@@ -122,8 +123,21 @@ def test_shape_and_differentiability_contracts_validate_core_metadata() -> None:
             public_nonlinear_policies,
             {"NonlinearTimeStepPolicy", "build_nonlinear_time_step_policy"},
         ),
+        (
+            public_vmec_transport,
+            {
+                "VMECJAXTransportObjectiveConfig",
+                "vmec_jax_transport_objective_from_state",
+            },
+        ),
     ],
-    ids=("linear", "nonlinear", "linear-operators", "nonlinear-policies"),
+    ids=(
+        "linear",
+        "nonlinear",
+        "linear-operators",
+        "nonlinear-policies",
+        "vmec-transport",
+    ),
 )
 def test_solver_facade_exposes_only_supported_public_names(facade, required) -> None:
     assert facade.__all__

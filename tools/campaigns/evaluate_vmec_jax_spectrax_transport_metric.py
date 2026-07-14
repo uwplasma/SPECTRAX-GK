@@ -36,10 +36,12 @@ from spectraxgk.objectives.portfolio_contracts import (  # noqa: E402
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
 )
-from spectraxgk.objectives.vmec_transport import VMECJAXTransportObjectiveTransform  # noqa: E402
-from spectraxgk.objectives.vmec_transport import (  # noqa: E402
-    _apply_objective_transform,
+from spectraxgk.objectives.vmec_transport_config import (  # noqa: E402
+    VMECJAXTransportObjectiveTransform,
     _reference_wout_from_context,
+)
+from spectraxgk.objectives.vmec_transport_tables import (  # noqa: E402
+    _apply_objective_transform,
     _solver_table_to_nonlinear_window_proxy,
     _static_grid_options_from_ky_values,
     _transport_feature_table_from_state,

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_vmec_jax_boundary_chain.py ----
 
 import json
@@ -1561,7 +1560,6 @@ def test_transport_gradient_report_writer_and_public_api(tmp_path) -> None:
 # ---- test_vmec_jax_transport_line_search.py ----
 
 
-
 from spectraxgk.objectives.vmec_transport_line_search import (
     ProjectedLineSearchPolicy,
     boundary_chain_accepted_parameter_indices,
@@ -1928,6 +1926,9 @@ from spectraxgk import (
     vmec_jax_transport_objective_from_state,
 )
 from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
+import spectraxgk.objectives.vmec_transport_branch as transport_branch
+import spectraxgk.objectives.vmec_transport_config as transport_config
+import spectraxgk.objectives.vmec_transport_tables as transport_tables
 
 
 def _fake_geometry() -> SimpleNamespace:
@@ -1962,7 +1963,6 @@ def _fake_solver_rows(scale: float = 1.0) -> jnp.ndarray:
 
 
 def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     calls: list[dict[str, object]] = []
     growth_calls: list[dict[str, object]] = []
@@ -1981,8 +1981,12 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
         row_counter["i"] += 1
         return value
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
-    monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+    monkeypatch.setattr(
+        transport_tables, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
+    monkeypatch.setattr(
+        transport_tables, "solver_growth_rate_from_geometry", fake_growth
+    )
     samples = StellaratorITGSampleSet(
         surfaces=(0.5, 0.7), alphas=(0.0,), ky_values=(0.2, 0.4)
     )
@@ -2008,7 +2012,6 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
 def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(*_args, **_kwargs):
         return _fake_geometry()
@@ -2023,7 +2026,9 @@ def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
             row_counter["i"] += 1
             return value
 
-        monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+        monkeypatch.setattr(
+            transport_tables, "solver_growth_rate_from_geometry", fake_growth
+        )
         samples = StellaratorITGSampleSet(
             surfaces=(0.5, 0.7),
             alphas=(0.0,),
@@ -2049,7 +2054,9 @@ def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
         assert row_counter["i"] == 4
         return float(value)
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
+    monkeypatch.setattr(
+        transport_tables, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
 
     assert evaluate(chunk_size=1) == pytest.approx(evaluate(chunk_size=0))
 
@@ -2057,7 +2064,6 @@ def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
 def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_branch(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(state, *_args, **kwargs):
         return SimpleNamespace(state=state, theta=jnp.ones(2), kwargs=kwargs)
@@ -2069,8 +2075,12 @@ def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_bra
             return jnp.diag(jnp.asarray([1.02 + 0.0j, 0.48 + 0.0j]))
         return jnp.diag(jnp.asarray([0.98 + 0.0j, 0.52 + 0.0j]))
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
-    monkeypatch.setattr(mod, "solver_linear_operator_matrix_from_geometry", fake_matrix)
+    monkeypatch.setattr(
+        transport_branch, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
+    monkeypatch.setattr(
+        transport_branch, "solver_linear_operator_matrix_from_geometry", fake_matrix
+    )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
 
@@ -2102,7 +2112,6 @@ def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_bra
 def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(state, *_args, **kwargs):
         return SimpleNamespace(state=state, theta=jnp.ones(2), kwargs=kwargs)
@@ -2114,8 +2123,12 @@ def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch
             return jnp.diag(jnp.asarray([1.02 + 0.0j, 1.05 + 0.0j]))
         return jnp.diag(jnp.asarray([0.98 + 0.0j, 0.65 + 0.0j]))
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
-    monkeypatch.setattr(mod, "solver_linear_operator_matrix_from_geometry", fake_matrix)
+    monkeypatch.setattr(
+        transport_branch, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
+    monkeypatch.setattr(
+        transport_branch, "solver_linear_operator_matrix_from_geometry", fake_matrix
+    )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
 
@@ -2142,7 +2155,6 @@ def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch
 def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     scale = {"value": 1.0}
 
@@ -2152,8 +2164,12 @@ def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(
     def fake_growth(_geom, **_kwargs):
         return jnp.asarray(0.1 * scale["value"])
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
-    monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+    monkeypatch.setattr(
+        transport_tables, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
+    monkeypatch.setattr(
+        transport_tables, "solver_growth_rate_from_geometry", fake_growth
+    )
     samples = StellaratorITGSampleSet(
         surfaces=(0.5, 0.7), alphas=(0.0,), ky_values=(0.2, 0.4)
     )
@@ -2181,7 +2197,6 @@ def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(
 def test_vmec_jax_transport_objective_transform_scales_large_residuals(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(*_args, **_kwargs):
         return _fake_geometry()
@@ -2189,8 +2204,12 @@ def test_vmec_jax_transport_objective_transform_scales_large_residuals(
     def fake_growth(_geom, **_kwargs):
         return jnp.asarray(20.0)
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
-    monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+    monkeypatch.setattr(
+        transport_tables, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
+    monkeypatch.setattr(
+        transport_tables, "solver_growth_rate_from_geometry", fake_growth
+    )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     raw_cfg = VMECJAXTransportObjectiveConfig(
         kind="nonlinear_window_heat_flux",
@@ -2280,7 +2299,6 @@ def test_vmec_jax_transport_config_rejects_underresolved_boozer_modes() -> None:
 def test_vmec_jax_transport_objective_pins_imported_backend_paths(
     monkeypatch, tmp_path
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     vmec_root = tmp_path / "vmec_jax_repo"
     vmec_pkg = vmec_root / "vmec_jax"
@@ -2305,16 +2323,15 @@ def test_vmec_jax_transport_objective_pins_imported_backend_paths(
     monkeypatch.delenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", raising=False)
     monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
-    mod._pin_current_optional_backend_paths()
+    transport_config._pin_current_optional_backend_paths()
 
-    assert str(vmec_root) == mod.os.environ["SPECTRAX_VMEC_JAX_PATH"]
-    assert str(booz_root) == mod.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
+    assert str(vmec_root) == transport_config.os.environ["SPECTRAX_VMEC_JAX_PATH"]
+    assert str(booz_root) == transport_config.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
 
 
 def test_module_search_root_handles_paths_and_missing_modules(
     monkeypatch, tmp_path
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     namespace_root = tmp_path / "namespace_backend"
     namespace_root.mkdir()
@@ -2330,39 +2347,45 @@ def test_module_search_root_handles_paths_and_missing_modules(
     monkeypatch.setitem(sys.modules, "missing_path_backend", missing_path_module)
     monkeypatch.setitem(sys.modules, "no_path_backend", no_path_module)
 
-    assert mod._module_search_root("namespace_backend") == namespace_root.resolve(
-        strict=False
+    assert transport_config._module_search_root(
+        "namespace_backend"
+    ) == namespace_root.resolve(strict=False)
+    assert transport_config._module_search_root("missing_path_backend") is None
+    assert transport_config._module_search_root("no_path_backend") is None
+    assert (
+        transport_config._module_search_root("spectraxgk_missing_backend_for_test")
+        is None
     )
-    assert mod._module_search_root("missing_path_backend") is None
-    assert mod._module_search_root("no_path_backend") is None
-    assert mod._module_search_root("spectraxgk_missing_backend_for_test") is None
 
 
 def test_pin_current_optional_backend_paths_respects_explicit_environment(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     def unexpected_search(module_name: str):
         raise AssertionError(f"backend search should be skipped for {module_name}")
 
-    monkeypatch.setattr(mod, "_module_search_root", unexpected_search)
+    monkeypatch.setattr(transport_config, "_module_search_root", unexpected_search)
     monkeypatch.delenv("SPECTRAX_VMEC_JAX_PATH", raising=False)
     monkeypatch.setenv("VMEC_JAX_PATH", "/explicit/vmec-jax")
     monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", "/explicit/booz-xform-jax")
     monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
-    mod._pin_current_optional_backend_paths()
+    transport_config._pin_current_optional_backend_paths()
 
-    assert "SPECTRAX_VMEC_JAX_PATH" not in mod.os.environ
-    assert mod.os.environ["VMEC_JAX_PATH"] == "/explicit/vmec-jax"
-    assert mod.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"] == "/explicit/booz-xform-jax"
+    assert "SPECTRAX_VMEC_JAX_PATH" not in transport_config.os.environ
+    assert transport_config.os.environ["VMEC_JAX_PATH"] == "/explicit/vmec-jax"
+    assert (
+        transport_config.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
+        == "/explicit/booz-xform-jax"
+    )
 
 
 def test_static_grid_options_maps_integer_ky_multiples_to_solver_grid() -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
-    options = mod._static_grid_options_from_ky_values((0.15, 0.45), min_ny=12)
+    options = transport_tables._static_grid_options_from_ky_values(
+        (0.15, 0.45), min_ny=12
+    )
 
     assert options["ky_base"] == pytest.approx(0.15)
     assert options["ly"] == pytest.approx(2.0 * np.pi / 0.15)
@@ -2384,10 +2407,9 @@ def test_static_grid_options_rejects_invalid_ky_values(
     ky_values: tuple[float, ...],
     message: str,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     with pytest.raises(ValueError, match=message):
-        mod._static_grid_options_from_ky_values(ky_values, min_ny=3)
+        transport_tables._static_grid_options_from_ky_values(ky_values, min_ny=3)
 
 
 @pytest.mark.parametrize(
@@ -2432,10 +2454,9 @@ def test_vmec_jax_transport_config_objective_options_filter_none_values() -> Non
 
 
 def test_geometry_transport_weights_use_safe_defaults_for_minimal_geometry() -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     theta = jnp.linspace(-jnp.pi, jnp.pi, 6, endpoint=False)
-    kperp, heat_weight, particle_weight = mod._geometry_transport_weights(
+    kperp, heat_weight, particle_weight = transport_tables._geometry_transport_weights(
         SimpleNamespace(theta=theta),
         selected_ky_index=2,
         ly=5.0,
@@ -2450,7 +2471,6 @@ def test_geometry_transport_weights_use_safe_defaults_for_minimal_geometry() -> 
 
 
 def test_transport_feature_table_rejects_empty_sample_rows() -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     config = SimpleNamespace(
         sample_set=SimpleNamespace(surfaces=(), alphas=(0.0,), ky_values=(0.2,)),
@@ -2458,7 +2478,7 @@ def test_transport_feature_table_rejects_empty_sample_rows() -> None:
     )
 
     with pytest.raises(RuntimeError, match="produced no sample rows"):
-        mod._transport_feature_table_from_state(
+        transport_tables._transport_feature_table_from_state(
             "state",
             "static",
             "indata",
@@ -2469,7 +2489,6 @@ def test_transport_feature_table_rejects_empty_sample_rows() -> None:
 
 
 def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(*_args, **_kwargs):
         return _fake_geometry()
@@ -2477,8 +2496,12 @@ def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
     def fake_growth(_geom, **_kwargs):
         return jnp.asarray(0.2)
 
-    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
-    monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+    monkeypatch.setattr(
+        transport_tables, "flux_tube_geometry_from_vmec_boozer_state", fake_geom
+    )
+    monkeypatch.setattr(
+        transport_tables, "solver_growth_rate_from_geometry", fake_growth
+    )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     cfg = VMECJAXTransportObjectiveConfig(kind="quasilinear_flux", sample_set=samples)
 
