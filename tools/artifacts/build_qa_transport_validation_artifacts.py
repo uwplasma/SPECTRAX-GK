@@ -17,10 +17,14 @@ from matplotlib import colors  # noqa: E402
 import numpy as np  # noqa: E402
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.objectives.qa_low_turbulence import (  # noqa: E402
+from spectraxgk.objectives.qa_low_turbulence_artifacts import (  # noqa: E402
+    qa_low_turbulence_comparison_payload,
+)
+from spectraxgk.objectives.qa_low_turbulence_contracts import (  # noqa: E402
     QA_LOW_TURBULENCE_OBSERVABLE_NAMES,
     QALowTurbulenceConfig,
-    qa_low_turbulence_comparison_payload,
+)
+from spectraxgk.objectives.qa_low_turbulence_model import (  # noqa: E402
     qa_low_turbulence_heat_flux_trace,
     qa_low_turbulence_window_metrics,
 )

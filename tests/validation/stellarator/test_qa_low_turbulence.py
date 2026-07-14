@@ -10,11 +10,15 @@ from support.paths import load_artifact_tool
 import numpy as np
 
 import spectraxgk
-from spectraxgk.objectives.qa_low_turbulence import (
+from spectraxgk.objectives.qa_low_turbulence_artifacts import (
+    qa_low_turbulence_comparison_payload,
+)
+from spectraxgk.objectives.qa_low_turbulence_contracts import (
     QA_LOW_TURBULENCE_DESIGN_NAMES,
     QA_LOW_TURBULENCE_OBSERVABLE_NAMES,
     QALowTurbulenceConfig,
-    qa_low_turbulence_comparison_payload,
+)
+from spectraxgk.objectives.qa_low_turbulence_model import (
     qa_low_turbulence_heat_flux_trace,
     qa_low_turbulence_observable_vector,
 )
@@ -42,7 +46,7 @@ def _load_time_horizon_tool_module():
 def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None:
     assert spectraxgk.QALowTurbulenceConfig is QALowTurbulenceConfig
     assert (
-        spectraxgk.objectives.qa_low_turbulence_comparison_payload
+        spectraxgk.qa_low_turbulence_comparison_payload
         is qa_low_turbulence_comparison_payload
     )
 

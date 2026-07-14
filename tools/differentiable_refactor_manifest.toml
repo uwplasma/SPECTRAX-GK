@@ -1735,7 +1735,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimi
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.qa_low_turbulence_contracts"
 source_path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
-facade_module = "spectraxgk.objectives.qa_low_turbulence"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "QA low-turbulence configuration, stable design/observable names, and JSON-ready result contract"
 moved_exports = [
@@ -1750,7 +1750,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.qa_low_turbulence_model"
 source_path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
-facade_module = "spectraxgk.objectives.qa_low_turbulence"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "reduced QA/ITG feature map, heat-flux envelope integration, late-window metrics, and observable vector"
 moved_exports = [
@@ -1766,7 +1766,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.qa_low_turbulence_residuals"
 source_path = "src/spectraxgk/objectives/qa_low_turbulence_residuals.py"
-facade_module = "spectraxgk.objectives.qa_low_turbulence"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "weighted residual vectors, scalar objective, AD/FD sensitivity reports, and covariance diagnostics"
 moved_exports = [
@@ -1781,7 +1781,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.qa_low_turbulence_optimizer"
 source_path = "src/spectraxgk/objectives/qa_low_turbulence_optimizer.py"
-facade_module = "spectraxgk.objectives.qa_low_turbulence"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "Adam optimizer loop and optimization-history row construction for reduced QA low-turbulence designs"
 moved_exports = ["optimize_qa_low_turbulence"]
@@ -1791,7 +1791,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.qa_low_turbulence_artifacts"
 source_path = "src/spectraxgk/objectives/qa_low_turbulence_artifacts.py"
-facade_module = "spectraxgk.objectives.qa_low_turbulence"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "reduced boundary/LCFS visualization payloads, density-gradient scans, long-window convergence gates, and comparison payload assembly"
 moved_exports = [
