@@ -2507,10 +2507,9 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.solver_gradients"
-path = "src/spectraxgk/objectives/solver_gradients.py"
+module = "spectraxgk.objectives.solver_gradient_reports"
+path = "src/spectraxgk/objectives/solver_gradient_reports.py"
 owned_modules = [
-  "spectraxgk.objectives.solver_gradient_reports",
   "spectraxgk.objectives.solver_vmec",
   "spectraxgk.objectives.stellarator",
   "spectraxgk.objectives.stellarator_contracts",
@@ -2521,7 +2520,7 @@ owned_modules = [
   "spectraxgk.objectives.vmec_transport_line_search",
   "spectraxgk.objectives.vmec_transport",
 ]
-owner_lane = "production solver-objective geometry-gradient validation"
+owner_lane = "production solver-objective gradient reports and validation"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0

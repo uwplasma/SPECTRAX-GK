@@ -844,21 +844,17 @@ from support.paths import REPO_ROOT, load_artifact_tool
 
 
 import spectraxgk.objectives.gradient_gates as gradient_gates
-import spectraxgk.objectives.solver_gradients as sog
+import spectraxgk.objectives.sampling as sampling
 import spectraxgk.objectives.solver_vmec as solver_vmec
-from spectraxgk.objectives.solver_gradients import (
+from spectraxgk import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
     SolverScalarObjective,
-    TINY_OBJECTIVE_NAMES,
     VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
     VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES,
     VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES,
     VMEC_BOOZER_STATE_PARAMETER_FAMILIES,
     VMEC_BOOZER_STATE_PARAMETER_NAMES,
-    _objective_gate_rows,
-    _reduced_nonlinear_window_metrics_from_linear_observables,
-    _vmec_boozer_state_parameter_name,
     default_solver_geometry_design_params,
     dominant_eigenvalue_branch_locality_report,
     dominant_real_eigenvalue,
@@ -873,7 +869,6 @@ from spectraxgk.objectives.solver_gradients import (
     solver_grid_options_from_ky_values,
     solver_scalar_objective_from_vector,
     solver_ready_geometry_mapping,
-    tiny_differentiable_objective_gradient_report,
     vmec_boozer_aggregate_line_search_holdout_report,
     vmec_boozer_aggregate_scalar_objective_finite_difference_report,
     vmec_boozer_aggregate_scalar_objective_from_state,
@@ -884,6 +879,15 @@ from spectraxgk.objectives.solver_gradients import (
     vmec_boozer_solver_objective_table_from_state,
     vmec_boozer_solver_objective_table_with_metadata_from_state,
     vmec_boozer_solver_objective_vector_from_state,
+)
+from spectraxgk.geometry.vmec_state_controls import _vmec_boozer_state_parameter_name
+from spectraxgk.objectives.geometry import (
+    TINY_OBJECTIVE_NAMES,
+    _objective_gate_rows,
+    tiny_differentiable_objective_gradient_report,
+)
+from spectraxgk.objectives.vmec_boozer_gradients import (
+    _reduced_nonlinear_window_metrics_from_linear_observables,
 )
 
 
@@ -1278,29 +1282,33 @@ def test_solver_grid_options_from_ky_values_maps_physical_scan_to_fft_rows() -> 
 
 
 def test_solver_objective_sampling_helpers_validate_contracts() -> None:
-    assert sog._surface_index_tuple(None) == (None,)
-    assert sog._surface_index_tuple(3) == (3,)
+    assert sampling._surface_index_tuple(None) == (None,)
+    assert sampling._surface_index_tuple(3) == (3,)
     with pytest.raises(ValueError, match="surface_indices"):
-        sog._surface_index_tuple([])
+        sampling._surface_index_tuple([])
 
-    assert sog._int_tuple(2, name="selected_ky_indices") == (2,)
+    assert sampling._int_tuple(2, name="selected_ky_indices") == (2,)
     with pytest.raises(ValueError, match="selected_ky_indices"):
-        sog._int_tuple([], name="selected_ky_indices")
+        sampling._int_tuple([], name="selected_ky_indices")
 
-    assert sog._float_tuple(0.3, name="ky_values") == (0.3,)
+    assert sampling._float_tuple(0.3, name="ky_values") == (0.3,)
     with pytest.raises(ValueError, match="ky_values"):
-        sog._float_tuple([], name="ky_values")
+        sampling._float_tuple([], name="ky_values")
     with pytest.raises(ValueError, match="finite"):
-        sog._float_tuple([0.1, float("nan")], name="ky_values")
+        sampling._float_tuple([0.1, float("nan")], name="ky_values")
 
-    np.testing.assert_allclose(sog._aggregate_weights(None, 3), np.full(3, 1.0 / 3.0))
-    np.testing.assert_allclose(sog._aggregate_weights([1.0, 3.0], 2), [0.25, 0.75])
+    np.testing.assert_allclose(
+        sampling._aggregate_weights(None, 3), np.full(3, 1.0 / 3.0)
+    )
+    np.testing.assert_allclose(
+        sampling._aggregate_weights([1.0, 3.0], 2), [0.25, 0.75]
+    )
     with pytest.raises(ValueError, match="positive"):
-        sog._aggregate_weights([0.0, 0.0], 2)
+        sampling._aggregate_weights([0.0, 0.0], 2)
     with pytest.raises(ValueError, match="finite"):
-        sog._aggregate_weights([1.0, float("nan")], 2)
+        sampling._aggregate_weights([1.0, float("nan")], 2)
 
-    rows = sog._aggregate_sample_metadata(
+    rows = sampling._aggregate_sample_metadata(
         (None, 4), (0.0,), (1, 2), np.asarray([0.1, 0.2, 0.3, 0.4])
     )
     assert rows == [

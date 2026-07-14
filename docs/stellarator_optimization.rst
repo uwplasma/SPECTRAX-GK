@@ -1952,7 +1952,7 @@ Small geometry and objective-observable checks should use the shared
 flags, absolute and relative AD/finite-difference errors, tangent-direction
 agreement, rank, singular values, condition number, and a pass/fail gate in a
 strict JSON-compatible payload. The tiny solver-ready objective gate in
-``spectraxgk.objectives.solver_gradients`` exercises this path without running
+The focused objective owners exposed through ``spectraxgk`` exercise this path without running
 VMEC, Boozer, or a linear eigenproblem; it is a CI and documentation check for
 the reporting contract, not a transport-gradient claim.
 
