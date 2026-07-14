@@ -518,6 +518,14 @@ end-to-end JAX differentiability:
   projected corrections from ``0.975`` and moved to the wrong high-frequency
   branch; the projected systems themselves remained poorly converged. The
   failure therefore persists beyond the smallest CPU discriminator.
+  A two-sided variant also failed because its adjoint inverse iterations had
+  residuals between ``0.67`` and ``2.12``; its first accurately solved
+  projected correction still worsened the physical residual to ``0.870``. A
+  matrix-free low-moment block preconditioner that retained the self-consistent
+  field response cost ``240`` seconds versus ``30`` seconds for the damping
+  baseline and returned residual ``0.972`` on the wrong branch. Future work
+  must therefore assemble and factor a genuinely reduced field/moment Schur
+  block rather than nesting another full-operator Krylov solve.
   JAX's current Schur primitive is CPU-only, so it is not used in the CPU/GPU
   solver API. See the
   `SLEPc Krylov--Schur documentation

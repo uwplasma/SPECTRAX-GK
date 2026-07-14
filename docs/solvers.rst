@@ -78,6 +78,15 @@ A bounded A4000 run at ``Nl=8,Nm=24`` likewise reached residual ``0.429`` only
 after moving to the wrong high-frequency branch, so the negative result is not
 confined to the smallest CPU case.
 
+A two-sided correction did not repair the problem: the left inverse iterations
+remained unconverged and the first well-solved projected equation moved to a
+different branch with residual ``0.870``. A matrix-free field-coupled
+low-moment preconditioner was also rejected because it took ``240`` seconds
+versus ``30`` seconds for the damping baseline and returned residual ``0.972``
+on the wrong branch. Any future field-coupled candidate must use an explicitly
+reduced Schur block; nesting a full-operator solve is neither accurate nor
+competitive.
+
 The generic inner solve is intentionally not migrated to SOLVAX yet. A matched
 SOLVAX 0.7.3 FGMRES probe at reduced ``Nl=8,Nm=24`` resolution selected a
 damped ``-2.1301+0.8333i`` eigenvalue with physical residual ``0.912``, compared
