@@ -73,14 +73,14 @@ and campaign code:
   consolidation, removal of the installable validation package, and deletion
   of redundant solver-gradient, QA-objective, and standalone gyroaveraging modules.
 - 0 Python files under ``src/spectraxgk/validation``; the package has been removed.
-- 96 Python test files, including the shared ``tests/support/paths.py`` helper;
+- 95 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and artifact/tool families were consolidated.
-- 99 Python tool scripts and zero flat top-level ``tools/*.py`` files after
+- 95 Python tool scripts and zero flat top-level ``tools/*.py`` files after
   removing package-marker modules and moving release, comparison, artifact,
   campaign, profiling, benchmark, generator, compression-helper, reference-helper,
   diagnostic, linear-validation, and VMEC-helper scripts into purpose folders.
-  The enforced consolidation target of at most 99 scripts is met; the default
+  The enforced consolidation target of at most 95 scripts is met; the default
   architecture check prevents count regression and the strict target gate now
   passes.
 - no tracked files above 2 MB and no tracked ``__pycache__`` / ``.pyc`` /

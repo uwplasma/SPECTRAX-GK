@@ -9,14 +9,9 @@ import numpy as np
 import pytest
 
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_brackets
-import spectraxgk.diagnostics.metadata as evidence_classification
-import spectraxgk.diagnostics.metadata as evidence_core
-import spectraxgk.diagnostics.transport as evidence_fd
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_gap
-import spectraxgk.diagnostics.metadata as evidence_scoring
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_screening
-import spectraxgk.diagnostics.nonlinear_replicates as evidence_windows
+import spectraxgk.diagnostics.metadata as evidence_metadata
+import spectraxgk.diagnostics.nonlinear_replicates as evidence_replicates
+import spectraxgk.diagnostics.transport as evidence_transport
 from spectraxgk.diagnostics.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
@@ -33,8 +28,6 @@ from spectraxgk.diagnostics.nonlinear_gradient_evidence import (
 )
 from spectraxgk.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
-)
-from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_report,
 )
 
@@ -42,56 +35,45 @@ from spectraxgk.diagnostics.transport_windows import (
 def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:
     assert (
         evidence.NON_PRODUCTION_SCOPE_MARKERS
-        is evidence_core.NON_PRODUCTION_SCOPE_MARKERS
+        is evidence_metadata.NON_PRODUCTION_SCOPE_MARKERS
     )
     assert (
         evidence.NonlinearTurbulenceGradientEvidenceConfig
-        is evidence_core.NonlinearTurbulenceGradientEvidenceConfig
+        is evidence_metadata.NonlinearTurbulenceGradientEvidenceConfig
     )
     assert (
         evidence.NonlinearTurbulenceGradientFiniteDifferenceConfig
-        is evidence_core.NonlinearTurbulenceGradientFiniteDifferenceConfig
+        is evidence_metadata.NonlinearTurbulenceGradientFiniteDifferenceConfig
     )
-    assert (
-        evidence.classify_gradient_artifact is evidence_core.classify_gradient_artifact
-    )
-
-
-def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
     assert (
         evidence.classify_gradient_artifact
-        is evidence_classification.classify_gradient_artifact
+        is evidence_metadata.classify_gradient_artifact
     )
-    assert callable(evidence_scoring._metric_margin)
-    assert callable(evidence_scoring._bracket_sweep_row)
+
+
+def test_nonlinear_gradient_evidence_exports_actual_owner_contracts() -> None:
     assert (
-        evidence.summarize_window_evidence is evidence_windows.summarize_window_evidence
+        evidence.classify_gradient_artifact
+        is evidence_metadata.classify_gradient_artifact
     )
+    assert evidence._metric_margin is evidence_metadata._metric_margin
+    assert evidence._bracket_sweep_row is evidence_metadata._bracket_sweep_row
     assert (
-        evidence.nonlinear_turbulence_gradient_candidate_ranking_report
-        is evidence_screening.nonlinear_turbulence_gradient_candidate_ranking_report
-    )
-    assert (
-        evidence.nonlinear_turbulence_gradient_bracket_sweep_report
-        is evidence_brackets.nonlinear_turbulence_gradient_bracket_sweep_report
-    )
-    assert (
-        evidence_screening.nonlinear_turbulence_gradient_bracket_sweep_report
-        is evidence_brackets.nonlinear_turbulence_gradient_bracket_sweep_report
+        evidence.summarize_window_evidence
+        is evidence_replicates.summarize_window_evidence
     )
     assert (
         evidence.nonlinear_turbulence_gradient_finite_difference_report
-        is evidence_fd.nonlinear_turbulence_gradient_finite_difference_report
+        is evidence_transport.nonlinear_turbulence_gradient_finite_difference_report
     )
-    assert evidence._required_run_rows is evidence_gap._required_run_rows
-    assert (
-        evidence.nonlinear_turbulence_gradient_evidence_gap_report
-        is evidence_gap.nonlinear_turbulence_gradient_evidence_gap_report
-    )
-    assert (
-        evidence.nonlinear_turbulence_gradient_evidence_report
-        is evidence_gap.nonlinear_turbulence_gradient_evidence_report
-    )
+    for name in (
+        "nonlinear_turbulence_gradient_bracket_sweep_report",
+        "nonlinear_turbulence_gradient_candidate_ranking_report",
+        "nonlinear_turbulence_gradient_evidence_gap_report",
+        "nonlinear_turbulence_gradient_evidence_report",
+    ):
+        assert name in evidence.__all__
+        assert callable(getattr(evidence, name))
 
 
 def _load_tool_module():

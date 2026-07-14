@@ -619,7 +619,9 @@ Completed extractions:
   finite-difference transport response/uncertainty lives in
   ``diagnostics/transport.py``. The compact
   ``diagnostics/nonlinear_gradient_evidence.py`` facade owns bracket and
-  candidate report orchestration plus production evidence-gap reports.
+  candidate report orchestration plus production evidence-gap reports. It has
+  one final export contract; intermediate section exports and alias-based
+  ownership tests were removed so each helper is tested at its real owner.
   Candidate ranking and evidence-gap reporting remain fail-closed so production
   nonlinear-gradient promotion cannot be inferred from startup, pilot, reduced,
   or single-window artifacts.
