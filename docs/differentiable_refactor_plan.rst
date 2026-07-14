@@ -216,7 +216,9 @@ High-Risk Module Split Plan
   domain prototype gates and device-z shard-map route now live in
   ``operators/nonlinear/domain_decomposition.py`` and
   ``operators/nonlinear/device_z.py``. The facade remains the public import
-  surface for examples, while developer tests import the focused domain modules.
+  surface for examples. Private FFT, bracket, sharding, and observable helpers
+  are not re-exported: developer tests and profilers import their focused
+  ``spectral_core`` or ``device_z`` owner directly.
 
 ``solver_objective_gradients.py``
   Split eigenvalue objectives, linear-growth objectives, quasilinear flux

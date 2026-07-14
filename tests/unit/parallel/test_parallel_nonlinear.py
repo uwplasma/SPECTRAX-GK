@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_nonlinear_domain_parallel.py ----
 
 import jax
@@ -365,14 +364,6 @@ def test_nonlinear_parallel_facade_reexports_device_z_core() -> None:
         nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate
         is nonlinear_parallel_device_z.device_z_pencil_nonlinear_spectral_transport_window_identity_gate
     )
-    assert (
-        nonlinear_parallel._device_z_sharding_for_spectral_state
-        is nonlinear_parallel_device_z._device_z_sharding_for_spectral_state
-    )
-    assert (
-        nonlinear_parallel._spectral_physical_transport_observable_sums
-        is nonlinear_parallel_device_z._spectral_physical_transport_observable_sums
-    )
 
 
 def test_nonlinear_parallel_facade_reexports_spectral_identity_core() -> None:
@@ -539,20 +530,12 @@ def test_nonlinear_parallel_facade_reexports_contract_objects() -> None:
         )
 
 
-def test_nonlinear_parallel_facade_reexports_spectral_core_helpers() -> None:
+def test_nonlinear_parallel_facade_reexports_public_spectral_helpers() -> None:
     spectral_core_names = (
         "deterministic_nonlinear_spectral_state",
         "device_z_pencil_fft_batch_pressure_model",
         "nonlinear_spectral_domain_work_model",
         "nonlinear_spectral_pencil_work_model",
-        "_field_from_state",
-        "_host_staged_array_for_sharding",
-        "_pencil_fft2",
-        "_pencil_ifft2",
-        "_pencil_spectral_bracket",
-        "_pencil_spectral_bracket_z_chunked",
-        "_serial_nonlinear_spectral_rhs",
-        "_within_abs_or_rel_tolerance",
     )
 
     for name in spectral_core_names:
@@ -760,8 +743,8 @@ def test_logical_decomposed_spectral_integrator_routes_after_identity_gate() -> 
     serial = state
     dt = jnp.asarray(0.0025, dtype=jnp.real(state).dtype)
     for _ in range(3):
-        _field, _bracket, rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(
-            serial
+        _field, _bracket, rhs = (
+            nonlinear_parallel_spectral_core._serial_nonlinear_spectral_rhs(serial)
         )
         serial = serial + dt * rhs
 
@@ -901,22 +884,24 @@ def test_device_z_pencil_fft_batch_pressure_model_fails_closed() -> None:
 
 def test_spectral_physical_observable_sums_are_z_additive() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 4))
-    _field, bracket, _rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(state)
-
-    whole = nonlinear_parallel._spectral_physical_transport_observable_vector_from_sums(
-        nonlinear_parallel._spectral_physical_transport_observable_sums(state, bracket)
+    _field, bracket, _rhs = (
+        nonlinear_parallel_spectral_core._serial_nonlinear_spectral_rhs(state)
     )
-    split = nonlinear_parallel._spectral_physical_transport_observable_sums(
+
+    whole = nonlinear_parallel_device_z._spectral_physical_transport_observable_vector_from_sums(
+        nonlinear_parallel_device_z._spectral_physical_transport_observable_sums(
+            state, bracket
+        )
+    )
+    split = nonlinear_parallel_device_z._spectral_physical_transport_observable_sums(
         state[..., :2],
         bracket[..., :2],
-    ) + nonlinear_parallel._spectral_physical_transport_observable_sums(
+    ) + nonlinear_parallel_device_z._spectral_physical_transport_observable_sums(
         state[..., 2:],
         bracket[..., 2:],
     )
-    reassembled = (
-        nonlinear_parallel._spectral_physical_transport_observable_vector_from_sums(
-            split
-        )
+    reassembled = nonlinear_parallel_device_z._spectral_physical_transport_observable_vector_from_sums(
+        split
     )
 
     np.testing.assert_allclose(np.asarray(reassembled), np.asarray(whole), rtol=1.0e-6)
@@ -1081,8 +1066,8 @@ def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() ->
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
 
     roundtrip_serial = jnp.fft.fft2(jnp.fft.ifft2(state, axes=(-3, -2)), axes=(-3, -2))
-    roundtrip_pencil = nonlinear_parallel._pencil_fft2(
-        nonlinear_parallel._pencil_ifft2(state, y_axis=-3, x_axis=-2),
+    roundtrip_pencil = nonlinear_parallel_spectral_core._pencil_fft2(
+        nonlinear_parallel_spectral_core._pencil_ifft2(state, y_axis=-3, x_axis=-2),
         y_axis=-3,
         x_axis=-2,
     )
@@ -1111,8 +1096,8 @@ def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() ->
             rtol=1.0e-5,
         )
     )
-    _field, _bracket, serial_rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(
-        state
+    _field, _bracket, serial_rhs = (
+        nonlinear_parallel_spectral_core._serial_nonlinear_spectral_rhs(state)
     )
     assert routed_report.identity_passed is True
     assert routed_report.decomposed_path_enabled is True
@@ -1121,24 +1106,28 @@ def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() ->
 
 def test_z_chunked_pencil_bracket_matches_unchunked_route() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 5))
-    field = nonlinear_parallel._field_from_state(state)
+    field = nonlinear_parallel_spectral_core._field_from_state(state)
 
-    unchunked = nonlinear_parallel._pencil_spectral_bracket(state, field)
-    chunked = nonlinear_parallel._pencil_spectral_bracket_z_chunked(
+    unchunked = nonlinear_parallel_spectral_core._pencil_spectral_bracket(state, field)
+    chunked = nonlinear_parallel_spectral_core._pencil_spectral_bracket_z_chunked(
         state,
         field,
         z_chunk_size=2,
     )
-    chunked_rhs = nonlinear_parallel._pencil_nonlinear_spectral_rhs_z_chunked(
-        state,
-        z_chunk_size=2,
+    chunked_rhs = (
+        nonlinear_parallel_spectral_core._pencil_nonlinear_spectral_rhs_z_chunked(
+            state,
+            z_chunk_size=2,
+        )[2]
+    )
+    unchunked_rhs = nonlinear_parallel_spectral_core._pencil_nonlinear_spectral_rhs(
+        state
     )[2]
-    unchunked_rhs = nonlinear_parallel._pencil_nonlinear_spectral_rhs(state)[2]
 
     assert jnp.allclose(chunked, unchunked, atol=5.0e-6, rtol=1.0e-5)
     assert jnp.allclose(chunked_rhs, unchunked_rhs, atol=5.0e-6, rtol=1.0e-5)
     assert jnp.allclose(
-        nonlinear_parallel._pencil_spectral_bracket_z_chunked(
+        nonlinear_parallel_spectral_core._pencil_spectral_bracket_z_chunked(
             state,
             field,
             z_chunk_size=99,
@@ -1148,7 +1137,7 @@ def test_z_chunked_pencil_bracket_matches_unchunked_route() -> None:
         rtol=1.0e-5,
     )
     with pytest.raises(ValueError, match="z_chunk_size must be at least one"):
-        nonlinear_parallel._pencil_spectral_bracket_z_chunked(
+        nonlinear_parallel_spectral_core._pencil_spectral_bracket_z_chunked(
             state,
             field,
             z_chunk_size=0,
@@ -1164,8 +1153,8 @@ def test_device_z_pencil_route_fails_closed_without_two_devices() -> None:
         atol=5.0e-6,
         rtol=1.0e-5,
     )
-    _field, _bracket, serial_rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(
-        state
+    _field, _bracket, serial_rhs = (
+        nonlinear_parallel_spectral_core._serial_nonlinear_spectral_rhs(state)
     )
 
     assert isinstance(report, NonlinearSpectralDevicePencilRHSIdentityReport)
@@ -1195,7 +1184,7 @@ def test_device_z_pencil_route_fails_closed_without_two_devices() -> None:
 def test_host_staged_array_for_sharding_materializes_numpy_copy() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
 
-    staged = nonlinear_parallel._host_staged_array_for_sharding(state)
+    staged = nonlinear_parallel_spectral_core._host_staged_array_for_sharding(state)
 
     assert isinstance(staged, np.ndarray)
     assert staged.shape == state.shape
@@ -1203,19 +1192,19 @@ def test_host_staged_array_for_sharding_materializes_numpy_copy() -> None:
 
 
 def test_abs_or_rel_tolerance_policy_matches_allclose_style_gate() -> None:
-    assert nonlinear_parallel._within_abs_or_rel_tolerance(
+    assert nonlinear_parallel_spectral_core._within_abs_or_rel_tolerance(
         4.0e-6,
         2.0e-2,
         atol=5.0e-6,
         rtol=1.0e-4,
     )
-    assert nonlinear_parallel._within_abs_or_rel_tolerance(
+    assert nonlinear_parallel_spectral_core._within_abs_or_rel_tolerance(
         1.0e-3,
         4.0e-7,
         atol=5.0e-6,
         rtol=1.0e-4,
     )
-    assert not nonlinear_parallel._within_abs_or_rel_tolerance(
+    assert not nonlinear_parallel_spectral_core._within_abs_or_rel_tolerance(
         1.0e-3,
         1.0e-2,
         atol=5.0e-6,

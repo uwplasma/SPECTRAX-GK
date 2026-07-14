@@ -151,13 +151,17 @@ def build_profile(
     trace_device_count: int | None,
     hlo_prefix: Path | None,
 ) -> dict[str, Any]:
-    from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
+    from spectraxgk.operators.nonlinear.device_z import (
         _device_z_pencil_shard_map_rhs_fn,
-        _host_staged_array_for_sharding,
-        _serial_nonlinear_spectral_rhs,
+    )
+    from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
         deterministic_nonlinear_spectral_state,
         device_z_pencil_fft_batch_pressure_model,
         device_z_pencil_nonlinear_spectral_transport_window_identity_gate,
+    )
+    from spectraxgk.operators.nonlinear.spectral_core import (
+        _host_staged_array_for_sharding,
+        _serial_nonlinear_spectral_rhs,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
@@ -277,15 +281,17 @@ def build_profile(
         observable_stats: dict[str, float] = {}
         if int(observable_repeats) > 0:
             _last_observable_report, observable_times = _time_repeated(
-                lambda: device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
-                    state,
-                    devices=devices[:count],
-                    steps=int(steps),
-                    dt=float(dt),
-                    atol=float(atol),
-                    rtol=float(rtol),
-                    z_chunk_size=z_chunk_size,
-                    observable_mode=observable_mode,  # type: ignore[arg-type]
+                lambda: (
+                    device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+                        state,
+                        devices=devices[:count],
+                        steps=int(steps),
+                        dt=float(dt),
+                        atol=float(atol),
+                        rtol=float(rtol),
+                        z_chunk_size=z_chunk_size,
+                        observable_mode=observable_mode,  # type: ignore[arg-type]
+                    )
                 ),
                 warmups=0,
                 repeats=int(observable_repeats),
@@ -496,10 +502,12 @@ def build_rhs_profile(
     """
 
     from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
-        _pencil_nonlinear_spectral_rhs,
-        _serial_nonlinear_spectral_rhs,
         deterministic_nonlinear_spectral_state,
         device_z_pencil_nonlinear_spectral_rhs,
+    )
+    from spectraxgk.operators.nonlinear.spectral_core import (
+        _pencil_nonlinear_spectral_rhs,
+        _serial_nonlinear_spectral_rhs,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
