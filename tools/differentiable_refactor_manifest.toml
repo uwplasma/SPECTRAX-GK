@@ -1255,23 +1255,6 @@ fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.terms.gyroaveraging"
-source_path = "src/spectraxgk/terms/gyroaveraging.py"
-facade_module = "spectraxgk.terms.nonlinear"
-status = "active"
-responsibility = "Laguerre quadrature transforms, gyroaveraged J0 field factors, and magnetic-compressibility b_parallel corrections used by nonlinear term assembly"
-moved_exports = [
-  "_laguerre_bpar_correction",
-  "_laguerre_bpar_correction_precomputed",
-  "_laguerre_j0_field",
-  "_laguerre_j0_field_precomputed",
-  "_laguerre_to_grid",
-  "_laguerre_to_spectral",
-]
-fast_tests = ["tests/unit/nonlinear/test_nonlinear_exb.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.brackets"
 source_path = "src/spectraxgk/operators/nonlinear/brackets.py"
 facade_module = "spectraxgk.terms.nonlinear"

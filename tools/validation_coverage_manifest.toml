@@ -596,7 +596,6 @@ owned_modules = [
   "spectraxgk.solvers.nonlinear.state_integration",
   "spectraxgk.solvers.nonlinear.diagnostic_integration",
   "spectraxgk.operators.nonlinear.brackets",
-  "spectraxgk.terms.gyroaveraging",
   "spectraxgk.terms.nonlinear",
 ]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"

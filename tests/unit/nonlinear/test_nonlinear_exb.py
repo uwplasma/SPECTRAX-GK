@@ -17,7 +17,7 @@ from spectraxgk.operators.nonlinear.brackets import (
     _stack_fields,
 )
 from spectraxgk.operators.nonlinear.projection import advance_shearing_coordinates
-from spectraxgk.terms.gyroaveraging import (
+from spectraxgk.core.velocity import (
     _laguerre_bpar_correction,
     _laguerre_bpar_correction_precomputed,
     _laguerre_j0_field,

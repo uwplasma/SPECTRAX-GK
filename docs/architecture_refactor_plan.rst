@@ -69,9 +69,9 @@ longer the main problem. The current blockers are source/test/tool sprawl,
 oversized facades, and ambiguous ownership between benchmark, tool, validation,
 and campaign code:
 
-- 225 Python source files under ``src/spectraxgk`` after continued
+- 224 Python source files under ``src/spectraxgk`` after continued
   consolidation, removal of the installable validation package, and deletion
-  of the redundant solver-gradient re-export module.
+  of redundant solver-gradient and standalone gyroaveraging modules.
 - 0 Python files under ``src/spectraxgk/validation``; the package has been removed.
 - 96 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat

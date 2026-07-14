@@ -359,13 +359,6 @@ Nonlinear Bracket Kernels
    :members:
    :private-members:
 
-Nonlinear Gyroaveraging
------------------------
-
-.. automodule:: spectraxgk.terms.gyroaveraging
-   :members:
-   :private-members:
-
 Nonlinear Term Assembly
 -----------------------
 
