@@ -17,6 +17,7 @@ from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
+    interpolate_collision_moment_matrix,
     load_collision_moment_matrix,
 )
 from spectraxgk.terms.assembly import assemble_rhs_cached
@@ -132,6 +133,74 @@ def test_collision_matrix_application_is_differentiable_and_fail_closed() -> Non
         apply_collision_moment_matrix(
             jnp.broadcast_to(state, (2,) + state.shape), matrix, nu=jnp.ones(3)
         )
+
+
+def test_collision_kperp_interpolation_matches_nodes_and_direct_operator() -> None:
+    grid = jnp.asarray([0.0, 1.0, 2.0], dtype=jnp.float32)
+    base = jnp.asarray(load_collision_moment_matrix("coulomb"), dtype=jnp.float32)
+    table = jnp.stack([(1.0 + 0.5 * value) * base for value in grid])
+    kperp = jnp.asarray([[[-0.3, 0.5]], [[1.0, 2.7]]], dtype=jnp.float32)
+    interpolated = jax.jit(
+        lambda target: interpolate_collision_moment_matrix(grid, table, target)
+    )(kperp)
+    expected = base[:, :, None, None, None] * (
+        1.0 + 0.5 * jnp.clip(kperp, grid[0], grid[-1])
+    )
+    np.testing.assert_allclose(interpolated, expected, rtol=2.0e-6, atol=2.0e-6)
+
+    state = (
+        jnp.arange(2 * 4 * 4, dtype=jnp.float32).reshape(2, 4, 2, 1, 2) + 0.13j
+    ).astype(jnp.complex64)
+    result = apply_collision_moment_matrix(state, interpolated, nu=jnp.asarray(0.3))
+    direct = drift_kinetic_coulomb_six_moment_contribution(
+        state, nu=jnp.asarray(0.3)
+    ) * (1.0 + 0.5 * jnp.clip(kperp, grid[0], grid[-1]))
+    np.testing.assert_allclose(result, direct, rtol=3.0e-6, atol=3.0e-6)
+
+
+def test_collision_matrix_kperp_interpolation_species_jvp_and_validation() -> None:
+    grid = jnp.asarray([0.0, 1.0, 2.0], dtype=jnp.float32)
+    base = jnp.asarray(load_collision_moment_matrix("sugama"), dtype=jnp.float32)
+    shared_table = jnp.stack([(1.0 + value) * base for value in grid])
+    species_table = jnp.stack([shared_table, 2.0 * shared_table])
+    target = jnp.asarray([[[[0.25]]], [[[1.25]]]], dtype=jnp.float32)
+    result = interpolate_collision_moment_matrix(grid, species_table, target)
+    np.testing.assert_allclose(result[0], 1.25 * base[:, :, None, None, None])
+    np.testing.assert_allclose(result[1], 4.5 * base[:, :, None, None, None])
+    state = (
+        jnp.arange(2 * 2 * 4, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 1) + 0.2j
+    ).astype(jnp.complex64)
+    frequency = jnp.asarray([0.2, 0.3], dtype=jnp.float32)
+    applied = jax.jit(apply_collision_moment_matrix)(state, result, nu=frequency)
+    direct = drift_kinetic_sugama_six_moment_contribution(state, nu=frequency)
+    expected = direct * jnp.asarray([1.25, 4.5])[:, None, None, None, None, None]
+    np.testing.assert_allclose(applied, expected, rtol=3.0e-6, atol=3.0e-6)
+
+    scalar = jnp.asarray(0.6, dtype=jnp.float32)
+    tangent = jax.jvp(
+        lambda value: interpolate_collision_moment_matrix(grid, shared_table, value),
+        (scalar,),
+        (jnp.asarray(0.4, dtype=jnp.float32),),
+    )[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        interpolate_collision_moment_matrix(grid, shared_table, scalar + 0.4 * step)
+        - interpolate_collision_moment_matrix(grid, shared_table, scalar - 0.4 * step)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=4.0e-4, atol=4.0e-4)
+
+    with pytest.raises(ValueError, match="at least two points"):
+        interpolate_collision_moment_matrix(
+            jnp.asarray([0.0]), shared_table[:1], scalar
+        )
+    with pytest.raises(ValueError, match="strictly increasing"):
+        interpolate_collision_moment_matrix(
+            jnp.asarray([0.0, 2.0, 1.0]), shared_table, scalar
+        )
+    with pytest.raises(ValueError, match="must be square"):
+        interpolate_collision_moment_matrix(grid, jnp.ones((3, 8, 7)), scalar)
+    with pytest.raises(ValueError, match="species-leading"):
+        interpolate_collision_moment_matrix(grid, species_table, jnp.ones((3, 1)))
 
 
 def test_gamma0_basic_properties() -> None:

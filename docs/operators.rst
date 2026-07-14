@@ -342,15 +342,25 @@ mode ordering, polynomial convention, source equations, and claim scope in a
 JSON sidecar. ``load_collision_moment_matrix(model)`` verifies the package-data
 checksum before returning a host array. ``apply_collision_moment_matrix`` then
 packs ``(ell,m)`` into the paper's Hermite-major ordering, applies either one
-shared or one matrix per species in JAX, and restores the state layout. Tests
-require generated-table/direct-equation identity for both models and JVP/finite-
-difference agreement through state amplitude and collision frequency.
+shared or one matrix per species in JAX, and restores the state layout.
+``interpolate_collision_moment_matrix`` provides the finite-:math:`b` runtime
+boundary: it linearly interpolates a strictly increasing :math:`k_\perp` table
+on device, clamps only outside the generated range, and accepts either one
+shared table or an explicit table per species. The resulting matrix may vary at
+every perpendicular/parallel grid point without leaving traced JAX execution.
+Tests require node and endpoint identity, generated-table/direct-equation
+identity for both models, species-local spatial application, and JVP/finite-
+difference agreement through state amplitude, collision frequency, and an
+interior :math:`k_\perp` target.
 
-This vertical slice establishes the table format and traced runtime application
-needed by the full operator. It does not imply that repeating the six-moment
-matrix at higher resolution is valid. Full tables must populate every retained
-Hermite--Laguerre coupling from the published finite-:math:`b`, mass-ratio, and
-temperature-ratio sums and pass the stronger gates below.
+This vertical slice establishes the table format, finite-:math:`b` interpolation,
+and traced spatial application needed by the full operator. Its current table
+contains only the drift-kinetic six-moment matrices, so interpolation is tested
+with controlled coefficient families rather than presented as finite-:math:`b`
+collision physics. Repeating that matrix at higher resolution is not valid.
+Full tables must populate every retained Hermite--Laguerre coupling from the
+published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
+stronger gates below.
 
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
