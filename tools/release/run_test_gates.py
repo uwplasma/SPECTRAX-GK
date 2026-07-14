@@ -27,6 +27,7 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     "test_stellarator_artifact_tools.py",
     "test_diffrax_integrators_core.py",
     "test_nonlinear.py",
+    "test_nonlinear_helpers_extra.py",
     "test_parallel_linear_velocity.py",
     "test_runtime_runner.py",
 }

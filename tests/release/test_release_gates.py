@@ -2490,10 +2490,11 @@ def test_split_shards_isolates_known_high_cost_tests() -> None:
         Path("tests/unit/solvers/test_diffrax_integrators_core.py"),
         Path("tests/integration/runtime/test_runtime_runner.py"),
         Path("tests/unit/nonlinear/test_nonlinear.py"),
+        Path("tests/unit/nonlinear/test_nonlinear_helpers_extra.py"),
         Path("tests/unit/parallel/test_parallel_linear_velocity.py"),
     ]
     files = expensive + [Path(f"tests/test_light_{idx}.py") for idx in range(12)]
-    shards = split_shards(files, 5)
+    shards = split_shards(files, 6)
 
     expensive_by_shard = [
         [path.name for path in shard if path in expensive] for shard in shards
@@ -2501,6 +2502,7 @@ def test_split_shards_isolates_known_high_cost_tests() -> None:
     assert sorted(name for shard in expensive_by_shard for name in shard) == [
         "test_diffrax_integrators_core.py",
         "test_nonlinear.py",
+        "test_nonlinear_helpers_extra.py",
         "test_parallel_linear_velocity.py",
         "test_runtime_runner.py",
     ]
