@@ -1983,43 +1983,10 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
     calls: list[tuple[int, int, int]] = []
     input_means: list[float] = []
 
-    def _fake_integrator(
-        G0,
-        grid,
-        geom,
-        params,
-        *,
-        dt,
-        steps,
-        method,
-        terms,
-        sample_stride,
-        diagnostics_stride,
-        use_dealias_mask,
-        z_index=None,
-        compressed_real_fft=True,
-        laguerre_mode="grid",
-        omega_ky_index=None,
-        omega_kx_index=0,
-        flux_scale=1.0,
-        wphi_scale=1.0,
-        fixed_dt=True,
-        dt_min=1.0e-7,
-        dt_max=None,
-        cfl=0.9,
-        cfl_fac=1.0,
-        collision_split=True,
-        collision_scheme="strang",
-        implicit_tol=1.0e-6,
-        implicit_maxiter=120,
-        implicit_iters=3,
-        implicit_relax=0.7,
-        implicit_restart=20,
-        implicit_preconditioner=None,
-        fixed_mode_ky_index=None,
-        fixed_mode_kx_index=None,
-        external_phi=None,
-    ):
+    def _fake_integrator(G0, grid, *_args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        steps = kwargs["steps"]
+        sample_stride = kwargs["sample_stride"]
+        diagnostics_stride = kwargs["diagnostics_stride"]
         calls.append((int(steps), int(sample_stride), int(diagnostics_stride)))
         input_means.append(float(np.mean(np.real(np.asarray(G0)))))
         t = np.asarray([0.04, 0.08, 0.12], dtype=float)
@@ -2227,43 +2194,8 @@ def test_runtime_nonlinear_resolves_cfl_factor(
 ) -> None:
     captured: dict[str, float] = {}
 
-    def _fake_integrator(
-        G0,
-        grid,
-        geom,
-        params,
-        *,
-        dt,
-        steps,
-        method,
-        terms,
-        sample_stride,
-        diagnostics_stride,
-        use_dealias_mask,
-        z_index=None,
-        compressed_real_fft=True,
-        laguerre_mode="grid",
-        omega_ky_index=None,
-        omega_kx_index=0,
-        flux_scale=1.0,
-        wphi_scale=1.0,
-        fixed_dt=True,
-        dt_min=1.0e-7,
-        dt_max=None,
-        cfl=0.9,
-        cfl_fac=1.0,
-        collision_split=True,
-        collision_scheme="strang",
-        implicit_tol=1.0e-6,
-        implicit_maxiter=120,
-        implicit_iters=3,
-        implicit_relax=0.7,
-        implicit_restart=20,
-        implicit_preconditioner=None,
-        fixed_mode_ky_index=None,
-        fixed_mode_kx_index=None,
-        external_phi=None,
-    ):
+    def _fake_integrator(G0, grid, *_args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        cfl_fac = kwargs["cfl_fac"]
         captured["cfl_fac"] = float(cfl_fac)
         t = np.asarray([0.1], dtype=float)
         diag = SimulationDiagnostics(
@@ -3212,43 +3144,10 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
 
     captured: dict[str, int] = {}
 
-    def _fake_integrator(
-        G0,
-        grid,
-        geom,
-        params,
-        *,
-        dt,
-        steps,
-        method,
-        terms,
-        sample_stride,
-        diagnostics_stride,
-        use_dealias_mask,
-        z_index=None,
-        compressed_real_fft=True,
-        laguerre_mode="grid",
-        omega_ky_index=None,
-        omega_kx_index=0,
-        flux_scale=1.0,
-        wphi_scale=1.0,
-        fixed_dt=True,
-        dt_min=1.0e-7,
-        dt_max=None,
-        cfl=0.9,
-        cfl_fac=1.0,
-        collision_split=True,
-        collision_scheme="strang",
-        implicit_tol=1.0e-6,
-        implicit_maxiter=120,
-        implicit_iters=3,
-        implicit_relax=0.7,
-        implicit_restart=20,
-        implicit_preconditioner=None,
-        fixed_mode_ky_index=None,
-        fixed_mode_kx_index=None,
-        external_phi=None,
-    ):
+    def _fake_integrator(G0, grid, *_args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        dt = kwargs["dt"]
+        omega_ky_index = kwargs["omega_ky_index"]
+        omega_kx_index = kwargs["omega_kx_index"]
         captured["omega_ky_index"] = int(omega_ky_index)
         captured["omega_kx_index"] = int(omega_kx_index)
         t = np.asarray([float(dt)], dtype=float)
@@ -3310,43 +3209,10 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
 
     captured: dict[str, int] = {}
 
-    def _fake_integrator(
-        G0,
-        grid,
-        geom,
-        params,
-        *,
-        dt,
-        steps,
-        method,
-        terms,
-        sample_stride,
-        diagnostics_stride,
-        use_dealias_mask,
-        z_index=None,
-        compressed_real_fft=True,
-        laguerre_mode="grid",
-        omega_ky_index=None,
-        omega_kx_index=0,
-        flux_scale=1.0,
-        wphi_scale=1.0,
-        fixed_dt=True,
-        dt_min=1.0e-7,
-        dt_max=None,
-        cfl=0.9,
-        cfl_fac=1.0,
-        collision_split=True,
-        collision_scheme="strang",
-        implicit_tol=1.0e-6,
-        implicit_maxiter=120,
-        implicit_iters=3,
-        implicit_relax=0.7,
-        implicit_restart=20,
-        implicit_preconditioner=None,
-        fixed_mode_ky_index=None,
-        fixed_mode_kx_index=None,
-        external_phi=None,
-    ):
+    def _fake_integrator(G0, grid, *_args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        dt = kwargs["dt"]
+        omega_ky_index = kwargs["omega_ky_index"]
+        omega_kx_index = kwargs["omega_kx_index"]
         captured["omega_ky_index"] = int(omega_ky_index)
         captured["omega_kx_index"] = int(omega_kx_index)
         t = np.asarray([float(dt)], dtype=float)
