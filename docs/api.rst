@@ -311,12 +311,19 @@ application, branch selection, shift-invert preconditioning, and Arnoldi iterati
    :private-members:
    :no-index:
 
+Nonlinear
+---------
+
+.. automodule:: spectraxgk.nonlinear
+   :members:
+
 Nonlinear Diagnostics
 ---------------------
 
 .. automodule:: spectraxgk.operators.nonlinear.diagnostics
    :members:
    :private-members:
+   :no-index:
 
 Nonlinear Diagnostic State
 --------------------------
@@ -338,6 +345,7 @@ Nonlinear Helpers
 .. automodule:: spectraxgk.operators.nonlinear.policies
    :members:
    :private-members:
+   :no-index:
 
 Nonlinear Projection Helpers
 ----------------------------
@@ -380,6 +388,7 @@ Nonlinear State Integration
 .. automodule:: spectraxgk.solvers.nonlinear.state_integration
    :members:
    :private-members:
+   :no-index:
 
 Nonlinear Diagnostic Drivers
 ----------------------------
@@ -394,6 +403,7 @@ Nonlinear Diagnostic Integration
 .. automodule:: spectraxgk.solvers.nonlinear.diagnostic_integration
    :members:
    :private-members:
+   :no-index:
 
 Nonlinear IMEX
 --------------

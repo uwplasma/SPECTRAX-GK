@@ -9,13 +9,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk import nonlinear as nonlinear_mod
 from spectraxgk.solvers.nonlinear import (
     state_integration as nonlinear_state_integration_mod,
 )
-from spectraxgk.operators.nonlinear import collisions as nonlinear_collisions
-from spectraxgk.operators.nonlinear import diagnostics as nonlinear_diagnostics
-from spectraxgk.operators.nonlinear import policies as nonlinear_helpers
 from spectraxgk.operators.nonlinear import projection as nonlinear_projection
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
@@ -28,16 +24,6 @@ from spectraxgk.operators.linear.cache_builder import (
     update_linear_cache_for_sheared_kx,
 )
 from spectraxgk.nonlinear import (
-    _apply_collision_split,
-    _collision_damping,
-    _nonlinear_cfl_frequency_components,
-    _diagnostic_omega_mode_mask,
-    _integrate_nonlinear_explicit_diagnostics_impl,
-    _make_fixed_mode_projector,
-    _make_hermitian_projector,
-    _make_nonlinear_state_projector,
-    _pack_resolved_diagnostics,
-    _sample_indices_with_final,
     build_nonlinear_collision_split_policy,
     build_nonlinear_diagnostic_setup,
     build_nonlinear_simulation_diagnostics,
@@ -50,12 +36,33 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
     integrate_nonlinear_imex_diagnostics,
+    nonlinear_rhs_cached,
     integrate_nonlinear_sheared,
     integrate_nonlinear_sheared_transport,
     maybe_emit_nonlinear_progress,
     run_sampled_explicit_diagnostic_scan,
     sampled_scan_intervals,
     select_nonlinear_step_diagnostics,
+)
+from spectraxgk.operators.nonlinear.collisions import (
+    _apply_collision_split,
+    _collision_damping,
+)
+from spectraxgk.operators.nonlinear.diagnostics import (
+    _pack_resolved_diagnostics,
+    _sample_indices_with_final,
+)
+from spectraxgk.operators.nonlinear.policies import (
+    _diagnostic_omega_mode_mask,
+    _nonlinear_cfl_frequency_components,
+)
+from spectraxgk.operators.nonlinear.projection import (
+    _make_fixed_mode_projector,
+    _make_hermitian_projector,
+    _make_nonlinear_state_projector,
+)
+from spectraxgk.solvers.nonlinear.diagnostic_integration import (
+    _integrate_nonlinear_explicit_diagnostics_impl,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
 
@@ -405,20 +412,6 @@ def test_select_nonlinear_step_diagnostics_and_progress_noop() -> None:
         progress_total=jnp.asarray(0.4, dtype=jnp.float32),
     )
     np.testing.assert_allclose(np.asarray(out), [7.0])
-
-
-def test_nonlinear_diagnostic_helpers_are_reexported_by_public_facade() -> None:
-    for name in nonlinear_diagnostics.__all__:
-        assert getattr(nonlinear_mod, name) is getattr(nonlinear_diagnostics, name)
-
-
-def test_nonlinear_policy_helpers_are_reexported_by_public_facade() -> None:
-    for name in nonlinear_helpers.__all__:
-        assert getattr(nonlinear_mod, name) is getattr(nonlinear_helpers, name)
-    for name in nonlinear_collisions.__all__:
-        assert getattr(nonlinear_helpers, name) is getattr(nonlinear_collisions, name)
-    for name in nonlinear_projection.__all__:
-        assert getattr(nonlinear_helpers, name) is getattr(nonlinear_projection, name)
 
 
 def test_make_hermitian_projector_and_mode_mask() -> None:
@@ -960,7 +953,7 @@ def test_sheared_transport_trace_matches_canonical_final_heat_flux(method: str) 
     np.testing.assert_allclose(trace.time, [0.02, 0.04, 0.06], rtol=1.0e-6)
     assert trace.heat_flux.shape == (3, 1)
     _, flux_fac = fieldline_quadrature_weights(geom, grid)
-    _, final_fields = nonlinear_mod.nonlinear_rhs_cached(
+    _, final_fields = nonlinear_rhs_cached(
         trace.final_state,
         cache,
         params,

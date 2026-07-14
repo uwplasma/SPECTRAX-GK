@@ -17,8 +17,9 @@ Core modules
 - ``spectraxgk.solvers.linear``: matrix-free eigensolver policy, linear
   fixed-step/diagnostic integration policy, implicit GMRES/preconditioner
   policy, and gated velocity-parallel linear RHS dispatch.
-- ``spectraxgk.nonlinear``: public nonlinear runtime facade for explicit,
-  adaptive, diagnostic, and cached IMEX workflows.
+- ``spectraxgk.nonlinear``: explicit public nonlinear API for state integration,
+  diagnostics, collision/time-step policy, and cached IMEX workflows. Private
+  kernels stay in their physical or numerical owner modules.
 - ``spectraxgk.solvers.nonlinear``: explicit RK/SSP/K10 and IMEX fixed-point,
   GMRES, and stage-composition policy.
 - ``spectraxgk.operators.nonlinear.diagnostics``: sampling, resolved-diagnostic
