@@ -15,21 +15,15 @@ import spectraxgk.diagnostics.quasilinear_calibration as qlc
 from spectraxgk.diagnostics.quasilinear_calibration import (
     QuasilinearCalibrationPoint,
     apply_heat_flux_scale,
-    fit_train_heat_flux_scale,
-    quasilinear_calibration_report,
-)
-from spectraxgk.diagnostics.quasilinear_calibration import (
     calibration_point_from_nonlinear_window_summary,
     calibration_point_from_spectrum_and_nonlinear_window,
-    write_quasilinear_calibration_report,
-)
-from spectraxgk.diagnostics.quasilinear_calibration import (
+    fit_train_heat_flux_scale,
     integrated_quasilinear_flux_from_spectrum,
+    quasilinear_calibration_report,
+    write_quasilinear_calibration_report,
 )
 from spectraxgk.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
-)
-from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_report,
 )
 
@@ -485,6 +479,17 @@ def test_calibration_point_from_replicated_ensemble_gate_is_fail_closed(
     )
 
     with pytest.raises(ValueError, match="promotion-ready"):
+        calibration_point_from_nonlinear_window_summary(
+            summary,
+            predicted_heat_flux=1.0,
+            split="holdout",
+            saturation_rule="linear_weight",
+        )
+
+    payload = json.loads(summary.read_text(encoding="utf-8"))
+    payload["passed"] = "true"
+    summary.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="did not pass"):
         calibration_point_from_nonlinear_window_summary(
             summary,
             predicted_heat_flux=1.0,

@@ -768,7 +768,9 @@ reviewable.
 Quasilinear calibration now lives in
 ``spectraxgk.diagnostics.quasilinear_calibration``. It owns calibration-point
 schemas, spectrum integration, train/holdout scale fitting, nonlinear-window
-CSV/NetCDF ingestion, and report writing behind one diagnostics owner.
+CSV/NetCDF ingestion, and report writing behind one diagnostics owner. Each
+nonlinear trace is loaded once and reused for both the selected window and its
+convergence report; persisted ensemble pass flags must be explicit booleans.
 Late-window transport gates live in ``spectraxgk.diagnostics.transport_windows``.
 The public validation API re-exports user-facing helpers while
 campaign launch and artifact-building policy stays in ``tools``. Model-selection status construction keeps scoped candidate-skill gates,
