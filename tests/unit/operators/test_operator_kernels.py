@@ -20,8 +20,10 @@ from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
     apply_multispecies_collision_moment_matrix,
+    assemble_drift_kinetic_improved_sugama_matrix,
     assemble_drift_kinetic_sugama_matrix,
     DriftKineticSugamaOperator,
+    drift_kinetic_improved_sugama_pair_matrices,
     drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
     load_collision_moment_matrix,
@@ -309,6 +311,99 @@ def test_sugama_pair_matrices_recover_published_like_species_operator() -> None:
         np.asarray([-1.0987355709075928, -0.3171776235103607]),
         rtol=2.0e-6,
     )
+
+
+def test_improved_sugama_pair_matches_published_equal_and_unequal_coefficients() -> (
+    None
+):
+    test_matrix, field_matrix = drift_kinetic_improved_sugama_pair_matrices(
+        jnp.asarray(1.0), jnp.asarray(1.0)
+    )
+    np.testing.assert_allclose(
+        np.asarray(test_matrix + field_matrix),
+        load_collision_moment_matrix("improved_sugama"),
+        rtol=3.0e-6,
+        atol=3.0e-6,
+    )
+
+    unequal_test, unequal_field = drift_kinetic_improved_sugama_pair_matrices(
+        jnp.asarray(4.0), jnp.asarray(2.0)
+    )
+    np.testing.assert_allclose(
+        np.asarray([unequal_test[2, 6], unequal_test[6, 2], unequal_test[3, 2]]),
+        np.asarray([0.3546153605, -0.7801537514, -0.6369928122]),
+        rtol=3.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray([unequal_field[2, 6], unequal_field[6, 2], unequal_field[3, 6]]),
+        np.asarray([-1.0030037165, -0.9027034044, 0.7622828484]),
+        rtol=3.0e-6,
+    )
+
+    heat_modes = np.asarray([6, 3])
+    original = load_collision_moment_matrix("sugama")
+    improved = load_collision_moment_matrix("improved_sugama")
+    coulomb = load_collision_moment_matrix("coulomb")
+    original_error = np.linalg.norm(
+        (original - coulomb)[np.ix_(heat_modes, heat_modes)]
+    )
+    improved_error = np.linalg.norm(
+        (improved - coulomb)[np.ix_(heat_modes, heat_modes)]
+    )
+    assert improved_error / original_error < 0.41
+
+
+def test_improved_sugama_multispecies_matrix_conserves_and_differentiates() -> None:
+    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
+    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    matrix = jax.jit(assemble_drift_kinetic_improved_sugama_matrix)(
+        density, mass, temperature
+    )
+    state = (
+        jnp.arange(16, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 1) + 0.13j
+    ).astype(jnp.complex64)
+    contribution = apply_multispecies_collision_moment_matrix(state, matrix)
+    rates = multispecies_collision_invariant_rates(
+        contribution, density=density, mass=mass, temperature=temperature
+    )
+    np.testing.assert_allclose(rates.particle_density, 0.0, atol=2.0e-6)
+    np.testing.assert_allclose(rates.total_parallel_momentum, 0.0, atol=2.0e-6)
+    np.testing.assert_allclose(rates.total_thermal_energy, 0.0, atol=8.0e-6)
+    assert (
+        float(
+            collision_quadratic_rate(
+                state,
+                contribution,
+                weights=(density * temperature)[:, None, None, None, None, None],
+            )
+        )
+        < 0.0
+    )
+
+    direction = jnp.asarray([0.15, -0.08], dtype=jnp.float32)
+
+    def response(values):
+        operator = assemble_drift_kinetic_improved_sugama_matrix(density, mass, values)
+        return apply_multispecies_collision_moment_matrix(state, operator)
+
+    tangent = jax.jvp(response, (temperature,), (direction,))[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        response(temperature + step * direction)
+        - response(temperature - step * direction)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=1.5e-3, atol=1.5e-3)
+
+    equal_temperature = jnp.ones_like(temperature)
+    equal_matrix = assemble_drift_kinetic_improved_sugama_matrix(
+        density, mass, equal_temperature
+    )
+    generator = jnp.transpose(equal_matrix, (0, 2, 1, 3)).reshape(16, 16)
+    free_energy_weight = jnp.repeat(density * equal_temperature, 8)
+    weighted = free_energy_weight[:, None] * generator
+    symmetric = 0.5 * (weighted + weighted.T)
+    assert float(jnp.max(jnp.linalg.eigvalsh(symmetric))) < 2.0e-6
 
 
 def test_multispecies_sugama_pair_operator_conserves_and_differentiates() -> None:

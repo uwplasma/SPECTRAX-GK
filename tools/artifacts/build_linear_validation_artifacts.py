@@ -64,7 +64,7 @@ DEFAULT_COLLISION_METADATA = DEFAULT_COLLISION_TABLE.with_suffix(".json")
 
 
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
-    """Generate the published C6/C9 matrices using multiprecision arithmetic."""
+    """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 
     import mpmath as mp
 
@@ -86,10 +86,10 @@ def build_collision_table(*, digits: int = 80) -> np.ndarray:
                 (-8 * sqrt_two / 5, 8 / (5 * sqrt_three), -28 * sqrt_two / 15),
             ),
         )
-        matrices = np.zeros((2, 8, 8), dtype=np.float64)
+        matrices = np.zeros((3, 8, 8), dtype=np.float64)
         temperature_modes = (4, 1)
         heat_modes = (6, 3)
-        for model, (thermal, heat) in enumerate(blocks):
+        for model, (thermal, heat) in zip((0, 2), blocks):
             for modes, coefficients in (
                 (temperature_modes, thermal),
                 (heat_modes, heat),
@@ -100,6 +100,12 @@ def build_collision_table(*, digits: int = 80) -> np.ndarray:
                 matrices[model, row0, row1] = float(coupling * inverse_sqrt_pi)
                 matrices[model, row1, row0] = float(coupling * inverse_sqrt_pi)
                 matrices[model, row1, row1] = float(diagonal1 * inverse_sqrt_pi)
+        matrices[1] = matrices[0]
+        matrices[1, 6, 6] += float(mp.mpf(9) / 25 * mp.sqrt(2 / mp.pi))
+        improved_heat_coupling = float(mp.mpf(6) / 25 * mp.sqrt(3 / mp.pi))
+        matrices[1, 6, 3] += improved_heat_coupling
+        matrices[1, 3, 6] += improved_heat_coupling
+        matrices[1, 3, 3] += float(mp.mpf(6) / 25 * mp.sqrt(2 / mp.pi))
     return matrices
 
 
@@ -113,7 +119,7 @@ def write_collision_table(
     digest = hashlib.sha256(out.read_bytes()).hexdigest()
     metadata = {
         "kind": "spectraxgk_collision_moment_coefficients",
-        "models": ["sugama", "coulomb"],
+        "models": ["sugama", "improved_sugama", "coulomb"],
         "shape": list(matrices.shape),
         "dtype": str(matrices.dtype),
         "sha256": digest,
@@ -123,8 +129,12 @@ def write_collision_table(
         "Nm": 4,
         "laguerre_convention": "spectraxgk_opposite_to_paper",
         "source": "Frei, Ernst & Ricci (2022), arXiv:2202.06293",
-        "equations": {"sugama": "C6a-C6f", "coulomb": "C9a-C9f"},
-        "claim_scope": "validated_drift_kinetic_like_species_six_moment_vertical_slice",
+        "equations": {
+            "sugama": "C6a-C6f",
+            "improved_sugama": "C6a-C6f plus C103a-C103c",
+            "coulomb": "C9a-C9f",
+        },
+        "claim_scope": "validated_drift_kinetic_like_species_low_order_vertical_slice",
     }
     metadata_out.parent.mkdir(parents=True, exist_ok=True)
     metadata_out.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")

@@ -413,9 +413,35 @@ pytree, preserving differentiation when species parameters are constructed
 inside an objective.
 
 This is the original Sugama model's real low-order drift-kinetic projection.
-It is useful for reduced-model verification but is not the improved Sugama
-correction, an arbitrary-moment hierarchy, or a finite-:math:`b` multispecies
-runtime model.
+It is useful for reduced-model verification but is not an arbitrary-moment
+hierarchy or a finite-:math:`b` multispecies runtime model.
+
+Lowest-order improved-Sugama correction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``drift_kinetic_improved_sugama_pair_matrices`` adds the complete low-order
+test- and field-particle corrections in Appendix C, equations (101)--(102), to
+the original-Sugama ordered pair. The paper labels the driven moment with a
+superscript and the response with a subscript, so the published coefficient
+array is transposed once into the runtime row/column application convention.
+For equal species the test correction vanishes and the field correction
+reproduces equations (103a)--(103c) from an independently generated 80-digit
+table. Unequal-mass and unequal-temperature pair coefficients are checked
+directly, and their assembled matrix conserves particle number, total parallel
+momentum, and total thermal energy. At equal species the correction reduces
+the heat-flow-block Frobenius distance to the Coulomb matrix from about
+``0.521`` to ``0.205``; the equal-temperature multispecies weighted symmetric
+operator is non-positive over the complete reduced moment space.
+
+``assemble_drift_kinetic_improved_sugama_matrix`` and
+``DriftKineticSugamaOperator.from_improved_species`` expose this equation slice
+through the same vectorized JAX and collision-protocol paths. This is a
+friction-flow matrix validation, not a parallel-conductivity claim. The
+published conductivity comparison retains more moments and reports that the
+original operator can underpredict current by at least 10%, while the improved
+operator approaches Coulomb within 1%; SPECTRAX-GK therefore keeps
+conductivity promotion blocked until the arbitrary-moment correction hierarchy
+and its driven steady-state gate are implemented.
 
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates

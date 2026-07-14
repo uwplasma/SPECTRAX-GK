@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 97% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic Sugama/Coulomb six-gyromoment matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Original-Sugama test/field pair matrices now support unequal mass/temperature species, conserve physical multispecies invariants, and approach the collision null space in a time-domain relaxation gate. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and target/source species/spatial JAX application reproduce the direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring all generated couplings plus conductivity, ITG, zonal, and convergence gates. |
+| Advanced collision operators | 98% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and target/source species/spatial JAX application reproduce the direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring arbitrary generated couplings plus conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 97% | The bracket has one numerical owner and a clean A4000 profile; an identity-breaking FFT-layout rewrite was rejected. Require fresh identity and memory evidence for every future optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -283,6 +283,17 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-14: Implemented the complete lowest-order improved-Sugama correction
+  from Frei, Ernst & Ricci (2022), Appendix C, equations (101)--(103). The
+  driven/response index orientation is explicitly converted to the runtime
+  matrix convention; an initial untransposed implementation was rejected when
+  its unequal-species momentum gate failed. The corrected JAX matrix conserves
+  all multispecies invariants, differentiates through temperature ratios, is
+  non-positive over the full equal-temperature reduced space, and reduces the
+  equal-species heat-flow distance to Coulomb by about 61%. The 80-digit
+  package table now includes the independent equation-(103) endpoint. This is
+  a friction-flow equation gate, not a conductivity promotion.
 
 - 2026-07-14: Added a vectorized physical-species assembler for the reduced
   multispecies Sugama pair operator and an independent matrix-exponential

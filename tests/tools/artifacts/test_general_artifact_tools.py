@@ -1748,8 +1748,8 @@ def test_generate_collision_table_is_reproducible_and_matches_tracked_data(
     tracked = np.load(mod.DEFAULT_COLLISION_TABLE, allow_pickle=False)
     generated = np.load(out, allow_pickle=False)
     np.testing.assert_array_equal(generated, tracked)
-    assert metadata["models"] == ["sugama", "coulomb"]
-    assert metadata["shape"] == [2, 8, 8]
+    assert metadata["models"] == ["sugama", "improved_sugama", "coulomb"]
+    assert metadata["shape"] == [3, 8, 8]
     assert metadata["sha256"] == mod.hashlib.sha256(out.read_bytes()).hexdigest()
     assert metadata["precision_decimal_digits"] == 80
 
