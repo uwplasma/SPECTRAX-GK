@@ -45,6 +45,13 @@ WIDE_COVERAGE_LOGICAL_CPU_SELECTIONS = {
     ),
 }
 
+WIDE_COVERAGE_NODE_BATCHES = {
+    # This owner fits locally but exceeds five minutes under coverage on the
+    # slower hosted runner. Disjoint node-id batches retain every test and
+    # coverage contribution without weakening the per-command timeout.
+    "test_nonlinear_helpers_extra.py": 5,
+}
+
 
 def _resolve_test_dir(test_dir: Path) -> Path:
     """Resolve relative test directories against the repository root."""
@@ -225,6 +232,49 @@ def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
     for shard in shards:
         shard.sort(key=lambda path: original_order[path])
     return shards
+
+
+def split_contiguous(items: list[str], nchunks: int) -> list[list[str]]:
+    """Split ordered items into non-empty contiguous chunks."""
+
+    if nchunks < 1:
+        raise ValueError("nchunks must be >= 1")
+    if not items:
+        return []
+    count = min(int(nchunks), len(items))
+    base, remainder = divmod(len(items), count)
+    chunks: list[list[str]] = []
+    start = 0
+    for idx in range(count):
+        stop = start + base + (1 if idx < remainder else 0)
+        chunks.append(items[start:stop])
+        start = stop
+    return chunks
+
+
+def collect_pytest_nodeids(path: Path, pytest_args: list[str]) -> list[str]:
+    """Collect selected pytest node IDs for one file in deterministic order."""
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "--collect-only",
+        "-q",
+        *pytest_args,
+        str(path.relative_to(REPO_ROOT)),
+    ]
+    result = subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    nodeids = [line.strip() for line in result.stdout.splitlines() if "::" in line]
+    if not nodeids:
+        raise SystemExit(f"no pytest node IDs collected from {_relative(path)}")
+    return nodeids
 
 
 def wide_coverage_environment(shard: list[Path]) -> dict[str, str] | None:
@@ -503,9 +553,32 @@ def main_wide(argv: list[str] | None = None) -> int:
             "--disable-warnings",
             *args.pytest_arg,
         ]
-        cmd = [*coverage_cmd, *rel]
-        print(f"running coverage shard {idx + 1}/{len(shards)}", flush=True)
-        _run(cmd, timeout=int(args.timeout), cwd=REPO_ROOT)
+        split_owners = [
+            path for path in shard if path.name in WIDE_COVERAGE_NODE_BATCHES
+        ]
+        if split_owners:
+            if len(shard) != 1 or len(split_owners) != 1:
+                raise SystemExit("node-batched coverage owners must occupy an isolated shard")
+            owner = split_owners[0]
+            nodeids = collect_pytest_nodeids(owner, list(args.pytest_arg))
+            batches = split_contiguous(
+                nodeids, WIDE_COVERAGE_NODE_BATCHES[owner.name]
+            )
+            for batch_idx, batch in enumerate(batches, start=1):
+                print(
+                    f"running coverage shard {idx + 1}/{len(shards)} "
+                    f"node batch {batch_idx}/{len(batches)} ({len(batch)} tests)",
+                    flush=True,
+                )
+                _run(
+                    [*coverage_cmd, *batch],
+                    timeout=int(args.timeout),
+                    cwd=REPO_ROOT,
+                )
+        else:
+            cmd = [*coverage_cmd, *rel]
+            print(f"running coverage shard {idx + 1}/{len(shards)}", flush=True)
+            _run(cmd, timeout=int(args.timeout), cwd=REPO_ROOT)
         for path in shard:
             for selection in WIDE_COVERAGE_LOGICAL_CPU_SELECTIONS.get(
                 path.name, ()

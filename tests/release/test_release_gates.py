@@ -2470,6 +2470,7 @@ from tools.release.run_test_gates import (
     build_coverage_shard_report,
     _resolve_test_dir,
     discover_test_files,
+    split_contiguous,
     validate_coverage_shard_report,
     split_shards,
     wide_coverage_environment,
@@ -2515,6 +2516,19 @@ def test_split_shards_isolates_known_high_cost_tests() -> None:
 def test_split_shards_rejects_nonpositive_count() -> None:
     with pytest.raises(ValueError, match="nshards"):
         split_shards([Path("tests/test_a.py")], 0)
+
+
+def test_split_contiguous_is_complete_balanced_and_bounded() -> None:
+    items = [f"test_{idx}" for idx in range(7)]
+
+    chunks = split_contiguous(items, 3)
+
+    assert chunks == [items[:3], items[3:5], items[5:]]
+    assert [item for chunk in chunks for item in chunk] == items
+    assert split_contiguous(items[:2], 4) == [[items[0]], [items[1]]]
+    assert split_contiguous([], 2) == []
+    with pytest.raises(ValueError, match="nchunks"):
+        split_contiguous(items, 0)
 
 
 def test_wide_coverage_parallel_owner_requests_four_logical_cpu_devices(
