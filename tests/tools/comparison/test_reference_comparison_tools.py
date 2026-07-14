@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+from types import SimpleNamespace
+from typing import Any
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 
 # ---- imported-linear growth-dump mode ----
-
-from pathlib import Path
-import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
@@ -126,20 +135,7 @@ def test_expand_gx_restart_state_to_full_positive_ky_embeds_dealiased_kx() -> No
 
 # ---- test_compare_gx_imported_linear.py ----
 
-"""Tests for the imported-geometry GX linear comparison tool."""
-
-
-from dataclasses import replace
-from pathlib import Path
-import sys
-from types import SimpleNamespace
-
 import jax.numpy as jnp
-import numpy as np
-import pytest
-from typing import Any
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
 import compare_gx_imported_linear as imported_linear
 
@@ -1412,14 +1408,7 @@ def test_write_scan_rows_checkpoints_sorted_csv(tmp_path: Path) -> None:
 
 # ---- test_compare_gx_kbm.py ----
 
-"""Tests for the deterministic GX KBM comparison harness."""
-
-
-import sys
-from pathlib import Path
-
 import pandas as pd
-import pytest
 
 
 def test_compare_gx_kbm_parser_defaults_hl_dims_to_gx_contract() -> None:
@@ -2405,16 +2394,6 @@ def test_compare_gx_kbm_npz_zero_geometry_scalars_fall_back_to_defaults(
 
 # ---- test_compare_gx_nonlinear_diagnostics.py ----
 
-"""Tests for GX vs SPECTRAX nonlinear diagnostics comparison tool."""
-
-
-import os
-import json
-import sys
-from pathlib import Path
-
-import pytest
-
 
 def _write_minimal_gx_nc(path: Path, ntime: int = 5) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
@@ -2640,12 +2619,6 @@ def test_compare_gx_nonlinear_diagnostics_apply_time_window() -> None:
 
 # ---- test_compare_gx_nonlinear_terms.py ----
 
-"""Tests for GX nonlinear term comparison tooling."""
-
-
-import sys
-from pathlib import Path
-
 
 def test_compare_gx_nonlinear_terms_parser_accepts_runtime_config() -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
@@ -2803,14 +2776,6 @@ def test_synth_positive_and_full_ky_rebuild_dump_grid() -> None:
 
 
 # ---- test_compare_gx_rhs_terms.py ----
-
-"""Regression tests for the GX RHS comparison helpers."""
-
-
-import sys
-from pathlib import Path
-
-import pytest
 
 from spectraxgk.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
@@ -3207,12 +3172,6 @@ def test_write_rhs_term_diagnostics_seed_state_handles_multispecies_tem() -> Non
 
 
 # ---- compare_runtime.py ----
-
-"""Tests for runtime-configured exact-state comparison tooling."""
-
-
-import sys
-from pathlib import Path
 
 from netCDF4 import Dataset
 
@@ -3817,9 +3776,6 @@ def test_compare_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> None:
 
 # ---- W7-X zonal-reference comparison contracts ----
 
-from pathlib import Path
-
-
 from support.paths import load_artifact_tool, load_comparison_tool
 
 
@@ -4017,19 +3973,8 @@ def test_w7x_zonal_reference_main_writes_open_json(tmp_path: Path) -> None:
 
 # ---- test_make_reference_panels.py ----
 
-"""Tests for tracked reference-comparison panel builders."""
-
-
-from pathlib import Path
-import subprocess
-import sys
-
-import matplotlib.pyplot as plt
-import pytest
-
 ROOT = Path(__file__).resolve().parents[3]
 TOOLS = ROOT / "tools" / "comparison"
-sys.path.insert(0, str(TOOLS))
 
 from make_reference_panels import (  # noqa: E402
     STATIC,
@@ -4352,11 +4297,6 @@ def test_reference_panel_subcommands_render_outputs(tmp_path: Path) -> None:
 
 
 # ---- test_reference_comparison_contracts.py ----
-
-"""Contracts for active reference-comparison helper scripts."""
-
-
-from pathlib import Path
 
 
 def test_imported_window_parser_accepts_required_args() -> None:
