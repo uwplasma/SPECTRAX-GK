@@ -41,6 +41,7 @@ from spectraxgk.terms.linear_terms import (
     collisions_contribution,
     conservative_full_f_dougherty_cross_moments,
     drift_kinetic_dougherty_contribution,
+    drift_kinetic_sugama_six_moment_contribution,
     multispecies_collision_invariant_rates,
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
@@ -437,6 +438,118 @@ def test_long_wavelength_local_maxwellian_is_collision_null_space():
     np.testing.assert_allclose(np.asarray(contribution), 0.0, atol=2.0e-7)
 
 
+def test_sugama_six_moment_matrix_matches_published_equation_and_invariants():
+    """Frei, Ernst & Ricci (2022), Appendix C, equations (C6a)--(C6f)."""
+
+    state = jnp.zeros((2, 2, 4, 1, 1, 1), dtype=jnp.complex64)
+    state = state.at[:, 0, 0].set(jnp.asarray([1.2, -0.4])[:, None, None, None])
+    state = state.at[:, 0, 1].set(jnp.asarray([0.3, 0.7])[:, None, None, None])
+    state = state.at[:, 0, 2].set(jnp.asarray([0.8, -0.2])[:, None, None, None])
+    state = state.at[:, 1, 0].set(jnp.asarray([-0.5, 0.9])[:, None, None, None])
+    state = state.at[:, 0, 3].set(jnp.asarray([0.6, -0.4])[:, None, None, None])
+    state = state.at[:, 1, 1].set(jnp.asarray([0.2, 0.7])[:, None, None, None])
+    nu = jnp.asarray([0.2, 0.35], dtype=jnp.float32)
+    result = drift_kinetic_sugama_six_moment_contribution(state, nu=nu)
+
+    sqrt_two_over_pi = np.sqrt(2.0 / np.pi)
+    sqrt_one_over_pi = np.sqrt(1.0 / np.pi)
+    sqrt_one_over_three_pi = np.sqrt(1.0 / (3.0 * np.pi))
+    matrix = np.asarray(
+        [
+            [
+                -(64.0 / 45.0) * sqrt_two_over_pi,
+                (64.0 / 45.0) * sqrt_one_over_pi,
+                0.0,
+                0.0,
+            ],
+            [
+                (64.0 / 45.0) * sqrt_one_over_pi,
+                -(32.0 / 45.0) * sqrt_two_over_pi,
+                0.0,
+                0.0,
+            ],
+            [
+                0.0,
+                0.0,
+                -(361.0 / 175.0) * sqrt_two_over_pi,
+                (208.0 / 175.0) * sqrt_one_over_three_pi,
+            ],
+            [
+                0.0,
+                0.0,
+                (208.0 / 175.0) * sqrt_one_over_three_pi,
+                -(1187.0 / 525.0) * sqrt_two_over_pi,
+            ],
+        ],
+        dtype=np.float32,
+    )
+    for species in range(2):
+        moments = np.asarray(
+            [
+                state[species, 0, 2, 0, 0, 0],
+                state[species, 1, 0, 0, 0, 0],
+                state[species, 0, 3, 0, 0, 0],
+                state[species, 1, 1, 0, 0, 0],
+            ]
+        )
+        expected = float(nu[species]) * matrix @ moments
+        actual = np.asarray(
+            [
+                result[species, 0, 2, 0, 0, 0],
+                result[species, 1, 0, 0, 0, 0],
+                result[species, 0, 3, 0, 0, 0],
+                result[species, 1, 1, 0, 0, 0],
+            ]
+        )
+        np.testing.assert_allclose(actual, expected, rtol=2.0e-6, atol=2.0e-7)
+
+    rates = collision_invariant_rates(result)
+    np.testing.assert_allclose(np.asarray(rates.density), 0.0, atol=2.0e-7)
+    np.testing.assert_allclose(np.asarray(rates.parallel_momentum), 0.0, atol=2.0e-7)
+    np.testing.assert_allclose(np.asarray(rates.thermal_energy), 0.0, atol=2.0e-7)
+    np.testing.assert_allclose(matrix, matrix.T, atol=1.0e-7)
+    assert np.linalg.eigvalsh(matrix).max() < 2.0e-7
+    assert float(collision_quadratic_rate(state, result)) < 0.0
+
+
+def test_sugama_six_moment_null_space_and_collision_frequency_derivative():
+    state = jnp.zeros((1, 2, 4, 1, 1, 1), dtype=jnp.complex64)
+    state = state.at[:, 0, 0].set(1.0)
+    state = state.at[:, 0, 1].set(-0.3)
+    state = state.at[:, 0, 2].set(1.0)
+    state = state.at[:, 1, 0].set(jnp.sqrt(2.0))
+    nu = jnp.asarray([0.3], dtype=jnp.float32)
+    null_result = drift_kinetic_sugama_six_moment_contribution(state, nu=nu)
+    np.testing.assert_allclose(np.asarray(null_result), 0.0, atol=2.0e-7)
+
+    probe = state.at[:, 0, 3].set(0.6).at[:, 1, 1].set(-0.2)
+    tangent = jax.jvp(
+        lambda frequency: drift_kinetic_sugama_six_moment_contribution(
+            probe, nu=frequency
+        ),
+        (nu,),
+        (jnp.ones_like(nu),),
+    )[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        drift_kinetic_sugama_six_moment_contribution(probe, nu=nu + step)
+        - drift_kinetic_sugama_six_moment_contribution(probe, nu=nu - step)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(
+        np.asarray(tangent), np.asarray(finite_difference), rtol=2.0e-4, atol=2.0e-5
+    )
+    np.testing.assert_allclose(
+        np.asarray(drift_kinetic_sugama_six_moment_contribution(probe[0], nu=nu)),
+        np.asarray(drift_kinetic_sugama_six_moment_contribution(probe, nu=nu)[0]),
+        rtol=2.0e-6,
+        atol=2.0e-7,
+    )
+    with pytest.raises(ValueError, match="Nl >= 2 and Nm >= 4"):
+        drift_kinetic_sugama_six_moment_contribution(probe[:, :, :3], nu=nu)
+    with pytest.raises(ValueError, match="five or six"):
+        drift_kinetic_sugama_six_moment_contribution(jnp.ones((2, 4)), nu=nu)
+
+
 def test_finite_larmor_collision_matches_published_moment_equations():
     """Check Mandell et al. (2018), equations (3.38)--(3.42) and (4.10)."""
 
@@ -643,9 +756,9 @@ def test_full_f_dougherty_cross_moments_satisfy_pairwise_conservation_and_ad() -
 
     momentum_rate_sr = mass[0] * density[0] * nu[0, 1]
     momentum_rate_rs = mass[1] * density[1] * nu[1, 0]
-    expected_flow = (
-        momentum_rate_sr * flow[0] + momentum_rate_rs * flow[1]
-    ) / (momentum_rate_sr + momentum_rate_rs)
+    expected_flow = (momentum_rate_sr * flow[0] + momentum_rate_rs * flow[1]) / (
+        momentum_rate_sr + momentum_rate_rs
+    )
     expected_thermal = (
         mass[0] * density[0] * nu[0, 1] * thermal[0]
         + mass[1] * density[1] * nu[1, 0] * thermal[1]
@@ -786,9 +899,7 @@ def test_full_f_dougherty_cross_moments_conserve_each_multispecies_pair(
             rate_r = mass[partner] * density[partner] * frequency[partner, species]
             momentum_change = rate_s * (
                 targets.parallel_flow[species, partner] - flow[species]
-            ) + rate_r * (
-                targets.parallel_flow[partner, species] - flow[partner]
-            )
+            ) + rate_r * (targets.parallel_flow[partner, species] - flow[partner])
             energy_change = rate_s * (
                 velocity_dimensions
                 * (targets.thermal_speed_sq[species, partner] - thermal[species])

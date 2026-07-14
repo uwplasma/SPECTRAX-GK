@@ -130,10 +130,18 @@ comparison_owner = "src/closures.cu"
 evidence = "must pass species-coupled particle, total momentum, total energy, null-space, adjointness, and entropy gates"
 
 [[capabilities]]
+id = "drift_kinetic_like_species_sugama_six_moment_operator"
+group = "optional_extension"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.operators.linear.dissipation.drift_kinetic_sugama_six_moment_contribution"
+comparison_owner = "published analytic six-gyromoment matrix"
+evidence = "Frei, Ernst & Ricci (2022) Appendix C equations C6a-C6f; exact matrix, null-space, invariant, symmetry, dissipation, and JVP/finite-difference gates"
+
+[[capabilities]]
 id = "linearized_sugama_or_coulomb_collisions"
 group = "optional_extension"
 status = "planned_research_lane"
-spectrax_owner = "future collision-operator protocol implementation"
+spectrax_owner = "validated reduced Sugama equation slice plus future full-hierarchy coefficient implementation"
 comparison_owner = "not a complete shipped capability"
 evidence = "requires field-particle terms, conservation, conductivity, zonal damping, and collisional-ITG benchmarks"
 

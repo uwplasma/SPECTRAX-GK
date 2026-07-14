@@ -268,6 +268,50 @@ The model is promotable only when every particle rate and both summed rates
 vanish to discretization tolerance. This diagnostic is implemented and
 autodiff-tested; it does not by itself promote a multispecies collision model.
 
+Reduced drift-kinetic Sugama equation gate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``drift_kinetic_sugama_six_moment_contribution`` implements the complete
+like-species six-gyromoment matrix reported in Appendix C, equations
+(C6a)--(C6f), of the `improved Sugama moment formulation
+<https://arxiv.org/abs/2202.06293>`_.  In SPECTRAX-GK ordering, the nontrivial
+moment vector is
+
+.. math::
+
+   \boldsymbol{N}=(N^{20},-N^{01},N^{30},-N^{11})^T,
+
+where the signs on Laguerre moments account for the code's polynomial
+convention.  The operator is :math:`\nu_s M\boldsymbol{N}` with two symmetric
+blocks.  The thermal block is
+
+.. math::
+
+   M_T=\frac{1}{45\sqrt{\pi}}
+   \begin{pmatrix}
+   -64\sqrt{2} & 64\\
+   64 & -32\sqrt{2}
+   \end{pmatrix},
+
+and the heat-flux block is
+
+.. math::
+
+   M_q=\frac{1}{525\sqrt{\pi}}
+   \begin{pmatrix}
+   -1083\sqrt{2} & 624/\sqrt{3}\\
+   624/\sqrt{3} & -1187\sqrt{2}
+   \end{pmatrix}.
+
+Tests evaluate every matrix entry, symmetry, non-positive eigenvalues, the
+Maxwellian thermal null direction, density/momentum/energy invariants, and a
+collision-frequency JVP against centered finite differences.  This is a real
+high-collisionality reduced operator and an equation-level acceptance gate for
+the future coefficient generator.  It intentionally returns zero outside the
+six-moment projection and is therefore not selected by TOML or presented as a
+full Hermite--Laguerre hierarchy, finite-Larmor-radius, multispecies, or
+production Sugama implementation.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments
@@ -299,8 +343,9 @@ invariance of the target flow and thermal speed. It supports derivation checks
 and future full-:math:`f` work; it must not be inserted directly into the
 shipped linearized field-particle restoration.
 
-The next runtime model tier follows the published linearized gyrokinetic
-Sugama/Coulomb operators in the Hermite--Laguerre moment basis. A linearized
+The next runtime model tier extends this verified low-order normalization to
+the published linearized gyrokinetic Sugama/Coulomb operators in the full
+Hermite--Laguerre moment basis. A linearized
 multispecies Dougherty variant is admissible only after its delta-:math:`f`
 projection is derived explicitly; the full-:math:`f` primitive targets are not
 used as a shortcut. Promotion requires discrete Maxwellian
