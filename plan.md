@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted; the enforced 95-tool target is met at 88,892 lines. |
-| Test consolidation | 96% | The enforced 95-file topology target is met, and the suite has 92,531 lines after current-API campaign contracts replaced removed-optimizer compatibility tests. The largest artifact-tool owner is 5,867 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
+| Test consolidation | 97% | The enforced 95-file topology target is met, and the suite has 92,436 lines after current-API campaign contracts replaced removed-optimizer compatibility tests and status-dashboard metrics moved to exact mapping-subset assertions. The largest artifact-tool owner is 5,782 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
 | Source consolidation | 99.4% | The 223-file/zero-exception architecture gate passes after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver/cache/workflow/gradient/nonlinear-report policy, and removing private compatibility exports and obsolete optimizer adapters from solver, operator, VMEC transport, and nonlinear-parallel facades. The package has 87,434 lines and no module at the 1,000-line ceiling; continue reducing near-ceiling owners without flattening meaningful staging boundaries. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
@@ -2426,3 +2426,12 @@ under 5 minutes.
   fitting enforces/materializes its time-array invariant before use. The exact
   CI ``mypy`` command passes all 223 source modules, and 150 focused replicate,
   runtime, architecture, and release tests pass locally.
+
+- 2026-07-14: Reduced the largest test owner from 5,867 to 5,782 lines without
+  removing a collected case or scientific assertion. Manuscript-readiness,
+  open-lane, holdout, zonal, gradient, and profiler expectations now compare
+  explicit metric subsets as dictionaries, making each claim boundary visible
+  in one place while still failing on missing keys. The duplicate
+  pre-manuscript JSON writer was removed in favor of the file's common writer.
+  All 119 owner tests and the combined 213-case owner/release tranche pass; the
+  95-file suite now contains 92,436 lines.

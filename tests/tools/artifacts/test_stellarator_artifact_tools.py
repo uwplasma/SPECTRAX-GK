@@ -27,6 +27,14 @@ def _write_status_json(root: Path, relative: str, payload: dict[str, object]) ->
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
+def _assert_mapping_contains(
+    actual: dict[str, object], expected: dict[str, object]
+) -> None:
+    """Compare an explicit subset while retaining missing-key failures."""
+
+    assert {key: actual[key] for key in expected} == expected
+
+
 def _write_nonlinear_performance_status_inputs(
     root: Path, *, include_device_metadata: bool = False
 ) -> None:
@@ -273,37 +281,25 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
 
     assert payload["summary"]["n_deferred"] == 2
-    assert (
-        lanes["Quasilinear diagnostics and saturation-model selection"]["status"]
-        == "closed"
+    quasilinear_lane = lanes["Quasilinear diagnostics and saturation-model selection"]
+    _assert_mapping_contains(
+        quasilinear_lane,
+        {
+            "status": "closed",
+            "claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
+        },
     )
-    assert (
-        lanes["Quasilinear diagnostics and saturation-model selection"]["claim_level"]
-        == "validated_diagnostics_negative_absolute_flux_promotion"
-    )
-    assert (
-        lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
-            "absolute_flux_promoted"
-        ]
-        is False
-    )
-    assert (
-        lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
-            "dataset_sufficiency_promotion_passed"
-        ]
-        is False
-    )
-    assert (
-        lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
-            "promotion_guardrails_passed"
-        ]
-        is True
+    _assert_mapping_contains(
+        quasilinear_lane["key_metrics"],
+        {
+            "absolute_flux_promoted": False,
+            "dataset_sufficiency_promotion_passed": False,
+            "promotion_guardrails_passed": True,
+        },
     )
     assert (
         "docs/_static/quasilinear_promotion_guardrails.json"
-        in lanes["Quasilinear diagnostics and saturation-model selection"][
-            "primary_artifacts"
-        ]
+        in quasilinear_lane["primary_artifacts"]
     )
     assert lanes["VMEC/Boozer differentiable geometry parity"]["status"] == "closed"
     assert (
@@ -323,127 +319,68 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "Do not use the reduced synthetic surface comparison" in opt_lane["next_action"]
     )
     assert lanes["Production solver-objective geometry gradients"]["status"] == "closed"
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "multi_equilibrium_gradient_holdout_matrix"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "full_vmec_boozer_reduced_nonlinear_window_gradient_gate"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "reduced_nonlinear_window_gradient_gate"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "multi_equilibrium_reduced_nonlinear_window_gradient_gate"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "production_nonlinear_window_gradient_gate"
-        ]
-        is False
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "startup_nonlinear_plumbing_fd_path_gate"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "startup_nonlinear_plumbing_response_fraction"
-        ]
-        == 0.11
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "nonlinear_transport_average_gate"
-        ]
-        is False
+    gradient_lane = lanes["Production solver-objective geometry gradients"]
+    _assert_mapping_contains(
+        gradient_lane["key_metrics"],
+        {
+            "multi_equilibrium_gradient_holdout_matrix": True,
+            "full_vmec_boozer_reduced_nonlinear_window_gradient_gate": True,
+            "reduced_nonlinear_window_gradient_gate": True,
+            "multi_equilibrium_reduced_nonlinear_window_gradient_gate": True,
+            "production_nonlinear_window_gradient_gate": False,
+            "startup_nonlinear_plumbing_fd_path_gate": True,
+            "startup_nonlinear_plumbing_response_fraction": 0.11,
+            "nonlinear_transport_average_gate": False,
+            "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate": True,
+            "vmec_boozer_startup_nonlinear_response_fraction": 0.04,
+            "vmec_boozer_nonlinear_transport_average_gate": False,
+            "variance_reduced_nonlinear_gradient_control_mean_passed": True,
+            "variance_reduced_nonlinear_gradient_common_pairs": 21,
+            "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.311,
+        },
     )
     assert (
         "docs/_static/nonlinear_window_fd_audit.json"
-        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
+        in gradient_lane["primary_artifacts"]
     )
     assert (
         "docs/_static/nonlinear_window_fd_audit.png"
-        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "vmec_boozer_startup_nonlinear_response_fraction"
-        ]
-        == 0.04
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "vmec_boozer_nonlinear_transport_average_gate"
-        ]
-        is False
+        in gradient_lane["primary_artifacts"]
     )
     assert (
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"
-        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
+        in gradient_lane["primary_artifacts"]
     )
     assert (
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json"
-        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "variance_reduced_nonlinear_gradient_control_mean_passed"
-        ]
-        is True
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "variance_reduced_nonlinear_gradient_common_pairs"
-        ]
-        == 21
-    )
-    assert (
-        lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "variance_reduced_nonlinear_gradient_uncertainty_rel"
-        ]
-        == 0.311
+        in gradient_lane["primary_artifacts"]
     )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"
     profiler = lanes["Profiler-backed nonlinear performance claims"]
+    _assert_mapping_contains(
+        profiler["key_metrics"],
+        {
+            "release_performance_gate": True,
+            "identity_gate_pass": False,
+            "best_identity_candidate": None,
+            "rhs_fastest_full_label": "GPU spectral",
+            "rhs_gpu_full_grid_over_spectral": 1.64,
+            "rhs_cpu_bracket_grid_over_spectral": 1.66,
+            "miller_gpu_grid_full_rhs": 0.013,
+            "w7x_gpu_full_rhs": 0.027,
+        },
+    )
     assert profiler["status"] == "closed"
-    assert profiler["key_metrics"]["release_performance_gate"] is True
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
     assert (
         "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json"
         in profiler["primary_artifacts"]
     )
-    assert profiler["key_metrics"]["identity_gate_pass"] is False
-    assert profiler["key_metrics"]["best_identity_candidate"] is None
     assert (
         "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json"
         in profiler["primary_artifacts"]
     )
-    assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
-    assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
-    assert profiler["key_metrics"]["rhs_cpu_bracket_grid_over_spectral"] == 1.66
-    assert profiler["key_metrics"]["miller_gpu_grid_full_rhs"] == 0.013
-    assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
 def _write_candidate_quasilinear_status_inputs(
@@ -791,35 +728,26 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         "n_blocked": 0,
     }
     assert lanes["W7-X zonal long-window recurrence/damping"]["status"] == "open"
-    assert lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
-        "failed_reference_gates"
-    ] == ["residual_kx070"]
-    assert (
-        lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
-            "best_bounded_candidate"
-        ]["label"]
-        == "best"
+    zonal_lane = lanes["W7-X zonal long-window recurrence/damping"]
+    assert zonal_lane["key_metrics"]["failed_reference_gates"] == ["residual_kx070"]
+    assert zonal_lane["key_metrics"]["best_bounded_candidate"]["label"] == "best"
+    hyper = zonal_lane["key_metrics"]["best_constant_hypercollision_probe"]
+    _assert_mapping_contains(
+        hyper, {"label": "const nuhm0.03", "validation_status": "open"}
     )
-    hyper = lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
-        "best_constant_hypercollision_probe"
-    ]
-    assert hyper["label"] == "const nuhm0.03"
-    assert hyper["validation_status"] == "open"
-    mixed_lm = lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
-        "best_mixed_lm_resolution_probe"
-    ]
-    assert mixed_lm["label"] == "Nl24 Nm96 mixedLM"
-    assert mixed_lm["tail_std_ratio"] == 0.11 / 0.03
-    high_moment = lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
-        "stable_high_moment_mixed_lm_probe"
-    ]
-    assert high_moment["label"] == "Nl24 Nm96 mixedLM"
-    assert high_moment["Nl"] == 24
-    assert high_moment["Nm"] == 96
-    assert high_moment["laguerre_tail"] == 8.2e-3
+    mixed_lm = zonal_lane["key_metrics"]["best_mixed_lm_resolution_probe"]
+    _assert_mapping_contains(
+        mixed_lm,
+        {"label": "Nl24 Nm96 mixedLM", "tail_std_ratio": 0.11 / 0.03},
+    )
+    high_moment = zonal_lane["key_metrics"]["stable_high_moment_mixed_lm_probe"]
+    _assert_mapping_contains(
+        high_moment,
+        {"label": "Nl24 Nm96 mixedLM", "Nl": 24, "Nm": 96, "laguerre_tail": 8.2e-3},
+    )
     assert (
         "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json"
-        in lanes["W7-X zonal long-window recurrence/damping"]["primary_artifacts"]
+        in zonal_lane["primary_artifacts"]
     )
     assert lanes["Scoped core quasilinear model-development diagnostic"][
         "claim_level"
@@ -827,53 +755,48 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert lanes["W7-X fluctuation spectrum and TEM/multi-flux extension"][
         "key_metrics"
     ]["open_extension_rows"] == ["TEM / kinetic-electron linear parity"]
-    assert (
-        lanes["Scoped core quasilinear model-development diagnostic"]["key_metrics"][
-            "cth_like_external_vmec_converged"
-        ]
-        is False
-    )
-    assert (
-        lanes["Scoped core quasilinear model-development diagnostic"]["key_metrics"][
-            "cth_like_external_vmec_high_grid_admitted"
-        ]
-        is False
-    )
     holdout_metrics = lanes["Scoped core quasilinear model-development diagnostic"][
         "key_metrics"
     ]
-    assert holdout_metrics["circular_external_vmec_t250_converged"] is False
-    assert holdout_metrics["qh_external_vmec_low_to_mid_grid_converged"] is False
-    assert holdout_metrics["qh_external_vmec_mid_to_high_grid_converged"] is False
-    assert holdout_metrics["dshape_external_vmec_t250_converged"] is True
-    assert holdout_metrics["itermodel_external_vmec_t350_converged"] is True
-    assert (
-        holdout_metrics["variance_reduced_nonlinear_gradient_control_mean_passed"]
-        is True
-    )
-    assert holdout_metrics["variance_reduced_nonlinear_gradient_common_pairs"] == 21
-    assert (
-        holdout_metrics["variance_reduced_nonlinear_gradient_uncertainty_rel"] == 0.311
+    _assert_mapping_contains(
+        holdout_metrics,
+        {
+            "cth_like_external_vmec_converged": False,
+            "cth_like_external_vmec_high_grid_admitted": False,
+            "circular_external_vmec_t250_converged": False,
+            "qh_external_vmec_low_to_mid_grid_converged": False,
+            "qh_external_vmec_mid_to_high_grid_converged": False,
+            "dshape_external_vmec_t250_converged": True,
+            "itermodel_external_vmec_t350_converged": True,
+            "variance_reduced_nonlinear_gradient_control_mean_passed": True,
+            "variance_reduced_nonlinear_gradient_common_pairs": 21,
+            "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.311,
+        },
     )
     profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
+    _assert_mapping_contains(
+        profiler["key_metrics"],
+        {
+            "release_performance_gate": True,
+            "identity_gate_pass": False,
+            "best_identity_candidate": None,
+            "rhs_fastest_full_label": "GPU spectral",
+            "rhs_gpu_full_grid_over_spectral": 1.64,
+            "rhs_gpu_bracket_grid_over_spectral": 2.20,
+            "miller_gpu_grid_full_rhs": 0.013,
+            "w7x_gpu_full_rhs": 0.027,
+        },
+    )
     assert profiler["status"] == "closed"
-    assert profiler["key_metrics"]["release_performance_gate"] is True
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
     assert (
         "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json"
         in profiler["primary_artifacts"]
     )
-    assert profiler["key_metrics"]["identity_gate_pass"] is False
-    assert profiler["key_metrics"]["best_identity_candidate"] is None
     assert (
         "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json"
         in profiler["primary_artifacts"]
     )
-    assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
-    assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
-    assert profiler["key_metrics"]["rhs_gpu_bracket_grid_over_spectral"] == 2.20
-    assert profiler["key_metrics"]["miller_gpu_grid_full_rhs"] == 0.013
-    assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
 def test_build_status_payload_accepts_cth_like_high_grid_admission(
@@ -1316,16 +1239,8 @@ def test_parallelization_completion_status_script_runs_without_install(
 
 
 # Pre-manuscript closure status assertions
-def _write_pre_manuscript_closure_json(
-    root: Path, relative: str, payload: dict[str, object]
-) -> None:
-    path = root / relative
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload), encoding="utf-8")
-
-
 def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -1337,12 +1252,12 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
             "points": [],
         },
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_candidate_uncertainty.json",
         {"promotion_gate": {"passed": True, "accepted_candidates": ["candidate"]}},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_model_selection_status.json",
         {
@@ -1355,7 +1270,7 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
             },
         },
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -1369,15 +1284,15 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
             }
         },
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root, "docs/_static/quasilinear_promotion_guardrails.json", {"passed": True}
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_holdout_gap_report.json",
         {"promotion_gate": {"passed": True, "blockers": []}},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_error_anatomy.json",
         {
@@ -1414,7 +1329,7 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
         },
     )
 
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/production_nonlinear_optimization_guard.json",
         {
@@ -1426,12 +1341,12 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
             },
         },
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_jax_qa_transport_optimization_status.json",
         {"summary": {"long_window_nonlinear_audit_passed": True}},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/nonlinear_transport_matrix_portfolio.json",
         {
@@ -1450,7 +1365,7 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
         },
     )
 
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/nonlinear_sharding_strong_scaling_large.json",
         {
@@ -1462,22 +1377,22 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
             ],
         },
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/nonlinear_sharding_production_speedup_gate.json",
         {"passed": True},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/nonlinear_domain_parallel_identity_gate.json",
         {"gate": {"identity_passed": True}},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/nonlinear_spectral_communication_identity_gate.json",
         {"gate": {"identity_passed": True}},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/nonlinear_spectral_domain_routing_profile.json",
         {
@@ -1492,39 +1407,39 @@ def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
             },
         },
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root, "docs/_static/parallel_decomposition_status.json", {"passed": True}
     )
 
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
         {"passed": True},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
         {"passed": True},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json", {"passed": True}
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json",
         {"passed": True},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
         {"passed": True},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json",
         {"passed": True},
     )
-    _write_pre_manuscript_closure_json(
+    _write_status_json(
         root,
         "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json",
         {
