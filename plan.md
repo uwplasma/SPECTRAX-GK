@@ -213,7 +213,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
 | Docs/readme release pass | 100% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
-| CI/release hygiene | 99% | Confirm the stable-target Krylov acceptance fix in the next 24-shard run; preserve the bounded 95% package gate. |
+| CI/release hygiene | 99% | The exact MyPy command passes and installed-wheel smoke coverage now guards both executable names, plotting help, and lazy parallel imports. Confirm the latest queued CI run while preserving the bounded 95% package gate. |
 
 ## Prioritized Implementation Steps
 
@@ -2445,3 +2445,13 @@ under 5 minutes.
   admitted implicit linear/nonlinear solves, while shift-invert remains on JAX
   GMRES until retained-subspace extraction passes branch, residual, memory,
   and runtime gates together.
+
+- 2026-07-14: Found and fixed an installed-wheel release defect that checkout
+  imports could not expose. The ``spectraxgk.parallel`` facade discovered its
+  public API by reading sibling ``.py`` files, which fails for zip/non-filesystem
+  import loaders. It now uses a static lazy-export registry, with a unit gate
+  that compares the registry against every owning module's ``__all__``. CI and
+  the PyPI release workflow now install the built wheel into an isolated
+  environment and verify the package, parallel facade, plotting help, and both
+  ``spectraxgk`` executable spellings before publication. The focused parallel,
+  executable, and release tranche passes 177 tests with one expected skip.

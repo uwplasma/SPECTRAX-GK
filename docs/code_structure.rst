@@ -523,6 +523,10 @@ Completed extractions:
   (``parallel/batch.py``), and ordered Python ensemble execution
   (``parallel/independent.py``). The public ``parallel/core.py`` and
   ``parallel/__init__.py`` modules remain stable facades for user imports.
+  The package facade uses a static lazy-export registry rather than reading
+  sibling source files at import time. This keeps imports dependency-light and
+  compatible with installed wheels and non-filesystem Python loaders; a unit
+  test requires the registry to match each owning module's public exports.
   ``parallel/independent.py`` keeps indexed payload collection, reconstruction
   contracts, identity report construction, exception provenance, ordered
   executor routing, and metadata packing as separate helpers so UQ and

@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 
-
 # ---- test_parallel.py ----
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
+from importlib import import_module
 
 import spectraxgk
 import spectraxgk.parallel as parallel
@@ -33,6 +33,14 @@ def test_parallel_public_api_exports_are_stable() -> None:
     assert set(public_names) <= set(parallel.__all__)
     for name in public_names:
         assert getattr(spectraxgk, name) is getattr(parallel, name)
+
+
+def test_parallel_lazy_registry_matches_owner_exports() -> None:
+    """Keep wheel-safe lazy exports synchronized with their numerical owners."""
+
+    for module_name, expected_names in parallel._MODULE_EXPORTS.items():
+        owner = import_module(f"spectraxgk.parallel.{module_name}")
+        assert tuple(owner.__all__) == expected_names
 
 
 def test_ky_scan_batches_are_balanced_and_order_preserving() -> None:
