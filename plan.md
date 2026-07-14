@@ -50,7 +50,7 @@ explicitly verified differentiable workflows for analysis and optimization.
 
 ## Current State
 
-Date: 2026-07-13.
+Date: 2026-07-14.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
@@ -61,7 +61,7 @@ Date: 2026-07-13.
 | Test Python files | 96 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
-| Fast release-surface coverage | owner test restored; CI rerun in progress | pass | active pending CI |
+| Fast release-surface coverage | compile-heavy nonlinear owner retained in bounded node batches; exact x64 coverage passes locally | pass | active pending CI |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
 | Public API facade | compact lazy registry | compact registry | closed |
 | Runtime/plot executable path | implemented and tested | stable | closed |
@@ -202,10 +202,10 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
+| Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
-| Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
+| Test consolidation | 92% | The 96-file topology target is met, but the suite still has roughly 94k lines and several oversized owners. Collapse repeated tool/campaign contracts into parametrized domain tables without reducing physics or coverage gates. |
+| Source consolidation | 94% | The 226-file/zero-exception architecture gate passes, but the package still has roughly 89k lines and three modules exactly at the 1,000-line ceiling. Consolidate objective/report helpers and choose one mathematical operator namespace without adding files or compatibility facades. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 98% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and target/source species/spatial JAX application reproduce the direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring arbitrary generated couplings plus conductivity, ITG, zonal, and convergence gates. |
@@ -239,9 +239,11 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 6. **Close required-core physics gates.** Maintain state-level short gates and
    converged long-window gates for axisymmetric/stellarator, electrostatic/
    electromagnetic, adiabatic/kinetic-electron, and restart/spectral diagnostics.
-   Treat equilibrium ExB flow shear as the next complete physics extension:
-   zero-shear recovery, analytic shearing-wave evolution, remap/phase identity,
-   linear mode suppression, nonlinear transport, and matched comparison gates.
+   Equilibrium ExB flow shear completed zero-shear recovery, analytic shearing-
+   wave evolution, remap/phase identity, linear suppression, nonlinear
+   transport, and matched comparison audits. Its final fixed-step physical-
+   response gate failed, so retain only the validated Python research API and
+   keep input-file/executable exposure disabled.
 7. **Add collision-operator extensibility.** Land a protocol with a complete
    RHS contribution plus an optional mathematically valid split step; do not
    model field-particle terms as diagonal damping. Preserve the current
@@ -275,7 +277,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic/linked RK2/RK3 trajectory, fixed-step sheared IMEX, canonical heat-flux trace, linear suppression, transport-objective AD, and internal saturated-transport gates validated | complete one full-resolution fixed-dt response window after localizing the external adaptive stage-policy mismatch before exposing an input-file option |
+| Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic/linked RK2/RK3 trajectory, fixed-step sheared IMEX, canonical heat-flux trace, linear suppression, and transport-objective AD validated; the final fixed-step response audit failed promotion | retain as a Python research API; do not expose an input-file option unless a new, prospectively gated physical campaign overturns the negative fixed-step evidence |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -2027,3 +2029,26 @@ under 5 minutes.
   and uncertainty gates before applying the 5% reduction and two-combined-SEM
   treatment gate. The testing guide and verification matrix now enumerate the
   linked, IMEX, derivative, long-window, and executable-exposure boundaries.
+
+- 2026-07-14: Addressed the only failure in CI run ``29328450243`` without
+  raising the five-minute limit or dropping coverage. Initial file isolation
+  passed locally in ``137.42 s`` but still timed out after 34 of 57 tests on the
+  slower x64 hosted runner in run ``29330282613``. The shard runner now collects
+  deterministic node IDs and executes designated compile-heavy owners as five
+  disjoint, contiguous coverage batches. Their union is exactly all 57 tests;
+  the exact x64 route passes locally, while each subprocess retains the 300 s
+  cap. A fresh 24-shard run remains the final CI confirmation.
+
+- 2026-07-14: Completed the prospectively gated fixed-step equilibrium-flow-
+  shear campaign and rejected physical-model promotion. The ``64x64x24``,
+  ``Nl=4``, ``Nm=8``, x64 fixed-IMEX pair reached ``t=300`` without non-finite
+  state, but both ``t=[240,300]`` windows failed stationarity; their means are
+  ``15.4508 +/- 0.2628`` and ``16.1948 +/- 0.1602``, a 4.82% increase. A clean
+  fixed-RK4 comparison at source revision ``bc2fe552`` completed the same
+  grid/timestep/window contract. Both comparison windows pass independently and
+  give ``11.7154 +/- 0.2157`` and ``14.6236 +/- 0.1407``, a 24.82% increase
+  separated by 11.29 combined SEM. Thus neither fixed-step route supports the
+  earlier adaptive 6.10% suppression. The numerical research API remains
+  validated, but flow shear stays absent from TOML and executable claims. The
+  compact JSON/CSV evidence is tracked; 50--63 MB raw states and outputs remain
+  off-repository.

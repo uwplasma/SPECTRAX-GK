@@ -117,13 +117,12 @@ actually use the same physical and numerical contract.
      - validated, scoped
      - policy tests plus fixed-aspect W7-X/HSX comparison lanes
    * - Equilibrium :math:`E\times B` flow shear
-     - coordinate kernel validated; model unshipped
+     - numerical research API validated; physical model unshipped
      - zero-shear, shearing-wave, remap/dealias, cache, linear-suppression,
-       AD/FD, and periodic saturated-transport gates pass; the clean matched
-       ``t=300`` comparison is stationary but its adaptive RK3 shearing-time
-       policy differs at step and stage level; linked-boundary and fixed-step
-       IMEX gates pass, while full-resolution fixed-dt response refinement
-       remains required
+       AD/FD, linked-boundary, and fixed-step IMEX gates pass. The final fixed-
+       step ``64x64x24`` response audit rejects promotion: the internal windows
+       drift and show a 4.82% increase, while independently stationary comparison
+       windows show a 24.82% increase. No input-file option is exposed.
    * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
      - not shipped
      - separate reduced models are outside the full-gyrokinetic release claim
@@ -165,10 +164,13 @@ eigen/objective solves and the in-memory JAX geometry chain are SPECTRAX-GK
 extensions rather than comparison requirements.
 
 The audit also identifies equilibrium :math:`E\times B` flow shear as a
-scientifically useful missing extension rather than a compatibility checkbox.
-It must enter through a sheared-coordinate grid/time policy and complete
-operator, timestep, transport, and comparison gates; adding only an input key
-or a phase factor would not constitute support.
+scientifically useful extension rather than a compatibility checkbox. Its
+coordinate, operator, timestep, and derivative foundations are validated, but
+the predeclared fixed-step transport-response gate failed. The implementation
+therefore remains a Python research API rather than an input-file feature. The
+compact negative-evidence record is
+``docs/_static/flow_shear_fixed_step_response_gate.json``; raw states and large
+comparison outputs remain off-repository.
 
 Tracked results index
 ---------------------

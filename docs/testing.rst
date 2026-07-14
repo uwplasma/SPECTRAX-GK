@@ -1211,8 +1211,13 @@ tests:
   and forward/reverse derivative checks against centered finite differences.
   Unsupported adaptive IMEX, custom-collision, and non-twist combinations fail
   closed. These bounded tests verify equations and algorithms; they do not
-  replace the independent post-transient transport-window gate required before
-  an input-file option can be exposed.
+  replace a post-transient transport-window gate. The completed fixed-step gate
+  failed physical-model promotion, so no input-file option is exposed.
+- ``tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py``
+  locks the compact fixed-step flow-shear evidence as negative: the internal
+  windows are nonstationary, the independent comparison windows pass, both
+  matched effects have the wrong sign for the predeclared suppression gate, and
+  the artifact forbids input-file exposure.
 - ``tests/unit/linear/test_linear_helpers_extra.py`` verifies that the
   time-dependent linear cache rebuilds every sheared perpendicular operator,
   reproduces the static cache at zero shear, preserves linked radial spacing,

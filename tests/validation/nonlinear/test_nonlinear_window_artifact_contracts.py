@@ -22,6 +22,7 @@ output_target = load_release_tool("check_nonlinear_transport_gates")
 window_ensemble = load_release_tool("check_nonlinear_transport_gates")
 window_readiness = window_ensemble
 compact_bundle = load_campaign_tool("nonlinear_replicate_followup")
+FLOW_SHEAR_GATE = ROOT / "docs" / "_static" / "flow_shear_fixed_step_response_gate.json"
 
 
 def _touch_bundle(output: Path) -> None:
@@ -191,6 +192,24 @@ def test_matched_transport_cli_writes_fail_closed_report(tmp_path: Path) -> None
     assert rc == 0
     assert payload["kind"] == "matched_nonlinear_transport_comparison"
     assert payload["passed"] is True
+
+
+def test_fixed_step_flow_shear_artifact_preserves_negative_evidence() -> None:
+    payload = json.loads(FLOW_SHEAR_GATE.read_text(encoding="utf-8"))
+
+    assert payload["passed"] is False
+    assert payload["conclusion"]["input_file_exposure_allowed"] is False
+    assert payload["configuration"]["time"]["analysis_window"] == [240.0, 300.0]
+
+    internal = payload["spectrax_gk"]
+    comparison = payload["comparison"]
+    assert internal["baseline_window"]["passed"] is False
+    assert internal["treatment_window"]["passed"] is False
+    assert internal["matched"]["statistics"]["relative_reduction"] < 0.0
+    assert comparison["baseline_window"]["passed"] is True
+    assert comparison["treatment_window"]["passed"] is True
+    assert comparison["matched"]["statistics"]["relative_reduction"] < -0.20
+    assert comparison["matched"]["statistics"]["uncertainty_z_score"] < -2.0
 
 
 def test_nonlinear_window_ensemble_tool_writes_json_png_and_fails_closed(

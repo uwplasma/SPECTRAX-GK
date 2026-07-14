@@ -355,25 +355,29 @@ Equilibrium Flow Shear
    * - Full-resolution fixed-step response
      - independently converged baseline/treatment late-window heat flux
      - matched ``64x64x24``, ``Nl=4``, ``Nm=8`` weak-shear campaign
-     - Open
+     - Rejected for promotion
      - each ``t=[240,300]`` window must pass finite-sample, stationarity,
        terminal-mean, block-count, and SEM checks before the treatment effect is
-       evaluated; the response must then exceed the predeclared 5% reduction
-       and two-combined-SEM gates
+       evaluated; the internal windows failed stationarity and gave a 4.82%
+       increase, while stationary fixed-RK4 comparison windows gave a 24.82%
+       increase, so the 5% reduction and two-combined-SEM gates failed
    * - Input-file and executable support
      - reproducible user-configured flow-shear run
      - completed equation, integrator, transport, and comparison gates
-     - Deferred until the full-resolution fixed-step response closes
-     - no TOML key or executable claim while the response row remains open
+     - Deferred after the full-resolution fixed-step response failed
+     - no TOML key or executable claim while the response row is rejected
 
 The earlier adaptive ``t=300`` internal campaign passed its independent
 stationarity gates and showed a 6.10% reduction, while the external adaptive
 campaign showed no statistically resolved reduction. A source audit found that
 the two paths advance the shearing basis at different times within the adaptive
-RK stages. Those traces are retained as negative cross-discretization evidence,
-not a model-identical parity verdict. The fixed-step row above is therefore the
-remaining promotion gate; startup traces and short strong-shear suppression
-pilots cannot satisfy it.
+RK stages. The final fixed-step audit does not recover that suppression. The
+internal IMEX pair is still drifting over ``t=[240,300]`` and gives means
+``15.4508 +/- 0.2628`` and ``16.1948 +/- 0.1602``. The fixed-RK4 comparison pair
+passes both independent window gates and gives ``11.7154 +/- 0.2157`` and
+``14.6236 +/- 0.1407``: a 24.82% increase separated by 11.29 combined SEM. This
+is negative model-promotion evidence, not a threshold to retune. Startup traces
+and short strong-shear suppression pilots cannot override it.
 
 Quasilinear Diagnostics and Model Selection
 -------------------------------------------

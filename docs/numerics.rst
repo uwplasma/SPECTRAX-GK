@@ -393,9 +393,7 @@ previous step size before selecting the next ``dt`` and holds that coordinate
 basis fixed across all RK stages. SPECTRAX-GK advances accepted physical time
 and evaluates each stage in its exact shearing basis. The ``-0.084%`` result is
 therefore negative cross-discretization evidence, not a model-identical parity
-failure. Linked-boundary and fixed-step IMEX implementation gates now pass. A
-full-resolution fixed-dt response refinement must still show that the remaining
-time-policy difference converges away before any input-file option is enabled.
+failure. Linked-boundary and fixed-step IMEX implementation gates now pass.
 
 A bounded fixed-step source-localization probe confirms that the external
 shearing path is active when the time policy is controlled. On a deterministic
@@ -403,17 +401,30 @@ reduced periodic Cyclone-like case with :math:`\gamma_E=0.5`, the terminal
 ``Phi2`` treatment ratios are ``0.64032``, ``0.64051``, and ``0.64060`` for
 ``dt=0.02``, ``0.01``, and ``0.005``. The corresponding startup heat-flux
 ratios change from ``0.5079`` to ``0.5142`` and are not used as transport
-evidence. This closes only the short fixed-step response check: the production
-gate still requires a stationary, full-resolution fixed-step transport window
-at the physically relevant weaker shear.
+evidence. This closes only the short fixed-step response check.
 
-RK3 is the preferred research-campaign method because it expands the stable
+The subsequent full-resolution fixed-step campaign used the same
+``64x64x24``, ``Nl=4``, ``Nm=8``, periodic weak-shear contract through
+``t=300``. The internal fixed-IMEX baseline and treatment remained finite, but
+both failed the predeclared ``t=[240,300]`` stationarity policy. Their means are
+``15.4508 +/- 0.2628`` and ``16.1948 +/- 0.1602``, a 4.82% increase rather than
+the required reduction. An independent fixed-RK4 comparison completed the same
+grid, timestep, duration, seed, dissipation, and diagnostic contract. Both of
+its windows pass the drift, terminal-mean, block, and SEM gates, with
+``11.7154 +/- 0.2157`` and ``14.6236 +/- 0.1407``. This is a 24.82% increase,
+resolved by 11.29 combined SEM. Integrator-specific absolute trajectories are
+not claimed identical; the important result is that neither fixed-step audit
+supports the earlier adaptive suppression claim.
+
+RK3 remains useful for bounded research campaigns because it expands the stable
 explicit operating envelope without changing the coordinate or transport
-definitions. This path is a numerical foundation, not the production model. The
-compressed-real bracket is an opt-in research route, while non-twist and linked
-boundaries remain distinct: linked standard tubes are gated, while non-twist
-tubes fail closed. Resolution of the matched-response gate remains mandatory
-before enabling flow shear in input files.
+definitions. This path is a numerical foundation, not a promoted physical
+model. The compressed-real bracket is an opt-in research route, while non-twist
+and linked boundaries remain distinct: linked standard tubes are gated, while
+non-twist tubes fail closed. The failed matched-response gate keeps flow shear
+out of input files and executable claims. The compact machine-readable record
+is ``docs/_static/flow_shear_fixed_step_response_gate.json``; large raw states
+and comparison outputs are intentionally not tracked.
 
 De-aliasing and hyperdiffusion
 ------------------------------
