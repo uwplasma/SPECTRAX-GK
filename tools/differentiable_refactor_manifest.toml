@@ -1733,47 +1733,25 @@ fast_tests = ["tests/unit/objectives/test_autodiff_solver_objectives.py", "tests
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimization.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.objectives.qa_low_turbulence_contracts"
-source_path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
+module = "spectraxgk.objectives.qa_low_turbulence_model"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
 facade_module = "spectraxgk.api"
 status = "active"
-responsibility = "QA low-turbulence configuration, stable design/observable names, and JSON-ready result contract"
+responsibility = "QA low-turbulence contracts, reduced QA/ITG feature map, heat-flux envelope, weighted objectives, AD/FD sensitivity gates, and covariance diagnostics"
 moved_exports = [
   "QA_LOW_TURBULENCE_DESIGN_NAMES",
   "QA_LOW_TURBULENCE_OBSERVABLE_NAMES",
   "QALowTurbulenceConfig",
   "QALowTurbulenceResult",
-]
-fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.objectives.qa_low_turbulence_model"
-source_path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
-facade_module = "spectraxgk.api"
-status = "active"
-responsibility = "reduced QA/ITG feature map, heat-flux envelope integration, late-window metrics, and observable vector"
-moved_exports = [
   "default_qa_low_turbulence_initial_params",
   "qa_low_turbulence_heat_flux_trace",
-  "qa_low_turbulence_observable_vector",
-  "qa_low_turbulence_observables",
-  "qa_low_turbulence_window_metrics",
-]
-fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.objectives.qa_low_turbulence_residuals"
-source_path = "src/spectraxgk/objectives/qa_low_turbulence_residuals.py"
-facade_module = "spectraxgk.api"
-status = "active"
-responsibility = "weighted residual vectors, scalar objective, AD/FD sensitivity reports, and covariance diagnostics"
-moved_exports = [
   "qa_low_turbulence_objective",
   "qa_low_turbulence_observable_sensitivity_report",
+  "qa_low_turbulence_observable_vector",
+  "qa_low_turbulence_observables",
   "qa_low_turbulence_residual_names",
   "qa_low_turbulence_residual_vector",
+  "qa_low_turbulence_window_metrics",
 ]
 fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

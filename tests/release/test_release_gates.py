@@ -485,6 +485,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "tools/artifacts/build_parallelization_completion_status.py",
                 "tools/release/check_release_readiness.py technical-status",
                 "tools/release/check_release_readiness.py",
+                "rm -rf build dist",
             ]
         ),
         encoding="utf-8",
@@ -524,6 +525,7 @@ coverage:
         "tools/artifacts/build_parallelization_completion_status.py\n"
         "tools/release/check_release_readiness.py technical-status\n"
         "tools/release/check_release_readiness.py\n"
+        "rm -rf build dist\n"
         "gh-action-pypi-publish\n",
         encoding="utf-8",
     )
@@ -767,6 +769,20 @@ def test_release_readiness_rejects_missing_release_guardrails(tmp_path: Path) ->
         "name: Release\n"
         "tools/release/check_release_readiness.py version\n"
         "gh-action-pypi-publish\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError, match="release.yml missing publish/version checks"
+    ):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_unclean_distribution_build(tmp_path: Path) -> None:
+    _write_release_ready_tree(tmp_path)
+    workflow = tmp_path / ".github" / "workflows" / "release.yml"
+    workflow.write_text(
+        workflow.read_text(encoding="utf-8").replace("rm -rf build dist\n", ""),
         encoding="utf-8",
     )
 

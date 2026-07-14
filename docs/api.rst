@@ -986,24 +986,12 @@ Parallel Decomposition Contracts
 .. automodule:: spectraxgk.parallel.decomposition
    :members:
 
-QA Low-Turbulence Contracts
----------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_contracts
-   :members:
-
-QA Low-Turbulence Reduced Model
--------------------------------
+QA Low-Turbulence Model And Gates
+---------------------------------
 
 .. automodule:: spectraxgk.objectives.qa_low_turbulence_model
    :members:
    :private-members:
-
-QA Low-Turbulence Residual Gates
---------------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_residuals
-   :members:
 
 QA Low-Turbulence Optimizer
 ---------------------------

@@ -38,6 +38,7 @@ REQUIRED_CI_SNIPPETS = (
     "tools/artifacts/build_parallelization_completion_status.py",
     "tools/release/check_release_readiness.py technical-status",
     "tools/release/check_release_readiness.py",
+    "rm -rf build dist",
 )
 REQUIRED_CODECOV_SNIPPETS = (
     "after_n_builds: 2",
@@ -60,6 +61,7 @@ REQUIRED_RELEASE_SNIPPETS = (
     "tools/artifacts/build_parallelization_completion_status.py",
     "tools/release/check_release_readiness.py technical-status",
     "tools/release/check_release_readiness.py",
+    "rm -rf build dist",
 )
 REQUIRED_README_SNIPPETS = (
     "pip install spectraxgk",

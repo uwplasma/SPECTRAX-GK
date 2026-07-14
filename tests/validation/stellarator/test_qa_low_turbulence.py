@@ -13,12 +13,10 @@ import spectraxgk
 from spectraxgk.objectives.qa_low_turbulence_artifacts import (
     qa_low_turbulence_comparison_payload,
 )
-from spectraxgk.objectives.qa_low_turbulence_contracts import (
+from spectraxgk.objectives.qa_low_turbulence_model import (
     QA_LOW_TURBULENCE_DESIGN_NAMES,
     QA_LOW_TURBULENCE_OBSERVABLE_NAMES,
     QALowTurbulenceConfig,
-)
-from spectraxgk.objectives.qa_low_turbulence_model import (
     qa_low_turbulence_heat_flux_trace,
     qa_low_turbulence_observable_vector,
 )
