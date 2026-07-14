@@ -403,6 +403,15 @@ matrix-exponential trajectory preserves those invariants through unequal-
 species relaxation and reduces the collision residual by more than five
 orders of magnitude.
 
+For Python solver experiments, ``DriftKineticSugamaOperator.from_species``
+wraps that matrix in the standard collision protocol. Its ``apply`` method
+uses ``CollisionContext.hamiltonian`` rather than the evolved distribution,
+so the real linear and nonlinear RHS paths supply the post-field
+nonadiabatic response. A collision-only two-species linear-RHS gate verifies a
+nonzero response and the same physical invariants. The operator is a JAX
+pytree, preserving differentiation when species parameters are constructed
+inside an objective.
+
 This is the original Sugama model's real low-order drift-kinetic projection.
 It is useful for reduced-model verification but is not the improved Sugama
 correction, an arbitrary-moment hierarchy, or a finite-:math:`b` multispecies

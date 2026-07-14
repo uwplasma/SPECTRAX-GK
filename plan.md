@@ -292,6 +292,13 @@ That topology is the reference design for the production parallel lane.
   This closes the reduced time-domain relaxation check; conductivity,
   collisional ITG, zonal damping, and the full finite-``b`` hierarchy remain.
 
+- 2026-07-14: Routed the reduced multispecies Sugama matrix through the real
+  collision extension seam as a JAX-pytree operator. A two-species,
+  post-field-Hamiltonian linear RHS produces a nonzero collision response while
+  retaining particle, total-momentum, and total-energy invariants. This is a
+  Python research boundary only; TOML selection remains fail-closed until the
+  conductivity and collisional-ITG promotion gates exist.
+
 - 2026-07-14: Implemented the published original-Sugama low-order
   multispecies boundary from Frei, Ernst & Ricci (2022), Appendix C, equations
   (C4)--(C5). Separate differentiable test- and field-particle matrices depend

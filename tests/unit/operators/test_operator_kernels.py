@@ -15,11 +15,13 @@ from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all, gamma0, sum_Jl2
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.linear import LinearTerms, linear_rhs_cached
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
     apply_multispecies_collision_moment_matrix,
     assemble_drift_kinetic_sugama_matrix,
+    DriftKineticSugamaOperator,
     drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
     load_collision_moment_matrix,
@@ -431,6 +433,57 @@ def test_multispecies_sugama_pair_relaxation_preserves_invariants() -> None:
         assemble_drift_kinetic_sugama_matrix(
             jnp.asarray([1.0, 0.0]), jnp.ones(2), jnp.ones(2)
         )
+
+
+def test_multispecies_sugama_operator_runs_through_linear_rhs() -> None:
+    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
+    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0, -1.0]),
+        density=density,
+        mass=mass,
+        temp=temperature,
+        vth=jnp.ones(2),
+        rho=jnp.asarray([1.0, 0.5]),
+        tz=jnp.asarray([1.0, -1.0]),
+    )
+    grid = build_spectral_grid(GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0))
+    geometry = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18)
+    state = (
+        1.0e-3
+        * jnp.arange(2 * 2 * 4 * 2 * 2 * 4, dtype=jnp.float32).reshape(2, 2, 4, 2, 2, 4)
+    ).astype(jnp.complex64)
+    cache = build_linear_cache(grid, geometry, params, Nl=2, Nm=4)
+    operator = DriftKineticSugamaOperator.from_species(density, mass, temperature)
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    contribution, _ = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        collision_operator=operator,
+    )
+    rates = multispecies_collision_invariant_rates(
+        contribution, density=density, mass=mass, temperature=temperature
+    )
+    assert float(jnp.linalg.norm(contribution)) > 1.0
+    np.testing.assert_allclose(rates.particle_density, 0.0, atol=2.0e-6)
+    np.testing.assert_allclose(rates.total_parallel_momentum, 0.0, atol=4.0e-6)
+    np.testing.assert_allclose(rates.total_thermal_energy, 0.0, atol=1.0e-5)
 
 
 def test_gamma0_basic_properties() -> None:
