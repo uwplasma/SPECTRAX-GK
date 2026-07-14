@@ -2417,3 +2417,12 @@ under 5 minutes.
   gates. This lowers the facade from 196 to 157 lines and package source to
   87,434 lines without changing compiled work. All 181 focused parallel,
   profiler, and release tests pass (two hardware-dependent skips).
+
+- 2026-07-14: Fixed the systemic MyPy failure visible in CI runs
+  ``29344589199`` through ``29346726628``. Consolidation had left replicate
+  extrema labels inferred as non-null strings before a nullable empty-state
+  assignment, and the typed linear trajectory allowed pre-materialization
+  ``t=None`` at the fitting boundary. Labels are now explicitly nullable, and
+  fitting enforces/materializes its time-array invariant before use. The exact
+  CI ``mypy`` command passes all 223 source modules, and 150 focused replicate,
+  runtime, architecture, and release tests pass locally.
