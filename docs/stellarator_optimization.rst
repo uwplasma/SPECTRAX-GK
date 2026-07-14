@@ -576,7 +576,7 @@ optimization. After a baseline or candidate writes ``input.final``, run:
    python tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py \
      --input tools_out/vmec_jax_qa_strict_baseline/input.final \
      --out-json tools_out/vmec_jax_qa_strict_baseline/growth_metric.json \
-     --transport-kind growth --mboz 21 --nboz 21 --solver-device cpu
+     --transport-kind growth --solver-device cpu
 
 The same command accepts ``--transport-kind quasilinear_flux`` and
 ``--transport-kind nonlinear_window_heat_flux``. The evaluator solves the
@@ -584,10 +584,12 @@ supplied fixed boundary once through VMEC-JAX and calls the SPECTRAX-GK
 objective directly; it does not update the boundary or take an outer
 least-squares step. On the passing strict QA baseline, the default 18-point
 sample set ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
-``k_y rho_i=(0.10,0.30,0.50)`` gives log1p metrics ``0.03657107649`` for
-growth, ``0.1230452010`` for quasilinear flux, and ``0.08010670290`` for the
-nonlinear-window reduced heat-flux objective. These numbers are reduced
-admission metrics only. Candidate promotion still requires solved-WOUT,
+``k_y rho_i=(0.10,0.30,0.50)`` is evaluated from one current
+``VmecInput``/``solve_equilibrium`` result through
+``vmec_jax.core.turbulence.turbulence_objective_vector``. Normalized surfaces
+are mapped to the nearest valid interior radial index and each requested
+``k_y`` sets the spectral box length explicitly. These are reduced admission
+metrics only. Candidate promotion still requires solved-equilibrium,
 boundary-gradient/branch, and matched long-window nonlinear gates.
 
 .. figure:: _static/vmec_jax_qa_full_sweep_panel.png

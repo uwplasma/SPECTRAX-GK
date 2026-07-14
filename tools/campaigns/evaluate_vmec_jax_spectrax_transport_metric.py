@@ -27,7 +27,6 @@ if str(SRC) not in sys.path:
 
 from spectraxgk import (  # noqa: E402
     StellaratorITGSampleSet,
-    VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
 from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES  # noqa: E402
@@ -38,13 +37,10 @@ from spectraxgk.objectives.portfolio_contracts import (  # noqa: E402
 )
 from spectraxgk.objectives.vmec_transport_config import (  # noqa: E402
     VMECJAXTransportObjectiveTransform,
-    _reference_wout_from_context,
 )
 from spectraxgk.objectives.vmec_transport_tables import (  # noqa: E402
     _apply_objective_transform,
     _solver_table_to_nonlinear_window_proxy,
-    _static_grid_options_from_ky_values,
-    _transport_feature_table_from_state,
 )
 
 
@@ -121,7 +117,7 @@ def build_report(
         "transport_objective_final": float(metric),
         "spectrax_objective_final": float(metric),
         "transport_metric_final": float(metric),
-        "transport_objective_source": "vmec_jax_input_final_state_eval_only",
+        "transport_objective_source": "current_vmec_jax_equilibrium_eval_only",
         "wout_path": None if wout_path is None else str(wout_path),
         "sample_set": sample_set.to_dict(),
         "spectrax_config": {
@@ -305,36 +301,73 @@ def sample_statistics_from_objective_table(
     return payload
 
 
-def sample_statistics_from_state(
+def sample_statistics_from_equilibrium(
     *,
-    ctx: Any,
-    state: Any,
+    equilibrium: Any,
     config: VMECJAXTransportObjectiveConfig,
-    wout_reference: Any | None = None,
     include_rows: bool = False,
 ) -> dict[str, Any]:
-    """Return deterministic sample-spread diagnostics for the reduced objective."""
+    """Return deterministic sample spread on a current VMEC-JAX equilibrium."""
 
-    samples = config.sample_set
-    grid_options = _static_grid_options_from_ky_values(
-        samples.ky_values,
-        min_ny=int(config.ny),
-    )
-    table = _transport_feature_table_from_state(
-        state,
-        ctx.static,
-        ctx.indata,
-        wout_reference
-        if wout_reference is not None
-        else _reference_wout_from_context(ctx),
-        config,
-        grid_options,
-    )
+    table = _feature_table_from_equilibrium(equilibrium, config)
     return sample_statistics_from_objective_table(
         objective_table=_objective_table_from_feature_table(table, config),
         config=config,
         include_rows=include_rows,
     )
+
+
+def _surface_index(surface: float, ns: int) -> int:
+    """Map normalized toroidal flux to a valid interior VMEC radial index."""
+
+    if not 0.0 < float(surface) < 1.0:
+        raise ValueError("transport surfaces must lie strictly inside (0, 1)")
+    if int(ns) < 5:
+        raise ValueError("VMEC equilibrium needs at least five radial surfaces")
+    return int(np.clip(round(float(surface) * (int(ns) - 1)), 2, int(ns) - 2))
+
+
+def _feature_table_from_equilibrium(
+    equilibrium: Any,
+    config: VMECJAXTransportObjectiveConfig,
+) -> np.ndarray:
+    """Evaluate the ordered SPECTRAX objective vector over the sample grid."""
+
+    from vmec_jax.core import turbulence
+
+    samples = config.sample_set
+    ns = int(np.shape(equilibrium.state.R_cos)[0])
+    rows = []
+    for surface in samples.surfaces:
+        alpha_rows = []
+        for alpha in samples.alphas:
+            ky_rows = []
+            for ky in samples.ky_values:
+                ky_rows.append(
+                    turbulence.turbulence_objective_vector(
+                        equilibrium.state,
+                        equilibrium.runtime,
+                        s_index=_surface_index(surface, ns),
+                        alpha=float(alpha),
+                        ntheta=int(config.ntheta),
+                        selected_ky_index=1,
+                        n_laguerre=int(config.n_laguerre),
+                        n_hermite=int(config.n_hermite),
+                        nx=int(config.nx),
+                        ny=int(config.ny),
+                        ly=2.0 * np.pi / float(ky),
+                    )
+                )
+            alpha_rows.append(np.stack(ky_rows))
+        rows.append(np.stack(alpha_rows))
+    table = np.asarray(np.stack(rows), dtype=float)
+    if table.shape[-1] != len(SOLVER_OBJECTIVE_NAMES):
+        raise RuntimeError("VMEC-JAX returned an unexpected transport feature layout")
+    if not np.all(np.isfinite(table)):
+        raise RuntimeError(
+            "VMEC-JAX transport feature table contains non-finite values"
+        )
+    return table
 
 
 def _sample_set_from_args(args: argparse.Namespace) -> StellaratorITGSampleSet:
@@ -373,7 +406,7 @@ def evaluate_metrics(
     """Evaluate one VMEC state and return reports for several transport metrics."""
 
     import vmec_jax as vj
-    import vmec_jax.optimization_workflow as workflow
+    from vmec_jax import optimize as opt
 
     sample_set = _sample_set_from_args(args)
     base_kind = (
@@ -382,49 +415,24 @@ def evaluate_metrics(
     base_config = _config_from_args(
         args, transport_kind=base_kind, sample_set=sample_set
     )
-    objective = VMECJAXSpectraxTransportObjective(config=base_config)
-    vmec = vj.FixedBoundaryVMEC.from_input(
-        args.input,
-        max_mode=int(args.max_mode),
-        min_vmec_mode=int(args.min_vmec_mode),
-        output_dir=args.outdir,
-    )
-    problem = vj.LeastSquaresProblem.from_tuples([(objective.J, 0.0, 1.0)])
-    stage = workflow.build_fixed_boundary_objective_stage(
-        vmec.cfg,
-        vmec.indata,
-        stage_mode=int(args.max_mode),
-        objectives=problem.objective_terms,
-        include=vmec.include,
-        fix=vmec.fix,
-        inner_max_iter=int(args.inner_max_iter),
-        inner_ftol=float(args.inner_ftol),
-        trial_max_iter=int(args.trial_max_iter),
-        trial_ftol=float(args.trial_ftol),
-        solver_device=args.solver_device,
-    )
-    params0 = np.zeros(len(stage.specs), dtype=float)
-    # The public VMEC-JAX workflow currently exposes final states through the
-    # optimizer path.  For eval-only admission bookkeeping, solve the supplied
-    # boundary once and call the SPECTRAX objective directly; no boundary update
-    # or least-squares step is taken.
-    state = stage.optimizer._solve_forward(params0, trial=False)  # noqa: SLF001
+    inp = vj.VmecInput.from_file(args.input)
+    updates: dict[str, np.ndarray] = {}
+    if int(args.inner_max_iter) > 0:
+        updates["niter_array"] = np.full_like(
+            np.asarray(inp.niter_array), int(args.inner_max_iter)
+        )
+    if float(args.inner_ftol) > 0.0:
+        updates["ftol_array"] = np.full_like(
+            np.asarray(inp.ftol_array), float(args.inner_ftol), dtype=float
+        )
+    if updates:
+        inp = replace(inp, **updates)
+    solve_options = {} if args.solver_device is None else {"device": args.solver_device}
+    equilibrium = opt.solve_equilibrium(inp, **solve_options)
     if args.out_wout is not None:
-        stage.optimizer.save_wout(args.out_wout, params0, state=state)
-    grid_options = _static_grid_options_from_ky_values(
-        sample_set.ky_values,
-        min_ny=int(base_config.ny),
-    )
-    table = _transport_feature_table_from_state(
-        state=state,
-        static=stage.ctx.static,
-        indata=stage.ctx.indata,
-        wout_reference=objective.wout_reference
-        if objective.wout_reference is not None
-        else _reference_wout_from_context(stage.ctx),
-        config=base_config,
-        grid_options=grid_options,
-    )
+        args.out_wout.parent.mkdir(parents=True, exist_ok=True)
+        vj.write_wout(args.out_wout, equilibrium.wout)
+    table = _feature_table_from_equilibrium(equilibrium, base_config)
     reports: dict[str, dict[str, Any]] = {}
     for kind in kinds:
         config = replace(base_config, kind=_base_config_kind_for_metric(kind))

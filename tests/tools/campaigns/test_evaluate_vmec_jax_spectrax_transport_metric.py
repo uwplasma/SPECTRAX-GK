@@ -26,6 +26,16 @@ def test_float_tuple_rejects_empty_or_nonfinite_values() -> None:
         mod._float_tuple("0.5,nan")
 
 
+def test_surface_index_maps_normalized_flux_to_interior_grid() -> None:
+    assert mod._surface_index(0.1, 13) == 2
+    assert mod._surface_index(0.64, 13) == 8
+    assert mod._surface_index(0.95, 13) == 11
+    with pytest.raises(ValueError, match="strictly inside"):
+        mod._surface_index(0.0, 13)
+    with pytest.raises(ValueError, match="at least five"):
+        mod._surface_index(0.5, 4)
+
+
 def test_build_report_is_history_compatible_and_json_safe() -> None:
     samples = StellaratorITGSampleSet(
         surfaces=(0.45, 0.64, 0.78),
@@ -72,7 +82,7 @@ def test_build_report_is_history_compatible_and_json_safe() -> None:
     json.dumps(mod._json_safe(report), allow_nan=False)
 
 
-def test_sample_statistics_from_state_reports_weighted_reduced_spread(
+def test_sample_statistics_from_equilibrium_reports_weighted_reduced_spread(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     samples = StellaratorITGSampleSet(
@@ -93,22 +103,10 @@ def test_sample_statistics_from_state_reports_weighted_reduced_spread(
     table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")] = np.asarray(
         [[[1.0, 2.0]], [[3.0, 4.0]]]
     )
-    monkeypatch.setattr(
-        mod,
-        "_static_grid_options_from_ky_values",
-        lambda ky_values, *, min_ny: {
-            "selected_ky_indices": (1, 2),
-            "ny": 6,
-            "ly": 2.0,
-        },
-    )
-    monkeypatch.setattr(
-        mod, "_transport_feature_table_from_state", lambda *args, **kwargs: table
-    )
+    monkeypatch.setattr(mod, "_feature_table_from_equilibrium", lambda *_args: table)
 
-    stats = mod.sample_statistics_from_state(
-        ctx=SimpleNamespace(static=object(), indata=object()),
-        state=object(),
+    stats = mod.sample_statistics_from_equilibrium(
+        equilibrium=SimpleNamespace(),
         config=config,
         include_rows=True,
     )

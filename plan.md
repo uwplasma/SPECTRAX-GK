@@ -2258,3 +2258,15 @@ under 5 minutes.
   not converge iota and is therefore recorded only as API/derivative evidence.
   Public docs now separate these optimizer objectives from the replicated long-
   window nonlinear promotion workflow.
+
+- 2026-07-14: Migrated the reproducibility-critical VMEC transport metric
+  evaluator to current VMEC-JAX. It now parses ``VmecInput``, performs one
+  ``solve_equilibrium``, maps normalized surfaces to explicit interior radial
+  indices, evaluates every surface/alpha/``k_y`` row through
+  ``vmec_jax.core.turbulence.turbulence_objective_vector``, and retains the
+  established weighted-reduction/JSON schema. It no longer constructs a hidden
+  optimizer stage or calls a private ``_solve_forward`` method. All eight
+  focused contracts pass. A real shaped-equilibrium CPU evaluation at
+  ``s=0.64``, ``alpha=0``, ``k_y=0.3``, ``Nl=2``, ``Nm=3`` completed in 21 s
+  and returned finite raw/log1p growth metrics 0.328296/0.283897, inside the
+  literature-anchored unstable-ITG gate used by upstream integration tests.
