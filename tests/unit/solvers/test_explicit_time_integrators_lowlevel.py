@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import spectraxgk.solvers.time.explicit as eti
+from spectraxgk.solvers.time.explicit_steps import _linear_explicit_stage_update
 from spectraxgk.terms.config import FieldState
 
 
@@ -104,6 +105,26 @@ def test_linear_explicit_step_rejects_unknown_method(monkeypatch) -> None:
             0.05,
             method="bad",
         )
+
+
+@pytest.mark.parametrize(("method", "expected_calls"), [("sspx3", 3), ("k10", 10)])
+def test_self_staging_explicit_methods_do_not_evaluate_unused_rhs(
+    method: str, expected_calls: int
+) -> None:
+    calls = 0
+
+    def rhs(state):
+        nonlocal calls
+        calls += 1
+        return 0.2 * state
+
+    state = jnp.asarray([1.0])
+    result = _linear_explicit_stage_update(
+        state, jnp.asarray(0.1), method_key=method, rhs=rhs
+    )
+
+    assert calls == expected_calls
+    assert np.all(np.isfinite(np.asarray(result)))
 
 
 def test_explicit_from_config_preserves_adaptive_controls(monkeypatch) -> None:

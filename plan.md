@@ -205,7 +205,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
 | Test consolidation | 92% | The 96-file topology target is met, but the suite still has 94,256 lines and several oversized owners. The largest artifact-tool owner is down to 6,358 lines and the runtime runner to 4,424 through shared evidence fixtures and named parameter rows; continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
-| Source consolidation | 97% | The 223-file/zero-exception architecture gate passes after deleting redundant solver-gradient and QA-objective facades, merging nonlinear Laguerre transforms into their velocity-basis owner, and reducing VMEC/Boozer, nonlinear-promotion, linear-workflow, quasilinear-calibration, and hypercollision-routing duplication. The package has 88,215 lines and no module at the 1,000-line ceiling; continue reducing the remaining near-ceiling owners without adding compatibility facades. |
+| Source consolidation | 97% | The 223-file/zero-exception architecture gate passes after deleting redundant solver-gradient and QA-objective facades, merging nonlinear Laguerre transforms into their velocity-basis owner, and reducing VMEC/Boozer, nonlinear-promotion, linear-workflow, quasilinear-calibration, hypercollision-routing, and explicit-stage duplication. The package has 88,150 lines and no module at the 1,000-line ceiling; continue reducing the remaining near-ceiling owners without adding compatibility facades. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 98% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and target/source species/spatial JAX application reproduce the direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring arbitrary generated couplings plus conductivity, ITG, zonal, and convergence gates. |
@@ -2139,3 +2139,16 @@ under 5 minutes.
   short circuits, and public arguments are unchanged. Fifteen collision
   equation/invariant/derivative tests, two helper tests, and four benchmark
   contracts pass under x64; package source is now 88,215 lines.
+
+- 2026-07-14: Made ``solvers.time.explicit_steps`` the single owner of explicit
+  linear Runge--Kutta stage equations used by fixed-step, diagnostic-sampling,
+  and species-parallel integration. This removes independent SSPX3 and
+  Euler/RK2/RK4 copies from both linear front ends and reduces package source by
+  another 65 lines to 88,150. It also fixes an unused first-stage evaluation in
+  SSPX3 and K10: SSPX3 now performs its prescribed three RHS evaluations rather
+  than four, a 25% kernel-call reduction per step. The new exact call-count gate,
+  all low-level explicit-method tests, five observed-order rows, seven
+  integration-marked linear solves, and four forced two-device trajectory,
+  electromagnetic, collision-invariant, and derivative identity gates pass
+  under x64. Wall-time claims remain deferred until a physical profiler artifact
+  measures the end-to-end effect.
