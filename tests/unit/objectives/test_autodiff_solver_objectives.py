@@ -45,6 +45,81 @@ from spectraxgk.quasilinear import (
 )
 
 
+def _actual_linear_rhs_objective_functions():
+    """Build the shared physical operator and phase-invariant ITG objective."""
+
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=6, Nz=4, Lx=6.0, Ly=12.0))
+    grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    state_shape = (2, 1, grid.ky.size, grid.kx.size, grid.z.size)
+    base_params = LinearParams(
+        R_over_Ln=2.2,
+        R_over_LTi=6.9,
+        nu=0.0,
+        nu_hyper=0.0,
+        hypercollisions_const=0.0,
+        hypercollisions_kz=0.0,
+        D_hyper=0.0,
+        beta=0.0,
+        fapar=0.0,
+    )
+    cache = build_linear_cache(grid, geom, base_params, 2, 1)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    def params_from_features(x):
+        return LinearParams(
+            R_over_Ln=x[0],
+            R_over_LTi=x[1],
+            nu=0.0,
+            nu_hyper=0.0,
+            hypercollisions_const=0.0,
+            hypercollisions_kz=0.0,
+            D_hyper=0.0,
+            beta=0.0,
+            fapar=0.0,
+        )
+
+    def rhs_with_params(state, params):
+        return linear_rhs_cached(
+            state,
+            cache,
+            params,
+            terms=terms,
+            use_jit=False,
+            use_custom_vjp=False,
+        )
+
+    def matrix_fn(x):
+        params = params_from_features(x)
+        return explicit_complex_operator_matrix(
+            lambda state: rhs_with_params(state, params)[0], state_shape
+        )
+
+    def objective_fn(eigenvalue, eigenvector, x):
+        params = params_from_features(x)
+        state = jnp.reshape(eigenvector, state_shape)
+        _rhs, phi = rhs_with_params(state, params)
+        kperp_eff = effective_kperp2(phi, cache, vol_fac)
+        gamma = jnp.real(eigenvalue)
+        return jnp.asarray(
+            [gamma, kperp_eff, gamma / jnp.maximum(kperp_eff, 1.0e-12)]
+        )
+
+    return matrix_fn, objective_fn
+
+
 def test_covariance_diagnostics_reports_uq_and_sensitivity_metadata() -> None:
     assert spectraxgk.covariance_diagnostics is covariance_diagnostics
     jac = np.array([[1.0, 0.2], [0.1, 0.8], [0.4, -0.3]])
@@ -406,74 +481,7 @@ def test_actual_linear_rhs_branch_objective_derivative_gate() -> None:
     assert spectraxgk.isolated_eigenpair_observable_sensitivity_report is (
         isolated_eigenpair_observable_sensitivity_report
     )
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=6, Nz=4, Lx=6.0, Ly=12.0))
-    grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    n_laguerre = 2
-    n_hermite = 1
-    state_shape = (n_laguerre, n_hermite, grid.ky.size, grid.kx.size, grid.z.size)
-    base_params = LinearParams(
-        R_over_Ln=2.2,
-        R_over_LTi=6.9,
-        nu=0.0,
-        nu_hyper=0.0,
-        hypercollisions_const=0.0,
-        hypercollisions_kz=0.0,
-        D_hyper=0.0,
-        beta=0.0,
-        fapar=0.0,
-    )
-    cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
-    terms = LinearTerms(
-        streaming=1.0,
-        mirror=1.0,
-        curvature=1.0,
-        gradb=1.0,
-        diamagnetic=1.0,
-        collisions=0.0,
-        hypercollisions=0.0,
-        end_damping=0.0,
-        apar=0.0,
-        bpar=0.0,
-    )
-
-    def params_from_features(x):
-        return LinearParams(
-            R_over_Ln=x[0],
-            R_over_LTi=x[1],
-            nu=0.0,
-            nu_hyper=0.0,
-            hypercollisions_const=0.0,
-            hypercollisions_kz=0.0,
-            D_hyper=0.0,
-            beta=0.0,
-            fapar=0.0,
-        )
-
-    def rhs_with_params(state, params):
-        return linear_rhs_cached(
-            state,
-            cache,
-            params,
-            terms=terms,
-            use_jit=False,
-            use_custom_vjp=False,
-        )
-
-    def matrix_fn(x):
-        params = params_from_features(x)
-        return explicit_complex_operator_matrix(
-            lambda state: rhs_with_params(state, params)[0], state_shape
-        )
-
-    def objective_fn(eigenvalue, eigenvector, x):
-        params = params_from_features(x)
-        state = jnp.reshape(eigenvector, state_shape)
-        _rhs, phi = rhs_with_params(state, params)
-        kperp_eff = effective_kperp2(phi, cache, vol_fac)
-        gamma = jnp.real(eigenvalue)
-        return jnp.asarray([gamma, kperp_eff, gamma / jnp.maximum(kperp_eff, 1.0e-12)])
+    matrix_fn, objective_fn = _actual_linear_rhs_objective_functions()
 
     report = isolated_eigenpair_observable_sensitivity_report(
         matrix_fn,
@@ -563,74 +571,7 @@ def test_implicit_eigenpair_observable_gate_handles_complex_observables() -> Non
 
 
 def test_actual_linear_rhs_branch_objective_implicit_derivative_gate() -> None:
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=6, Nz=4, Lx=6.0, Ly=12.0))
-    grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    n_laguerre = 2
-    n_hermite = 1
-    state_shape = (n_laguerre, n_hermite, grid.ky.size, grid.kx.size, grid.z.size)
-    base_params = LinearParams(
-        R_over_Ln=2.2,
-        R_over_LTi=6.9,
-        nu=0.0,
-        nu_hyper=0.0,
-        hypercollisions_const=0.0,
-        hypercollisions_kz=0.0,
-        D_hyper=0.0,
-        beta=0.0,
-        fapar=0.0,
-    )
-    cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
-    terms = LinearTerms(
-        streaming=1.0,
-        mirror=1.0,
-        curvature=1.0,
-        gradb=1.0,
-        diamagnetic=1.0,
-        collisions=0.0,
-        hypercollisions=0.0,
-        end_damping=0.0,
-        apar=0.0,
-        bpar=0.0,
-    )
-
-    def params_from_features(x):
-        return LinearParams(
-            R_over_Ln=x[0],
-            R_over_LTi=x[1],
-            nu=0.0,
-            nu_hyper=0.0,
-            hypercollisions_const=0.0,
-            hypercollisions_kz=0.0,
-            D_hyper=0.0,
-            beta=0.0,
-            fapar=0.0,
-        )
-
-    def rhs_with_params(state, params):
-        return linear_rhs_cached(
-            state,
-            cache,
-            params,
-            terms=terms,
-            use_jit=False,
-            use_custom_vjp=False,
-        )
-
-    def matrix_fn(x):
-        params = params_from_features(x)
-        return explicit_complex_operator_matrix(
-            lambda state: rhs_with_params(state, params)[0], state_shape
-        )
-
-    def objective_fn(eigenvalue, eigenvector, x):
-        params = params_from_features(x)
-        state = jnp.reshape(eigenvector, state_shape)
-        _rhs, phi = rhs_with_params(state, params)
-        kperp_eff = effective_kperp2(phi, cache, vol_fac)
-        gamma = jnp.real(eigenvalue)
-        return jnp.asarray([gamma, kperp_eff, gamma / jnp.maximum(kperp_eff, 1.0e-12)])
+    matrix_fn, objective_fn = _actual_linear_rhs_objective_functions()
 
     report = implicit_eigenpair_observable_sensitivity_report(
         matrix_fn,

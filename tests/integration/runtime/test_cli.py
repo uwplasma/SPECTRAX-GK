@@ -36,6 +36,19 @@ def _project_version() -> str:
     ]
 
 
+def _runtime_linear_result() -> RuntimeLinearResult:
+    """Return the canonical tiny result used by executable output tests."""
+
+    return RuntimeLinearResult(
+        ky=0.2,
+        gamma=0.3,
+        omega=-0.4,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+        t=np.asarray([0.1, 0.2]),
+        signal=np.asarray([1.0, 2.0]),
+    )
+
+
 def test_version_exposed():
     """Version string should be exported from the package."""
     assert __version__ == _project_version()
@@ -509,17 +522,9 @@ diagnostic_norm = "none"
     path.write_text(cfg, encoding="utf-8")
     out_base = tmp_path / "linear_bundle"
 
-    def _fake_run_runtime_linear(_cfg, **_kwargs):
-        return RuntimeLinearResult(
-            ky=0.2,
-            gamma=0.3,
-            omega=-0.4,
-            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
-            t=np.asarray([0.1, 0.2]),
-            signal=np.asarray([1.0, 2.0]),
-        )
-
-    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        "spectraxgk.cli.run_runtime_linear", lambda _cfg, **_kwargs: _runtime_linear_result()
+    )
     monkeypatch.setattr(
         sys,
         "argv",
@@ -935,17 +940,9 @@ path = "artifacts/from_toml"
     path = tmp_path / "runtime_cli_linear_toml_out.toml"
     path.write_text(cfg, encoding="utf-8")
 
-    def _fake_run_runtime_linear(_cfg, **_kwargs):
-        return RuntimeLinearResult(
-            ky=0.2,
-            gamma=0.3,
-            omega=-0.4,
-            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
-            t=np.asarray([0.1, 0.2]),
-            signal=np.asarray([1.0, 2.0]),
-        )
-
-    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        "spectraxgk.cli.run_runtime_linear", lambda _cfg, **_kwargs: _runtime_linear_result()
+    )
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(
         sys,
@@ -1016,17 +1013,9 @@ path = "artifacts/from_toml"
     path.write_text(cfg, encoding="utf-8")
     out_base = tmp_path / "cli_override"
 
-    def _fake_run_runtime_linear(_cfg, **_kwargs):
-        return RuntimeLinearResult(
-            ky=0.2,
-            gamma=0.3,
-            omega=-0.4,
-            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
-            t=np.asarray([0.1, 0.2]),
-            signal=np.asarray([1.0, 2.0]),
-        )
-
-    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        "spectraxgk.cli.run_runtime_linear", lambda _cfg, **_kwargs: _runtime_linear_result()
+    )
     monkeypatch.setattr(
         sys,
         "argv",
@@ -1102,17 +1091,9 @@ path = "artifacts/direct_shorthand"
     path = tmp_path / "runtime_cli_direct.toml"
     path.write_text(cfg, encoding="utf-8")
 
-    def _fake_run_runtime_linear(_cfg, **_kwargs):
-        return RuntimeLinearResult(
-            ky=0.2,
-            gamma=0.3,
-            omega=-0.4,
-            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
-            t=np.asarray([0.1, 0.2]),
-            signal=np.asarray([1.0, 2.0]),
-        )
-
-    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        "spectraxgk.cli.run_runtime_linear", lambda _cfg, **_kwargs: _runtime_linear_result()
+    )
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(
         sys,
