@@ -17,10 +17,16 @@ from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
+    apply_multispecies_collision_moment_matrix,
+    drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
     load_collision_moment_matrix,
 )
-from spectraxgk.operators.linear.dissipation import collisions_contribution
+from spectraxgk.operators.linear.dissipation import (
+    collision_quadratic_rate,
+    collisions_contribution,
+    multispecies_collision_invariant_rates,
+)
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.linear_terms import (
@@ -273,6 +279,89 @@ def test_collision_table_converges_for_physical_finite_larmor_operator() -> None
     assert all(fine < coarse for coarse, fine in zip(errors, errors[1:]))
     assert errors[-1] < 1.0e-3
     assert 1.8 <= observed_order <= 2.3
+
+
+def test_sugama_pair_matrices_recover_published_like_species_operator() -> None:
+    test_matrix, field_matrix = drift_kinetic_sugama_pair_matrices(
+        jnp.asarray(1.0), jnp.asarray(1.0)
+    )
+    np.testing.assert_allclose(
+        np.asarray(test_matrix + field_matrix),
+        load_collision_moment_matrix("sugama"),
+        rtol=3.0e-6,
+        atol=3.0e-6,
+    )
+
+    unequal_test, unequal_field = drift_kinetic_sugama_pair_matrices(
+        jnp.asarray(4.0), jnp.asarray(2.0)
+    )
+    np.testing.assert_allclose(
+        np.asarray([unequal_test[2, 6], unequal_test[4, 1]]),
+        np.asarray([0.2746838629245758, -0.2001875340938568]),
+        rtol=2.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray([unequal_field[2, 6], unequal_field[3, 2]]),
+        np.asarray([-1.0987355709075928, -0.3171776235103607]),
+        rtol=2.0e-6,
+    )
+
+
+def test_multispecies_sugama_pair_operator_conserves_and_differentiates() -> None:
+    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
+    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    pair_matrix = jnp.zeros((2, 2, 8, 8), dtype=jnp.float32)
+    for target in range(2):
+        for source in range(2):
+            test_matrix, field_matrix = drift_kinetic_sugama_pair_matrices(
+                mass[target] / mass[source], temperature[target] / temperature[source]
+            )
+            frequency = density[source] / (
+                jnp.sqrt(mass[target]) * temperature[target] ** 1.5
+            )
+            pair_matrix = pair_matrix.at[target, target].add(frequency * test_matrix)
+            pair_matrix = pair_matrix.at[target, source].add(frequency * field_matrix)
+
+    state = (
+        jnp.arange(2 * 2 * 4, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 1) + 0.13j
+    ).astype(jnp.complex64)
+    contribution = jax.jit(apply_multispecies_collision_moment_matrix)(
+        state, pair_matrix
+    )
+    rates = multispecies_collision_invariant_rates(
+        contribution, density=density, mass=mass, temperature=temperature
+    )
+    np.testing.assert_allclose(rates.particle_density, 0.0, atol=2.0e-6)
+    np.testing.assert_allclose(rates.total_parallel_momentum, 0.0, atol=3.0e-6)
+    np.testing.assert_allclose(rates.total_thermal_energy, 0.0, atol=7.0e-6)
+    free_energy_rate = collision_quadratic_rate(
+        state,
+        contribution,
+        weights=(density * temperature)[:, None, None, None, None, None],
+    )
+    assert float(free_energy_rate) < 0.0
+
+    ratios = jnp.asarray([4.0, 2.0], dtype=jnp.float32)
+    direction = jnp.asarray([0.3, -0.2], dtype=jnp.float32)
+
+    def pair_function(values):
+        return jnp.stack(drift_kinetic_sugama_pair_matrices(values[0], values[1]))
+
+    tangent = jax.jvp(pair_function, (ratios,), (direction,))[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        pair_function(ratios + step * direction)
+        - pair_function(ratios - step * direction)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=8.0e-4, atol=8.0e-4)
+
+    with pytest.raises(ValueError, match="must be scalars"):
+        drift_kinetic_sugama_pair_matrices(jnp.ones(2), jnp.asarray(1.0))
+    with pytest.raises(ValueError, match="mass_ratio must be positive"):
+        drift_kinetic_sugama_pair_matrices(jnp.asarray(0.0), jnp.asarray(1.0))
+    with pytest.raises(ValueError, match="target/source species"):
+        apply_multispecies_collision_moment_matrix(state, jnp.zeros((2, 8, 8)))
 
 
 def test_gamma0_basic_properties() -> None:

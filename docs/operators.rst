@@ -367,6 +367,42 @@ Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.
 
+The lowest-order multispecies drift-kinetic boundary is also implemented
+without assuming equal species. For an ordered pair :math:`(a,b)`,
+``drift_kinetic_sugama_pair_matrices`` evaluates Appendix C, equations
+(C4)--(C5), of Frei, Ernst & Ricci (2022) as
+
+.. math::
+
+   \mathcal C_a = \sum_b \nu_{ab}
+   \left(T_{ab}\,N_a + F_{ab}\,N_b\right),
+   \qquad
+   \sigma=\frac{m_a}{m_b},\quad \tau=\frac{T_a}{T_b}.
+
+Here :math:`T_{ab}` and :math:`F_{ab}` are the published test- and
+field-particle matrices on the eight-mode ``Nl=2, Nm=4`` space; coefficients
+outside the six active moments are exactly zero. The helper returns matrices
+normalized by the directed frequency
+
+.. math::
+
+   \nu_{ab}\propto \frac{n_b}{\sqrt{m_a}\,T_a^{3/2}},
+
+so callers retain explicit ownership of normalization. The separate
+``apply_multispecies_collision_moment_matrix`` contract stores target species
+first and source species second, applies all source blocks in one JAX
+contraction, and supports pointwise spatial matrices. At equal mass and
+temperature, :math:`T_{aa}+F_{aa}` reproduces the independent 80-digit C6
+table. An unequal ion-pair gate checks published coefficients directly; a
+physical directed-frequency gate conserves each species' particles and total
+momentum and thermal energy, produces a negative weighted quadratic rate, and
+matches finite differences through :math:`\sigma` and :math:`\tau`.
+
+This is the original Sugama model's real low-order drift-kinetic projection.
+It is useful for reduced-model verification but is not the improved Sugama
+correction, an arbitrary-moment hierarchy, or a finite-:math:`b` multispecies
+runtime model.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments
