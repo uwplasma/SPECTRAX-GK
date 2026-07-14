@@ -1202,6 +1202,21 @@ tests:
   diagnostic contracts: Hermitian real-FFT projection, signed-mode masks,
   explicit Runge-Kutta variants, fixed-mode frequency extraction, collision
   splitting, and IMEX nonlinear terms.
+- The same nonlinear helper suite owns the equilibrium-flow-shear research
+  gates. It checks analytic shearing-wave motion, integer and fractional
+  corrected remaps, de-aliasing, Hermitian projection, periodic and linked
+  zero-shear trajectory identity, linked-chain invariance, physical RK2/RK3
+  observed order, and canonical heat-flux reconstruction. The fixed-step IMEX
+  route additionally has endpoint-field, first-order convergence, x64 dtype,
+  and forward/reverse derivative checks against centered finite differences.
+  Unsupported adaptive IMEX, custom-collision, and non-twist combinations fail
+  closed. These bounded tests verify equations and algorithms; they do not
+  replace the independent post-transient transport-window gate required before
+  an input-file option can be exposed.
+- ``tests/unit/linear/test_linear_helpers_extra.py`` verifies that the
+  time-dependent linear cache rebuilds every sheared perpendicular operator,
+  reproduces the static cache at zero shear, preserves linked radial spacing,
+  and has a shear tangent consistent with centered finite differences.
 - ``tests/integration/runtime/test_runtime_config.py`` and ``tests/integration/runtime/test_runtime_runner.py`` verify
   unified runtime TOML loading and case-agnostic linear runs (Cyclone/ETG/KBM)
   through the same solver path.

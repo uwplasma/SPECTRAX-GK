@@ -318,6 +318,63 @@ with ``gate_index_include=false``.
   an exploratory ``t=5`` startup/resolved-spectrum audit and excluded from the
   release-gate index.
 
+Equilibrium Flow Shear
+----------------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Layer
+     - Observable
+     - Reference
+     - Status
+     - Acceptance gate
+   * - Shearing coordinates and remap
+     - :math:`k_x^*(t)`, retained norm, de-alias mask, Hermitian residual
+     - analytic shearing wave and corrected-remap formulation
+     - Closed
+     - analytic trajectory, inverse-remap identity, and machine-zero physical-
+       field symmetry away from the de-alias boundary
+   * - Periodic and linked linear operators
+     - complete cache, linked-neighbor spacing, linear RHS
+     - zero-shear static operator plus centered finite differences
+     - Closed
+     - zero-shear identity, invariant linked topology, and JAX tangent/finite-
+       difference agreement
+   * - Explicit RK2/RK3 integration
+     - state, fields, heat flux, observed order
+     - established unsheared trajectory and timestep refinement
+     - Closed as a research API
+     - zero-shear trajectory identity and designed physical-time order
+   * - Fixed-step IMEX integration
+     - endpoint state, fields, heat flux, JVP, VJP
+     - static linked IMEX trajectory and centered finite differences
+     - Closed as a research API
+     - zero-shear identity, first-order convergence, endpoint diagnostic
+       identity, and finite-difference derivative agreement
+   * - Full-resolution fixed-step response
+     - independently converged baseline/treatment late-window heat flux
+     - matched ``64x64x24``, ``Nl=4``, ``Nm=8`` weak-shear campaign
+     - Open
+     - each ``t=[240,300]`` window must pass finite-sample, stationarity,
+       terminal-mean, block-count, and SEM checks before the treatment effect is
+       evaluated; the response must then exceed the predeclared 5% reduction
+       and two-combined-SEM gates
+   * - Input-file and executable support
+     - reproducible user-configured flow-shear run
+     - completed equation, integrator, transport, and comparison gates
+     - Deferred until the full-resolution fixed-step response closes
+     - no TOML key or executable claim while the response row remains open
+
+The earlier adaptive ``t=300`` internal campaign passed its independent
+stationarity gates and showed a 6.10% reduction, while the external adaptive
+campaign showed no statistically resolved reduction. A source audit found that
+the two paths advance the shearing basis at different times within the adaptive
+RK stages. Those traces are retained as negative cross-discretization evidence,
+not a model-identical parity verdict. The fixed-step row above is therefore the
+remaining promotion gate; startup traces and short strong-shear suppression
+pilots cannot satisfy it.
+
 Quasilinear Diagnostics and Model Selection
 -------------------------------------------
 

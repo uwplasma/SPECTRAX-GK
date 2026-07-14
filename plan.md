@@ -2015,3 +2015,15 @@ under 5 minutes.
   operator dtype. A dedicated x64 regression starts from ``complex64``, returns
   ``complex128``, and preserves finite transport; the forward/reverse transport
   gradient gate remains passed.
+
+- 2026-07-14: Started the final full-resolution fixed-step flow-shear response
+  gate on two office A4000 GPUs from the same ``64x64x24``, ``Nl=4``, ``Nm=8``,
+  periodic Cyclone state. The baseline and ``gamma_E=0.01`` runs use x64
+  sheared IMEX with ``dt=0.02`` and independent restart checkpoints. Both first
+  1,000-step chunks reached ``t=20`` in about 143 seconds, remained finite, and
+  gave startup ion heat fluxes ``2.467e-4`` and ``2.449e-4``. These startup
+  values are recorded only as stability evidence. Promotion still requires
+  both independent ``t=[240,300]`` windows to pass the predeclared stationarity
+  and uncertainty gates before applying the 5% reduction and two-combined-SEM
+  treatment gate. The testing guide and verification matrix now enumerate the
+  linked, IMEX, derivative, long-window, and executable-exposure boundaries.
