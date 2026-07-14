@@ -1964,3 +1964,29 @@ under 5 minutes.
   The remaining promotion gate is one full-resolution stationary fixed-step
   weak-shear window, followed by linked-boundary and IMEX identity; it is not a
   release blocker because the option remains unavailable to input files.
+
+- 2026-07-14: Reproduced the unresolved canonical full-resolution KBM
+  shift-invert gate locally in ``133.04`` seconds at ``Nl=16``, ``Nm=48``, and
+  ``Nz=96``: the finite baseline remains ``0.980704`` versus the unchanged
+  ``0.1`` physical residual threshold. A physical Rayleigh--Ritz projection in
+  the shift-focused subspace returned a non-finite pair and raised maximum RSS
+  from ``0.87`` to ``1.18`` GB; a standards-style zero initial guess for the
+  unpreconditioned retry also returned a non-finite pair in ``132.52`` seconds.
+  Both experiments were removed. The promoted time-integrated KBM branch gate
+  remains passed, while the experimental eigensolver stays fail-closed pending
+  a genuinely branch-preserving thick restart or complex field-coupled
+  preconditioner.
+
+- 2026-07-14: Removed ambiguity among the three tracked KBM extraction
+  snapshots. Publication-table generation and the standalone comparison plot
+  now consume only ``selected`` rows from the continuity-first candidate table;
+  the pointwise mismatch and low-``k_y`` checkpoint remain historical inputs,
+  not alternate release-facing branches. A focused regression proves rejected
+  candidates cannot replace the selected branch.
+
+- 2026-07-14: Fixed CI run ``29325096544`` after the x64 linear-core shard
+  exposed a test-only tangent dtype mismatch in the new collision JVP gate.
+  The collision frequency primal is explicitly ``float32`` and its tangent now
+  inherits that dtype instead of becoming ``float64`` when x64 is enabled. The
+  exact seven-file CI shard passes all ``111`` tests locally with the CI x64
+  environment.

@@ -22,8 +22,12 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from spectraxgk.diagnostics.analysis import estimate_observed_order
+from spectraxgk.diagnostics.analysis import (
+    branch_continuity_metrics,
+    estimate_observed_order,
+)
 from spectraxgk.diagnostics.validation_gates import (
+    branch_continuity_gate_report,
     gate_report_to_dict,
     observed_order_gate_report,
 )
@@ -441,14 +445,33 @@ def _branch_gate_report_from_selected_rows(
     max_rel_omega_jump: float,
     min_successive_overlap: float | None,
 ) -> dict[str, object] | None:
-    from tools.comparison.compare_gx_kbm import _branch_gate_report_from_rows
-
-    return _branch_gate_report_from_rows(
-        rows,
+    if len(rows) < 2:
+        return None
+    table = pd.DataFrame(rows).sort_values("ky")
+    overlap = None
+    if "eig_overlap_prev" in table.columns:
+        overlap_values = np.asarray(table["eig_overlap_prev"], dtype=float)[1:]
+        if overlap_values.size == table.shape[0] - 1 and np.all(
+            np.isfinite(overlap_values)
+        ):
+            overlap = overlap_values
+    metrics = branch_continuity_metrics(
+        np.asarray(table["ky"], dtype=float),
+        np.asarray(table["gamma"], dtype=float),
+        np.asarray(table["omega"], dtype=float),
+        successive_overlap=overlap,
+    )
+    report = branch_continuity_gate_report(
+        metrics,
+        case="kbm_linear_branch_continuity",
+        source="selected KBM comparison rows",
         max_rel_gamma_jump=max_rel_gamma_jump,
         max_rel_omega_jump=max_rel_omega_jump,
-        min_successive_overlap=min_successive_overlap,
+        min_successive_overlap=(
+            min_successive_overlap if overlap is not None else None
+        ),
     )
+    return gate_report_to_dict(report)
 
 
 def _coerce_bool(value: object) -> bool:
@@ -483,6 +506,10 @@ def build_kbm_branch_summary(
     """Build the JSON payload for the selected KBM branch-continuity gate."""
 
     rows = selected_candidate_rows(candidate_csv)
+    try:
+        candidate_label = str(candidate_csv.resolve().relative_to(REPO_ROOT.resolve()))
+    except ValueError:
+        candidate_label = str(candidate_csv)
     report = _branch_gate_report_from_selected_rows(
         rows,
         max_rel_gamma_jump=max_rel_gamma_jump,
@@ -491,7 +518,7 @@ def build_kbm_branch_summary(
     )
     payload: dict[str, object] = {
         "case": "kbm_linear_branch_continuity",
-        "candidate_csv": str(candidate_csv),
+        "candidate_csv": candidate_label,
         "selected_count": len(rows),
         "thresholds": {
             "max_rel_gamma_jump": float(max_rel_gamma_jump),

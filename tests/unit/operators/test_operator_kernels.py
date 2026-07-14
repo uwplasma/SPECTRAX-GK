@@ -128,7 +128,7 @@ def test_collision_matrix_application_is_differentiable_and_fail_closed() -> Non
     tangent = jax.jvp(
         lambda scale, nu: apply_collision_moment_matrix(scale * state, matrix, nu=nu),
         (jnp.asarray(1.0), frequency),
-        (jnp.asarray(0.4), jnp.asarray([0.2])),
+        (jnp.asarray(0.4), jnp.asarray([0.2], dtype=frequency.dtype)),
     )[1]
     step = jnp.asarray(1.0e-3)
     plus = apply_collision_moment_matrix(

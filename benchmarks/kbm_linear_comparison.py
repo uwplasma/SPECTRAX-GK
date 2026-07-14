@@ -11,7 +11,7 @@ import pandas as pd
 from spectraxgk.artifacts.plotting import scan_comparison_figure
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TABLE = ROOT / "docs/_static/comparison/kbm_reference_mismatch.csv"
+DEFAULT_TABLE = ROOT / "docs/_static/comparison/kbm_reference_candidates.csv"
 
 
 def main() -> None:
@@ -21,6 +21,11 @@ def main() -> None:
     args = parser.parse_args()
 
     table = pd.read_csv(args.table).sort_values("ky")
+    if "selected" in table:
+        selected = table["selected"].map(
+            lambda value: str(value).strip().lower() in {"true", "1", "yes"}
+        )
+        table = table[selected]
     fig, _axes = scan_comparison_figure(
         table["ky"].to_numpy(),
         table["gamma"].to_numpy(),

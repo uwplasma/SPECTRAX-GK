@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -1120,6 +1121,28 @@ def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(
     assert rows[2].startswith("0.300,0.220000,1.140000,0.200000,1.270000,")
 
 
+def test_kbm_public_rows_use_only_selected_continuity_branch(tmp_path: Path) -> None:
+    import tools.artifacts.make_tables as make_tables
+
+    csv_path = tmp_path / "kbm_reference_candidates.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "ky,solver,gamma_gx,gamma,rel_gamma,omega_gx,omega,rel_omega,selected",
+                "0.2,early,0.30,0.36,0.20,0.88,0.89,0.01,False",
+                "0.2,continuous,0.30,0.27,0.10,0.88,0.92,0.05,True",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = make_tables._kbm_public_rows_from_gx_mismatch(csv_path)
+
+    assert len(rows) == 2
+    assert rows[1].startswith("0.200,0.300000,0.880000,0.270000,0.920000,")
+
+
 def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(
     tmp_path: Path,
 ) -> None:
@@ -1721,6 +1744,31 @@ def test_generate_kbm_branch_gate_summary_main_writes_strict_json(
         "max_rel_omega_jump",
         "successive_overlap_deficit",
     }
+
+
+def test_kbm_branch_command_runs_with_source_only_pythonpath(tmp_path: Path) -> None:
+    output = tmp_path / "kbm-branch.json"
+    env = dict(os.environ)
+    env["PYTHONPATH"] = "src"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "tools/artifacts/build_linear_validation_artifacts.py",
+            "kbm-branch",
+            "--out",
+            str(output),
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(output.read_text(encoding="utf-8"))["gate_passed"] is True
 
 
 def test_generate_collision_table_is_reproducible_and_matches_tracked_data(

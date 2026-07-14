@@ -46,6 +46,15 @@ KBM audit still reports outer residual ``0.981`` against the ``0.1`` threshold,
 so this lane remains unpromoted rather than silently returning that branch;
 validated time integration remains the release path.
 
+Two bounded full-resolution refinements were also rejected. Re-projecting the
+physical operator onto the shift-focused Arnoldi basis returned a non-finite
+pair and increased peak resident memory from about ``0.87`` to ``1.18`` GB.
+Starting the unpreconditioned inner retry from zero likewise returned a
+non-finite pair without reducing the roughly ``133`` second CPU runtime. The
+released implementation therefore retains the finite fail-closed baseline;
+future work requires a branch-preserving thick restart or field-coupled complex
+preconditioner with a lower physical residual, not another tolerance sweep.
+
 Acceptance also follows the requested spectral selection. Growth-selected
 searches enforce ``fallback_real_floor``; nearest-shift, overlap, and explicit
 shift searches may intentionally select a stable mode and therefore use

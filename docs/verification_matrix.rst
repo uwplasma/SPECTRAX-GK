@@ -131,6 +131,10 @@ candidate table now has a no-rerun summary path through
 continuity-first selected branch and passes the strict checks:
 ``max_rel_gamma_jump ~= 0.388``, ``max_rel_omega_jump ~= 0.320``, and no
 successive-overlap deficit.
+The candidate table's ``selected`` rows are also the authoritative source for
+the public fixed-beta comparison plot and mismatch table. This prevents older
+pointwise-best extraction and low-``k_y`` checkpoint snapshots from being
+mixed with the continuity-followed branch in release-facing artifacts.
 
 Observed-order convergence tables should also gate both the asymptotic finest
 refinement and the full set of pairwise refinement orders. The generic

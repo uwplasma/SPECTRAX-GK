@@ -156,6 +156,13 @@ def _kbm_public_rows_from_gx_mismatch(
         rows = list(reader)
     if not rows:
         raise ValueError(f"no rows found in {csv_path}")
+    selected_rows = [
+        row
+        for row in rows
+        if str(row.get("selected", "")).strip().lower() in {"true", "1", "yes"}
+    ]
+    if selected_rows:
+        rows = selected_rows
     by_ky = {float(row["ky"]): dict(row) for row in rows}
     if lowky_ckpt_path is not None and lowky_ckpt_path.exists():
         with lowky_ckpt_path.open("r", encoding="utf-8", newline="") as handle:
@@ -211,7 +218,12 @@ def _write_kbm_public_mismatch_table(
 ) -> None:
     kbm_table = outdir / "kbm_mismatch_table.csv"
     comparison_dir = outdir / "comparison"
-    kbm_reference_mismatch = comparison_dir / "kbm_reference_mismatch.csv"
+    kbm_candidates = comparison_dir / "kbm_reference_candidates.csv"
+    kbm_reference_mismatch = (
+        kbm_candidates
+        if kbm_candidates.exists()
+        else comparison_dir / "kbm_reference_mismatch.csv"
+    )
     if not kbm_reference_mismatch.exists():
         legacy_reference_mismatch = outdir / "kbm_reference_mismatch.csv"
         if legacy_reference_mismatch.exists():
@@ -221,7 +233,10 @@ def _write_kbm_public_mismatch_table(
         kbm_table.write_text(
             "\n".join(
                 _kbm_public_rows_from_gx_mismatch(
-                    kbm_reference_mismatch, lowky_ckpt_path=kbm_lowky_ckpt
+                    kbm_reference_mismatch,
+                    lowky_ckpt_path=(
+                        None if kbm_reference_mismatch == kbm_candidates else kbm_lowky_ckpt
+                    ),
                 )
             )
             + "\n",
@@ -230,7 +245,8 @@ def _write_kbm_public_mismatch_table(
         return
 
     raise FileNotFoundError(
-        "KBM publication tables require comparison/kbm_reference_mismatch.csv; "
+        "KBM publication tables require comparison/kbm_reference_candidates.csv "
+        "or comparison/kbm_reference_mismatch.csv; "
         "regenerate it with tools/comparison/compare_gx_kbm.py"
     )
 

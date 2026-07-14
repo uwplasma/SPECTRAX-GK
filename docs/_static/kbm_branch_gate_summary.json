@@ -47,7 +47,7 @@
     "passed": true,
     "source": "selected KBM comparison rows"
   },
-  "notes": "Selected rows are taken from the KBM GX comparison candidate table. The gate is intentionally a branch-identity check: adjacent gamma and omega jumps should stay smooth, and successive eigenfunction overlaps should remain high when those overlaps are available.",
+  "notes": "Selected rows are taken from the KBM comparison candidate table. The gate is intentionally a branch-identity check: adjacent gamma and omega jumps should stay smooth, and successive eigenfunction overlaps should remain high when those overlaps are available.",
   "rows": [
     {
       "branch_score": 0.1352212618698056,
