@@ -147,6 +147,151 @@ def associated_laguerre_monomial_coefficients(
     return np.asarray([float(value) for value in coefficients])
 
 
+def _nonnegative_binomial(n: int, k: int, mp: Any) -> Any:
+    if k < 0 or k > n:
+        return mp.mpf(0)
+    return mp.binomial(n, k)
+
+
+def _legendre_to_hermite_laguerre_mp(
+    legendre_order: int,
+    radial_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    mp: Any,
+) -> Any:
+    total = mp.mpf(0)
+    half = mp.mpf("0.5")
+    for q in range(legendre_order // 2 + 1):
+        for v in range(hermite_order // 2 + 1):
+            for i in range(radial_order + 1):
+                for r in range(q + 1):
+                    for s in range(min(laguerre_order, i) + 1):
+                        for m in range(radial_order - i + 1):
+                            combinatoric = (
+                                _nonnegative_binomial(legendre_order, q, mp)
+                                * _nonnegative_binomial(
+                                    2 * (legendre_order - q),
+                                    legendre_order,
+                                    mp,
+                                )
+                                * _nonnegative_binomial(q, r, mp)
+                                * _nonnegative_binomial(r, laguerre_order - s, mp)
+                                * _nonnegative_binomial(r, i - s, mp)
+                                * _nonnegative_binomial(s + r, s, mp)
+                                * mp.factorial(r)
+                            )
+                            if combinatoric == 0:
+                                continue
+                            exponent = (
+                                mp.mpf(3 * legendre_order + hermite_order) / 2
+                                + m
+                                + v
+                                - r
+                            )
+                            numerator = mp.gamma(
+                                radial_order - i + legendre_order + half
+                            ) * mp.fac2(
+                                legendre_order + hermite_order + 2 * (m - r - v) - 1
+                            )
+                            denominator = (
+                                mp.factorial(hermite_order - 2 * v)
+                                * mp.factorial(radial_order - i - m)
+                                * mp.gamma(legendre_order + m + half)
+                                * mp.factorial(v)
+                                * mp.factorial(m)
+                                * mp.power(2, exponent)
+                            )
+                            total += (
+                                (-1) ** (q + i + laguerre_order + v + m)
+                                * combinatoric
+                                * numerator
+                                / denominator
+                            )
+    return total
+
+
+def legendre_to_hermite_laguerre_coefficient(
+    legendre_order: int,
+    radial_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    *,
+    digits: int = 80,
+) -> float:
+    r"""Return the isotropic Legendre-to-Hermite--Laguerre coefficient.
+
+    This implements equation (A4) of Jorge, Ricci & Loureiro (2017).  The
+    coefficient maps ``c**l P_l(xi) L_k^(l+1/2)(c**2)`` onto
+    ``H_p(s_parallel) L_j(s_perp**2)``.  Coefficients on different total-degree
+    shells are exactly zero.
+    """
+
+    indices = (legendre_order, radial_order, hermite_order, laguerre_order)
+    if any(index < 0 for index in indices):
+        raise ValueError("basis orders must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+    if hermite_order + 2 * laguerre_order != legendre_order + 2 * radial_order:
+        return 0.0
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        total = _legendre_to_hermite_laguerre_mp(
+            legendre_order,
+            radial_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+        )
+    return float(total)
+
+
+def hermite_laguerre_to_legendre_coefficient(
+    hermite_order: int,
+    laguerre_order: int,
+    legendre_order: int,
+    radial_order: int,
+    *,
+    digits: int = 80,
+) -> float:
+    r"""Return the inverse isotropic basis-transform coefficient.
+
+    This applies equation (A3) of Jorge, Ricci & Loureiro (2017) to the
+    multiprecision forward coefficient.
+    """
+
+    indices = (legendre_order, radial_order, hermite_order, laguerre_order)
+    if any(index < 0 for index in indices):
+        raise ValueError("basis orders must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+    if hermite_order + 2 * laguerre_order != legendre_order + 2 * radial_order:
+        return 0.0
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        forward = _legendre_to_hermite_laguerre_mp(
+            legendre_order,
+            radial_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+        )
+        factor = (
+            mp.sqrt(mp.pi)
+            * mp.power(2, hermite_order)
+            * mp.factorial(hermite_order)
+            * (legendre_order + mp.mpf("0.5"))
+            * mp.factorial(radial_order)
+            / mp.gamma(radial_order + legendre_order + mp.mpf("1.5"))
+        )
+        inverse = factor * forward
+    return float(inverse)
+
+
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
     """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 

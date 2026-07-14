@@ -643,6 +643,14 @@ A, equation (A4), and `Jorge, Frei & Ricci (2019)
 multiple-precision implementation and independent inverse gate are the next
 accepted step.
 
+That isotropic transform is now implemented with 80-digit nested sums and only
+casts at the generated-table boundary. Independent velocity quadrature and
+forward/inverse shell products pass through total degree 12, including a shell
+with condition number above :math:`10^8`. The finite-:math:`m` extension remains
+blocked by a reproducible normalization/sign discrepancy between a literal
+equation-(B5) transcription and its defining projection; no coefficient table
+uses that unresolved path.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the

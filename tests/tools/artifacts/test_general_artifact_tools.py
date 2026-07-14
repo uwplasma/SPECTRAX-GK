@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -1860,6 +1861,123 @@ def test_associated_laguerre_monomial_coefficients_reconstruct_polynomials() -> 
             mod.associated_laguerre_monomial_coefficients(*args)
     with pytest.raises(ValueError, match="digits"):
         mod.associated_laguerre_monomial_coefficients(1, 1, digits=10)
+
+
+def test_legendre_hermite_laguerre_transform_matches_velocity_projection() -> None:
+    """Jorge et al. Eqs. (A3)--(A4) must match quadrature and invert."""
+    from scipy.special import (
+        eval_genlaguerre,
+        eval_hermite,
+        eval_laguerre,
+        eval_legendre,
+    )
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    parallel, parallel_weights = np.polynomial.hermite.hermgauss(80)
+    perpendicular, perpendicular_weights = np.polynomial.laguerre.laggauss(80)
+    x_parallel = parallel[:, None]
+    x_perpendicular = perpendicular[None, :]
+    speed_squared = x_parallel**2 + x_perpendicular
+    speed = np.sqrt(speed_squared)
+    pitch = x_parallel / speed
+    cases = (
+        (0, 0, 0, 0),
+        (1, 0, 1, 0),
+        (2, 0, 2, 0),
+        (2, 0, 0, 1),
+        (0, 1, 2, 0),
+        (3, 1, 1, 2),
+        (4, 2, 4, 2),
+        (4, 2, 0, 4),
+    )
+    for legendre_order, radial_order, hermite_order, laguerre_order in cases:
+        coefficient = mod.legendre_to_hermite_laguerre_coefficient(
+            legendre_order,
+            radial_order,
+            hermite_order,
+            laguerre_order,
+            digits=80,
+        )
+        left_basis = (
+            speed**legendre_order
+            * eval_legendre(legendre_order, pitch)
+            * eval_genlaguerre(
+                radial_order,
+                legendre_order + 0.5,
+                speed_squared,
+            )
+        )
+        right_basis = eval_hermite(hermite_order, x_parallel) * eval_laguerre(
+            laguerre_order, x_perpendicular
+        )
+        projected = np.sum(
+            parallel_weights[:, None]
+            * perpendicular_weights[None, :]
+            * left_basis
+            * right_basis
+        ) / (np.sqrt(np.pi) * 2**hermite_order * math.factorial(hermite_order))
+        np.testing.assert_allclose(coefficient, projected, rtol=2.0e-11, atol=5.0e-12)
+
+    # Each fixed-total-degree shell is a square transformation.
+    highest_condition = 0.0
+    for degree in range(13):
+        orders = [(degree - 2 * index, index) for index in range(degree // 2 + 1)]
+        forward = np.asarray(
+            [
+                [
+                    mod.legendre_to_hermite_laguerre_coefficient(
+                        legendre_order,
+                        radial_order,
+                        hermite_order,
+                        laguerre_order,
+                    )
+                    for legendre_order, radial_order in orders
+                ]
+                for hermite_order, laguerre_order in orders
+            ]
+        )
+        inverse = np.asarray(
+            [
+                [
+                    mod.hermite_laguerre_to_legendre_coefficient(
+                        hermite_order,
+                        laguerre_order,
+                        legendre_order,
+                        radial_order,
+                    )
+                    for hermite_order, laguerre_order in orders
+                ]
+                for legendre_order, radial_order in orders
+            ]
+        )
+        np.testing.assert_allclose(
+            inverse @ forward,
+            np.eye(len(orders)),
+            rtol=3.0e-13,
+            atol=1.0e-12,
+        )
+        highest_condition = float(np.linalg.cond(forward))
+
+    # The high-order gate exercises the cancellation regime, not only easy shells.
+    assert highest_condition > 1.0e8
+    for orders in ((20, 0, 20, 0), (10, 5, 0, 10), (0, 10, 20, 0)):
+        coefficient_40 = mod.legendre_to_hermite_laguerre_coefficient(
+            *orders, digits=40
+        )
+        coefficient_100 = mod.legendre_to_hermite_laguerre_coefficient(
+            *orders, digits=100
+        )
+        np.testing.assert_allclose(coefficient_40, coefficient_100, rtol=2.0e-15)
+
+    assert mod.legendre_to_hermite_laguerre_coefficient(0, 0, 2, 0) == 0.0
+    with pytest.raises(ValueError, match="basis orders"):
+        mod.legendre_to_hermite_laguerre_coefficient(-1, 0, 0, 0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.legendre_to_hermite_laguerre_coefficient(0, 0, 0, 0, digits=10)
+    with pytest.raises(ValueError, match="basis orders"):
+        mod.hermite_laguerre_to_legendre_coefficient(-1, 0, 0, 0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.hermite_laguerre_to_legendre_coefficient(0, 0, 0, 0, digits=10)
 
 
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:

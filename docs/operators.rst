@@ -426,6 +426,20 @@ finite-:math:`m` transform and inverse are Appendix B, equations (B5)--(B6), of
 those sums with independent projection/inverse gates is the next generator
 block.
 
+The isotropic base transform and inverse are now implemented in the offline
+generator from equations (A4) and (A3), respectively. Selected coefficients
+agree with independent 80-point Gauss--Hermite/Gauss--Laguerre velocity
+projections, including the hand identities :math:`cP_1=H_1/2` and
+:math:`c^2P_2=H_2/4+L_1/2`. Forward/inverse products close through total degree
+12 with maximum error ``8.73e-15`` even though that shell's condition number is
+``1.93e8``. All nested sums remain multiprecision until the final table cast.
+
+A direct equation-(B5) audit is intentionally not shipped yet: under the
+paper's stated associated-Legendre convention, literal transcription gives
+half the independently projected :math:`m=0` coefficients and the opposite
+sign for odd :math:`m`. The required endpoint and pointwise reconstruction
+gates therefore reject it pending a convention-corrected derivation.
+
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.
