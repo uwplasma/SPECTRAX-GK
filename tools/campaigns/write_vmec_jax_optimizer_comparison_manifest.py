@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Write a reproducible VMEC-JAX QA optimizer-comparison manifest.
+"""Write matched current-VMEC-JAX QA transport campaign commands.
 
-The manifest keeps optimizer comparisons honest by generating matched launch
-commands from one policy block.  Runnable commands are emitted for the
-currently supported deterministic VMEC-JAX/SPECTRAX-GK driver methods.  Noisy
-outer-loop methods such as SPSA, CMA-ES, and Bayesian optimization are emitted
-as explicit campaign contracts with deterministic evaluation/audit command
-templates, because their proposal generators are intentionally external to the
-VMEC-JAX least-squares driver.
+Deterministic candidates use the optimizer owned by current VMEC-JAX. Growth
+uses its implicit equilibrium Jacobian; eigenvector-weighted quasilinear and
+reduced nonlinear objectives use finite-difference outer Jacobians. SPSA,
+CMA-ES, and Bayesian optimization remain explicit outer-loop contracts for
+noisy long-window transport rather than pretending to be VMEC-JAX methods.
 """
 
 from __future__ import annotations
@@ -19,17 +17,13 @@ from pathlib import Path
 import shlex
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
 DRIVER = Path("tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py")
 METRIC_EVAL = Path("tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py")
 AUDIT_WRITER = Path("tools/campaigns/write_optimized_equilibrium_transport_configs.py")
 SPSA_WRITER = Path("tools/campaigns/write_vmec_jax_spsa_candidate_campaign.py")
-
 TRANSPORT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
-RUNNABLE_METHODS = ("scipy", "scalar_trust", "lbfgs_adjoint")
 OUTER_LOOP_METHODS = ("spsa", "cma_es", "bo")
-LINEAR_QL_KINDS = ("growth", "quasilinear_flux")
 
 
 def _csv(values: tuple[float, ...]) -> str:
@@ -38,11 +32,7 @@ def _csv(values: tuple[float, ...]) -> str:
 
 def _repo_relative(path: Path) -> str:
     try:
-        return (
-            path.resolve(strict=False)
-            .relative_to(ROOT.resolve(strict=False))
-            .as_posix()
-        )
+        return path.resolve(strict=False).relative_to(ROOT).as_posix()
     except ValueError:
         return path.as_posix()
 
@@ -61,144 +51,106 @@ def _json_ready(value: Any) -> Any:
 
 def _fingerprint(payload: dict[str, Any]) -> str:
     raw = json.dumps(_json_ready(payload), sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
-    values = tuple(float(part.strip()) for part in raw.split(",") if part.strip())
+    values = tuple(float(item) for item in raw.split(",") if item.strip())
     if not values:
-        raise argparse.ArgumentTypeError("expected at least one comma-separated value")
+        raise argparse.ArgumentTypeError("expected comma-separated values")
     return values
 
 
-def _method_args(args: argparse.Namespace, method: str) -> list[str]:
-    if method == "scipy":
-        out = ["--method", "scipy", "--scipy-tr-solver", str(args.scipy_tr_solver)]
-        if args.scipy_lsmr_maxiter is not None:
-            out += ["--scipy-lsmr-maxiter", str(args.scipy_lsmr_maxiter)]
-        return out
-    if method in {"scalar_trust", "lbfgs_adjoint"}:
-        return ["--method", method]
-    raise ValueError(f"unknown runnable optimizer method {method!r}")
+def _case_id(kind: str) -> str:
+    return {
+        "growth": "growth_implicit_from_qa_baseline",
+        "quasilinear_flux": "quasilinear_finite_difference_from_qa_baseline",
+        "nonlinear_window_heat_flux": "nonlinear_window_finite_difference_from_qa_baseline",
+    }[kind]
 
 
 def _baseline_command(args: argparse.Namespace, outdir: Path) -> str:
-    cmd = [
-        "python3",
-        _repo_relative(ROOT / DRIVER),
-        "--strict-upstream-qa-baseline",
-        "--outdir",
-        _repo_relative(outdir),
-        "--solver-device",
-        str(args.solver_device),
-        "--max-nfev",
-        str(args.baseline_max_nfev),
-        "--continuation-nfev",
-        str(args.continuation_nfev),
-        "--inner-max-iter",
-        str(args.inner_max_iter),
-        "--trial-max-iter",
-        str(args.trial_max_iter),
-        "--admit-authoritative-rerun-wout",
-        "--make-plots",
-    ]
-    return shlex.join(cmd)
+    return shlex.join(
+        [
+            "python3",
+            str(DRIVER),
+            "--constraints-only",
+            "--outdir",
+            _repo_relative(outdir),
+            "--target-aspect",
+            f"{args.target_aspect:.16g}",
+            "--target-iota",
+            f"{args.target_iota:.16g}",
+            "--mode-schedule",
+            str(args.baseline_mode_schedule),
+            "--max-nfev",
+            str(args.baseline_max_nfev),
+            "--ftol",
+            f"{args.ftol:.16g}",
+            "--solver-device",
+            args.solver_device,
+            "--make-plots",
+        ]
+    )
 
 
 def _transport_command(
-    args: argparse.Namespace,
-    *,
-    method: str,
-    transport_kind: str,
-    input_path: Path,
-    outdir: Path,
+    args: argparse.Namespace, *, kind: str, input_path: Path, outdir: Path
 ) -> str:
-    cmd = [
-        "python3",
-        _repo_relative(ROOT / DRIVER),
-        "--input",
-        _repo_relative(input_path),
-        "--outdir",
-        _repo_relative(outdir),
-        "--max-mode",
-        str(args.max_mode),
-        "--min-vmec-mode",
-        str(args.min_vmec_mode),
-        "--disable-mode-continuation",
-        "--target-aspect",
-        f"{args.target_aspect:.16g}",
-        "--min-iota",
-        f"{args.min_iota:.16g}",
-        "--iota-objective",
-        "target",
-        "--disable-iota-profile-floor",
-        "--aspect-weight",
-        f"{args.aspect_weight:.16g}",
-        "--iota-floor-weight",
-        f"{args.iota_weight:.16g}",
-        "--qs-weight",
-        f"{args.qs_weight:.16g}",
-        "--spectrax-weight",
-        f"{args.spectrax_weight:.16g}",
-        "--transport-kind",
-        transport_kind,
-        "--surfaces",
-        _csv(args.surfaces),
-        "--alphas",
-        _csv(args.alphas),
-        "--ky-values",
-        _csv(args.ky_values),
-        "--ntheta",
-        str(args.ntheta),
-        "--mboz",
-        str(args.mboz),
-        "--nboz",
-        str(args.nboz),
-        "--n-laguerre",
-        str(args.n_laguerre),
-        "--n-hermite",
-        str(args.n_hermite),
-        "--surface-chunk-size",
-        str(args.surface_chunk_size),
-        "--spectrax-objective-transform",
-        str(args.spectrax_objective_transform),
-        "--spectrax-objective-scale",
-        f"{args.spectrax_objective_scale:.16g}",
-        "--max-nfev",
-        str(args.max_nfev),
-        "--continuation-nfev",
-        str(args.continuation_nfev),
-        "--inner-max-iter",
-        str(args.inner_max_iter),
-        "--trial-max-iter",
-        str(args.trial_max_iter),
-        "--inner-ftol",
-        f"{args.inner_ftol:.16g}",
-        "--trial-ftol",
-        f"{args.trial_ftol:.16g}",
-        "--ftol",
-        f"{args.ftol:.16g}",
-        "--gtol",
-        f"{args.gtol:.16g}",
-        "--xtol",
-        f"{args.xtol:.16g}",
-        "--solver-device",
-        str(args.solver_device),
-        "--save-rerun-wouts",
-        "--admit-authoritative-rerun-wout",
-        "--allow-failed-solved-wout-gate",
-        "--make-plots",
-    ]
-    cmd += _method_args(args, method)
-    return shlex.join(cmd)
+    jacobian = "implicit" if kind == "growth" else "finite-difference"
+    return shlex.join(
+        [
+            "python3",
+            str(DRIVER),
+            "--input",
+            _repo_relative(input_path),
+            "--outdir",
+            _repo_relative(outdir),
+            "--transport-kind",
+            kind,
+            "--transport-weight",
+            f"{args.transport_weight:.16g}",
+            "--jacobian",
+            jacobian,
+            "--target-aspect",
+            f"{args.target_aspect:.16g}",
+            "--target-iota",
+            f"{args.target_iota:.16g}",
+            "--mode-schedule",
+            str(args.candidate_mode_schedule),
+            "--surfaces",
+            _csv(args.surfaces),
+            "--alphas",
+            _csv(args.alphas),
+            "--ky-values",
+            _csv(args.ky_values),
+            "--ntheta",
+            str(args.ntheta),
+            "--n-laguerre",
+            str(args.n_laguerre),
+            "--n-hermite",
+            str(args.n_hermite),
+            "--objective-transform",
+            args.objective_transform,
+            "--objective-scale",
+            f"{args.objective_scale:.16g}",
+            "--max-nfev",
+            str(args.max_nfev),
+            "--ftol",
+            f"{args.ftol:.16g}",
+            "--solver-device",
+            args.solver_device,
+            "--make-plots",
+        ]
+    )
 
 
 def _audit_command(
     args: argparse.Namespace, *, case_id: str, wout_path: Path, outdir: Path
 ) -> str:
-    cmd = [
+    command = [
         "python3",
-        _repo_relative(ROOT / AUDIT_WRITER),
+        str(AUDIT_WRITER),
         "--vmec-file",
         _repo_relative(wout_path),
         "--case",
@@ -206,9 +158,9 @@ def _audit_command(
         "--out-dir",
         _repo_relative(outdir),
         "--horizons",
-        str(args.audit_horizons),
+        args.audit_horizons,
         "--grid",
-        str(args.audit_grid),
+        args.audit_grid,
         "--window-tmin",
         f"{args.audit_window_tmin:.16g}",
         "--window-tmax",
@@ -217,372 +169,169 @@ def _audit_command(
         f"{args.audit_dt_variant:.16g}",
     ]
     for seed in args.audit_seed_variants:
-        cmd += ["--seed-variant", str(seed)]
-    return shlex.join(cmd)
+        command.extend(("--seed-variant", str(seed)))
+    return shlex.join(command)
 
 
-def _metric_eval_template(
-    args: argparse.Namespace, *, outdir: Path, transport_kind: str
-) -> str:
-    cmd = [
-        "python3",
-        _repo_relative(ROOT / METRIC_EVAL),
-        "--input",
-        "{candidate_input_final}",
-        "--out-json",
-        str(outdir / "{candidate_id}" / f"{transport_kind}_metric.json"),
-        "--outdir",
-        str(outdir / "{candidate_id}" / "metric_eval_scratch"),
-        "--out-wout",
-        str(outdir / "{candidate_id}" / "wout_final_rerun.nc"),
-        "--max-mode",
-        str(args.max_mode),
-        "--min-vmec-mode",
-        str(args.min_vmec_mode),
-        "--transport-kind",
-        transport_kind,
-        "--surfaces",
-        _csv(args.surfaces),
-        "--alphas",
-        _csv(args.alphas),
-        "--ky-values",
-        _csv(args.ky_values),
-        "--ntheta",
-        str(args.ntheta),
-        "--mboz",
-        str(args.mboz),
-        "--nboz",
-        str(args.nboz),
-        "--n-laguerre",
-        str(args.n_laguerre),
-        "--n-hermite",
-        str(args.n_hermite),
-        "--surface-chunk-size",
-        str(args.surface_chunk_size),
-        "--spectrax-objective-transform",
-        str(args.spectrax_objective_transform),
-        "--spectrax-objective-scale",
-        f"{args.spectrax_objective_scale:.16g}",
-        "--solver-device",
-        str(args.solver_device),
-        "--include-sample-rows",
-    ]
-    return shlex.join(cmd)
+def _metric_template(args: argparse.Namespace, *, outdir: Path, kind: str) -> str:
+    return shlex.join(
+        [
+            "python3",
+            str(METRIC_EVAL),
+            "--input",
+            "{candidate_input_final}",
+            "--out-json",
+            str(outdir / "{candidate_id}" / f"{kind}_metric.json"),
+            "--out-wout",
+            str(outdir / "{candidate_id}" / "wout_final.nc"),
+            "--transport-kind",
+            kind,
+            "--surfaces",
+            _csv(args.surfaces),
+            "--alphas",
+            _csv(args.alphas),
+            "--ky-values",
+            _csv(args.ky_values),
+            "--ntheta",
+            str(args.ntheta),
+            "--mboz",
+            str(args.mboz),
+            "--nboz",
+            str(args.nboz),
+            "--n-laguerre",
+            str(args.n_laguerre),
+            "--n-hermite",
+            str(args.n_hermite),
+            "--spectrax-objective-transform",
+            args.objective_transform,
+            "--spectrax-objective-scale",
+            f"{args.objective_scale:.16g}",
+            "--solver-device",
+            args.solver_device,
+            "--include-sample-rows",
+        ]
+    )
 
 
-def _spsa_candidate_command(
-    args: argparse.Namespace,
-    *,
-    baseline_input: Path,
-    outdir: Path,
-    transport_kind: str,
-) -> str:
-    cmd = [
-        "python3",
-        _repo_relative(ROOT / SPSA_WRITER),
-        "--baseline-input",
-        _repo_relative(baseline_input),
-        "--out-dir",
-        _repo_relative(outdir),
-        "--case-prefix",
-        f"vmec_qa_optimizer_comparison_spsa_{transport_kind}",
-        "--controls",
-        str(args.spsa_controls),
-        "--iterations",
-        str(args.spsa_iterations),
-        "--seed",
-        str(args.spsa_seed),
-        "--relative-delta",
-        f"{args.spsa_relative_delta:.16g}",
-        "--max-mode",
-        str(args.max_mode),
-        "--min-vmec-mode",
-        str(args.min_vmec_mode),
-        "--transport-kind",
-        transport_kind,
-        "--surfaces",
-        _csv(args.surfaces),
-        "--alphas",
-        _csv(args.alphas),
-        "--ky-values",
-        _csv(args.ky_values),
-        "--ntheta",
-        str(args.ntheta),
-        "--mboz",
-        str(args.mboz),
-        "--nboz",
-        str(args.nboz),
-        "--n-laguerre",
-        str(args.n_laguerre),
-        "--n-hermite",
-        str(args.n_hermite),
-        "--surface-chunk-size",
-        str(args.surface_chunk_size),
-        "--spectrax-objective-transform",
-        str(args.spectrax_objective_transform),
-        "--spectrax-objective-scale",
-        f"{args.spectrax_objective_scale:.16g}",
-        "--solver-device",
-        str(args.solver_device),
-        "--audit-horizons",
-        str(args.audit_horizons),
-        "--audit-grid",
-        str(args.audit_grid),
-        "--audit-window-tmin",
-        f"{args.audit_window_tmin:.16g}",
-        "--audit-window-tmax",
-        f"{args.audit_window_tmax:.16g}",
-        "--audit-dt-variant",
-        f"{args.audit_dt_variant:.16g}",
-    ]
-    for seed in args.audit_seed_variants:
-        cmd += ["--audit-seed-variant", str(seed)]
-    return shlex.join(cmd)
-
-
-def _case_id(transport_kind: str, method: str) -> str:
-    return f"{transport_kind}_{method}_from_strict_baseline".replace(
-        "quasilinear_flux", "quasilinear"
-    ).replace("nonlinear_window_heat_flux", "nonlinear_window")
-
-
-def _deterministic_strategy(transport_kind: str, method: str) -> dict[str, Any]:
-    if transport_kind in LINEAR_QL_KINDS:
-        return {
-            "stage": "linear_quasilinear_continuation_multistart",
-            "recommended_role": "candidate_generation",
-            "method_family": "constraint_aware_adjoint",
-            "uses_transport_weight_continuation": True,
-            "uses_multistart_from_simple_seed_qa_solves": True,
-            "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
-            "notes": (
-                f"{method} entries are deterministic optimizer comparisons for smooth linear/QL residuals; "
-                "they are not nonlinear turbulent-flux promotion evidence."
-            ),
-        }
+def _outer_loop_strategy(method: str, kind: str) -> dict[str, Any]:
     return {
-        "stage": "reduced_nonlinear_window_screen",
-        "recommended_role": "diagnostic_screening_only",
-        "method_family": "differentiable_reduced_window",
-        "uses_transport_weight_continuation": False,
-        "uses_multistart_from_simple_seed_qa_solves": True,
-        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
-        "notes": (
-            "The differentiable nonlinear-window residual is a startup/reduced-window screen. "
-            "No noisy nonlinear-Q claim is promoted without matched t=1500 replicated audits."
+        "stage": "noisy_long_window_transport",
+        "method_family": (
+            "stochastic_common_random_numbers"
+            if method == "spsa"
+            else "derivative_free_low_dimensional_search"
         ),
-    }
-
-
-def _outer_loop_strategy(method: str, transport_kind: str) -> dict[str, Any]:
-    first_pass = method == "spsa"
-    return {
-        "stage": "noisy_long_window_nonlinear_q"
-        if transport_kind == "nonlinear_window_heat_flux"
-        else "noisy_proxy_screen",
-        "recommended_role": "first_noisy_outer_loop"
-        if first_pass
-        else "projected_low_dimensional_comparator",
-        "method_family": "stochastic_common_random_numbers"
-        if first_pass
-        else "derivative_free_projected_search",
+        "transport_kind": kind,
         "requires_common_random_numbers": True,
         "requires_matched_t1500_replicated_audit": True,
-        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
-        "notes": (
-            "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected "
-            "controls after each proposed state is evaluated with the same metric and audit policy."
-        ),
+        "claim_scope": "candidate generation only until matched nonlinear gates pass",
     }
 
 
 def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
-    campaign_root = args.campaign_root
-    runs_root = campaign_root / "runs"
-    baseline_outdir = runs_root / "qa_baseline_scipy"
-    baseline_input = baseline_outdir / "input.final"
-    baseline_wout = baseline_outdir / "wout_final_rerun.nc"
-    sample_policy = {
-        "max_mode": args.max_mode,
-        "min_vmec_mode": args.min_vmec_mode,
-        "target_aspect": args.target_aspect,
-        "min_iota": args.min_iota,
-        "surfaces": args.surfaces,
-        "alphas": args.alphas,
-        "ky_values": args.ky_values,
-        "ntheta": args.ntheta,
-        "mboz": args.mboz,
-        "nboz": args.nboz,
-        "n_laguerre": args.n_laguerre,
-        "n_hermite": args.n_hermite,
-        "surface_chunk_size": args.surface_chunk_size,
-        "spectrax_objective_transform": args.spectrax_objective_transform,
-        "spectrax_objective_scale": args.spectrax_objective_scale,
-    }
-    optimizer_budget = {
-        "baseline_max_nfev": args.baseline_max_nfev,
-        "max_nfev": args.max_nfev,
-        "continuation_nfev": args.continuation_nfev,
-        "inner_max_iter": args.inner_max_iter,
-        "trial_max_iter": args.trial_max_iter,
-        "inner_ftol": args.inner_ftol,
-        "trial_ftol": args.trial_ftol,
-        "ftol": args.ftol,
-        "gtol": args.gtol,
-        "xtol": args.xtol,
-        "solver_device": args.solver_device,
-    }
-    comparison_policy = {
-        "sample_policy": sample_policy,
-        "optimizer_budget": optimizer_budget,
-        "transport_weight": args.spectrax_weight,
-        "landscape_policy": {
-            "rbc11_landscape_role": "diagnose objective roughness, metric disagreement, and nonlinear convergence windows",
-            "rbc11_points_admit_optimized_candidates": False,
-            "optimization_seed_policy": (
-                "start from the VMEC-JAX QA_optimization.py simple seed, solve QA/aspect/iota constraints, "
-                "then append one SPECTRAX-GK transport residual"
-            ),
+    runs = args.campaign_root / "runs"
+    baseline_dir = runs / "qa_baseline"
+    baseline_input = baseline_dir / "input.final"
+    policy = {
+        "api": "current_vmec_jax_opt_least_squares",
+        "sample_policy": {
+            "surfaces": args.surfaces,
+            "alphas": args.alphas,
+            "ky_values": args.ky_values,
+            "ntheta": args.ntheta,
+            "mboz": args.mboz,
+            "nboz": args.nboz,
         },
-        "optimizer_ladder_policy": [
-            {
-                "stage": "strict_qa_baseline",
-                "preferred_methods": ["scipy"],
-                "role": "solve smooth aspect/iota/QS constraints from the simple seed",
-            },
-            {
-                "stage": "linear_quasilinear_transport",
-                "preferred_methods": ["scalar_trust", "lbfgs_adjoint"],
-                "role": "continuation and multistart candidate generation for smooth growth/QL residuals",
-            },
-            {
-                "stage": "long_window_nonlinear_heat_flux",
-                "preferred_methods": ["spsa", "cma_es", "bo"],
-                "role": "noisy outer-loop comparison with common-random-number audits",
-            },
-            {
-                "stage": "quasilinear_screening_refit",
-                "preferred_methods": [],
-                "role": "refit/re-score only after new independent matched nonlinear holdouts pass gates",
-            },
-        ],
+        "derivative_policy": {
+            "growth": "implicit equilibrium Jacobian",
+            "quasilinear_flux": "finite-difference outer Jacobian",
+            "nonlinear_window_heat_flux": "finite-difference outer Jacobian",
+        },
+        "landscape_policy": {
+            "rbc11_points_admit_optimized_candidates": False,
+            "role": "conditioning, noise, and convergence-window diagnosis",
+        },
         "claim_boundary": (
-            "optimizer outputs are candidate-generation evidence only; promote turbulent-flux "
-            "reduction only after matched long post-transient nonlinear audits and convergence gates"
+            "optimizer outputs are candidates; nonlinear reduction requires matched "
+            "replicated post-transient transport windows"
         ),
     }
-    entries: list[dict[str, Any]] = []
-    baseline_entry = {
-        "case_id": "qa_baseline_scipy",
-        "kind": "strict_constraints_baseline",
-        "method": "scipy",
-        "transport_kind": None,
-        "status": "runnable",
-        "command": _baseline_command(args, baseline_outdir),
-        "outdir": baseline_outdir,
-        "expected_input_final": baseline_input,
-        "expected_authoritative_wout": baseline_wout,
-    }
-    entries.append(baseline_entry)
-    for transport_kind in args.transport_kinds:
-        for method in args.runnable_methods:
-            case_id = _case_id(transport_kind, method)
-            outdir = runs_root / case_id
-            audit_outdir = campaign_root / "nonlinear_audits" / case_id
-            wout_path = outdir / "wout_final_rerun.nc"
-            entries.append(
-                {
-                    "case_id": case_id,
-                    "kind": "deterministic_transport_optimizer",
-                    "method": method,
-                    "transport_kind": transport_kind,
-                    "status": "runnable",
-                    "depends_on": "qa_baseline_scipy",
-                    "optimizer_strategy": _deterministic_strategy(
-                        transport_kind, method
-                    ),
-                    "command": _transport_command(
-                        args,
-                        method=method,
-                        transport_kind=transport_kind,
-                        input_path=baseline_input,
-                        outdir=outdir,
-                    ),
-                    "outdir": outdir,
-                    "expected_authoritative_wout": wout_path,
-                    "recommended_nonlinear_audit_command": _audit_command(
-                        args,
-                        case_id=case_id,
-                        wout_path=wout_path,
-                        outdir=audit_outdir,
-                    ),
-                }
-            )
-        derivative_free_root = campaign_root / "outer_loop_candidates" / transport_kind
+    entries: list[dict[str, Any]] = [
+        {
+            "case_id": "qa_baseline",
+            "kind": "constraints_baseline",
+            "status": "runnable",
+            "command": _baseline_command(args, baseline_dir),
+            "outdir": baseline_dir,
+            "expected_input_final": baseline_input,
+            "expected_wout": baseline_dir / "wout_final.nc",
+        }
+    ]
+    for kind in args.transport_kinds:
+        case_id = _case_id(kind)
+        outdir = runs / case_id
+        wout = outdir / "wout_final.nc"
+        entries.append(
+            {
+                "case_id": case_id,
+                "kind": "deterministic_transport_candidate",
+                "transport_kind": kind,
+                "derivative_policy": policy["derivative_policy"][kind],
+                "status": "runnable",
+                "depends_on": "qa_baseline",
+                "command": _transport_command(
+                    args, kind=kind, input_path=baseline_input, outdir=outdir
+                ),
+                "outdir": outdir,
+                "expected_wout": wout,
+                "recommended_nonlinear_audit_command": _audit_command(
+                    args,
+                    case_id=case_id,
+                    wout_path=wout,
+                    outdir=args.campaign_root / "nonlinear_audits" / case_id,
+                ),
+            }
+        )
+        outer_root = args.campaign_root / "outer_loop_candidates" / kind
         for method in args.outer_loop_methods:
             entries.append(
                 {
-                    "case_id": f"{transport_kind}_{method}_outer_loop",
+                    "case_id": f"{kind}_{method}_outer_loop",
                     "kind": "derivative_free_outer_loop_contract",
+                    "transport_kind": kind,
                     "method": method,
-                    "transport_kind": transport_kind,
                     "status": "planned_outer_loop",
-                    "depends_on": "qa_baseline_scipy",
-                    "candidate_generator_required": True,
-                    "optimizer_strategy": _outer_loop_strategy(method, transport_kind),
+                    "depends_on": "qa_baseline",
+                    "optimizer_strategy": _outer_loop_strategy(method, kind),
                     "candidate_contract": {
                         "candidate_input_placeholder": "{candidate_input_final}",
-                        "candidate_id_placeholder": "{candidate_id}",
-                        "spsa_candidate_campaign_command": _spsa_candidate_command(
-                            args,
-                            baseline_input=baseline_input,
-                            outdir=derivative_free_root / "spsa_candidates",
-                            transport_kind=transport_kind,
-                        )
-                        if method == "spsa"
-                        else None,
-                        "metric_eval_command_template": _metric_eval_template(
-                            args,
-                            outdir=derivative_free_root,
-                            transport_kind=transport_kind,
+                        "metric_eval_command_template": _metric_template(
+                            args, outdir=outer_root, kind=kind
                         ),
                         "nonlinear_audit_command_template": _audit_command(
                             args,
-                            case_id=f"{transport_kind}_{method}" + "_{candidate_id}",
-                            wout_path=derivative_free_root
-                            / "{candidate_id}"
-                            / "wout_final_rerun.nc",
-                            outdir=derivative_free_root
-                            / "{candidate_id}"
-                            / "nonlinear_audit",
+                            case_id=f"{kind}_{method}_{{candidate_id}}",
+                            wout_path=outer_root / "{candidate_id}" / "wout_final.nc",
+                            outdir=outer_root / "{candidate_id}" / "nonlinear_audit",
                         ),
                     },
-                    "notes": (
-                        "Use this entry for SPSA/CMA/BO candidate proposal loops. "
-                        "Each proposed input.final must be evaluated with the metric command, "
-                        "then admitted candidates receive the same strict nonlinear audit command."
-                    ),
                 }
             )
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "kind": "vmec_jax_qa_optimizer_comparison_manifest",
-        "campaign_root": campaign_root,
+        "campaign_root": args.campaign_root,
         "driver": DRIVER,
-        "metric_eval_tool": METRIC_EVAL,
-        "audit_writer": AUDIT_WRITER,
-        "spsa_candidate_writer": SPSA_WRITER,
-        "comparison_policy": comparison_policy,
-        "comparison_fingerprint": _fingerprint(comparison_policy),
+        "comparison_policy": policy,
+        "comparison_fingerprint": _fingerprint(policy),
         "entries": entries,
         "runnable_commands": [
-            entry["command"] for entry in entries if entry.get("status") == "runnable"
+            entry["command"] for entry in entries if entry["status"] == "runnable"
         ],
         "next_actions": [
-            "Run qa_baseline_scipy first and verify wout_final_rerun.nc passes admission gates.",
-            "Run deterministic transport optimizer entries only after the strict baseline input.final exists.",
-            "Build matched nonlinear audit configs from the emitted audit commands before making transport claims.",
-            "Use planned_outer_loop entries only with an explicit proposal generator and the same metric/audit policy.",
+            "Run and replay the QA baseline before transport candidates.",
+            "Run deterministic candidates with the recorded derivative policy.",
+            "Promote only candidates passing matched long-window nonlinear audits.",
         ],
     }
     return _json_ready(manifest)
@@ -591,62 +340,36 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--campaign-root",
-        type=Path,
-        default=ROOT / "tools_out" / "vmec_jax_qa_optimizer_comparison_campaign",
-        help="Campaign root where run commands will write outputs",
+        "--campaign-root", type=Path, default=ROOT / "tools_out/qa_transport_campaign"
     )
     parser.add_argument(
-        "--out-json",
-        type=Path,
-        default=ROOT / "tools_out" / "vmec_jax_qa_optimizer_comparison_manifest.json",
-        help="Manifest JSON path",
+        "--out-json", type=Path, default=ROOT / "tools_out/qa_transport_manifest.json"
     )
-    parser.add_argument("--max-mode", type=int, default=5)
-    parser.add_argument("--min-vmec-mode", type=int, default=7)
-    parser.add_argument("--target-aspect", type=float, default=5.0)
-    parser.add_argument("--min-iota", type=float, default=0.41)
-    parser.add_argument("--aspect-weight", type=float, default=1.0)
-    parser.add_argument("--iota-weight", type=float, default=10_000.0)
-    parser.add_argument("--qs-weight", type=float, default=1.0)
-    parser.add_argument("--spectrax-weight", type=float, default=0.1)
+    parser.add_argument("--transport-kinds", default=",".join(TRANSPORT_KINDS))
+    parser.add_argument("--outer-loop-methods", default=",".join(OUTER_LOOP_METHODS))
+    parser.add_argument("--target-aspect", type=float, default=6.0)
+    parser.add_argument("--target-iota", type=float, default=0.42)
+    parser.add_argument("--transport-weight", type=float, default=0.01)
+    parser.add_argument("--baseline-mode-schedule", default="1,2,3,4,5")
+    parser.add_argument("--candidate-mode-schedule", default="5")
+    parser.add_argument("--surfaces", type=_float_tuple, default=(0.45, 0.64, 0.78))
     parser.add_argument(
-        "--transport-kinds", type=str, default=",".join(TRANSPORT_KINDS)
+        "--alphas", type=_float_tuple, default=(0.0, 0.7853981633974483)
     )
-    parser.add_argument(
-        "--runnable-methods", type=str, default=",".join(RUNNABLE_METHODS)
-    )
-    parser.add_argument(
-        "--outer-loop-methods", type=str, default=",".join(OUTER_LOOP_METHODS)
-    )
-    parser.add_argument("--surfaces", type=_float_tuple, default=(0.64,))
-    parser.add_argument("--alphas", type=_float_tuple, default=(0.0,))
-    parser.add_argument("--ky-values", type=_float_tuple, default=(0.3,))
+    parser.add_argument("--ky-values", type=_float_tuple, default=(0.1, 0.3, 0.5))
     parser.add_argument("--ntheta", type=int, default=24)
     parser.add_argument("--mboz", type=int, default=21)
     parser.add_argument("--nboz", type=int, default=21)
     parser.add_argument("--n-laguerre", type=int, default=2)
     parser.add_argument("--n-hermite", type=int, default=3)
-    parser.add_argument("--surface-chunk-size", type=int, default=1)
     parser.add_argument(
-        "--spectrax-objective-transform",
-        choices=("raw", "scaled", "log1p"),
-        default="log1p",
+        "--objective-transform", choices=("raw", "scaled", "log1p"), default="log1p"
     )
-    parser.add_argument("--spectrax-objective-scale", type=float, default=1.0)
-    parser.add_argument("--baseline-max-nfev", type=int, default=80)
-    parser.add_argument("--max-nfev", type=int, default=60)
-    parser.add_argument("--continuation-nfev", type=int, default=25)
-    parser.add_argument("--inner-max-iter", type=int, default=140)
-    parser.add_argument("--trial-max-iter", type=int, default=140)
-    parser.add_argument("--inner-ftol", type=float, default=1.0e-9)
-    parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
-    parser.add_argument("--ftol", type=float, default=1.0e-7)
-    parser.add_argument("--gtol", type=float, default=1.0e-7)
-    parser.add_argument("--xtol", type=float, default=1.0e-8)
+    parser.add_argument("--objective-scale", type=float, default=1.0)
+    parser.add_argument("--baseline-max-nfev", type=int, default=2000)
+    parser.add_argument("--max-nfev", type=int, default=200)
+    parser.add_argument("--ftol", type=float, default=1.0e-6)
     parser.add_argument("--solver-device", choices=("cpu", "gpu"), default="gpu")
-    parser.add_argument("--scipy-tr-solver", choices=("exact", "lsmr"), default="lsmr")
-    parser.add_argument("--scipy-lsmr-maxiter", type=int, default=200)
     parser.add_argument("--audit-horizons", default="700,1100,1500")
     parser.add_argument("--audit-grid", default="n64:64:64:40:40")
     parser.add_argument("--audit-window-tmin", type=float, default=1100.0)
@@ -655,35 +378,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--audit-seed-variant", dest="audit_seed_variants", type=int, action="append"
     )
-    parser.add_argument("--spsa-controls", default="ZBS(1,0);ZBS(1,1);RBC(1,1)")
-    parser.add_argument("--spsa-iterations", type=int, default=4)
-    parser.add_argument("--spsa-seed", type=int, default=20260609)
-    parser.add_argument("--spsa-relative-delta", type=float, default=0.03)
     args = parser.parse_args(argv)
     args.transport_kinds = tuple(
-        part.strip() for part in args.transport_kinds.split(",") if part.strip()
-    )
-    args.runnable_methods = tuple(
-        part.strip() for part in args.runnable_methods.split(",") if part.strip()
+        item.strip() for item in args.transport_kinds.split(",") if item.strip()
     )
     args.outer_loop_methods = tuple(
-        part.strip() for part in args.outer_loop_methods.split(",") if part.strip()
+        item.strip() for item in args.outer_loop_methods.split(",") if item.strip()
     )
     unknown_kinds = set(args.transport_kinds) - set(TRANSPORT_KINDS)
-    unknown_methods = set(args.runnable_methods) - set(RUNNABLE_METHODS)
-    unknown_outer = set(args.outer_loop_methods) - set(OUTER_LOOP_METHODS)
+    unknown_methods = set(args.outer_loop_methods) - set(OUTER_LOOP_METHODS)
     if unknown_kinds:
         parser.error(f"unknown transport kinds: {sorted(unknown_kinds)}")
     if unknown_methods:
-        parser.error(f"unknown runnable methods: {sorted(unknown_methods)}")
-    if unknown_outer:
-        parser.error(f"unknown outer-loop methods: {sorted(unknown_outer)}")
+        parser.error(f"unknown outer-loop methods: {sorted(unknown_methods)}")
     if args.audit_seed_variants is None:
         args.audit_seed_variants = [32, 33]
-    if int(args.spsa_iterations) <= 0:
-        parser.error("--spsa-iterations must be positive")
-    if float(args.spsa_relative_delta) <= 0.0:
-        parser.error("--spsa-relative-delta must be positive")
+    if args.mboz < 21 or args.nboz < 21:
+        parser.error("--mboz and --nboz must be at least 21")
+    if args.objective_scale <= 0.0 or args.max_nfev < 1 or args.baseline_max_nfev < 1:
+        parser.error("objective scale and solve budgets must be positive")
     return args
 
 
@@ -691,9 +404,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     manifest = build_manifest(args)
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    args.out_json.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     print(
         json.dumps(
             {

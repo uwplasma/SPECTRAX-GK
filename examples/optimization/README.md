@@ -194,31 +194,25 @@ A typical constraints-only branch is:
 ```bash
 python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
   --constraints-only \
-  --use-simple-seed \
-  --max-mode 5 \
-  --min-vmec-mode 7 \
-  --mboz 21 \
-  --nboz 21 \
+  --target-aspect 6.0 --target-iota 0.42 \
+  --mode-schedule 1,2,3,4,5 \
   --make-plots \
   --outdir runs/qa_constraints_only
 ```
 
-For paper-facing sweeps, prefer the strict upstream baseline preset:
+For paper-facing sweeps, increase the solve budget and replay the saved input
+independently before transport optimization:
 
 ```bash
 python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-  --strict-upstream-qa-baseline \
-  --solver-device gpu \
+  --constraints-only --target-aspect 6.0 --target-iota 0.42 \
+  --mode-schedule 1,2,3,4,5 --max-nfev 2000 --solver-device gpu \
   --outdir runs/qa_baseline_strict_upstream
 ```
 
-This uses the same upstream simple seed, `MAX_MODE = 5`, ESS scaling, and
-aspect/iota/QS objective tuples as `vmec_jax/examples/optimization/QA_optimization.py`,
-but tightens the outer step tolerance and budget so the final WOUT is admitted
-by the strict solved-equilibrium gate. The preset keeps the gate at
-`iota >= 0.41` and uses a small default optimizer target buffer
-(`target iota = 0.4102`). A baseline that stops just below the gate should be
-refined with this preset, not accepted by loosening the gate.
+This uses the current upstream simple seed, mode continuation, ESS scaling, and
+aspect/iota/QS objective tuples. A baseline that stops below its target should
+be refined with a larger budget, not accepted by loosening a downstream gate.
 
 For optimizer-comparison campaigns, generate commands from one manifest rather
 than by hand-editing launch scripts:
@@ -229,9 +223,9 @@ python tools/campaigns/write_vmec_jax_optimizer_comparison_manifest.py \
   --out-json docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json
 ```
 
-The manifest emits the strict baseline command, matched `scipy`, `scalar_trust`,
-and `lbfgs_adjoint` transport-refinement commands, plus SPSA/CMA/BO outer-loop
-contracts with deterministic metric-evaluation and nonlinear-audit templates.
+The manifest emits a matched baseline, implicit-growth and finite-difference
+QL/reduced-nonlinear commands, plus SPSA/CMA/BO outer-loop contracts with
+deterministic metric-evaluation and nonlinear-audit templates.
 Use the generated `comparison_fingerprint` to keep optimizer comparisons scoped
 to identical sample sets, moment resolution, objective transforms, budgets, and
 strict long-window audit policies.
@@ -247,15 +241,11 @@ A transport-aware branch should start from a solved baseline and use a small tra
 
 ```bash
 python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-  --use-simple-seed \
-  --max-mode 5 \
-  --min-vmec-mode 7 \
-  --mboz 21 \
-  --nboz 21 \
+  --input runs/qa_constraints_only/input.final \
+  --mode-schedule 5 --target-aspect 6.0 --target-iota 0.42 \
   --make-plots \
   --outdir runs/qa_transport_refinement \
-  --spectrax-weight 0.005 \
-  --transport-kind growth \
+  --transport-weight 0.005 --transport-kind growth --jacobian implicit \
   --surfaces 0.45,0.64,0.78 \
   --alphas 0.0,0.7853981633974483 \
   --ky-values 0.10,0.30,0.50

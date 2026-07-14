@@ -18,7 +18,9 @@ OPTIMIZER_SCRIPT = (
 )
 SPSA_SCRIPT = ROOT / "tools" / "campaigns" / "write_vmec_jax_spsa_candidate_campaign.py"
 optimizer_mod = load_campaign_tool("write_vmec_jax_optimizer_comparison_manifest")
-projected_mod = load_campaign_tool("write_vmec_jax_projected_transport_line_search_inputs")
+projected_mod = load_campaign_tool(
+    "write_vmec_jax_projected_transport_line_search_inputs"
+)
 spsa_mod = load_campaign_tool("write_vmec_jax_spsa_candidate_campaign")
 
 
@@ -32,7 +34,7 @@ def _entry(payload: dict[str, object], case_id: str) -> dict[str, object]:
     raise AssertionError(f"missing entry {case_id}")
 
 
-def test_optimizer_comparison_manifest_builds_matched_runnable_commands(
+def test_optimizer_manifest_emits_current_matched_derivative_policies(
     tmp_path: Path,
 ) -> None:
     args = optimizer_mod.parse_args(
@@ -43,8 +45,6 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(
             str(tmp_path / "manifest.json"),
             "--transport-kinds",
             "growth,quasilinear_flux",
-            "--runnable-methods",
-            "scipy,scalar_trust",
             "--outer-loop-methods",
             "spsa,bo",
             "--audit-seed-variant",
@@ -56,147 +56,88 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(
 
     payload = optimizer_mod.build_manifest(args)
 
-    assert payload["kind"] == "vmec_jax_qa_optimizer_comparison_manifest"
-    assert payload["comparison_fingerprint"]
-    assert payload["comparison_policy"]["sample_policy"]["mboz"] == 21
-    assert payload["comparison_policy"]["sample_policy"]["nboz"] == 21
-    assert payload["comparison_policy"]["sample_policy"]["surfaces"] == [0.64]
+    assert payload["schema_version"] == 2
+    assert payload["comparison_policy"]["api"] == "current_vmec_jax_opt_least_squares"
+    assert payload["comparison_policy"]["sample_policy"] == {
+        "surfaces": [0.45, 0.64, 0.78],
+        "alphas": [0.0, 0.7853981633974483],
+        "ky_values": [0.1, 0.3, 0.5],
+        "ntheta": 24,
+        "mboz": 21,
+        "nboz": 21,
+    }
     assert (
         payload["comparison_policy"]["landscape_policy"][
             "rbc11_points_admit_optimized_candidates"
         ]
         is False
     )
-    assert (
-        "simple seed"
-        in payload["comparison_policy"]["landscape_policy"]["optimization_seed_policy"]
-    )
-    ladder = payload["comparison_policy"]["optimizer_ladder_policy"]
-    assert ladder[1]["stage"] == "linear_quasilinear_transport"
-    assert ladder[3]["stage"] == "quasilinear_screening_refit"
-    assert len(payload["runnable_commands"]) == 5
+    assert len(payload["runnable_commands"]) == 3
 
-    baseline = _entry(payload, "qa_baseline_scipy")
-    assert baseline["status"] == "runnable"
+    baseline = _entry(payload, "qa_baseline")
     baseline_parts = shlex.split(str(baseline["command"]))
-    assert "--strict-upstream-qa-baseline" in baseline_parts
-    assert "--admit-authoritative-rerun-wout" in baseline_parts
-    assert "--allow-failed-solved-wout-gate" not in baseline_parts
-    assert baseline["expected_authoritative_wout"].endswith(
-        "runs/qa_baseline_scipy/wout_final_rerun.nc"
-    )
+    assert "--constraints-only" in baseline_parts
+    assert baseline_parts[baseline_parts.index("--mode-schedule") + 1] == "1,2,3,4,5"
+    assert "--strict-upstream-qa-baseline" not in baseline_parts
+    assert baseline["expected_wout"].endswith("runs/qa_baseline/wout_final.nc")
 
-    growth_scipy = _entry(payload, "growth_scipy_from_strict_baseline")
-    growth_scalar = _entry(payload, "growth_scalar_trust_from_strict_baseline")
-    for entry in (growth_scipy, growth_scalar):
-        command = str(entry["command"])
-        parts = shlex.split(command)
-        assert parts[0:2] == [
+    growth = _entry(payload, "growth_implicit_from_qa_baseline")
+    quasilinear = _entry(payload, "quasilinear_finite_difference_from_qa_baseline")
+    for entry, expected_kind, expected_jacobian in (
+        (growth, "growth", "implicit"),
+        (quasilinear, "quasilinear_flux", "finite-difference"),
+    ):
+        parts = shlex.split(str(entry["command"]))
+        assert parts[:2] == [
             "python3",
             "tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py",
         ]
         assert parts[parts.index("--input") + 1].endswith(
-            "runs/qa_baseline_scipy/input.final"
+            "runs/qa_baseline/input.final"
         )
-        assert parts[parts.index("--transport-kind") + 1] == "growth"
-        assert parts[parts.index("--surfaces") + 1] == "0.64"
-        assert parts[parts.index("--alphas") + 1] == "0"
-        assert parts[parts.index("--ky-values") + 1] == "0.3"
-        assert parts[parts.index("--mboz") + 1] == "21"
-        assert parts[parts.index("--nboz") + 1] == "21"
-        assert "--save-rerun-wouts" in parts
-        assert "--admit-authoritative-rerun-wout" in parts
-        assert "--allow-failed-solved-wout-gate" in parts
-        assert "--make-plots" in parts
+        assert parts[parts.index("--transport-kind") + 1] == expected_kind
+        assert parts[parts.index("--jacobian") + 1] == expected_jacobian
+        assert parts[parts.index("--surfaces") + 1] == "0.45,0.64,0.78"
+        assert parts[parts.index("--alphas") + 1] == "0,0.7853981633974483"
+        assert parts[parts.index("--ky-values") + 1] == "0.1,0.3,0.5"
+        assert "--method" not in parts
+        assert "--mboz" not in parts
         audit = str(entry["recommended_nonlinear_audit_command"])
-        assert audit.startswith(
-            "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py"
-        )
         assert "--horizons 700,1100,1500" in audit
         assert "--window-tmin 1100 --window-tmax 1500" in audit
         assert "--seed-variant 41 --seed-variant 42" in audit
-        assert "--dt-variant 0.04" in audit
-        strategy = entry["optimizer_strategy"]
-        assert strategy["stage"] == "linear_quasilinear_continuation_multistart"
-        assert strategy["uses_transport_weight_continuation"] is True
-        assert strategy["uses_multistart_from_simple_seed_qa_solves"] is True
-        assert (
-            strategy["rbc_landscape_role"] == "conditioning_and_noise_diagnostic_only"
-        )
-
-    scipy_parts = shlex.split(str(growth_scipy["command"]))
-    assert scipy_parts[scipy_parts.index("--method") + 1] == "scipy"
-    assert scipy_parts[scipy_parts.index("--scipy-tr-solver") + 1] == "lsmr"
-    assert scipy_parts[scipy_parts.index("--scipy-lsmr-maxiter") + 1] == "200"
-
-    scalar_parts = shlex.split(str(growth_scalar["command"]))
-    assert scalar_parts[scalar_parts.index("--method") + 1] == "scalar_trust"
 
 
-def test_optimizer_comparison_manifest_marks_spsa_cma_bo_as_outer_loop_contracts(
+def test_optimizer_manifest_keeps_noisy_methods_as_outer_loop_contracts(
     tmp_path: Path,
 ) -> None:
     args = optimizer_mod.parse_args(
         [
             "--campaign-root",
             str(tmp_path / "campaign"),
-            "--out-json",
-            str(tmp_path / "manifest.json"),
             "--transport-kinds",
             "nonlinear_window_heat_flux",
-            "--runnable-methods",
-            "lbfgs_adjoint",
             "--outer-loop-methods",
             "spsa,cma_es,bo",
         ]
     )
-
     payload = optimizer_mod.build_manifest(args)
 
-    methods = {"spsa", "cma_es", "bo"}
-    for method in methods:
+    deterministic = _entry(
+        payload, "nonlinear_window_finite_difference_from_qa_baseline"
+    )
+    assert deterministic["derivative_policy"] == "finite-difference outer Jacobian"
+    for method in ("spsa", "cma_es", "bo"):
         entry = _entry(payload, f"nonlinear_window_heat_flux_{method}_outer_loop")
-        assert entry["status"] == "planned_outer_loop"
-        assert entry["candidate_generator_required"] is True
-        contract = entry["candidate_contract"]
         strategy = entry["optimizer_strategy"]
-        assert isinstance(contract, dict)
+        contract = entry["candidate_contract"]
+        assert entry["status"] == "planned_outer_loop"
         assert strategy["requires_common_random_numbers"] is True
         assert strategy["requires_matched_t1500_replicated_audit"] is True
-        assert (
-            strategy["rbc_landscape_role"] == "conditioning_and_noise_diagnostic_only"
-        )
-        metric_command = str(contract["metric_eval_command_template"])
-        audit_command = str(contract["nonlinear_audit_command_template"])
-        spsa_command = contract["spsa_candidate_campaign_command"]
-        if method == "spsa":
-            assert isinstance(spsa_command, str)
-            assert spsa_command.startswith(
-                "python3 tools/campaigns/write_vmec_jax_spsa_candidate_campaign.py"
-            )
-            assert "--transport-kind nonlinear_window_heat_flux" in spsa_command
-            assert "--audit-seed-variant 32 --audit-seed-variant 33" in spsa_command
-        else:
-            assert spsa_command is None
-        assert metric_command.startswith(
-            "python3 tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py"
-        )
-        assert audit_command.startswith(
-            "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py"
-        )
-        assert (
-            "tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py"
-            in metric_command
-        )
-        assert "{candidate_input_final}" in metric_command
-        assert "{candidate_id}" in metric_command
-        assert "--transport-kind nonlinear_window_heat_flux" in metric_command
-        assert (
-            "tools/campaigns/write_optimized_equilibrium_transport_configs.py"
-            in audit_command
-        )
-        assert "{candidate_id}" in audit_command
-        assert "--window-tmin 1100 --window-tmax 1500" in audit_command
+        assert "candidate generation only" in strategy["claim_scope"]
+        assert "{candidate_input_final}" in contract["metric_eval_command_template"]
+        assert "--mboz 21 --nboz 21" in contract["metric_eval_command_template"]
+        assert "{candidate_id}" in contract["nonlinear_audit_command_template"]
 
 
 def test_optimizer_comparison_manifest_cli_writes_json(tmp_path: Path) -> None:
@@ -211,8 +152,6 @@ def test_optimizer_comparison_manifest_cli_writes_json(tmp_path: Path) -> None:
             str(out_json),
             "--transport-kinds",
             "growth",
-            "--runnable-methods",
-            "lbfgs_adjoint",
             "--outer-loop-methods",
             "bo",
         ],
@@ -224,16 +163,10 @@ def test_optimizer_comparison_manifest_cli_writes_json(tmp_path: Path) -> None:
     )
 
     status = json.loads(completed.stdout)
-    payload = json.loads(out_json.read_text(encoding="utf-8"))
-
-    assert status["out_json"] == str(out_json)
+    payload = json.loads(out_json.read_text())
     assert status["comparison_fingerprint"] == payload["comparison_fingerprint"]
-    assert (
-        _entry(payload, "growth_lbfgs_adjoint_from_strict_baseline")["status"]
-        == "runnable"
-    )
+    assert _entry(payload, "growth_implicit_from_qa_baseline")["status"] == "runnable"
     assert _entry(payload, "growth_bo_outer_loop")["status"] == "planned_outer_loop"
-
 
 
 def _gradient_report(path: Path) -> None:
@@ -670,7 +603,6 @@ def test_projected_writer_fails_closed_for_underresolved_sample_set(
         )
 
 
-
 def _write_input(path: Path) -> None:
     path.write_text(
         """
@@ -782,4 +714,3 @@ def test_spsa_candidate_campaign_cli_writes_manifest(tmp_path: Path) -> None:
     assert status["pairs"] == 1
     assert status["controls"] == ["ZBS(1,0)", "RBC(1,1)"]
     assert (out_dir / "vmec_jax_spsa_candidate_manifest.json").exists()
-
