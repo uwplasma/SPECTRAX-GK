@@ -233,9 +233,11 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 4. **Benchmark facade shrink (closed).** Keep stable benchmark result contracts in
    `spectraxgk.benchmarks`; move case-policy and manuscript-like benchmark
    drivers to root `benchmarks` or maintainer tools.
-5. **Source ownership cleanup.** Keep imported Miller/VMEC geometry in `geometry`, choose
-   a single public mathematical-kernel namespace for `terms`/`operators`, and
-   consolidate objective helper shards into fewer family modules.
+5. **Source ownership cleanup (closed 2026-07-14).** Imported Miller/VMEC
+   geometry lives in `geometry`; `terms` owns physical contribution contracts,
+   while `operators` owns their numerical application. Single-consumer
+   objective and diagnostic policy shards were consolidated without flattening
+   independently reusable contracts, tables, or numerical algorithms.
 6. **Close required-core physics gates.** Maintain state-level short gates and
    converged long-window gates for axisymmetric/stellarator, electrostatic/
    electromagnetic, adiabatic/kinetic-electron, and restart/spectral diagnostics.
@@ -278,8 +280,8 @@ That topology is the reference design for the production parallel lane.
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
 | Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic/linked RK2/RK3 trajectory, fixed-step sheared IMEX, canonical heat-flux trace, linear suppression, and transport-objective AD validated; the final fixed-step response audit failed promotion | retain as a Python research API; do not expose an input-file option unless a new, prospectively gated physical campaign overturns the negative fixed-step evidence |
-| Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
-| Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
+| Species/Hermite multi-device execution | periodic and linked 2x2 species/Hermite routes cover the complete electrostatic operator and pass identity gates; mixed electromagnetic and four-device evidence are not available | retain the scoped electrostatic production route; require new hardware and identity evidence before broadening the claim |
+| Linearized Landau/Sugama collisions | reduced published original/improved-Sugama and Coulomb matrices, unequal-species pair assembly, relaxation, invariants, dissipation, and AD gates pass through the collision protocol; the complete finite-``b`` multispecies hierarchy is not implemented | retain the Python research boundary and keep TOML promotion fail-closed until arbitrary generated couplings plus conductivity, ITG, zonal, and resolution gates pass |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
 | KREHM, Vlasov--Poisson, collisional-ETG, forcing, Trinity coupling | not complete equations in SPECTRAX-GK | keep out of scope; remove orphan compatibility fragments |
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
@@ -2748,3 +2750,11 @@ under 5 minutes.
   Ruff, strict MyPy, architecture and validation manifests, and all 225 direct
   objective/artifact tests pass. This closes the planned source-consolidation
   lane without merging independently reusable numerical domains.
+
+- 2026-07-14: Reconciled the prioritized roadmap and comparison-scope docs
+  against the implemented evidence. Source ownership is now explicitly closed;
+  periodic/linked ``2 species x 2 Hermite`` electrostatic routing is described
+  as an identity-gated operator path rather than absent planning metadata; and
+  the published reduced original/improved-Sugama and Coulomb matrices are
+  distinguished from the still-unimplemented complete finite-``b``
+  multispecies hierarchy. No nonlinear speedup or full Landau claim was added.

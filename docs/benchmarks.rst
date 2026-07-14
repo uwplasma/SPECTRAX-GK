@@ -111,8 +111,12 @@ actually use the same physical and numerical contract.
      - validated, scoped
      - AD/FD, conditioning, covariance, geometry parity, and holdout gates
    * - Conserving Dougherty and linearized Sugama/Coulomb collisions
-     - planned
-     - no release claim until conservation, adjointness, entropy, and physics benchmarks pass
+     - validated reduced research boundary
+     - conserving Dougherty-like runtime model plus published reduced original/
+       improved-Sugama and Coulomb matrix, invariant, dissipation, relaxation,
+       and derivative gates. Full finite-:math:`b` multispecies promotion still
+       requires generated hierarchy, conductivity, ITG, zonal, and resolution
+       evidence.
    * - VMEC exact-periodic, continuous-drift, and fixed-aspect boundaries
      - validated, scoped
      - policy tests plus fixed-aspect W7-X/HSX comparison lanes
@@ -126,9 +130,10 @@ actually use the same physical and numerical contract.
    * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
      - not shipped
      - separate reduced models are outside the full-gyrokinetic release claim
-   * - Species/Hermite nonlinear multi-device execution
-     - planned
-     - replace failed whole-state sharding with ghost exchange and field reductions
+   * - Species/Hermite multi-device operator execution
+     - validated electrostatic operator route, scoped
+     - periodic and linked ``2 species x 2 Hermite`` identity gates pass;
+       mixed electromagnetic and four-physical-device evidence remain open
 
 A matched comparison must record the equations and normalization, geometry
 coefficients and parallel boundary, species conventions, perpendicular and
@@ -152,9 +157,9 @@ and wrote valid netCDF/restart outputs; at ``ky=0.3`` its terminal diagnostic is
 initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
 distinct validated scope is its Python/JAX API, differentiable objectives,
 implicit gradient paths, CPU execution, and in-memory ``vmec_jax``/
-``booz_xform_jax`` integration. Neither code currently justifies a broad claim
-of a complete linearized Landau operator; that capability remains a separately
-gated research lane.
+``booz_xform_jax`` integration. SPECTRAX-GK does not claim the complete finite-
+wavelength multispecies linearized Landau hierarchy: its published reduced
+Sugama/Coulomb slice remains a separately gated Python research boundary.
 
 Feature parity is intentionally not blanket parity. SPECTRAX-GK's required
 comparison scope is the standard electrostatic/electromagnetic gyrokinetic

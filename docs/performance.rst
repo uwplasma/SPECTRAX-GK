@@ -718,13 +718,14 @@ with about ``86%`` parallel efficiency. This closes the release engineering
 gate for quasilinear calibration grids, finite-difference checks, sensitivity
 sweeps, and UQ ensembles that can be decomposed into independent solver calls.
 
-The future nonlinear-decomposition promotion plan follows the same conservative
-rule. ``spectraxgk.build_velocity_sharding_plan`` records a species/Hermite
-species-first, Hermite-second velocity-space layout, including which axes need
-Hermite ghost exchange and which axes need field-solve reductions and
-broadcasts. This is planning metadata, not yet a nonlinear speedup path. It is
-used to keep future ``shard_map`` work explicit about communication before any
-transport-runtime claim is made.
+Nonlinear-decomposition promotion follows the same conservative rule.
+``spectraxgk.build_velocity_sharding_plan`` records a species-first,
+Hermite-second velocity-space layout, including which axes need Hermite ghost
+exchange and which axes need field-solve reductions and broadcasts. Periodic
+and linked ``2 species x 2 Hermite`` electrostatic operator routes now pass
+identity gates, but their communication evidence does not establish nonlinear
+transport speedup. Mixed electromagnetic integration and profiler-backed
+four-device evidence remain required before broadening that claim.
 
 The first concrete communication-kernel gate is the Hermite ghost exchange.
 It uses ``jax.shard_map`` to exchange nearest-neighbor Hermite moments across a
