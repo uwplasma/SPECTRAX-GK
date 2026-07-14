@@ -425,11 +425,12 @@ With that configuration, rerunning the same nonlinear command resumes from
 continued history to ``tools_out/cyclone_release.out.nc``. This is the
 recommended user-facing workflow for long nonlinear turbulence jobs.
 
-Geometry helper workflows
--------------------------
+Geometry generation workflows
+-----------------------------
 
-The runtime geometry path can generate imported geometry files from VMEC and
-Miller inputs when the external helper scripts are available:
+The runtime geometry path generates imported geometry files from VMEC or
+Miller inputs. VMEC uses the documented optional geometry bridge; Miller uses
+the in-package backend and needs no external helper:
 
 .. code-block:: bash
 

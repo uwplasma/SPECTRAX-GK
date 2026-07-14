@@ -119,7 +119,6 @@ from spectraxgk.geometry.kernels import _safe_denom, cumulative_trapezoid
 from spectraxgk.geometry.imported_miller import (
     _request_attr,
     generate_miller_eik_internal,
-    internal_miller_backend_available,
 )
 
 
@@ -202,11 +201,6 @@ def test_miller_collocation_preserves_signed_shift_derivative() -> None:
     assert d_rgeom_drho == pytest.approx(params.shift, rel=1.0e-6)
 
 
-def test_generate_miller_eik_internal_requires_request() -> None:
-    with pytest.raises(NotImplementedError):
-        generate_miller_eik_internal(output_path="/tmp/ignored.nc", request=None)
-
-
 def test_generate_miller_eik_internal_writes_netcdf(tmp_path: Path) -> None:
     out = generate_miller_eik_internal(
         output_path=tmp_path / "miller.eiknc.nc", request=_request()
@@ -221,10 +215,6 @@ def test_generate_miller_eik_internal_writes_netcdf(tmp_path: Path) -> None:
         assert ds.variables["theta"][:].size > 0
         assert float(ds.variables["q"].getValue()) == pytest.approx(1.4)
         assert float(ds.variables["shat"].getValue()) == pytest.approx(0.8)
-
-
-def test_internal_miller_backend_available_returns_bool() -> None:
-    assert isinstance(internal_miller_backend_available(), bool)
 
 
 # Runtime Miller eik request and generation contracts.
@@ -325,11 +315,8 @@ def test_generate_runtime_miller_eik_invokes_internal_generator(
     monkeypatch.setattr(
         "spectraxgk.geometry.miller_eik.generate_miller_eik_internal", mock_gen
     )
-    monkeypatch.setattr(
-        "spectraxgk.geometry.miller_eik.internal_miller_backend_available", lambda: True
-    )
-
-    out = generate_runtime_miller_eik(cfg)
+    out_path.write_bytes(b"stale")
+    out = generate_runtime_miller_eik(cfg, force=True)
 
     assert out == out_path.resolve()
     assert mock_gen.called
@@ -337,6 +324,23 @@ def test_generate_runtime_miller_eik_invokes_internal_generator(
     request = kwargs["request"]
     assert request.ntheta == 24
     assert request.q == 1.4
+
+
+def test_generate_runtime_miller_eik_reuses_existing_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out_path = tmp_path / "cached.eiknc.nc"
+    out_path.write_bytes(b"cached")
+    cfg = _miller_runtime_cfg(tmp_path, geometry_file=str(out_path))
+    mock_gen = MagicMock()
+    monkeypatch.setattr(
+        "spectraxgk.geometry.miller_eik.generate_miller_eik_internal", mock_gen
+    )
+
+    out = generate_runtime_miller_eik(cfg)
+
+    assert out == out_path.resolve()
+    mock_gen.assert_not_called()
 
 
 def test_internal_miller_request_attr_accepts_runtime_aliases() -> None:

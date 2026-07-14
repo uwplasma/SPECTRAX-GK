@@ -233,15 +233,17 @@ does not inject ``x0`` from the runtime ``Lx``. That keeps the generated
 ``*.eik.nc`` file aligned with the imported W7-X/HSX geometry output.
 
 For Miller tokamak workflows, the runtime also accepts ``model = "miller"``.
-In that mode SPECTRAX-GK calls the Miller geometry helper
-to generate a matching root-level ``*.eiknc.nc`` file, then immediately
-re-enters the same imported geometry path used for VMEC ``eik.nc`` files.
+In that mode SPECTRAX-GK uses its in-package Miller backend to generate a matching
+root-level ``*.eiknc.nc`` file, then immediately re-enters the same imported
+geometry path used for VMEC ``eik.nc`` files.
 Set the Miller inputs directly in ``[geometry]``:
 ``rhoc``, ``q``, ``s_hat``, ``R0``, optional ``R_geo``, ``shift``,
 ``akappa``, ``akappri``, ``tri``, ``tripri``, and ``betaprim``.
 ``geometry_file`` can be used as an explicit output path for the generated
-Miller ``*.eiknc.nc`` file, and ``geometry_helper_python`` applies here as well
-when the geometry helper must run in a different Python environment.
+Miller ``*.eiknc.nc`` file. Existing output is reused by default; pass
+``--force`` to ``spectraxgk geometry miller`` to regenerate it. The
+``geometry_helper_python`` and ``geometry_helper_repo`` settings apply to VMEC
+helper discovery, not to this in-package Miller backend.
 
 Executable path overrides
 ^^^^^^^^^^^^^^^^^^^^^^^^^

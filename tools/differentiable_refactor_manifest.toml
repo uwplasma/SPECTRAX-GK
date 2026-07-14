@@ -2537,7 +2537,6 @@ moved_exports = [
   "compute_primary_gradients",
   "compute_straight_field_theta",
   "generate_miller_eik_internal",
-  "internal_miller_backend_available",
   "rebuild_straight_theta_state",
   "write_miller_eik_netcdf",
 ]

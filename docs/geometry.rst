@@ -585,11 +585,13 @@ late-window comparison, so the shipped nonlinear W7-X example is now closed at
 startup, exact-state, and long-horizon levels.
 
 Tokamak Miller geometry now follows the same imported-geometry bridge pattern.
-With ``geometry.model = "miller"``, SPECTRAX-GK shells out to the existing
-Miller helper, generates the matching root-level ``*.eiknc.nc`` file, and then
-re-enters the same imported-geometry
-contract described above. This keeps the Miller lane geometry-honest without
-introducing a second hand-maintained Miller implementation in the runtime path.
+With ``geometry.model = "miller"``, the in-package geometry backend
+constructs the Miller surface, straight-field-line and equal-arc grids, metric
+and drift coefficients, writes a root-level ``*.eiknc.nc`` file, and then
+re-enters the same imported-geometry contract described above. An existing
+generated target is reused unless ``spectraxgk geometry miller --force`` is
+requested; this makes repeated runs cheap while keeping explicit regeneration
+available after changing an input deck.
 On the tracked Cyclone Miller parameters, the generated ``*.eiknc.nc`` file
 matches the clean GX grouped ``Geometry`` arrays to roundoff in the main
 metric and drift profiles. With the root-level open/closed theta inference
@@ -602,7 +604,8 @@ Two user-facing entry points now exercise that bridge:
 - ``spectraxgk geometry vmec --config ...`` generates a compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
 - ``spectraxgk geometry miller --config ...`` generates a compatible
-  Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
+  Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML, or reuses the
+  existing target when its path is already populated.
 - ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
   adiabatic-electron ITG case on the bundled QHS VMEC input deck after its

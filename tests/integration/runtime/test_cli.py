@@ -241,10 +241,6 @@ def test_cli_geometry_routes_vmec_and_miller_backends(
             str(tmp_path / "miller.toml"),
             "--out",
             str(tmp_path / "miller.nc"),
-            "--geometry-helper-python",
-            "python3.12",
-            "--geometry-helper-repo",
-            str(tmp_path / "helper"),
         ],
     )
     assert main() == 0
@@ -252,8 +248,7 @@ def test_cli_geometry_routes_vmec_and_miller_backends(
     assert kind == "miller"
     assert output_path == tmp_path / "miller.nc"
     assert force is False
-    assert runtime_cfg.geometry.geometry_helper_python == "python3.12"
-    assert runtime_cfg.geometry.geometry_helper_repo == str(tmp_path / "helper")
+    assert runtime_cfg is cfg
     assert loaded_configs == [tmp_path / "vmec.toml", tmp_path / "miller.toml"]
     assert "vmec.eik.nc" in capsys.readouterr().out
 
