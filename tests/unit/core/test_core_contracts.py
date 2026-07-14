@@ -12,6 +12,8 @@ import pytest
 import spectraxgk.config as public_config
 import spectraxgk.linear as public_linear
 import spectraxgk.nonlinear as public_nonlinear
+import spectraxgk.operators.linear as public_linear_operators
+import spectraxgk.operators.nonlinear.policies as public_nonlinear_policies
 from spectraxgk.config import (
     CycloneBaseCase,
     REFERENCE_ELECTRON_MASS,
@@ -115,8 +117,13 @@ def test_shape_and_differentiability_contracts_validate_core_metadata() -> None:
     [
         (public_linear, {"LinearParams", "build_linear_cache", "integrate_linear"}),
         (public_nonlinear, {"nonlinear_rhs_cached", "integrate_nonlinear"}),
+        (public_linear_operators, {"LinearCache", "build_H", "linear_rhs_cached"}),
+        (
+            public_nonlinear_policies,
+            {"NonlinearTimeStepPolicy", "build_nonlinear_time_step_policy"},
+        ),
     ],
-    ids=("linear", "nonlinear"),
+    ids=("linear", "nonlinear", "linear-operators", "nonlinear-policies"),
 )
 def test_solver_facade_exposes_only_supported_public_names(facade, required) -> None:
     assert facade.__all__
