@@ -807,281 +807,31 @@ status, and the long-window nonlinear audit anchor:
    needs new matched nonlinear ensemble sidecars before it can feed the same
    admission policy.
 
-For restart sweeps from an already optimized ``input.final``, pass
-``--disable-mode-continuation`` to
-``tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py``. That
-keeps the requested ``max_mode`` branch fixed instead of rebuilding the
-lower-mode continuation ladder, which is the efficient path for profile-floor,
-target-iota, and transport-weight refinements after a solved WOUT already
-passes the basic aspect/iota/QS gates.
+Historical Projected-Gradient Evidence
+--------------------------------------
 
-The driver also writes ``solved_wout_gate.json`` after each solve and fails
-closed by default if the final equilibrium violates the aspect, mean-iota,
-solved iota-profile, or quasisymmetry limits. This gate exists because a small
-transport residual is not useful if the optimizer has moved to a degraded
-equilibrium branch. Failed candidates can still be retained for diagnostics with
-``--allow-failed-solved-wout-gate``, but they should not be promoted to
-long-window nonlinear turbulent-flux audits.
+The projected-gradient, frozen-axis boundary-chain, and guarded-weight tools
+used for the following tracked artifacts targeted a VMEC-JAX optimizer API that
+has since been removed. They are no longer shipped as runnable campaign tools:
+emulating that object model would create a second equilibrium/optimizer stack
+and an ambiguous derivative convention. The JSON sidecars and figures remain
+as historical negative and conditioning evidence.
 
-Guarded transport-weight ladders should be run through the explicit
-orchestration tool rather than by manually picking a successful-looking
-``history.json``:
+New campaigns use current VMEC-JAX ``opt.least_squares`` directly. Growth-rate
+optimization uses its implicit equilibrium Jacobian and must pass the local
+SPECTRAX eigenbranch/tangent gates; eigenvector-weighted QL and reduced
+nonlinear objectives use finite-difference outer Jacobians. Candidate boundaries
+are replayed independently and evaluated with
+``evaluate_vmec_jax_spectrax_transport_metric.py`` before any matched nonlinear
+audit. This current path replaces the former private fixed-boundary stage,
+manual frozen-axis tape access, and projected-input writer.
 
-.. code-block:: bash
-
-   python tools/campaigns/run_vmec_jax_guarded_transport_ladder.py \
-     --constraints-dir runs/qa_constraints_only \
-     --outdir runs/qa_transport_ladder \
-     --weights 0.0005,0.001,0.0025,0.005 \
-     --driver-args "--max-mode 5 --min-vmec-mode 7 --mboz 21 --nboz 21"
-
-The tool restarts each transport candidate from the QA ``input.final``, keeps
-failed candidates for inspection, and selects only the largest transport weight
-whose final authoritative ``solved_wout_gate.json`` passes and whose selected
-lower-is-better transport metric improves relative to the admitted QA baseline.
-By default the ladder searches for ``transport_objective_final``,
-``spectrax_objective_final``, ``transport_metric_final``, then
-``objective_final`` as a last-resort proxy; use repeated
-``--transport-metric-key`` options when a run records a cleaner transport-only
-diagnostic, and ``--min-transport-improvement`` to require a nonzero relative
-improvement. The VMEC-JAX/SPECTRAX-GK optimization example writes
-``transport_objective_final`` into ``history.json`` after every completed solve,
-including constraints-only baselines, so production admission does not need to
-use total objective history except for legacy artifacts. If no transport-weight
-candidate satisfies both the physical gate and the transport-improvement gate,
-the QA-only WOUT remains the only admissible candidate for expensive matched
-long-window nonlinear audits. This is an admission policy, not a proof of
-reduced turbulent heat flux.
-
-When the guarded ladder preserves the solved-equilibrium gate but reports no
-improvement in the explicit transport metric, the next step is a local
-boundary-gradient diagnostic rather than another blind increase in the scalar
-transport weight:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_vmec_jax_transport_gradient_diagnostic.py \
-     --input runs/qa_constraints_only/input.final \
-     --out-json runs/qa_constraints_only/transport_gradient.json \
-     --max-mode 5 --min-vmec-mode 7 \
-     --mboz 21 --nboz 21 \
-     --transport-kind nonlinear_window_heat_flux \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.10,0.30,0.50 \
-     --surface-gradient-chunk-size 1 \
-     --solver-device gpu
-
-The diagnostic rebuilds a transport-only VMEC-JAX objective at the solved
-input, evaluates the residual and reverse scalar-gradient with respect to the
-active boundary coefficients, ranks the leading ``R``/``Z`` Fourier directions,
-and classifies the objective as either locally sensitive or locally
-flat/underconditioned. A sensitive report supports a constraint-preserving
-projected update or constrained line search along the leading components. A
-flat report means the transport observable, sample set, finite-difference
-scale, or nonlinear-window evidence must be changed before more optimization
-iterations are scientifically meaningful. The gradient diagnostic now uses the
-same fail-closed sample contract as the projected-input writer: the default is
-the 18-point ``3 x 2 x 3`` surface/field-line/``k_y`` set above, and
-single-point exploratory gradients require
-``--allow-underresolved-sample-set``. Such exploratory gradients are not valid
-admission evidence for long nonlinear audits.
-
-On 16 GB GPUs, keep ``--surface-gradient-chunk-size 1`` for the 18-point
-production contract. It computes raw residual gradients one surface at a time,
-combines them with the original weighted-mean sample weights, and applies the
-scalar transform once after aggregation. This is mathematically the same
-weighted-mean gradient path for ``mean``/``weighted_mean`` reductions, but it
-avoids materializing the full 18-sample reverse pass in one GPU allocation.
-
-Before using a VMEC-JAX/SPECTRAX-GK transport gradient for a projected update,
-rerun a small set of leading active-boundary components with central finite
-differences:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_vmec_jax_transport_gradient_diagnostic.py \
-     --input runs/qa_constraints_only/input.final \
-     --out-json runs/qa_constraints_only/transport_gradient_fd.json \
-     --max-mode 5 --min-vmec-mode 7 \
-     --mboz 21 --nboz 21 \
-     --transport-kind nonlinear_window_heat_flux \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.10,0.30,0.50 \
-     --surface-gradient-chunk-size 1 \
-     --fd-check-indices 22,24,27,28 \
-     --fd-check-step 1e-4 \
-     --require-fd-consistency \
-     --solver-device gpu
-
-The finite-difference check is intentionally opt-in because each checked
-coefficient requires two extra objective evaluations. With
-``--surface-gradient-chunk-size`` enabled, those plus/minus evaluations use the
-same chunked weighted-mean scalar residual as the reverse-gradient report, so
-the comparison is between the advertised AD gradient and the actual objective
-that would drive the line search. Exit code ``3`` means the reverse gradient and
-central finite differences disagree or the finite-difference signal is too
-small to be useful. In that case, do not promote the reverse gradient as
-end-to-end differentiability evidence; repair the VMEC/Boozer/SPECTRAX AD path
-or use sparse finite differences only as diagnostics.
-
-The historical tracked blocker artifact is
-``docs/_static/vmec_jax_transport_gradient_single_fd_gate.json``. It is an
-under-resolved single-sample diagnostic, not production admission evidence. It
-records the earlier failure mode where sparse central finite differences were
-nonzero but the reported reverse gradient was zero. That artifact remains a
-regression example, but the current validation path is more precise: use the
-chain probe below to separate final-state transport cotangents, raw exact-solve
-finite differences, frozen-axis initial-state finite differences, and VMEC-JAX
-exact-tape JVP/VJP replay.
-
-The SPECTRAX-GK growth-rate scalar used by this VMEC-JAX transport residual
-uses a branch-fixed implicit eigenvalue VJP rather than raw reverse-mode AD
-through non-Hermitian eigenvectors. The local solver-ready gates compare that
-VJP against central finite differences. The full VMEC-JAX/Boozer path still
-must pass the sparse coefficient checks above before a projected update is
-promoted, because branch changes, Boozer replay memory pressure, or
-ill-conditioned equilibria can invalidate an otherwise correct local
-eigenvalue derivative.
-
-The equal-arc VMEC/Boozer remap keeps the moving-coordinate sensitivity in the
-SPECTRAX-GK geometry path. Office diagnostics showed that nonfinite geometry
-cotangents originated one level upstream in ``booz_xform_jax`` inactive Fourier
-branches; safe denominators in those branches make VMEC state, Boozer input,
-Boozer output, and SPECTRAX-GK geometry profile gradients finite. The audited
-upstream fix is ``booz_xform_jax`` commit ``1d5e8c`` or newer.
-
-When sparse AD/FD checks fail, run the boundary-chain probe on one leading
-coefficient before changing the optimizer:
-
-.. code-block:: bash
-
-   python tools/campaigns/audit_vmec_jax_boundary_chain.py \
-     --input runs/qa_constraints_only/input.final \
-     --out-json runs/qa_constraints_only/boundary_chain_rc14.json \
-     --index 28 \
-     --step 1e-4 \
-     --max-mode 5 --min-vmec-mode 7 \
-     --transport-kind nonlinear_window_heat_flux \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.10,0.30,0.50 \
-     --mboz 21 --nboz 21 \
-     --inner-max-iter 500 --inner-ftol 1e-10
-
-The probe writes a ``summary`` generated by
-``spectraxgk.geometry.vmec_boundary_chain.build_boundary_chain_summary``. The key
-distinction is the VMEC-JAX optimizer's frozen-axis convention: the accepted
-magnetic-axis branch is held fixed when differentiating the boundary-to-initial
-state map. Raw plus/minus exact solves may move that initialization branch and
-can therefore disagree with the optimizer derivative even when the frozen-axis
-JVP and VJP are internally transposed.
-
-The latest clean-stack local audit used ``vmec_jax`` main commit ``f14787b``,
-``booz_xform_jax`` commit ``1d5e8c``, and the authoritative QA restart. With a
-short ``120``-iteration exact-solve budget, the raw ``rc14`` exact-solve finite
-difference was branch-sensitive: the raw initial-state FD norm was about
-``115`` times larger than the frozen-axis FD norm, while the frozen-axis tape
-JVP and VJP agreed to roundoff. Raising the exact-solve budget to ``500`` or
-``1000`` iterations reduced the same ``rc14`` cost-gradient AD/FD discrepancy
-to about ``7.5%`` at ``eps = 1e-4``. The interpretation is therefore not a
-generic SPECTRAX final-state derivative failure: the promoted derivative
-contract is frozen-axis, convergence-controlled, and must be checked with a
-sparse FD tolerance appropriate to the VMEC solve residual and branch
-conditioning. Raw exact-solve FD remains a diagnostic for convergence and
-branch sensitivity, not the sole definition of the optimizer derivative.
-
-A four-component follow-up at the same mode-21 Boozer resolution tested the
-previously nonzero finite-difference directions ``rc11``, ``rc12``, ``zs13``,
-and ``rc14``. The collection is mixed rather than promotion-ready: all four
-frozen-axis JVP/VJP contractions are internally transposed, but only ``zs13``
-and ``rc14`` agree with raw exact-solve FD within the 10% sparse gate. ``rc11``
-and ``rc12`` remain branch-sensitive, and increasing those two probes from
-``500`` to ``1000`` VMEC iterations did not improve agreement. The tracked
-summary is ``docs/_static/vmec_jax_boundary_chain_multicomponent.json``.
-
-.. image:: _static/vmec_jax_boundary_chain_multicomponent.png
-   :alt: Four-component VMEC-JAX boundary-chain audit showing exact finite-difference and frozen-axis replay gradients.
-   :width: 95%
-
-This result narrows the current differentiable-optimization scope: frozen-axis
-derivatives are usable as local diagnostics, but projected VMEC boundary updates
-must exclude or regularize branch-sensitive coefficients until a better
-conditioned finite-difference protocol or public solved-equilibrium
-linearization gate closes the mismatch.
-
-The backend-free projected line-search helpers accept the collection JSON
-through ``boundary_chain_collection`` and, by default, admit only coefficients
-that pass both frozen-axis replay and exact-FD agreement. The
-``require_boundary_chain_exact_fd=False`` path is diagnostic only and must not
-drive promoted VMEC boundary updates unless each branch-sensitive coefficient
-also carries ``frozen_axis_convention_verified = true``. That stricter gate
-checks the frozen-axis finite-difference tangent against VMEC-JAX's explicit
-tangent column and verifies both tape JVP/VJP contractions in that convention;
-internal JVP/VJP transpose alone is no longer sufficient. When the collection
-includes the growth-branch locality block from
-``tools/campaigns/audit_vmec_jax_boundary_chain.py --include-growth-branch-locality``,
-production projected-input generation should also use
-``--require-growth-branch-locality`` so a coefficient with a switched or
-under-isolated SPECTRAX growth branch is excluded before line-search replay.
-
-The latest strict-gate rerun used the clean ``vmec_jax_latest`` checkout, local
-``booz_xform_jax`` commit ``1d5e8c``, ``mboz = nboz = 21``, and the
-authoritative QA restart. The two nonzero directions rerun with growth-branch
-locality were ``rc14`` and ``zs13``. Exact-only admission correctly returns no
-rows because the raw exact-solve FD gradients still differ from the frozen-axis
-optimizer convention. Projected strict admission returns ``(28, 27)`` only
-because both rows pass growth-branch locality and the explicit frozen-axis
-convention gate: the frozen-axis finite-difference initial tangent matches the
-VMEC-JAX linear tangent to relative errors ``5.6e-11`` and ``4.2e-11``.
-This closes the convention-comparison diagnostic for projected directions; it
-does not by itself promote a nonlinear heat-flux optimization claim.
-
-After a sensitive diagnostic, generate bounded projected candidate inputs with:
-
-.. code-block:: bash
-
-   python tools/campaigns/write_vmec_jax_projected_transport_line_search_inputs.py \
-     --input runs/qa_constraints_only/input.final \
-     --gradient-json runs/qa_constraints_only/transport_gradient.json \
-     --boundary-chain-collection-json docs/_static/vmec_jax_boundary_chain_multicomponent.json \
-     --outdir runs/qa_projected_transport_line_search \
-     --steps 2.5e-4,5e-4,1e-3,2e-3 \
-     --top-n 12 \
-     --require-growth-branch-locality \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.10,0.30,0.50 \
-     --max-mode 5 --min-vmec-mode 7 \
-     --mboz 21 --nboz 21 \
-     --solver-device gpu
-
-The generated ``projected_line_search_inputs.json`` records the candidate
-``input.gradient_step`` decks, replay commands, and objective sample summary.
-The writer requires ``--boundary-chain-collection-json`` by default, records the
-accepted coefficient indices, and excludes branch-sensitive components. Ungated
-boundary updates require the explicit diagnostic override
-``--allow-ungated-boundary-chain``. The writer also fails closed if the
-transport objective does not satisfy the multi-surface/multi-field-line/multi-
-``k_y`` coverage gate. Exploratory single-point searches require
-``--allow-underresolved-sample-set`` and cannot be used for production
-nonlinear-audit admission. Each replay must still write an authoritative
-``solved_wout_gate.json`` and explicit transport metric before any candidate is
-admitted.
-
-The current aspect-6 QA restart is locally sensitive: the transport-only
-diagnostic gives ``||grad J||_2 = 0.421`` for a single
-``s=0.64, alpha=0, k_y rho_i=0.30`` nonlinear-window metric. A sparse projected
-line search along the leading 12 boundary components lowers the explicit metric
-from ``0.0580559`` to ``0.0559975`` at projected step ``1e-3`` while preserving
-the aspect, mean-iota, iota-profile, and QS gates. The next larger step
-``2e-3`` is rejected because the solved QS residual rises to ``0.119846`` above
-the ``0.05`` gate. This is evidence for a gate-aware projected-admission
-algorithm; it is not yet a long-window nonlinear turbulent-flux optimization
-claim. The matched nonlinear audit below shows that this historical
-single-point reduced metric did not transfer to long-window transport, so new
-projected candidates must use the multi-sample command above.
+The historical multicomponent audit found internally consistent frozen-axis
+JVP/VJP contractions but branch-sensitive exact-solve differences for some
+coefficients. The accepted projected step reduced its reduced single-sample
+metric but did not reduce the matched long-window nonlinear flux. Those results
+remain important guardrails: internal transpose consistency is insufficient,
+and reduced local objective descent is not a turbulent-transport claim.
 
 .. figure:: _static/vmec_jax_transport_gradient_line_search.svg
    :alt: VMEC-JAX transport-gradient line-search audit

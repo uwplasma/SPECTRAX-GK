@@ -279,7 +279,6 @@ def mapping_report_from_samples(
     }
 
 
-
 def _short_state_parameter(raw: str) -> str:
     return raw.removeprefix("state_control_")
 
@@ -599,7 +598,7 @@ def build_boundary_chain_collection_parser() -> argparse.ArgumentParser:
         type=Path,
         nargs="+",
         required=True,
-        help="One or more JSON files from tools/campaigns/audit_vmec_jax_boundary_chain.py.",
+        help="One or more historical or current boundary-chain probe JSON files.",
     )
     parser.add_argument("--out-json", type=Path, required=True)
     parser.add_argument("--exact-relative-tolerance", type=float, default=1.0e-1)
@@ -659,12 +658,8 @@ def main_bracket_sweep_status(argv: list[str] | None = None) -> int:
             {
                 "json": str(args.out_prefix.with_suffix(".json")),
                 "passed": report["passed"],
-                "central_fd_gates_passed": report["summary"][
-                    "central_fd_gates_passed"
-                ],
-                "central_fd_gates_total": report["summary"][
-                    "central_fd_gates_total"
-                ],
+                "central_fd_gates_passed": report["summary"]["central_fd_gates_passed"],
+                "central_fd_gates_total": report["summary"]["central_fd_gates_total"],
             },
             indent=2,
         )

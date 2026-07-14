@@ -337,35 +337,16 @@ the eigenvalue nearest to the base dominant eigenvalue for every configured
 surface, field line, and ``k_y`` sample. If the independently selected
 max-growth branch switches, or if the base branch is under-isolated, the report
 fails closed and labels the row before any transport-gradient optimization
-claim is admitted. The boundary-chain executable exposes the same check via:
+claim is admitted. Current VMEC-JAX exposes the equilibrium implicit derivative through its public
+optimization API. SPECTRAX-GK growth campaigns select that policy with
+``--jacobian implicit`` and retain the branch-locality report as a package-level
+physics gate. Historical frozen-axis boundary-chain artifacts remain in
+``docs/_static`` as conditioning evidence, but their private-tape executable was
+removed when VMEC-JAX retired that optimizer generation. New derivative claims
+require the current VMEC-JAX turbulence tangent tests, SPECTRAX eigenbranch
+locality checks, and an independent finite-difference comparison on the exact
+objective used by the campaign.
 
-.. code-block:: bash
-
-   PYTHONPATH=src:tools:$VMEC_JAX_ROOT \
-     python tools/campaigns/audit_vmec_jax_boundary_chain.py \
-       --input path/to/input.final \
-       --out-json tools_out/vmec_boundary_chain_probe.json \
-       --index 28 --step 2e-5 \
-       --transport-kind growth \
-       --include-growth-branch-locality
-
-This branch-locality block is a diagnostic admission gate. Passing it does not
-by itself promote nonlinear turbulent-flux optimization; it only says that the
-linear growth finite-difference stencil is measuring the local branch assumed
-by the implicit left/right eigenvalue derivative.
-When this block is present in a boundary-chain probe,
-``build_boundary_chain_collection_summary(...)`` carries
-``growth_branch_locality_checked``, ``growth_branch_locality_passed``, and the
-branch-locality classification into each collection row. The projected-update
-policy still fails closed on the stricter VMEC exact-FD/frozen-axis consistency
-gate; branch locality only localizes the failure mechanism and prevents a
-VMEC-convention issue from being misdiagnosed as a SPECTRAX eigenbranch switch.
-For projected transport line searches, ``boundary_chain_accepted_parameter_indices``
-and ``projected_line_search_input_manifest`` accept
-``require_growth_branch_locality=True`` to exclude any coefficient whose
-explicit branch-locality check is missing or failed. The default remains
-backward compatible because older boundary-chain collections did not contain
-this optional block.
 Assemble several probe JSON files into the collection consumed by the projected
 writer with:
 

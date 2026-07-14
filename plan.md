@@ -203,8 +203,8 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
-| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
-| Test consolidation | 94.5% | The 96-file topology target is met, and the suite has 93,669 lines after canonical-owner injection and current-API campaign contracts replaced facade and removed-optimizer compatibility tests. The largest artifact-tool owner is 6,227 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
+| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted; the enforced 95-tool target is met at 88,892 lines. |
+| Test consolidation | 96% | The enforced 95-file topology target is met, and the suite has 92,526 lines after current-API campaign contracts replaced removed-optimizer compatibility tests. The largest artifact-tool owner is 5,856 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
 | Source consolidation | 98.7% | The 223-file/zero-exception architecture gate passes after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver policy, and removing private compatibility exports and obsolete optimizer adapters from solver, operator, and VMEC transport facades. The package has 87,901 lines and no module at the 1,000-line ceiling; continue reducing near-ceiling owners without flattening meaningful staging boundaries. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
@@ -2303,3 +2303,15 @@ under 5 minutes.
   tests pass, generated baseline/growth/QL/nonlinear commands parse with the
   current driver, and strict Sphinx succeeds. Tool source falls to 91,243 lines
   and tests to 93,669 lines.
+
+- 2026-07-14: Deleted four experimental campaign tools totaling 2,346 lines
+  plus their 1,457-line compatibility-test/documentation surface. The guarded
+  weight ladder, projected-input writer, private-tape boundary-chain probe, and
+  transport-gradient builder all depended on VMEC-JAX symbols removed from
+  current ``main`` and could not execute. Their tracked JSON/figures remain as
+  historical conditioning and negative-transfer evidence. Current campaigns
+  use VMEC-JAX's public implicit equilibrium derivative for growth,
+  finite-difference outer Jacobians for eigenvector-weighted objectives,
+  independent WOUT replay, and matched nonlinear audits. Architecture now
+  enforces 95 tool and 95 test files; tool/test source falls to 88,892/92,526
+  lines without removing a current physics gate.
