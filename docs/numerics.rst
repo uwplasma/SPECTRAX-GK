@@ -636,7 +636,12 @@ coefficients from equation (3.10) reconstruct independent polynomials through
 order eight. The cancellation-sensitive basis transforms and test-/field-
 particle matrix contractions remain offline-generator work; these exact
 primitives must not be interpreted as a complete finite-:math:`b` Sugama or
-Coulomb operator.
+Coulomb operator. The required transform formulas have been located in
+`Jorge, Ricci & Loureiro (2017) <https://arxiv.org/abs/1709.01411>`_, Appendix
+A, equation (A4), and `Jorge, Frei & Ricci (2019)
+<https://arxiv.org/abs/1906.03252>`_, Appendix B, equations (B5)--(B6); their
+multiple-precision implementation and independent inverse gate are the next
+accepted step.
 
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
