@@ -29,6 +29,7 @@ from spectraxgk.operators.linear import (
     assemble_drift_kinetic_improved_sugama_matrix,
     assemble_drift_kinetic_sugama_matrix,
     DriftKineticSugamaOperator,
+    TabulatedMultispeciesCollisionOperator,
     drift_kinetic_improved_sugama_pair_matrices,
     drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
@@ -306,6 +307,86 @@ def test_multispecies_collision_pair_table_interpolates_and_applies_in_jax() -> 
         interpolate_collision_moment_matrix(grid, table[:, :1], jnp.asarray(0.4))
     with pytest.raises(ValueError, match="target-species-leading"):
         interpolate_collision_moment_matrix(grid, table, jnp.ones((3, 1)))
+
+
+def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> None:
+    """A constant pair table is identical to the reduced Sugama protocol path."""
+
+    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
+    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0, -1.0]),
+        density=density,
+        mass=mass,
+        temp=temperature,
+        vth=jnp.ones(2),
+        rho=jnp.asarray([1.0, 0.5]),
+        tz=jnp.asarray([1.0, -1.0]),
+    )
+    grid = build_spectral_grid(GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0))
+    geometry = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18)
+    cache = build_linear_cache(grid, geometry, params, Nl=2, Nm=4)
+    state = (
+        1.0e-3
+        * jnp.arange(2 * 2 * 4 * 2 * 2 * 4, dtype=jnp.float32).reshape(
+            2, 2, 4, 2, 2, 4
+        )
+    ).astype(jnp.complex64)
+    matrix = assemble_drift_kinetic_improved_sugama_matrix(
+        density, mass, temperature
+    )
+    table = jnp.stack([matrix, matrix], axis=2)
+    tabulated = TabulatedMultispeciesCollisionOperator(
+        jnp.asarray([0.0, 2.0], dtype=jnp.float32), table
+    )
+    reduced = DriftKineticSugamaOperator(matrix)
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.7,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    tabulated_rhs = jax.jit(
+        lambda value, operator: linear_rhs_cached(
+            value,
+            cache,
+            params,
+            terms=terms,
+            collision_operator=operator,
+        )[0]
+    )(state, tabulated)
+    reduced_rhs, _ = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        collision_operator=reduced,
+    )
+    np.testing.assert_allclose(
+        tabulated_rhs, reduced_rhs, rtol=3.0e-6, atol=3.0e-6
+    )
+    assert len(jax.tree_util.tree_leaves(tabulated)) == 2
+
+    bad_operator = TabulatedMultispeciesCollisionOperator(
+        jnp.asarray([0.0, 1.0]), jnp.zeros((2, 2, 8, 8))
+    )
+    with pytest.raises(ValueError, match="target, source, kperp"):
+        linear_rhs_cached(
+            state,
+            cache,
+            params,
+            terms=terms,
+            collision_operator=bad_operator,
+        )
 
 
 def test_collision_table_converges_for_physical_finite_larmor_operator() -> None:

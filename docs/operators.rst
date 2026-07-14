@@ -353,6 +353,14 @@ gyroradius convention, and return the spatial matrix layout consumed directly
 by ``apply_multispecies_collision_moment_matrix``. The resulting matrix may
 vary at every perpendicular/parallel grid point without leaving traced JAX
 execution.
+``TabulatedMultispeciesCollisionOperator`` exposes this boundary through the
+standard collision protocol. It is a JAX pytree containing the coefficient
+grid and fully assembled, collision-frequency-weighted pair table; its
+``apply`` method obtains :math:`k_\perp\rho_s=\sqrt{b_s}` from the solver cache,
+interpolates each target/source block, and acts on the post-field Hamiltonian.
+A constant-table full-RHS gate is identical to
+``DriftKineticSugamaOperator``. Generated tables, rather than the runtime
+operator, own directed-frequency normalization and coefficient provenance.
 Tests require node and endpoint identity, generated-table/direct-equation
 identity for both models, species-local spatial application, and JVP/finite-
 difference agreement through state amplitude, collision frequency, and an

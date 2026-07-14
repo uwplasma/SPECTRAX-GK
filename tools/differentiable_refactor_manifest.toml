@@ -1936,6 +1936,7 @@ moved_exports = [
   "interpolate_collision_moment_matrix",
   "apply_collision_moment_matrix",
   "apply_multispecies_collision_moment_matrix",
+  "TabulatedMultispeciesCollisionOperator",
 ]
 fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/operators/test_operator_kernels.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

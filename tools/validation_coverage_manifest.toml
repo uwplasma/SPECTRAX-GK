@@ -331,6 +331,7 @@ physics_contracts = [
   "cached gyroaverages, drifts, magnetic geometry, and damping factors preserve the operator seen by RHS kernels",
   "species-dependent collision and hypercollision factors keep the intended multi-species broadcast semantics",
   "ordered target/source finite-wavelength collision tables preserve the zero-kperp multispecies invariant boundary before any full Sugama/Coulomb promotion",
+  "the tabulated collision protocol acts on the post-field Hamiltonian and is full-RHS identical to the reduced Sugama protocol for a constant pair table",
 ]
 numerics_contracts = [
   "LinearCache remains a stable JAX pytree with deterministic flatten/unflatten ordering",
