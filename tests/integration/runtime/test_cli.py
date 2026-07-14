@@ -101,6 +101,13 @@ def test_cli_without_args_runs_default_demo(
     assert (tmp_path / "spectraxgk_default_linear.summary.json").exists()
 
 
+def test_cli_help_advertises_default_demo_and_plot_route() -> None:
+    help_text = cli.build_parser().format_help()
+
+    assert "without arguments for the self-contained linear demo" in help_text
+    assert "--plot OUTPUT_FILE" in help_text
+
+
 def test_cli_global_plot_uses_saved_output_renderer(
     capsys, monkeypatch, tmp_path: Path
 ) -> None:
