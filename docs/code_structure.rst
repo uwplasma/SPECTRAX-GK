@@ -455,7 +455,10 @@ Completed extractions:
   replicated long-window transport extraction, matched baseline-to-optimized
   audit gates, safety gates, promotion gates, evidence-gap accounting, and
   summary assembly so release safety and production-claim promotion cannot be
-  conflated. Replicate-spread diagnostics now live in
+  conflated. Explicit finite comparison metrics take precedence over fallback
+  statistics, including a physical zero; zero uncertainty separation can
+  therefore never be replaced by a stale positive fallback and accidentally
+  promote an audit. Replicate-spread diagnostics now live in
   ``diagnostics/nonlinear_replicates.py`` and stage ensemble row normalization,
   high/low variant selection, state classification, replicate-row packing, and
   summary assembly. The same owner builds seed/timestep artifact-readiness

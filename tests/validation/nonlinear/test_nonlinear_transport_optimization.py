@@ -346,6 +346,20 @@ def test_matched_optimized_transport_report_requires_reduction_and_uncertainty()
     )
 
 
+def test_matched_transport_explicit_zero_uncertainty_overrides_fallback() -> None:
+    payload = _matched_audit_payload()
+    comparison = payload["comparison"]
+    assert isinstance(comparison, dict)
+    comparison["uncertainty_separation_sigma"] = 0.0
+    payload["statistics"] = {"uncertainty_z_score": 8.0}
+
+    report = matched_optimized_transport_report("zero_sigma.json", payload)
+
+    assert report["uncertainty_separation_sigma"] == 0.0
+    assert report["uncertainty_separation_ok"] is False
+    assert report["qualifies_for_production_optimization"] is False
+
+
 def test_strict_matched_comparison_schema_is_counted_as_negative_evidence() -> None:
     report = matched_optimized_transport_report(
         "strict_t1500.json",

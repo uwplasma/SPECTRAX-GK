@@ -54,11 +54,11 @@ Date: 2026-07-14.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 226 | reviewed domain ownership | closed |
+| Installable source Python files | 223 | reviewed domain ownership | closed |
 | Source modules above 1000 lines | 0 | 0 unreviewed | closed |
 | Public/compatibility facade maximum | 472 lines | <=500 lines | closed |
-| Tool Python files | 99 | <=99 grouped commands; no duplicate owners | closed |
-| Test Python files | 96 | domain-organized; no duplicate behavior | closed for count, active for structure |
+| Tool Python files | 95 | <=95 grouped commands; no duplicate owners | closed |
+| Test Python files | 95 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | compile-heavy nonlinear owner retained in bounded node batches; exact x64 coverage passes locally | pass | active pending CI |
@@ -203,9 +203,9 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
-| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted; the enforced 95-tool target is met at 88,892 lines. |
-| Test consolidation | 97% | The enforced 95-file topology target is met, and the suite has 92,436 lines after current-API campaign contracts replaced removed-optimizer compatibility tests and status-dashboard metrics moved to exact mapping-subset assertions. The largest artifact-tool owner is 5,782 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
-| Source consolidation | 99.4% | The 223-file/zero-exception architecture gate passes after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver/cache/workflow/gradient/nonlinear-report policy, and removing private compatibility exports and obsolete optimizer adapters from solver, operator, VMEC transport, and nonlinear-parallel facades. The package has 87,434 lines and no module at the 1,000-line ceiling; continue reducing near-ceiling owners without flattening meaningful staging boundaries. |
+| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted; the enforced 95-tool target is met at 88,900 lines. |
+| Test consolidation | 97% | The enforced 95-file topology target is met, and the suite has 92,458 lines after current-API campaign contracts replaced removed-optimizer compatibility tests, status-dashboard metrics moved to exact mapping-subset assertions, and installed-wheel/nonlinear-gate regressions were added. The largest artifact-tool owner is 5,782 lines and the runtime runner is 4,222; status evidence and seven EIK geometry protocols use shared fixtures while retaining every physics/normalization distinction. Continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
+| Source consolidation | 99.4% | The 223-file/zero-exception architecture gate passes after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver/cache/workflow/gradient/nonlinear-report policy, and removing private compatibility exports and obsolete optimizer adapters from solver, operator, VMEC transport, and nonlinear-parallel facades. The package has 87,453 lines and no module at the 1,000-line ceiling; continue reducing near-ceiling owners without flattening meaningful staging boundaries. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
 | Advanced collision operators | 98% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and target/source species/spatial JAX application reproduce the direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring arbitrary generated couplings plus conductivity, ITG, zonal, and convergence gates. |
@@ -2455,3 +2455,13 @@ under 5 minutes.
   environment and verify the package, parallel facade, plotting help, and both
   ``spectraxgk`` executable spellings before publication. The focused parallel,
   executable, and release tranche passes 177 tests with one expected skip.
+
+- 2026-07-14: Fixed a fail-open edge case in matched nonlinear transport
+  promotion. Uncertainty extraction used truth-value fallback, so an explicit
+  finite ``0.0`` separation could be replaced by a stale positive statistic.
+  Metric precedence now selects the first finite value without treating zero
+  as absent, and a regression proves that zero separation blocks promotion.
+  Repeated artifact-row decoding and guard-summary plumbing were consolidated
+  at the same time, reducing the owner from 966 to 954 lines. All 108 direct
+  nonlinear-optimization and release tests pass; thresholds and report schemas
+  are unchanged.
