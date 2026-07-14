@@ -422,9 +422,9 @@ basis-transform coefficients are cancellation-sensitive. Their provenance is
 now closed: the base transform is Appendix A, equation (A4), of
 `Jorge, Ricci & Loureiro (2017) <https://arxiv.org/abs/1709.01411>`_, and the
 finite-:math:`m` transform and inverse are Appendix B, equations (B5)--(B6), of
-`Jorge, Frei & Ricci (2019) <https://arxiv.org/abs/1906.03252>`_. Implementing
-those sums with independent projection/inverse gates is the next generator
-block.
+`Jorge, Frei & Ricci (2019) <https://arxiv.org/abs/1906.03252>`_. Both formulas
+were audited against their defining basis identity rather than accepted as
+printed.
 
 The isotropic base transform and inverse are now implemented in the offline
 generator from equations (A4) and (A3), respectively. Selected coefficients
@@ -434,11 +434,18 @@ projections, including the hand identities :math:`cP_1=H_1/2` and
 12 with maximum error ``8.73e-15`` even though that shell's condition number is
 ``1.93e8``. All nested sums remain multiprecision until the final table cast.
 
-A direct equation-(B5) audit is intentionally not shipped yet: under the
-paper's stated associated-Legendre convention, literal transcription gives
-half the independently projected :math:`m=0` coefficients and the opposite
-sign for odd :math:`m`. The required endpoint and pointwise reconstruction
-gates therefore reject it pending a convention-corrected derivation.
+The finite-:math:`m` forward transform is now generated as a complete lower-
+triangular parity block. Under SciPy's associated-Legendre convention, a
+literal equation-(B5) transcription gives half the independently projected
+:math:`m=0` coefficients and the opposite sign for odd :math:`m`; the required
+factor :math:`2(-1)^m` is fixed independently by the :math:`m=0` endpoint,
+eight velocity-space projections, and pointwise reconstruction. Unlike the
+isotropic map, every lower reduced-degree shell of the same parity is retained.
+Even and odd blocks through reduced degree six reconstruct the physical basis
+for :math:`m=0,1,2,3`. Literal equation (B6) fails the finite-:math:`m` inverse
+identity, so the accepted inverse is formed from the complete 80-digit block
+before the final ``float64`` table cast. This closes coefficient generation,
+not the test-/field-particle contractions or their transport validation.
 
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the

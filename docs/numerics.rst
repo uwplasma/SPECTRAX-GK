@@ -640,16 +640,20 @@ Coulomb operator. The required transform formulas have been located in
 `Jorge, Ricci & Loureiro (2017) <https://arxiv.org/abs/1709.01411>`_, Appendix
 A, equation (A4), and `Jorge, Frei & Ricci (2019)
 <https://arxiv.org/abs/1906.03252>`_, Appendix B, equations (B5)--(B6); their
-multiple-precision implementation and independent inverse gate are the next
-accepted step.
+printed normalization is checked against the defining basis identity rather
+than treated as an independent source of truth.
 
 That isotropic transform is now implemented with 80-digit nested sums and only
 casts at the generated-table boundary. Independent velocity quadrature and
 forward/inverse shell products pass through total degree 12, including a shell
 with condition number above :math:`10^8`. The finite-:math:`m` extension remains
-blocked by a reproducible normalization/sign discrepancy between a literal
-equation-(B5) transcription and its defining projection; no coefficient table
-uses that unresolved path.
+implemented as lower-triangular parity blocks through reduced degree six for
+:math:`m=0,1,2,3`. A convention factor :math:`2(-1)^m` is required for direct
+velocity projection and pointwise basis reconstruction. Because literal
+equation (B6) does not invert the finite-:math:`m` blocks, the generator inverts
+the full forward matrix with 80-digit arithmetic and casts only the accepted
+table. Complete collision contractions and conductivity, ITG, zonal-response,
+and velocity-resolution gates remain required before runtime promotion.
 
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,

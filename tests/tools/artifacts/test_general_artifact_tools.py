@@ -1806,19 +1806,21 @@ def test_coulomb_speed_integrals_match_independent_quadrature() -> None:
         e_values, E_values = mod.coulomb_speed_integrals(5, chi, digits=80)
         for order in range(6):
             e_reference = quad(
-                lambda speed: speed ** (2 * order)
-                * 2.0
-                / np.sqrt(np.pi)
-                * np.exp(-((chi * speed) ** 2))
-                * np.exp(-(speed**2)),
+                lambda speed: (
+                    speed ** (2 * order)
+                    * 2.0
+                    / np.sqrt(np.pi)
+                    * np.exp(-((chi * speed) ** 2))
+                    * np.exp(-(speed**2))
+                ),
                 0.0,
                 np.inf,
                 epsabs=1.0e-13,
             )[0]
             E_reference = quad(
-                lambda speed: speed ** (2 * order + 1)
-                * erf(chi * speed)
-                * np.exp(-(speed**2)),
+                lambda speed: (
+                    speed ** (2 * order + 1) * erf(chi * speed) * np.exp(-(speed**2))
+                ),
                 0.0,
                 np.inf,
                 epsabs=1.0e-13,
@@ -1978,6 +1980,154 @@ def test_legendre_hermite_laguerre_transform_matches_velocity_projection() -> No
         mod.hermite_laguerre_to_legendre_coefficient(-1, 0, 0, 0)
     with pytest.raises(ValueError, match="digits"):
         mod.hermite_laguerre_to_legendre_coefficient(0, 0, 0, 0, digits=10)
+
+
+def test_associated_basis_transform_matches_velocity_projection() -> None:
+    """Jorge et al. finite-m coefficients must match direct projection."""
+    from scipy.special import eval_genlaguerre, eval_hermite, eval_laguerre, lpmv
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    parallel, parallel_weights = np.polynomial.hermite.hermgauss(80)
+    perpendicular, perpendicular_weights = np.polynomial.laguerre.laggauss(80)
+    x_parallel = parallel[:, None]
+    x_perpendicular = perpendicular[None, :]
+    speed = np.sqrt(x_parallel**2 + x_perpendicular)
+    pitch = x_parallel / speed
+    cases = (
+        (1, 0, 1, 0, 0),
+        (2, 0, 1, 1, 0),
+        (3, 0, 1, 0, 0),  # A genuine lower-shell coefficient.
+        (3, 0, 1, 2, 0),
+        (3, 0, 1, 0, 1),
+        (4, 0, 2, 0, 0),
+        (4, 0, 2, 2, 0),
+        (5, 1, 3, 0, 0),
+    )
+    for (
+        legendre_order,
+        radial_order,
+        bessel_order,
+        hermite_order,
+        laguerre_order,
+    ) in cases:
+        coefficient = mod.associated_legendre_to_hermite_laguerre_coefficient(
+            legendre_order,
+            radial_order,
+            bessel_order,
+            hermite_order,
+            laguerre_order,
+            digits=80,
+        )
+        left_basis = (
+            speed**legendre_order
+            * lpmv(bessel_order, legendre_order, pitch)
+            * eval_genlaguerre(
+                radial_order,
+                legendre_order + 0.5,
+                speed**2,
+            )
+            / x_perpendicular ** (bessel_order / 2)
+        )
+        right_basis = eval_hermite(hermite_order, x_parallel) * eval_laguerre(
+            laguerre_order,
+            x_perpendicular,
+        )
+        projected = np.sum(
+            parallel_weights[:, None]
+            * perpendicular_weights[None, :]
+            * left_basis
+            * right_basis
+        ) / (np.sqrt(np.pi) * 2**hermite_order * math.factorial(hermite_order))
+        np.testing.assert_allclose(coefficient, projected, rtol=3.0e-11, atol=2.0e-10)
+
+    # The convention-corrected m=0 endpoint is exactly the isotropic map.
+    for orders in ((0, 0, 0, 0), (2, 1, 2, 1), (4, 2, 0, 4)):
+        legendre_order, radial_order, hermite_order, laguerre_order = orders
+        finite_order = mod.associated_legendre_to_hermite_laguerre_coefficient(
+            legendre_order,
+            radial_order,
+            0,
+            hermite_order,
+            laguerre_order,
+        )
+        isotropic = mod.legendre_to_hermite_laguerre_coefficient(*orders)
+        np.testing.assert_allclose(finite_order, isotropic, rtol=2.0e-14, atol=2.0e-14)
+
+
+def test_associated_basis_transform_reconstructs_and_inverts_parity_blocks() -> None:
+    """Finite-m lower-triangular blocks must reconstruct the physical basis."""
+    from scipy.special import eval_genlaguerre, eval_hermite, eval_laguerre, lpmv
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    sample_points = ((0.2, 0.4), (-0.7, 1.3), (1.1, 0.15))
+    largest_error = 0.0
+    for bessel_order in range(4):
+        for maximum_degree in (5, 6):
+            right_orders, left_orders, forward, inverse = (
+                mod.associated_basis_transform_matrices(
+                    bessel_order,
+                    maximum_degree,
+                    digits=80,
+                )
+            )
+            np.testing.assert_allclose(
+                inverse @ forward,
+                np.eye(len(left_orders)),
+                rtol=3.0e-12,
+                atol=2.0e-11,
+            )
+            for column, (legendre_order, radial_order) in enumerate(left_orders):
+                for parallel, perpendicular_squared in sample_points:
+                    speed = np.sqrt(parallel**2 + perpendicular_squared)
+                    pitch = parallel / speed
+                    expected = (
+                        speed**legendre_order
+                        * lpmv(bessel_order, legendre_order, pitch)
+                        * eval_genlaguerre(
+                            radial_order,
+                            legendre_order + 0.5,
+                            speed**2,
+                        )
+                    )
+                    right_basis = np.asarray(
+                        [
+                            eval_hermite(hermite_order, parallel)
+                            * eval_laguerre(laguerre_order, perpendicular_squared)
+                            * perpendicular_squared ** (bessel_order / 2)
+                            for hermite_order, laguerre_order in right_orders
+                        ]
+                    )
+                    error = abs(expected - right_basis @ forward[:, column])
+                    largest_error = max(largest_error, float(error))
+    assert largest_error < 3.0e-10
+
+
+def test_associated_basis_transform_precision_and_validation() -> None:
+    """Finite-m generation must retain cancellation accuracy and reject bad orders."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    coefficient_40 = mod.associated_legendre_to_hermite_laguerre_coefficient(
+        9, 2, 3, 4, 2, digits=40
+    )
+    coefficient_100 = mod.associated_legendre_to_hermite_laguerre_coefficient(
+        9, 2, 3, 4, 2, digits=100
+    )
+    np.testing.assert_allclose(coefficient_40, coefficient_100, rtol=3.0e-14)
+
+    assert mod.associated_legendre_to_hermite_laguerre_coefficient(3, 0, 1, 4, 0) == 0.0
+    with pytest.raises(ValueError, match="basis orders"):
+        mod.associated_legendre_to_hermite_laguerre_coefficient(-1, 0, 0, 0, 0)
+    with pytest.raises(ValueError, match="bessel_order"):
+        mod.associated_legendre_to_hermite_laguerre_coefficient(1, 0, 2, 0, 0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.associated_legendre_to_hermite_laguerre_coefficient(
+            1, 0, 1, 0, 0, digits=10
+        )
+    with pytest.raises(ValueError, match="bessel_order"):
+        mod.associated_basis_transform_matrices(-1, 2)
+    with pytest.raises(ValueError, match="maximum_reduced_degree"):
+        mod.associated_basis_transform_matrices(0, -1)
+    with pytest.raises(ValueError, match="digits"):
+        mod.associated_basis_transform_matrices(0, 2, digits=10)
 
 
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:

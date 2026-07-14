@@ -132,19 +132,50 @@ def associated_laguerre_monomial_coefficients(
     import mpmath as mp
 
     with mp.workdps(digits):
-        half = mp.mpf("0.5")
-        numerator = mp.gamma(tensor_order + polynomial_order + 1 + half)
         coefficients = [
-            (-1) ** ell
-            * numerator
-            / (
-                mp.factorial(polynomial_order - ell)
-                * mp.gamma(ell + tensor_order + 1 + half)
-                * mp.factorial(ell)
+            _associated_laguerre_monomial_coefficient_mp(
+                polynomial_order,
+                tensor_order,
+                ell,
+                mp,
             )
             for ell in range(polynomial_order + 1)
         ]
     return np.asarray([float(value) for value in coefficients])
+
+
+def _associated_laguerre_monomial_coefficient_mp(
+    polynomial_order: int,
+    tensor_order: int,
+    monomial_order: int,
+    mp: Any,
+) -> Any:
+    half = mp.mpf("0.5")
+    return (
+        (-1) ** monomial_order
+        * mp.gamma(tensor_order + polynomial_order + 1 + half)
+        / (
+            mp.factorial(polynomial_order - monomial_order)
+            * mp.gamma(monomial_order + tensor_order + 1 + half)
+            * mp.factorial(monomial_order)
+        )
+    )
+
+
+def _legendre_monomial_coefficient_mp(order: int, power: int, mp: Any) -> Any:
+    if power < 0 or power > order or (order - power) % 2:
+        return mp.mpf(0)
+    half_difference = (order - power) // 2
+    return (
+        (-1) ** half_difference
+        * mp.factorial(order + power)
+        / (
+            mp.power(2, order)
+            * mp.factorial(half_difference)
+            * mp.factorial((order + power) // 2)
+            * mp.factorial(power)
+        )
+    )
 
 
 def _nonnegative_binomial(n: int, k: int, mp: Any) -> Any:
@@ -290,6 +321,214 @@ def hermite_laguerre_to_legendre_coefficient(
         )
         inverse = factor * forward
     return float(inverse)
+
+
+def _associated_legendre_to_hermite_laguerre_mp(
+    legendre_order: int,
+    radial_order: int,
+    bessel_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    mp: Any,
+) -> Any:
+    left_degree = legendre_order + 2 * radial_order - bessel_order
+    right_degree = hermite_order + 2 * laguerre_order
+    if right_degree > left_degree or (left_degree - right_degree) % 2:
+        return mp.mpf(0)
+
+    half = mp.mpf("0.5")
+    total = mp.mpf(0)
+    for auxiliary_radial_order in range(right_degree // 2 + 1):
+        auxiliary_legendre_order = right_degree - 2 * auxiliary_radial_order
+        base_transform = _legendre_to_hermite_laguerre_mp(
+            auxiliary_legendre_order,
+            auxiliary_radial_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+        )
+        prefactor = (
+            base_transform
+            * (auxiliary_legendre_order + half)
+            * mp.factorial(auxiliary_radial_order)
+            / mp.gamma(
+                auxiliary_legendre_order + auxiliary_radial_order + mp.mpf("1.5")
+            )
+        )
+        inner = mp.mpf(0)
+        for left_monomial in range(radial_order + 1):
+            left_laguerre = _associated_laguerre_monomial_coefficient_mp(
+                radial_order,
+                legendre_order,
+                left_monomial,
+                mp,
+            )
+            for auxiliary_monomial in range(auxiliary_radial_order + 1):
+                auxiliary_laguerre = _associated_laguerre_monomial_coefficient_mp(
+                    auxiliary_radial_order,
+                    auxiliary_legendre_order,
+                    auxiliary_monomial,
+                    mp,
+                )
+                for left_power in range(bessel_order, legendre_order + 1):
+                    left_legendre = _legendre_monomial_coefficient_mp(
+                        legendre_order,
+                        left_power,
+                        mp,
+                    )
+                    if left_legendre == 0:
+                        continue
+                    derivative_factor = mp.factorial(left_power) / mp.factorial(
+                        left_power - bessel_order
+                    )
+                    for auxiliary_power in range(auxiliary_legendre_order + 1):
+                        auxiliary_legendre = _legendre_monomial_coefficient_mp(
+                            auxiliary_legendre_order,
+                            auxiliary_power,
+                            mp,
+                        )
+                        parity_factor = 1 + (-1) ** (
+                            left_power + auxiliary_power - bessel_order
+                        )
+                        if auxiliary_legendre == 0 or parity_factor == 0:
+                            continue
+                        velocity_power_integral = mp.gamma(
+                            left_monomial
+                            + auxiliary_monomial
+                            + mp.mpf(
+                                legendre_order
+                                + auxiliary_legendre_order
+                                - bessel_order
+                                + 3
+                            )
+                            / 2
+                        )
+                        inner += (
+                            left_laguerre
+                            * auxiliary_laguerre
+                            * left_legendre
+                            * auxiliary_legendre
+                            * derivative_factor
+                            * parity_factor
+                            * velocity_power_integral
+                            / (2 * (left_power + auxiliary_power + 1 - bessel_order))
+                        )
+        total += prefactor * inner
+
+    # Equation (B5) is half-normalized at m=0 and has the opposite odd-m
+    # phase under scipy's associated-Legendre convention.  This factor is
+    # fixed by the m=0 endpoint and independent velocity-space projection.
+    return 2 * (-1) ** bessel_order * total
+
+
+def associated_legendre_to_hermite_laguerre_coefficient(
+    legendre_order: int,
+    radial_order: int,
+    bessel_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    *,
+    digits: int = 80,
+) -> float:
+    r"""Return a finite-Bessel-order collision-basis coefficient.
+
+    This is the convention-corrected forward transform from equation (B5) of
+    Jorge, Frei & Ricci (2019).  Unlike the isotropic transform, finite
+    ``bessel_order`` couples every lower reduced-degree shell of the same
+    parity.
+    """
+
+    indices = (
+        legendre_order,
+        radial_order,
+        bessel_order,
+        hermite_order,
+        laguerre_order,
+    )
+    if any(index < 0 for index in indices):
+        raise ValueError("basis orders must be >= 0")
+    if bessel_order > legendre_order:
+        raise ValueError("bessel_order must be <= legendre_order")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        coefficient = _associated_legendre_to_hermite_laguerre_mp(
+            legendre_order,
+            radial_order,
+            bessel_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+        )
+    return float(coefficient)
+
+
+def associated_basis_transform_matrices(
+    bessel_order: int,
+    maximum_reduced_degree: int,
+    *,
+    digits: int = 80,
+) -> tuple[
+    tuple[tuple[int, int], ...],
+    tuple[tuple[int, int], ...],
+    np.ndarray,
+    np.ndarray,
+]:
+    r"""Generate and invert one finite-``m`` parity block.
+
+    The block contains all nonnegative reduced-degree shells with the parity
+    of ``maximum_reduced_degree``.  Rows are Hermite--Laguerre ``(p, j)``
+    orders, columns are associated Legendre--Laguerre ``(l, k)`` orders, and
+    both order tuples are sorted by increasing reduced degree.  The inverse is
+    formed from the complete multiprecision block rather than equation (B6),
+    whose literal finite-``m`` normalization fails the inverse identity.
+    """
+
+    if bessel_order < 0:
+        raise ValueError("bessel_order must be >= 0")
+    if maximum_reduced_degree < 0:
+        raise ValueError("maximum_reduced_degree must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    parity = maximum_reduced_degree % 2
+    right_orders = tuple(
+        (degree - 2 * radial_order, radial_order)
+        for degree in range(parity, maximum_reduced_degree + 1, 2)
+        for radial_order in range(degree // 2 + 1)
+    )
+    left_orders = tuple(
+        (bessel_order + degree - 2 * radial_order, radial_order)
+        for degree in range(parity, maximum_reduced_degree + 1, 2)
+        for radial_order in range(degree // 2 + 1)
+    )
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        forward_mp = mp.matrix(
+            [
+                [
+                    _associated_legendre_to_hermite_laguerre_mp(
+                        legendre_order,
+                        radial_order,
+                        bessel_order,
+                        hermite_order,
+                        laguerre_order,
+                        mp,
+                    )
+                    for legendre_order, radial_order in left_orders
+                ]
+                for hermite_order, laguerre_order in right_orders
+            ]
+        )
+        inverse_mp = forward_mp**-1
+        forward = np.asarray(forward_mp.tolist(), dtype=np.float64)
+        inverse = np.asarray(inverse_mp.tolist(), dtype=np.float64)
+    return right_orders, left_orders, forward, inverse
 
 
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
