@@ -2382,3 +2382,16 @@ under 5 minutes.
   and coverage manifests, and strict Sphinx. Installable source is 87,467
   lines. The two 299-line replicate unit owners remain separate because one
   tests package diagnostics and the other tests campaign planning.
+
+- 2026-07-14: Preserved useful Krylov progress when a preconditioned
+  shift-invert solve fails its true shifted-system residual check. The
+  unpreconditioned retry now starts from the rejected finite iterate instead of
+  discarding it and restarting from the right-hand side; a focused regression
+  fixes that contract. On the physical KBM audit this reduced the residual from
+  the tracked ``0.980704`` baseline to ``0.935747`` at full
+  ``Nl=16, Nm=48, Nz=96`` resolution (``134.2 s``, ``0.92 GB`` peak RSS), and
+  to ``0.583557`` at ``Nl=8, Nm=24``. Both remain above the unchanged ``0.1``
+  acceptance gate, so the experimental eigensolver remains fail-closed and no
+  branch claim is promoted. The next bounded solver action is the planned
+  field-coupled preconditioner, followed by a branch-preserving thick restart
+  only if that physical residual remains inadequate.

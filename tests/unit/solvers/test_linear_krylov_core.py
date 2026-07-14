@@ -369,7 +369,7 @@ def test_shift_invert_retries_preconditioned_false_convergence(
     """A small preconditioned residual must not hide a bad physical solve."""
 
     _grid, cache, params, v0, term_cfg, _terms = _tiny_krylov_setup(linked=False)
-    calls: list[bool] = []
+    calls: list[tuple[bool, jnp.ndarray]] = []
     monkeypatch.setattr(
         ka,
         "_build_shift_invert_precond",
@@ -377,9 +377,9 @@ def test_shift_invert_retries_preconditioned_false_convergence(
     )
     monkeypatch.setattr(ka, "_apply_operator", lambda value, *_args: value)
 
-    def fake_gmres(_matvec, b, *, M, **_kwargs):
-        calls.append(M is not None)
-        solution = jnp.zeros_like(b) if M is not None else b
+    def fake_gmres(_matvec, b, *, M, x0, **_kwargs):
+        calls.append((M is not None, x0))
+        solution = 0.25 * b if M is not None else b
         return solution, None
 
     monkeypatch.setattr(ka, "gmres", fake_gmres)
@@ -398,7 +398,8 @@ def test_shift_invert_retries_preconditioned_false_convergence(
 
     observed = apply_inverse(v0, cache, params, term_cfg)
 
-    assert calls == [True, False]
+    assert [preconditioned for preconditioned, _x0 in calls] == [True, False]
+    assert jnp.allclose(calls[1][1], 0.25 * v0.reshape(-1))
     assert jnp.allclose(observed, v0)
 
 
