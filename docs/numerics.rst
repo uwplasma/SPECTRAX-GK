@@ -495,6 +495,19 @@ end-to-end JAX differentiability:
   quotient. For a fixed vector this scalar minimizes the Euclidean residual;
   it removes avoidable error from mapping an inexact inverse Ritz value through
   ``lambda = sigma + 1 / mu``. The outer residual gate remains mandatory.
+- **Interior-eigenvalue restart boundary**: an augmented retained-Ritz
+  prototype was tested against the physical KBM operator and removed. At
+  matched ``Nl=8, Nm=24`` resolution, retaining two and four nearby vectors
+  selected damped or opposite-frequency branches and changed the outer
+  residual from ``0.881`` to ``0.922`` and ``0.991``. Merely carrying several
+  Ritz vectors is therefore not treated as Krylov--Schur: a future retained
+  implementation must perform ordered Schur compression or an equivalently
+  branch-preserving Jacobi--Davidson correction. JAX's current Schur primitive
+  is CPU-only, so it is not used in the CPU/GPU solver API. See the
+  `SLEPc Krylov--Schur documentation
+  <https://slepc.upv.es/release/manualpages/EPS/EPSKRYLOVSCHUR.html>`_ and
+  `harmonic extraction guidance
+  <https://slepc.upv.es/release/manualpages/EPS/EPS_HARMONIC.html>`_.
 - **Targeted shift-invert mode selection**: set ``KrylovConfig.mode_family``
   (for example ``"cyclone"``, ``"etg"``, ``"kbm"``) and
   ``KrylovConfig.shift_selection`` to stabilize branch selection in stiff
