@@ -449,9 +449,13 @@ eight velocity-space projections, and pointwise reconstruction. Unlike the
 isotropic map, every lower reduced-degree shell of the same parity is retained.
 Even and odd blocks through reduced degree six reconstruct the physical basis
 for :math:`m=0,1,2,3`. Literal equation (B6) fails the finite-:math:`m` inverse
-identity, so the accepted inverse is formed from the complete 80-digit block
-before the final ``float64`` table cast. This closes coefficient generation,
-not the test-/field-particle contractions or their transport validation.
+identity. Equation (3.33) of Frei et al. (2021), which includes the weighted
+Laguerre-product contraction omitted from that direct normalization, matches
+every entry of independently inverted degree-six blocks for
+:math:`m=0,1,2,3`. Complete 80-digit block inversion remains the independent
+oracle; equation (3.33) supplies the scalar inverse used by collision-matrix
+assembly. This closes coefficient generation, not the test-/field-particle
+contractions or their transport validation.
 
 The next algebraic layer is also generated and independently checked.
 ``laguerre_product_expansion_coefficient`` implements both the unweighted

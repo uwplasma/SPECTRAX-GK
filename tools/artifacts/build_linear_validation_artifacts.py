@@ -798,6 +798,97 @@ def laguerre_product_expansion_coefficient(
     return float(coefficient)
 
 
+def _hermite_laguerre_to_associated_legendre_mp(
+    hermite_order: int,
+    laguerre_order: int,
+    spherical_order: int,
+    spherical_radial_order: int,
+    bessel_order: int,
+    mp: Any,
+) -> Any:
+    if hermite_order > spherical_order + bessel_order + 2 * spherical_radial_order:
+        return mp.mpf(0)
+
+    prefactor = (
+        mp.sqrt(mp.pi)
+        * mp.power(2, hermite_order)
+        * mp.factorial(hermite_order)
+        * mp.factorial(spherical_radial_order)
+        * (spherical_order + mp.mpf("0.5"))
+        / mp.gamma(spherical_radial_order + spherical_order + mp.mpf("1.5"))
+        * mp.factorial(spherical_order - bessel_order)
+        / mp.factorial(spherical_order + bessel_order)
+    )
+    maximum_auxiliary_order = min(
+        spherical_radial_order + (spherical_order + bessel_order) // 2,
+        bessel_order + laguerre_order,
+    )
+    contraction = sum(
+        _associated_legendre_to_hermite_laguerre_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            hermite_order,
+            auxiliary_order,
+            mp,
+        )
+        * _laguerre_product_expansion_coefficient_mp(
+            bessel_order,
+            0,
+            laguerre_order,
+            auxiliary_order,
+            bessel_order,
+            mp,
+        )
+        for auxiliary_order in range(maximum_auxiliary_order + 1)
+    )
+    return prefactor * contraction
+
+
+def hermite_laguerre_to_associated_legendre_coefficient(
+    hermite_order: int,
+    laguerre_order: int,
+    spherical_order: int,
+    spherical_radial_order: int,
+    bessel_order: int,
+    *,
+    digits: int = 80,
+) -> float:
+    r"""Return the finite-``m`` inverse collision-basis coefficient.
+
+    This implements equation (3.33) of Frei et al. (2021), including its
+    weighted Laguerre-product contraction.  It maps ``H_l L_k x**(m/2)`` onto
+    ``s**p P_p^m L_j^(p+1/2)``.
+    """
+
+    indices = (
+        hermite_order,
+        laguerre_order,
+        spherical_order,
+        spherical_radial_order,
+        bessel_order,
+    )
+    if any(index < 0 for index in indices):
+        raise ValueError("basis orders must be >= 0")
+    if bessel_order > spherical_order:
+        raise ValueError("bessel_order must be <= spherical_order")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        coefficient = _hermite_laguerre_to_associated_legendre_mp(
+            hermite_order,
+            laguerre_order,
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            mp,
+        )
+    return float(coefficient)
+
+
 def gyroaveraged_spherical_moment_coefficient(
     spherical_order: int,
     spherical_radial_order: int,

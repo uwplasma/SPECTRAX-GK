@@ -654,9 +654,12 @@ implemented as lower-triangular parity blocks through reduced degree six for
 :math:`m=0,1,2,3`. A convention factor :math:`2(-1)^m` is required for direct
 velocity projection and pointwise basis reconstruction. Because literal
 equation (B6) does not invert the finite-:math:`m` blocks, the generator inverts
-the full forward matrix with 80-digit arithmetic and casts only the accepted
-table. Complete collision contractions and conductivity, ITG, zonal-response,
-and velocity-resolution gates remain required before runtime promotion.
+the full forward matrix with 80-digit arithmetic as an independent oracle.
+Frei et al. (2021), equation (3.33), includes the required weighted Laguerre
+contraction and matches that inverse for all tested :math:`m=0,1,2,3` blocks;
+it is the scalar inverse used for subsequent sums. Complete collision
+contractions and conductivity, ITG, zonal-response, and velocity-resolution
+gates remain required before runtime promotion.
 
 The associated-Laguerre product coefficients in equations (3.36)--(3.37) and
 (3.44)--(3.45) are evaluated by the same multiprecision generator and

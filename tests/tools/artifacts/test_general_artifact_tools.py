@@ -2226,6 +2226,29 @@ def test_associated_basis_transform_reconstructs_and_inverts_parity_blocks() -> 
                 rtol=3.0e-12,
                 atol=2.0e-11,
             )
+            if maximum_degree == 6:
+                analytic_inverse = np.asarray(
+                    [
+                        [
+                            mod.hermite_laguerre_to_associated_legendre_coefficient(
+                                hermite_order,
+                                laguerre_order,
+                                spherical_order,
+                                spherical_radial_order,
+                                bessel_order,
+                                digits=80,
+                            )
+                            for hermite_order, laguerre_order in right_orders
+                        ]
+                        for spherical_order, spherical_radial_order in left_orders
+                    ]
+                )
+                np.testing.assert_allclose(
+                    analytic_inverse,
+                    inverse,
+                    rtol=4.0e-12,
+                    atol=2.0e-11,
+                )
             for column, (legendre_order, radial_order) in enumerate(left_orders):
                 for parallel, perpendicular_squared in sample_points:
                     speed = np.sqrt(parallel**2 + perpendicular_squared)
@@ -2278,6 +2301,14 @@ def test_associated_basis_transform_precision_and_validation() -> None:
         mod.associated_basis_transform_matrices(0, -1)
     with pytest.raises(ValueError, match="digits"):
         mod.associated_basis_transform_matrices(0, 2, digits=10)
+    with pytest.raises(ValueError, match="basis orders"):
+        mod.hermite_laguerre_to_associated_legendre_coefficient(-1, 0, 0, 0, 0)
+    with pytest.raises(ValueError, match="bessel_order"):
+        mod.hermite_laguerre_to_associated_legendre_coefficient(0, 0, 1, 0, 2)
+    with pytest.raises(ValueError, match="digits"):
+        mod.hermite_laguerre_to_associated_legendre_coefficient(
+            0, 0, 0, 0, 0, digits=10
+        )
 
 
 def test_laguerre_product_coefficients_reconstruct_collision_products() -> None:
