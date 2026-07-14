@@ -76,6 +76,29 @@ def test_nonlinear_gradient_evidence_exports_actual_owner_contracts() -> None:
         assert callable(getattr(evidence, name))
 
 
+def test_consolidated_diagnostic_owners_have_complete_export_contracts() -> None:
+    assert {
+        "ArrayLike",
+        "ResolvedDiagnostics",
+        "SimulationDiagnostics",
+        "NonlinearTurbulenceGradientEvidenceConfig",
+        "_artifact_passed",
+        "_bracket_sweep_row",
+        "_explicit_true",
+        "_metric_margin",
+        "classify_gradient_artifact",
+    } <= set(evidence_metadata.__all__)
+    assert {
+        "heat_flux_species",
+        "heat_flux_total",
+        "particle_flux_species",
+        "particle_flux_total",
+        "turbulent_heating_species",
+        "turbulent_heating_total",
+        "nonlinear_turbulence_gradient_finite_difference_report",
+    } <= set(evidence_transport.__all__)
+
+
 def _load_tool_module():
     return load_release_tool("check_nonlinear_optimization_gates")
 
