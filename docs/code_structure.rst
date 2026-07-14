@@ -792,7 +792,10 @@ dependencies at those owners; the public facade does not synchronize or mutate
 implementation-module globals at runtime.
 ``spectraxgk.diagnostics.stellarator_transport_reports`` owns report-style
 nonlinear transport diagnostics: landscape admission, reduced prelaunch gates,
-next-campaign admission, and matched nonlinear audit redesign. The public
+next-campaign admission, and matched nonlinear audit redesign. Persisted gate
+flags must be explicit booleans and replicate counts must be finite,
+nonnegative integers; malformed values fail closed into report blockers rather
+than becoming truthy or raising during report construction. The public
 ``spectraxgk.api`` re-exports user-facing admission helpers directly
 from these owners, while installable validation-campaign subpackages have
 been removed.

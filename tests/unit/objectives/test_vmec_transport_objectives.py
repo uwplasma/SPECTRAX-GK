@@ -907,27 +907,18 @@ def test_authoritative_wout_candidate_gate_reports_wout_load_errors(
 # ---- test_vmec_jax_transport_admission.py ----
 
 
-import spectraxgk.diagnostics.stellarator_transport_reports as transport_audit
-import spectraxgk.diagnostics.stellarator_transport_reports as transport_campaign
-import spectraxgk.diagnostics.stellarator_transport_reports as transport_landscape
-import spectraxgk.diagnostics.stellarator_transport_reports as transport_prelaunch
+import spectraxgk.diagnostics.stellarator_transport_reports as transport_reports
 from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_nonlinear_audit_redesign_report,
-)
-from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_nonlinear_campaign_admission_report,
-)
-from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_nonlinear_landscape_admission_report,
+    build_reduced_nonlinear_audit_prelaunch_report,
 )
 from spectraxgk.objectives.vmec_transport_admission import (
     VMECJAXNonlinearAuditPolicy,
     VMECJAXNonlinearCampaignPolicy,
     VMECJAXReducedPrelaunchPolicy,
     VMECJAXTransportAdmissionPolicy,
-)
-from spectraxgk.diagnostics.stellarator_transport_reports import (
-    build_reduced_nonlinear_audit_prelaunch_report,
 )
 from spectraxgk.objectives.vmec_transport_admission import (
     candidate_transport_metric,
@@ -1116,7 +1107,7 @@ def test_nonlinear_landscape_admission_selects_uncertainty_resolved_candidate() 
     )
     assert (
         build_nonlinear_landscape_admission_report
-        is transport_landscape.build_nonlinear_landscape_admission_report
+        is transport_reports.build_nonlinear_landscape_admission_report
     )
     json.dumps(report, allow_nan=False)
 
@@ -1147,6 +1138,36 @@ def test_nonlinear_landscape_admission_fails_closed_for_noisy_or_unresolved_cand
     assert "candidate_combined_sem_rel_too_large" in blockers[1]
     assert "candidate_insufficient_replicates" in blockers[1]
     assert "candidate_ensemble_failed" in blockers[2]
+
+
+@pytest.mark.parametrize("invalid", ["false", "true", 1, None])
+def test_nonlinear_landscape_admission_rejects_nonboolean_pass_flags(invalid) -> None:
+    baseline = _ensemble(8.0, 0.1)
+    candidate = _ensemble(6.0, 0.1)
+    baseline["passed"] = invalid
+
+    report = build_nonlinear_landscape_admission_report(baseline, [candidate])
+
+    assert report["passed"] is False
+    assert "baseline_ensemble_failed" in report["candidates"][0]["admission_blockers"]
+
+
+@pytest.mark.parametrize("invalid", ["three", 2.5, -3, float("nan")])
+def test_nonlinear_landscape_admission_rejects_invalid_replicate_counts(
+    invalid,
+) -> None:
+    candidate = _ensemble(6.0, 0.1)
+    candidate["statistics"]["n_reports"] = invalid
+
+    report = build_nonlinear_landscape_admission_report(
+        _ensemble(8.0, 0.1), [candidate]
+    )
+
+    assert report["passed"] is False
+    assert (
+        "candidate_insufficient_replicates"
+        in report["candidates"][0]["admission_blockers"]
+    )
 
 
 def test_nonlinear_landscape_admission_validates_candidate_labels() -> None:
@@ -1200,7 +1221,7 @@ def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() 
     )
     assert (
         build_reduced_nonlinear_audit_prelaunch_report
-        is transport_prelaunch.build_reduced_nonlinear_audit_prelaunch_report
+        is transport_reports.build_reduced_nonlinear_audit_prelaunch_report
     )
 
 
@@ -1305,7 +1326,7 @@ def test_campaign_admission_combines_reduced_and_replicated_landscape_gates() ->
     )
     assert (
         build_nonlinear_campaign_admission_report
-        is transport_campaign.build_nonlinear_campaign_admission_report
+        is transport_reports.build_nonlinear_campaign_admission_report
     )
     json.dumps(report, allow_nan=False)
 
@@ -1343,6 +1364,39 @@ def test_campaign_admission_fails_closed_without_cross_sample_gate_or_landscape_
     assert "reduced_cross_sample_statistics_missing" in report["blockers"]
     assert "selected_landscape_reduction_too_small" in report["blockers"]
     assert "selected_landscape_uncertainty_separation_too_small" in report["blockers"]
+
+
+def test_campaign_admission_rejects_corrupt_persisted_gate_fields() -> None:
+    prelaunch = {
+        "passed": "true",
+        "objective_sample_summary": {"passed": "true", "sample_count": 18},
+        "reduced_cross_sample_statistics": {
+            "available": "true",
+            "passed": "true",
+            "rows": [],
+        },
+    }
+    landscape = {
+        "passed": "true",
+        "selected_candidate": {
+            "relative_reduction": 0.2,
+            "uncertainty_z_score": 4.0,
+            "combined_sem_rel": 0.01,
+            "n_reports": "three",
+        },
+    }
+
+    report = build_nonlinear_campaign_admission_report(
+        reduced_prelaunch_report=prelaunch,
+        landscape_admission_report=landscape,
+    )
+
+    assert report["campaign_admitted"] is False
+    assert "reduced_prelaunch_gate_failed" in report["blockers"]
+    assert "reduced_objective_sample_coverage_failed" in report["blockers"]
+    assert "reduced_cross_sample_statistics_missing" in report["blockers"]
+    assert "replicated_landscape_admission_failed" in report["blockers"]
+    assert "selected_landscape_insufficient_replicates" in report["blockers"]
 
 
 def test_transport_sample_summary_requires_surface_alpha_and_ky_coverage() -> None:
@@ -1410,12 +1464,35 @@ def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_p
     )
     assert (
         build_nonlinear_audit_redesign_report
-        is transport_audit.build_nonlinear_audit_redesign_report
+        is transport_reports.build_nonlinear_audit_redesign_report
     )
     assert (
         spectraxgk.transport_objective_sample_summary
         is transport_objective_sample_summary
     )
+
+
+def test_nonlinear_audit_redesign_rejects_nonboolean_persisted_pass_flags() -> None:
+    comparison = _matched_comparison(
+        relative_reduction=0.08,
+        z_score=2.5,
+        passed=True,
+    )
+    comparison["passed"] = "true"
+    comparison["baseline"]["passed"] = "true"
+
+    report = build_nonlinear_audit_redesign_report(
+        comparison,
+        objective_sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, np.pi / 4.0],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+    )
+
+    assert report["nonlinear_audit_promoted"] is False
+    assert "baseline_ensemble_failed" in report["blockers"]
+    assert "matched_comparison_not_passed" in report["blockers"]
 
 
 def test_transport_sample_summary_rejects_ky_values_not_supported_by_single_solver_grid() -> (
