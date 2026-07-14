@@ -393,10 +393,15 @@ so callers retain explicit ownership of normalization. The separate
 first and source species second, applies all source blocks in one JAX
 contraction, and supports pointwise spatial matrices. At equal mass and
 temperature, :math:`T_{aa}+F_{aa}` reproduces the independent 80-digit C6
-table. An unequal ion-pair gate checks published coefficients directly; a
-physical directed-frequency gate conserves each species' particles and total
-momentum and thermal energy, produces a negative weighted quadratic rate, and
-matches finite differences through :math:`\sigma` and :math:`\tau`.
+table. ``assemble_drift_kinetic_sugama_matrix`` vectorizes all ordered pairs
+and adds each test-particle block to its target-species diagonal. An unequal
+ion-pair gate checks published coefficients directly; a physical
+directed-frequency gate conserves each species' particles and total momentum
+and thermal energy, produces a negative weighted quadratic rate, and matches
+finite differences through :math:`\sigma` and :math:`\tau`. An independent
+matrix-exponential trajectory preserves those invariants through unequal-
+species relaxation and reduces the collision residual by more than five
+orders of magnitude.
 
 This is the original Sugama model's real low-order drift-kinetic projection.
 It is useful for reduced-model verification but is not the improved Sugama

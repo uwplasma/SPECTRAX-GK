@@ -6,6 +6,7 @@ from dataclasses import replace
 
 import jax
 import jax.numpy as jnp
+import jax.scipy.linalg
 import numpy as np
 import pytest
 
@@ -18,6 +19,7 @@ from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
     apply_multispecies_collision_moment_matrix,
+    assemble_drift_kinetic_sugama_matrix,
     drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
     load_collision_moment_matrix,
@@ -311,17 +313,9 @@ def test_multispecies_sugama_pair_operator_conserves_and_differentiates() -> Non
     density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
     mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
     temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
-    pair_matrix = jnp.zeros((2, 2, 8, 8), dtype=jnp.float32)
-    for target in range(2):
-        for source in range(2):
-            test_matrix, field_matrix = drift_kinetic_sugama_pair_matrices(
-                mass[target] / mass[source], temperature[target] / temperature[source]
-            )
-            frequency = density[source] / (
-                jnp.sqrt(mass[target]) * temperature[target] ** 1.5
-            )
-            pair_matrix = pair_matrix.at[target, target].add(frequency * test_matrix)
-            pair_matrix = pair_matrix.at[target, source].add(frequency * field_matrix)
+    pair_matrix = jax.jit(assemble_drift_kinetic_sugama_matrix)(
+        density, mass, temperature
+    )
 
     state = (
         jnp.arange(2 * 2 * 4, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 1) + 0.13j
@@ -362,6 +356,81 @@ def test_multispecies_sugama_pair_operator_conserves_and_differentiates() -> Non
         drift_kinetic_sugama_pair_matrices(jnp.asarray(0.0), jnp.asarray(1.0))
     with pytest.raises(ValueError, match="target/source species"):
         apply_multispecies_collision_moment_matrix(state, jnp.zeros((2, 8, 8)))
+
+
+def test_multispecies_sugama_pair_relaxation_preserves_invariants() -> None:
+    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
+    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
+    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    matrix = assemble_drift_kinetic_sugama_matrix(density, mass, temperature)
+    generator = jnp.transpose(matrix, (0, 2, 1, 3)).reshape(16, 16)
+    initial_modes = jnp.asarray(
+        [
+            [0.0, 0.3, -0.2, 0.15, 0.4, -0.1, 0.2, -0.3],
+            [0.0, -0.4, 0.1, -0.2, -0.3, 0.2, -0.1, 0.25],
+        ],
+        dtype=jnp.float32,
+    )
+
+    times = jnp.linspace(0.0, 30.0, 31)
+    trajectory_modes = jax.vmap(
+        lambda time: jax.scipy.linalg.expm(time * generator) @ initial_modes.reshape(-1)
+    )(times).reshape(-1, 2, 8)
+    trajectory = jnp.transpose(
+        trajectory_modes.reshape(-1, 2, 4, 2, 1, 1, 1), (0, 1, 3, 2, 4, 5, 6)
+    )
+
+    invariants = jax.vmap(
+        lambda state: multispecies_collision_invariant_rates(
+            state, density=density, mass=mass, temperature=temperature
+        )
+    )(trajectory)
+    assert (
+        float(
+            jnp.max(
+                jnp.abs(invariants.particle_density - invariants.particle_density[0])
+            )
+        )
+        < 1.0e-6
+    )
+    assert (
+        float(
+            jnp.max(
+                jnp.abs(
+                    invariants.total_parallel_momentum
+                    - invariants.total_parallel_momentum[0]
+                )
+            )
+        )
+        < 5.0e-6
+    )
+    assert (
+        float(
+            jnp.max(
+                jnp.abs(
+                    invariants.total_thermal_energy - invariants.total_thermal_energy[0]
+                )
+            )
+        )
+        < 8.0e-6
+    )
+
+    collision_rhs = jax.vmap(
+        lambda state: apply_multispecies_collision_moment_matrix(state, matrix)
+    )(trajectory)
+    residual_norm = jnp.linalg.norm(collision_rhs.reshape(times.size, -1), axis=1)
+    # Monotone decay is required until the float32 matrix-exponential floor.
+    assert bool(jnp.all(jnp.diff(residual_norm[:11]) < 0.0))
+    assert float(residual_norm[-1] / residual_norm[0]) < 1.0e-5
+
+    with pytest.raises(ValueError, match="equal length"):
+        assemble_drift_kinetic_sugama_matrix(jnp.ones(2), jnp.ones(3), jnp.ones(2))
+    with pytest.raises(ValueError, match="temperature must"):
+        assemble_drift_kinetic_sugama_matrix(jnp.ones(2), jnp.ones(2), jnp.ones(3))
+    with pytest.raises(ValueError, match="density must be positive"):
+        assemble_drift_kinetic_sugama_matrix(
+            jnp.asarray([1.0, 0.0]), jnp.ones(2), jnp.ones(2)
+        )
 
 
 def test_gamma0_basic_properties() -> None:
