@@ -2512,7 +2512,6 @@ owned_modules = [
   "spectraxgk.objectives.solver_vmec",
   "spectraxgk.objectives.stellarator",
   "spectraxgk.objectives.stellarator_contracts",
-  "spectraxgk.objectives.stellarator_reduced",
   "spectraxgk.geometry.vmec_boundary_chain",
   "spectraxgk.geometry.vmec_boundary_collection",
   "spectraxgk.objectives.vmec_transport_gradient",
@@ -2967,21 +2966,27 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.stellarator_residuals"
-path = "src/spectraxgk/objectives/stellarator_residuals.py"
-owner_lane = "reduced stellarator ITG residual, covariance, and finite-difference gates"
+module = "spectraxgk.objectives.stellarator_reduced"
+path = "src/spectraxgk/objectives/stellarator_reduced.py"
+owner_lane = "reduced stellarator ITG model, residual, covariance, and finite-difference gates"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
+  "reduced QA geometry and ITG screening observables before full VMEC/Boozer optimization",
+  "fixed-step nonlinear-envelope diagnostics kept separate from turbulent-transport claims",
   "Gauss-Newton residual conditioning for differentiable stellarator optimization",
   "finite-difference validation of every differentiated transport objective",
 ]
 physics_contracts = [
+  "linear growth, quasilinear flux, and reduced nonlinear envelope remain distinct observables",
+  "density-gradient and temperature-gradient controls enter the same differentiable feature map used by objective scans",
   "residual vectors must expose aspect, iota, quasisymmetry, regularization, and transport terms separately",
   "nonlinear-window residuals remain reduced differentiability gates unless long post-transient transport artifacts pass",
 ]
 numerics_contracts = [
+  "the reduced nonlinear envelope uses fixed-step RK2 and explicit late-window statistics",
+  "parameter vectors and objective kinds fail closed on invalid shapes or names",
   "residual Jacobians pass AD/FD parity with precision-aware tolerances",
   "covariance gates require finite singular values, sufficient rank, and bounded condition numbers",
 ]

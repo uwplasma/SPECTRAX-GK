@@ -1083,20 +1083,14 @@ Stellarator ITG Objective Tables
 .. automodule:: spectraxgk.objectives.stellarator_tables
    :members:
 
-Stellarator ITG Residual Gates
-------------------------------
-
-.. automodule:: spectraxgk.objectives.stellarator_residuals
-   :members:
-
 Stellarator ITG Contracts
 -------------------------
 
 .. automodule:: spectraxgk.objectives.stellarator_contracts
    :members:
 
-Stellarator Reduced ITG Model
------------------------------
+Stellarator Reduced ITG Model And Gates
+---------------------------------------
 
 .. automodule:: spectraxgk.objectives.stellarator_reduced
    :members:

@@ -1704,12 +1704,18 @@ fast_tests = ["tests/unit/objectives/test_autodiff_solver_objectives.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.objectives.stellarator_residuals"
-source_path = "src/spectraxgk/objectives/stellarator_residuals.py"
+module = "spectraxgk.objectives.stellarator_reduced"
+source_path = "src/spectraxgk/objectives/stellarator_reduced.py"
 facade_module = "spectraxgk.objectives.stellarator"
 status = "active"
-responsibility = "reduced stellarator ITG scalar residuals, residual-Jacobian AD/FD gates, covariance diagnostics, and conditioning reports"
+responsibility = "reduced stellarator ITG observables, nonlinear envelope, scalar residuals, residual-Jacobian AD/FD gates, covariance diagnostics, and conditioning reports"
 moved_exports = [
+  "default_stellarator_initial_params",
+  "nonlinear_heat_flux_trace",
+  "nonlinear_heat_flux_window_metrics",
+  "qa_max_mode1_observables",
+  "qa_observable_vector",
+  "smooth_positive",
   "stellarator_itg_objective",
   "stellarator_itg_objective_residual_names",
   "stellarator_itg_objective_residual_vector",
