@@ -472,27 +472,19 @@ then build the comparison panel from the real ``history.json`` and
 
 .. code-block:: bash
 
-   # First make an admission-grade constraints-only baseline. This uses the
-   # upstream VMEC-JAX QA simple seed, objective tuples, ESS scaling, and
-   # max-mode-5 controls, but increases the solve budget/tightens tolerances so
-   # the final WOUT can pass the strict aspect/iota/QS gate. The default iota
-   # target is 0.4102 while the admission gate remains iota >= 0.41.
+   # Current VMEC-JAX API: make the matched constraints-only baseline first.
    python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --strict-upstream-qa-baseline --solver-device gpu \
+     --constraints-only --target-aspect 6.0 --target-iota 0.42 \
+     --mode-schedule 1,2,3,4,5 --max-nfev 2000 --solver-device gpu \
      --outdir runs_onepoint/qa_baseline_strict_upstream
 
-   # On the GPU node, from a clean SPECTRAX-GK/vmec_jax/booz_xform_jax clone,
-   # restart transport optimizers from the strict solved QA baseline.  The
-   # representative differentiable residual below is intentionally smaller than
-   # the later validation grid; full multi-surface nonlinear claims require
-   # separate post-optimization audits.
+   # Restart a growth-rate optimization from the solved baseline. Growth uses
+   # VMEC-JAX's implicit equilibrium Jacobian through the current public API.
    python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
      --input runs_onepoint/qa_baseline_strict_upstream/input.final \
-     --disable-mode-continuation --max-mode 5 --min-vmec-mode 7 \
-     --target-aspect 5.0 --min-iota 0.41 --disable-iota-profile-floor \
-     --mboz 21 --nboz 21 \
+     --mode-schedule 5 --target-aspect 6.0 --target-iota 0.42 \
      --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
-     --transport-kind growth --method scalar_trust --spectrax-weight 0.10 \
+     --transport-kind growth --transport-weight 0.10 --jacobian implicit \
      --solver-device gpu --outdir runs_onepoint/growth_scalar_trust
 
    # Locally, after copying the campaign directory back:
@@ -517,56 +509,25 @@ ranking candidate directions, but it is not a saturated turbulent heat-flux
 measurement. A candidate can be promoted to a nonlinear transport claim only
 after generating replicated post-transient SPECTRAX-GK runs from its concrete
 ``wout_final.nc`` and demonstrating running-average convergence of ``Q(t)``.
-If a constraints-only QA baseline stops a few ``1e-5`` below
-``iota >= 0.41`` because of optimizer ``xtol`` termination, treat it as
-precision-limited and rerun the strict baseline preset above. Do not promote it
-by relaxing the solved-WOUT gate; that would make later transport reductions
-depend on an inconsistent baseline.
-The strict preset uses a small target buffer rather than a relaxed gate:
-``target iota = 0.4102`` and solved-WOUT admission ``iota >= 0.41``.
+If a constraints-only QA baseline stops below the requested iota, increase the
+solve budget or use a small target buffer and rerun it. Do not promote it by
+relaxing the solved-WOUT gate; that would make later transport reductions
+depend on an inconsistent baseline. The configurable driver writes setup,
+history, input, and WOUT files. Physical admission remains a separate validation
+step because optimizer convergence is not a transport-convergence result.
 The tracked exact SciPy/ESS strict-baseline evidence is stored in
 ``docs/_static/vmec_jax_qa_strict_baseline/summary.json``. It terminates at
 ``nfev = 39`` with aspect ``5.000154``, mean iota ``0.4101997``, QS residual
 ``2.60e-4``, and a passed solved-WOUT gate. The iota-profile floor is disabled
 for this baseline because the upstream ``QA_optimization.py`` objective uses a
 high-weight mean-iota target, not a profile-floor constraint.
-Publication-facing admission must also require input/WOUT reproducibility.
-After this strict run, independent replay/rerun paths did not reproduce the
-same rotational transform: a one-evaluation VMEC-JAX replay from
-``input.final`` reported mean iota near ``0.4085``, while a fresh
-fixed-boundary ``wout_final_rerun.nc`` reported mean iota near ``0.41169``
-instead of the optimizer-state ``0.41020``. Therefore a saved optimizer-state
-``wout_final.nc`` is not enough: run the driver with
-``--save-rerun-wouts --require-rerun-wout-gate`` and require
-``wout_final_rerun.nc`` to match the optimizer-state WOUT and pass the same
-aspect/iota/profile gates before attaching SPECTRAX-GK transport metrics or
-projected line-search candidates to that input deck.
-There is now also an explicit rerun-WOUT-authoritative path. If that policy is
-chosen, the deterministic ``wout_final_rerun.nc`` must pass its own
-aspect/iota-profile/quasisymmetry admission gate, and all downstream
-SPECTRAX-GK audits must use that rerun WOUT as the equilibrium source. The
-current strict rerun WOUT passes this separate gate with mean iota
-``0.411691`` and QS residual ``1.85e-4``, while still failing reproducibility
-against the optimizer-state WOUT. Both facts must be reported.
-When using ``tools/campaigns/run_vmec_jax_guarded_transport_ladder.py`` from this
-baseline, pass ``--disable-iota-profile-floor`` at the ladder level; the tool
-forwards the same convention to each candidate driver command.
-Also pass ``--baseline-metric-json`` pointing to the eval-only reduced metric
-for the same transport objective. Otherwise a constraints-only baseline has no
-transport metric in ``history.json`` and should not be compared through its QA
-objective value.
-For the 18-point production sample set on 16 GB GPUs, use
-``--surface-chunk-size 1`` for eval-only reduced-metric tools and
-``--surface-gradient-chunk-size 1`` for transport-gradient diagnostics. This
-evaluates the raw weighted-mean transport objective one surface chunk at a
-time and applies ``raw``/``scaled``/``log1p`` only after the chunks are
-aggregated, so it is the same scalar objective with lower diagnostic memory.
-The full VMEC-JAX reverse-mode optimizer still OOMs at the strict
-``max_mode=5``, ``mboz=nboz=21``, 18-point setting on 16 GB GPUs because the
-final-state cotangent path remains monolithic. Until that VMEC/Boozer
-cotangent is chunked, candidate generation should use the chunked-gradient
-diagnostic plus boundary-chain-gated projected line search, with CPU replay
-for boundary-chain probes when the GPU path OOMs.
+The older tracked strict-baseline artifact predates the current VMEC-JAX API
+and exposed an input/WOUT replay discrepancy. It remains useful negative
+evidence, but its removed command-line switches are not emulated. New campaigns
+must independently solve ``input.final``, compare the replayed WOUT with the
+optimizer WOUT, and use only the authoritative replay for downstream transport
+audits. Large sample sets should first be evaluated with the current metric
+evaluator below; only admitted candidates should consume long nonlinear runs.
 
 Transport-admission bookkeeping for the strict baseline is separated from
 optimization. After a baseline or candidate writes ``input.final``, run:
@@ -650,12 +611,13 @@ literal QA scripts:
 
    python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py --dry-run
 
-The driver can target aspect ``A = 6`` and add an explicit solved-profile floor
-``iota(s) >= 0.41``. That profile floor is intentionally separate from the
-upstream mean-iota target because bounded audits have shown that a candidate can
-satisfy the mean target while a point in the WOUT ``iota`` profile remains below
-``0.41``. The upstream QA baseline itself remains the aspect-5 VMEC-JAX script
-with the high-weight ``MeanIota`` objective.
+The driver follows the current VMEC-JAX public API directly: it parses a
+``VmecInput``, solves the initial equilibrium, and calls ``opt.least_squares``
+over a mode-continuation schedule. The required QA, aspect-ratio, and mean-iota
+terms are always explicit. ``growth`` can use the implicit equilibrium
+Jacobian; the eigenvector-weighted quasilinear and reduced nonlinear proxies use
+finite-difference outer Jacobians. ``setup_summary.json`` records this policy
+before any expensive solve begins.
 
 Development-Only Reduced Diagnostics
 ------------------------------------
@@ -750,10 +712,8 @@ than pre-generated geometry files:
 .. code-block:: bash
 
    python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --dry-run \
-     --use-simple-seed \
-     --max-mode 5 \
-     --min-vmec-mode 7
+     --dry-run --target-aspect 6.0 --target-iota 0.42 \
+     --mode-schedule 1,2,3,4,5
 
 Then run the two comparable branches:
 
@@ -761,43 +721,32 @@ Then run the two comparable branches:
 
    python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
      --constraints-only \
-     --use-simple-seed \
-     --max-mode 5 \
-     --min-vmec-mode 7 \
+     --target-aspect 6.0 --target-iota 0.42 \
+     --mode-schedule 1,2,3,4,5 \
      --make-plots \
      --outdir runs/qa_constraints_only
 
    python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --use-simple-seed \
-     --max-mode 5 \
-     --min-vmec-mode 7 \
+     --input runs/qa_constraints_only/input.final \
+     --target-aspect 6.0 --target-iota 0.42 --mode-schedule 5 \
      --make-plots \
      --outdir runs/qa_plus_reduced_nonlinear_heat_flux \
-     --spectrax-weight 0.05 \
+     --transport-weight 0.05 --jacobian finite-difference \
      --transport-kind nonlinear_window_heat_flux \
      --surfaces 0.45,0.64,0.78 \
      --alphas 0.0,0.7853981633974483 \
      --ky-values 0.10,0.30,0.50
 
-On a GPU node, append ``--solver-device gpu``; otherwise JAX will use the
-available default backend. The QA-only branch defaults to the upstream
-VMEC-JAX ``scipy`` optimizer. The transport-aware branch defaults to
-``scalar_trust`` because dense exact SciPy Jacobians are memory-heavy for the
-SPECTRAX-GK transport residual; override ``--method`` only when you have a
-specific optimizer/memory reason.
+On a GPU node, append ``--solver-device gpu``; otherwise JAX uses the available
+default backend. The current VMEC-JAX least-squares implementation owns the
+optimizer. SPECTRAX-GK selects only the derivative policy appropriate to the
+observable; it no longer maintains a parallel optimizer-method abstraction.
 
-Both use the upstream VMEC-JAX simple-seed convention of solving the requested
-``max_mode`` branch directly rather than using mode continuation, and both use
-``mboz=nboz=21`` for the transport objective and Boozer LCFS plots. The
-SPECTRAX-GK low-turbulence study targets ``A=6`` and adds a signed
-solved-profile floor ``iota(s) >= 0.41``. The upstream VMEC-JAX
-``QA_optimization.py`` baseline targets ``A=5`` and does not include that
-profile-floor gate; to reproduce it, run the constraints-only command with
-``--target-aspect 5.0`` and ``--disable-iota-profile-floor``. The
-transport-aware A=6 branch adds a small SPECTRAX-GK residual. A passed
-VMEC-JAX optimization is still only a candidate; the next required audit is a
-WOUT profile check followed by a matched long-window SPECTRAX-GK nonlinear
-heat-flux comparison of the final WOUTs.
+Both use the upstream simple-seed perturbation and explicit mode continuation.
+The SPECTRAX-GK study targets ``A=6`` and mean ``iota=0.42``; a passed optimizer
+run is still only a candidate. The required next audit is an independent WOUT
+profile/replay check followed by matched, replicated, long-window nonlinear
+heat-flux comparisons of baseline and candidate equilibria.
 
 The A=6 admission artifact records ``mean_iota_lower_bound`` and
 ``iota_profile_floor`` fields. Legacy ``target_*`` iota fields remain in the

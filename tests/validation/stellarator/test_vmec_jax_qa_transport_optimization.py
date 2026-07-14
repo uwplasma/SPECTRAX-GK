@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import importlib.util
 from pathlib import Path
 
 from support.paths import REPO_ROOT, load_campaign_tool
@@ -425,80 +424,30 @@ def test_solved_wout_candidate_gate_rejects_transport_branch_that_breaks_constra
     json.dumps(report, allow_nan=False)
 
 
-def test_driver_transport_metric_from_result_uses_final_state_context() -> None:
+def test_driver_defaults_to_multisample_current_api() -> None:
     mod = _load_driver()
+    args = mod._parse_args(["--input", "input.seed", "--dry-run"])
 
-    class FakeTransport:
-        config = SimpleNamespace(
-            kind="growth", objective_transform="log1p", objective_scale=3.0
-        )
-
-        def J(self, ctx, state):
-            assert state == "final-state"
-            assert ctx.indata == "indata"
-            assert ctx.signgs == -1
-            assert ctx.flux == "flux"
-            return np.asarray(0.125)
-
-    result = SimpleNamespace(
-        final_state="final-state",
-        final_optimizer=SimpleNamespace(
-            _static=SimpleNamespace(s=np.asarray([0.0, 1.0])),
-            _indata="indata",
-            _signgs=-1,
-            _flux="flux",
-        ),
-    )
-
-    metric = mod._transport_metric_from_result(FakeTransport(), result)
-
-    assert metric["transport_objective_final"] == 0.125
-    assert metric["spectrax_objective_final"] == 0.125
-    assert metric["transport_metric_final"] == 0.125
-    assert metric["transport_objective_source"] == "final_vmec_jax_state"
-    assert metric["transport_metric_kind"] == "growth"
-    json.dumps(metric, allow_nan=False)
+    assert args.surfaces == mod.DEFAULT_SURFACES
+    assert args.alphas == mod.DEFAULT_ALPHAS
+    assert args.ky_values == mod.DEFAULT_KY_VALUES
+    assert args.mode_schedule == (1, 2, 3, 4, 5)
+    assert args.target_aspect == 6.0
+    assert args.target_iota == 0.42
+    assert args.jacobian == "auto"
 
 
-def test_driver_defaults_to_multisample_transport_admission_set(monkeypatch) -> None:
-    mod = _load_driver()
-    monkeypatch.setattr(sys, "argv", [str(DRIVER), "--dry-run"])
-
-    args = mod._parse_args()
-    summary = spectraxgk.transport_objective_sample_summary(
-        {
-            "surfaces": args.surfaces,
-            "alphas": args.alphas,
-            "ky_values": args.ky_values,
-        }
-    )
-
-    assert args.surfaces == mod.DEFAULT_TRANSPORT_SURFACES
-    assert args.alphas == mod.DEFAULT_TRANSPORT_ALPHAS
-    assert args.ky_values == mod.DEFAULT_TRANSPORT_KY_VALUES
-    assert summary["passed"] is True
-    assert summary["sample_count"] == 18
-
-
-def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> None:
-    if importlib.util.find_spec("vmec_jax") is None:
-        pytest.skip("vmec_jax is optional")
-
+def test_driver_dry_run_writes_current_api_summary(tmp_path: Path) -> None:
     outdir = tmp_path / "qa_growth_dry_run"
     completed = subprocess.run(
         [
             sys.executable,
             str(DRIVER),
             "--dry-run",
-            "--use-simple-seed",
-            "--max-mode",
-            "1",
-            "--min-vmec-mode",
-            "3",
-            "--mboz",
-            "21",
-            "--nboz",
-            "21",
+            "--input",
+            "input.seed",
+            "--mode-schedule",
+            "1,2",
             "--transport-kind",
             "growth",
             "--surfaces",
@@ -508,14 +457,12 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
             "--ky-values",
             "0.30",
             "--ntheta",
-            "4",
+            "16",
             "--n-laguerre",
             "1",
             "--n-hermite",
             "1",
-            "--surface-chunk-size",
-            "1",
-            "--spectrax-weight",
+            "--transport-weight",
             "0.001",
             "--outdir",
             str(outdir),
@@ -527,133 +474,66 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
         timeout=30,
     )
 
-    summary_path = outdir / "setup_summary.json"
-    assert summary_path.exists()
-    summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    assert summary["constraints_only"] is False
-    assert summary["transport_kind"] == "growth"
-    assert summary["requested_input"].endswith("input.minimal_seed_nfp2")
-    assert summary["objectives"] == [
-        "aspect",
-        "iota",
-        "iota_profile_floor",
-        "qs",
-        "spectraxgk_transport",
-    ]
-    assert summary["sample_set"]["n_samples"] == 1
-    assert summary["spectrax_config"]["mboz"] == 21
-    assert summary["spectrax_config"]["nboz"] == 21
-    assert summary["spectrax_config"]["surface_chunk_size"] == 1
-    assert summary["optimizer"]["method"] == "scalar_trust"
-    assert summary["optimizer_comparison"]["schema_version"] == 1
-    assert summary["optimizer_comparison"]["method"] == "scalar_trust"
-    assert (
-        summary["optimizer_comparison"]["comparison_class"]
-        == "spectraxgk_transport_growth"
-    )
-    assert summary["optimizer_comparison"]["sample_set_fingerprint"]["mboz"] == 21
-    assert summary["optimizer_comparison"]["sample_set_fingerprint"]["nboz"] == 21
-    assert summary["optimizer_comparison"]["sample_set_fingerprint"]["n_samples"] == 1
-    assert (
-        summary["optimizer_comparison"]["nonlinear_promotion_policy"][
-            "recommended_horizons"
-        ]
-        == "700,1100,1500"
-    )
-    assert (
-        summary["optimizer_comparison"]["nonlinear_promotion_policy"][
-            "recommended_window_tmin"
-        ]
-        == 1100.0
-    )
-    assert (
-        "production nonlinear flux claims require matched long-window"
-        in summary["claim_scope"]
-    )
-    assert "spectraxgk_transport" in completed.stdout
-    assert not (outdir / "history.json").exists()
-    assert not (outdir / "solved_wout_gate.json").exists()
-
-
-def test_driver_strict_upstream_qa_baseline_preset_is_admission_grade(
-    tmp_path: Path,
-) -> None:
-    if importlib.util.find_spec("vmec_jax") is None:
-        pytest.skip("vmec_jax is optional")
-
-    outdir = tmp_path / "strict_qa_baseline"
-    subprocess.run(
-        [
-            sys.executable,
-            str(DRIVER),
-            "--dry-run",
-            "--strict-upstream-qa-baseline",
-            "--outdir",
-            str(outdir),
-        ],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-
     summary = json.loads((outdir / "setup_summary.json").read_text(encoding="utf-8"))
-
-    assert summary["constraints_only"] is True
-    assert summary["use_simple_seed"] is True
-    assert summary["requested_input"].endswith("input.minimal_seed_nfp2")
-    assert summary["max_mode"] == 5
-    assert summary["min_vmec_mode"] == 7
-    assert summary["target_aspect"] == 5.0
-    assert summary["min_iota"] == pytest.approx(0.4102)
-    assert summary["strict_upstream_qa_baseline"] is True
-    assert summary["strict_iota_admission_buffer"] == pytest.approx(2.0e-4)
-    assert summary["iota_objective"] == "target"
-    assert summary["iota_profile_floor"] is None
-    assert summary["objectives"] == ["aspect", "iota", "qs"]
-    assert summary["optimizer"]["method"] == "scipy"
-    assert summary["optimizer_comparison"]["method"] == "scipy"
-    assert summary["optimizer_comparison"]["comparison_class"] == "constraints_only_qa"
-    assert summary["optimizer_comparison"]["transport_kind"] is None
-    assert summary["optimizer"]["scipy_tr_solver"] == "exact"
-    assert summary["optimizer"]["max_nfev"] >= 80
-    assert summary["optimizer"]["inner_max_iter"] >= 180
-    assert summary["optimizer"]["trial_max_iter"] >= 180
-    assert summary["optimizer"]["ftol"] <= 1.0e-5
-    assert summary["optimizer"]["gtol"] <= 1.0e-5
-    assert summary["optimizer"]["xtol"] <= 1.0e-8
-    assert summary["optimizer"]["use_ess"] is True
-    assert summary["optimizer"]["ess_alpha"] == 1.2
-    assert summary["optimizer"]["strict_upstream_qa_baseline"] is True
-    assert summary["optimizer"]["save_rerun_wouts"] is True
-    assert summary["optimizer"]["require_rerun_wout_gate"] is True
-    assert summary["optimizer"]["admit_authoritative_rerun_wout"] is False
-    assert summary["optimizer"]["wout_repro_mean_iota_atol"] == pytest.approx(5.0e-4)
-    assert summary["solved_wout_gate_policy"]["min_abs_mean_iota"] == 0.41
+    assert summary["api"] == "current_vmec_jax_opt_least_squares"
+    assert summary["transport_kind"] == "growth"
+    assert summary["sample_set"]["n_samples"] == 1
+    assert summary["mode_schedule"] == [1, 2]
+    assert summary["jacobian"] == "implicit"
+    assert summary["targets"] == {"aspect": 6.0, "mean_iota": 0.42}
+    assert summary["objectives"] == [
+        "quasisymmetry",
+        "aspect_ratio",
+        "mean_iota",
+        "growth",
+    ]
+    assert "screening evidence" in summary["claim_scope"]
+    assert "current_vmec_jax_opt_least_squares" in completed.stdout
+    assert not (outdir / "history.json").exists()
 
 
-def test_driver_updates_history_with_transport_metric(tmp_path: Path) -> None:
+def test_driver_constraints_only_and_derivative_policy(tmp_path: Path) -> None:
     mod = _load_driver()
-    path = tmp_path / "history.json"
-    path.write_text(
-        json.dumps({"objective_final": 1.0, "history": [{"objective": 1.0}]}),
-        encoding="utf-8",
+    args = mod._parse_args(
+        ["--input", "input.seed", "--constraints-only", "--transport-kind", "growth"]
     )
+    summary = mod._summary(args, jacobian="implicit")
 
-    mod._update_history_with_transport_metric(
-        path,
-        {
-            "transport_objective_final": 0.2,
-            "spectrax_objective_final": 0.2,
-            "transport_metric_final": 0.2,
-            "transport_objective_error": None,
-        },
-    )
+    assert summary["transport_kind"] is None
+    assert summary["objectives"] == ["quasisymmetry", "aspect_ratio", "mean_iota"]
+    with pytest.raises(SystemExit):
+        mod._parse_args(
+            [
+                "--input",
+                "input.seed",
+                "--transport-kind",
+                "quasilinear_flux",
+                "--jacobian",
+                "implicit",
+            ]
+        )
 
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    assert payload["transport_objective_final"] == 0.2
-    assert payload["spectrax_objective_final"] == 0.2
-    assert payload["transport_metric_final"] == 0.2
-    assert "transport_objective_error" not in payload
-    assert payload["history"][-1]["transport_objective_final"] == 0.2
+
+def test_driver_surface_index_is_interior_and_validated() -> None:
+    mod = _load_driver()
+    assert mod._surface_index(0.64, 13) == 8
+    assert mod._surface_index(0.99, 13) == 11
+    with pytest.raises(ValueError, match="strictly inside"):
+        mod._surface_index(1.0, 13)
+    with pytest.raises(ValueError, match="five radial"):
+        mod._surface_index(0.5, 4)
+
+
+@pytest.mark.parametrize(
+    ("option", "value"),
+    [
+        ("--objective-scale", "0"),
+        ("--ftol", "nan"),
+        ("--max-nfev", "0"),
+        ("--seed-perturbation", "inf"),
+    ],
+)
+def test_driver_rejects_invalid_numerical_controls(option: str, value: str) -> None:
+    mod = _load_driver()
+    with pytest.raises(SystemExit):
+        mod._parse_args(["--input", "input.seed", option, value])

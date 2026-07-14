@@ -2270,3 +2270,15 @@ under 5 minutes.
   ``s=0.64``, ``alpha=0``, ``k_y=0.3``, ``Nl=2``, ``Nm=3`` completed in 21 s
   and returned finite raw/log1p growth metrics 0.328296/0.283897, inside the
   literature-anchored unstable-ITG gate used by upstream integration tests.
+
+- 2026-07-14: Replaced the 942-line legacy QA campaign driver with a 301-line
+  current-VMEC-JAX owner. It now exposes one explicit protocol for the simple
+  QA seed, aspect/mean-iota/quasisymmetry terms, selectable growth/QL/reduced
+  nonlinear transport objectives, mode continuation, derivative policy, and
+  machine-readable input/WOUT/history outputs. Removed optimizer methods and
+  flags from the former ``FixedBoundaryVMEC`` generation are not emulated.
+  The public optimization chapter now documents the real
+  ``VmecInput``/``solve_equilibrium``/``opt.least_squares`` path and separates
+  historical campaign artifacts from current reproduction commands. All 21
+  focused driver and admission tests pass, including fail-fast gates for
+  invalid radial grids, scales, tolerances, solve budgets, and seed controls.
