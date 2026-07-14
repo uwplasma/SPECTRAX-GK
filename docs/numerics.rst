@@ -631,9 +631,12 @@ associated-Laguerre prefactors for :math:`J_m`, :math:`m=0,1,2`, additionally
 reconstruct the independent Bessel functions over velocity space. The
 Appendix-A Coulomb speed integrals :math:`e_k` and :math:`E_k` are generated at
 80-digit precision and checked independently by improper quadrature for several
-orders and unequal thermal-speed ratios. The test-/field-particle matrix
-contractions remain offline-generator work; these exact primitives must not be
-interpreted as a complete finite-:math:`b` Sugama or Coulomb operator.
+orders and unequal thermal-speed ratios. Generalized-Laguerre monomial
+coefficients from equation (3.10) reconstruct independent polynomials through
+order eight. The cancellation-sensitive basis transforms and test-/field-
+particle matrix contractions remain offline-generator work; these exact
+primitives must not be interpreted as a complete finite-:math:`b` Sugama or
+Coulomb operator.
 
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,

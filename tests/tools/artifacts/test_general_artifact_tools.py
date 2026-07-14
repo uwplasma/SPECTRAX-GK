@@ -1832,6 +1832,36 @@ def test_coulomb_speed_integrals_match_independent_quadrature() -> None:
         mod.coulomb_speed_integrals(1, 1.0, digits=10)
 
 
+def test_associated_laguerre_monomial_coefficients_reconstruct_polynomials() -> None:
+    """Frei et al. Eq. (3.10) must reconstruct independent polynomials."""
+    from scipy.special import eval_genlaguerre
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    x = np.linspace(0.0, 12.0, 61)
+    for tensor_order in (0, 1, 4):
+        for polynomial_order in (0, 3, 8):
+            coefficients = mod.associated_laguerre_monomial_coefficients(
+                polynomial_order,
+                tensor_order,
+                digits=80,
+            )
+            reconstructed = np.polynomial.polynomial.polyval(x, coefficients)
+            expected = eval_genlaguerre(
+                polynomial_order,
+                tensor_order + 0.5,
+                x,
+            )
+            np.testing.assert_allclose(
+                reconstructed, expected, rtol=2.0e-10, atol=2.0e-8
+            )
+
+    for args, message in (((-1, 0), "polynomial_order"), ((1, -1), "tensor_order")):
+        with pytest.raises(ValueError, match=message):
+            mod.associated_laguerre_monomial_coefficients(*args)
+    with pytest.raises(ValueError, match="digits"):
+        mod.associated_laguerre_monomial_coefficients(1, 1, digits=10)
+
+
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
     mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"

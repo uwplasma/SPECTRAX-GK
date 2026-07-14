@@ -109,6 +109,44 @@ def coulomb_speed_integrals(
     )
 
 
+def associated_laguerre_monomial_coefficients(
+    polynomial_order: int,
+    tensor_order: int,
+    *,
+    digits: int = 80,
+) -> np.ndarray:
+    r"""Return monomial coefficients of ``L_j^(p+1/2)``.
+
+    This is equation (3.10) of Frei et al. (2021), evaluated with
+    multiprecision arithmetic for the offline collision-table generator.
+    Coefficient index ``ell`` multiplies ``x**ell``.
+    """
+
+    if polynomial_order < 0:
+        raise ValueError("polynomial_order must be >= 0")
+    if tensor_order < 0:
+        raise ValueError("tensor_order must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        half = mp.mpf("0.5")
+        numerator = mp.gamma(tensor_order + polynomial_order + 1 + half)
+        coefficients = [
+            (-1) ** ell
+            * numerator
+            / (
+                mp.factorial(polynomial_order - ell)
+                * mp.gamma(ell + tensor_order + 1 + half)
+                * mp.factorial(ell)
+            )
+            for ell in range(polynomial_order + 1)
+        ]
+    return np.asarray([float(value) for value in coefficients])
+
+
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
     """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 

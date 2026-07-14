@@ -415,6 +415,12 @@ speed ratios agree with direct improper quadrature of their defining
 integrals. They remain generator internals because the complete matrix
 contractions that consume them are not yet implemented.
 
+The same generator evaluates equation (3.10)'s monomial coefficients for
+:math:`L_j^{p+1/2}(x)`. Independent generalized-Laguerre evaluations verify
+tensor orders :math:`p=0,1,4` through polynomial order :math:`j=8`. The next
+basis-transform coefficients are cancellation-sensitive and require the full
+Jorge et al. (2019) formulas; they remain the next provenance-reviewed block.
+
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.
