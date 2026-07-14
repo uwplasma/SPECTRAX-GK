@@ -412,7 +412,13 @@ The offline generator also evaluates the Coulomb speed integrals
 :math:`e_{ab}^k` and :math:`E_{ab}^k` from Appendix A, equations (A8a)--(A8b),
 with 80-digit arithmetic. Orders zero through five at three unequal thermal-
 speed ratios agree with direct improper quadrature of their defining
-integrals. They remain generator internals because the complete matrix
+integrals. ``coulomb_speed_moments`` now composes those integrals into the
+velocity-integrated test and field functions in equations (A5) and (A13).
+Six cases spanning :math:`0.25\leq m_a/m_b\leq4`,
+:math:`0.5\leq T_a/T_b\leq3`, and spherical order zero through three agree
+with direct three-dimensional Maxwellian quadrature of equations (A2) and
+(A10). The equal-species density moment vanishes and the momentum test/field
+pieces cancel. These remain generator internals because the complete matrix
 contractions that consume them are not yet implemented.
 
 The same generator evaluates equation (3.10)'s monomial coefficients for

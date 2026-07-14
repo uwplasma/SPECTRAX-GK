@@ -67,6 +67,22 @@ DEFAULT_COLLISION_TABLE = (
 DEFAULT_COLLISION_METADATA = DEFAULT_COLLISION_TABLE.with_suffix(".json")
 
 
+def _coulomb_e_mp(order: int, chi: Any, mp: Any) -> Any:
+    half = mp.mpf("0.5")
+    return mp.gamma(order + half) / (mp.gamma(half) * (1 + chi * chi) ** (order + half))
+
+
+def _coulomb_E_mp(order: int, chi: Any, mp: Any) -> Any:
+    return (
+        chi
+        / 2
+        * sum(
+            mp.factorial(order) / mp.factorial(index) * _coulomb_e_mp(index, chi, mp)
+            for index in range(order + 1)
+        )
+    )
+
+
 def coulomb_speed_integrals(
     max_order: int,
     chi: float,
@@ -91,22 +107,186 @@ def coulomb_speed_integrals(
 
     with mp.workdps(digits):
         chi_mp = mp.mpf(chi)
-        denominator = 1 + chi_mp * chi_mp
-        e_values = [
-            mp.gamma(k + mp.mpf("0.5"))
-            / (mp.gamma(mp.mpf("0.5")) * denominator ** (k + mp.mpf("0.5")))
-            for k in range(max_order + 1)
-        ]
-        E_values = [
-            chi_mp
-            / 2
-            * sum(mp.factorial(k) / mp.factorial(j) * e_values[j] for j in range(k + 1))
-            for k in range(max_order + 1)
-        ]
+        e_values = [_coulomb_e_mp(order, chi_mp, mp) for order in range(max_order + 1)]
+        E_values = [_coulomb_E_mp(order, chi_mp, mp) for order in range(max_order + 1)]
     return (
         np.asarray([float(value) for value in e_values]),
         np.asarray([float(value) for value in E_values]),
     )
+
+
+def coulomb_speed_moments(
+    spherical_order: int,
+    spherical_radial_order: int,
+    speed_power_order: int,
+    mass_ratio: float,
+    temperature_ratio: float,
+    *,
+    collision_frequency: float = 1.0,
+    digits: int = 80,
+) -> tuple[float, float]:
+    r"""Return velocity-integrated Coulomb test and field speed functions.
+
+    The result is ``(nu_T, nu_F)`` from equations (A5) and (A13) of Frei et
+    al. (2021) for ``sigma=mass_ratio`` and ``tau=temperature_ratio``.
+    """
+
+    if any(
+        order < 0
+        for order in (spherical_order, spherical_radial_order, speed_power_order)
+    ):
+        raise ValueError("basis orders must be >= 0")
+    if mass_ratio <= 0.0 or not math.isfinite(mass_ratio):
+        raise ValueError("mass_ratio must be finite and > 0")
+    if temperature_ratio <= 0.0 or not math.isfinite(temperature_ratio):
+        raise ValueError("temperature_ratio must be finite and > 0")
+    if collision_frequency < 0.0 or not math.isfinite(collision_frequency):
+        raise ValueError("collision_frequency must be finite and >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        p = spherical_order
+        j = spherical_radial_order
+        d = speed_power_order
+        sigma = mp.mpf(mass_ratio)
+        tau = mp.mpf(temperature_ratio)
+        nu = mp.mpf(collision_frequency)
+        chi = mp.sqrt(tau / sigma)
+        inverse_sqrt_pi = 1 / mp.sqrt(mp.pi)
+        test_moment = mp.mpf(0)
+        field_moment = mp.mpf(0)
+
+        for monomial_order in range(j + 1):
+            laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
+                j,
+                p,
+                monomial_order,
+                mp,
+            )
+            common_polynomial = (
+                4 * monomial_order**2
+                + 4 * monomial_order * (p - 1)
+                + mp.mpf("1.5") * p * (p - 1)
+            )
+            test_erf_coefficients = (
+                -4 * sigma * (tau - 1) / tau,
+                4 * sigma / tau * monomial_order * (tau - 2)
+                - p * (p - 2 * sigma + 4 * sigma / tau + 1),
+                sigma / tau * common_polynomial,
+            )
+            test_gaussian_coefficients = (
+                4 * (tau - 1) * (sigma + tau) / tau,
+                -2 * (p + 2 * monomial_order) * (sigma / tau * (tau - 2) - 1),
+                -sigma / tau * common_polynomial,
+            )
+            for summation_order in range(3):
+                erf_coefficient = test_erf_coefficients[summation_order]
+                gaussian_coefficient = test_gaussian_coefficients[summation_order]
+                if erf_coefficient != 0:
+                    integral_order = d + monomial_order + p - summation_order
+                    test_moment += (
+                        laguerre_coefficient
+                        * erf_coefficient
+                        * 4
+                        * nu
+                        * inverse_sqrt_pi
+                        * _coulomb_E_mp(integral_order, chi, mp)
+                    )
+                if gaussian_coefficient != 0:
+                    integral_order = d + monomial_order + p - summation_order + 1
+                    test_moment += (
+                        laguerre_coefficient
+                        * gaussian_coefficient
+                        * 4
+                        * chi
+                        * nu
+                        * inverse_sqrt_pi
+                        * _coulomb_e_mp(integral_order, chi, mp)
+                    )
+
+            field_prime_coefficients = (
+                4 * tau**2 / sigma,
+                -8 * (p * p + p - 1) / ((2 * p - 1) * (2 * p + 3)),
+            )
+            field_plus_coefficients = (
+                -8 * p * (p - 1) * (monomial_order + 1) / ((2 * p + 1) * (2 * p - 1))
+                - 8 * tau * (1 + p - sigma * p) / (sigma * (2 * p + 1)),
+                8 * (p + 1) * (p + 2) / ((2 * p + 1) * (2 * p + 3)),
+            )
+            field_minus_coefficients = (
+                4
+                * (p + 1)
+                * (p + 2)
+                * (2 * p + 2 * monomial_order + 3)
+                / ((2 * p + 1) * (2 * p + 3))
+                + 8 * chi**2 * (p - sigma * p - sigma) / (2 * p + 1),
+                -8 * p * (p - 1) / ((2 * p + 1) * (2 * p - 1)),
+            )
+            for summation_order in range(2):
+                beta_e = (
+                    4
+                    * nu
+                    * inverse_sqrt_pi
+                    * chi ** (p + 2 * monomial_order + 2 * summation_order - 1)
+                    * _coulomb_e_mp(
+                        p + 1 + d + monomial_order + summation_order,
+                        chi,
+                        mp,
+                    )
+                )
+                beta_plus = (
+                    4
+                    * nu
+                    * inverse_sqrt_pi
+                    * chi ** (p + 2 * summation_order - 1)
+                    * sum(
+                        chi ** (2 * inner_order)
+                        * mp.factorial(monomial_order)
+                        / mp.factorial(inner_order)
+                        * _coulomb_e_mp(
+                            p + summation_order + 1 + d + inner_order,
+                            chi,
+                            mp,
+                        )
+                        / 2
+                        for inner_order in range(monomial_order + 1)
+                    )
+                )
+                gamma_factor = mp.gamma(p + monomial_order + mp.mpf("1.5"))
+                beta_minus = (
+                    4
+                    * nu
+                    * inverse_sqrt_pi
+                    * chi ** (2 * summation_order - p - 2)
+                    * (
+                        gamma_factor
+                        / mp.gamma(mp.mpf("1.5"))
+                        * _coulomb_E_mp(d + summation_order, chi, mp)
+                        / 2
+                        - sum(
+                            chi ** (2 * inner_order + 1)
+                            * gamma_factor
+                            / mp.gamma(inner_order + mp.mpf("1.5"))
+                            * _coulomb_e_mp(
+                                d + summation_order + inner_order + 1,
+                                chi,
+                                mp,
+                            )
+                            / 2
+                            for inner_order in range(p + monomial_order + 1)
+                        )
+                    )
+                )
+                field_moment += laguerre_coefficient * (
+                    field_prime_coefficients[summation_order] * beta_e
+                    + field_plus_coefficients[summation_order] * beta_plus
+                    + field_minus_coefficients[summation_order] * beta_minus
+                )
+
+    return float(test_moment), float(field_moment)
 
 
 def associated_laguerre_monomial_coefficients(

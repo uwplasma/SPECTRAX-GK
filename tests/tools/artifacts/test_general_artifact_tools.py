@@ -1835,6 +1835,156 @@ def test_coulomb_speed_integrals_match_independent_quadrature() -> None:
         mod.coulomb_speed_integrals(1, 1.0, digits=10)
 
 
+def test_coulomb_speed_moments_match_direct_maxwellian_quadrature() -> None:
+    """Frei et al. Eqs. (A5) and (A13) must integrate Eqs. (A2) and (A10)."""
+    from scipy.integrate import quad
+    from scipy.special import erf, gamma, gammainc, gammaincc
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    inverse_sqrt_pi = 1.0 / np.sqrt(np.pi)
+
+    def incomplete_gamma(order: int, argument: float, *, upper: bool) -> float:
+        shape = 0.5 * (order + 1)
+        regularized = gammaincc(shape, argument) if upper else gammainc(shape, argument)
+        return float(gamma(shape) * regularized * inverse_sqrt_pi)
+
+    def direct_speed_functions(
+        speed: float,
+        p: int,
+        j: int,
+        sigma: float,
+        tau: float,
+    ) -> tuple[float, float]:
+        chi = np.sqrt(tau / sigma)
+        species_speed = chi * speed
+        gaussian = 2.0 * inverse_sqrt_pi * np.exp(-(species_speed**2))
+        erf_over_speed = erf(species_speed) / species_speed
+        laguerre = mod.associated_laguerre_monomial_coefficients(j, p)
+        test = 0.0
+        field = 0.0
+        for monomial_order, laguerre_coefficient in enumerate(laguerre):
+            common = (
+                4 * monomial_order**2 + 4 * monomial_order * (p - 1) + 1.5 * p * (p - 1)
+            )
+            test_erf = (
+                -4 * sigma * (tau - 1) / tau,
+                4 * sigma / tau * monomial_order * (tau - 2)
+                - p * (p - 2 * sigma + 4 * sigma / tau + 1),
+                sigma / tau * common,
+            )
+            test_gaussian = (
+                4 * (tau - 1) * (sigma + tau) / tau,
+                -2 * (p + 2 * monomial_order) * (sigma / tau * (tau - 2) - 1),
+                -sigma / tau * common,
+            )
+            test += (
+                laguerre_coefficient
+                * chi
+                * speed ** (2 * monomial_order + p)
+                * sum(
+                    (
+                        erf_over_speed * test_erf[summation_order]
+                        + gaussian * test_gaussian[summation_order]
+                    )
+                    / speed ** (2 * summation_order)
+                    for summation_order in range(3)
+                )
+            )
+
+            field_prime = (
+                4 * tau**2 / sigma,
+                -8 * (p * p + p - 1) / ((2 * p - 1) * (2 * p + 3)),
+            )
+            field_plus = (
+                -8 * p * (p - 1) * (monomial_order + 1) / ((2 * p + 1) * (2 * p - 1))
+                - 8 * tau * (1 + p - sigma * p) / (sigma * (2 * p + 1)),
+                8 * (p + 1) * (p + 2) / ((2 * p + 1) * (2 * p + 3)),
+            )
+            field_minus = (
+                4
+                * (p + 1)
+                * (p + 2)
+                * (2 * p + 2 * monomial_order + 3)
+                / ((2 * p + 1) * (2 * p + 3))
+                + 8 * chi**2 * (p - sigma * p - sigma) / (2 * p + 1),
+                -8 * p * (p - 1) / ((2 * p + 1) * (2 * p - 1)),
+            )
+            field += (
+                laguerre_coefficient
+                / chi
+                * sum(
+                    species_speed ** (p + 2 * (monomial_order + summation_order))
+                    * field_prime[summation_order]
+                    * gaussian
+                    + incomplete_gamma(
+                        2 * monomial_order + 1,
+                        species_speed**2,
+                        upper=True,
+                    )
+                    * species_speed ** (p + 2 * summation_order)
+                    * field_plus[summation_order]
+                    + field_minus[summation_order]
+                    * incomplete_gamma(
+                        2 * (p + monomial_order + 1),
+                        species_speed**2,
+                        upper=False,
+                    )
+                    / species_speed ** (p + 1 - 2 * summation_order)
+                    for summation_order in range(2)
+                )
+            )
+        return float(test), float(field)
+
+    cases = (
+        (0, 0, 0, 1.0, 1.0),
+        (1, 0, 0, 1.0, 1.0),
+        (2, 1, 0, 1.0, 1.0),
+        (1, 2, 1, 0.25, 2.0),
+        (3, 1, 2, 4.0, 0.5),
+        (0, 2, 2, 0.5, 3.0),
+    )
+    for p, j, d, sigma, tau in cases:
+        generated = mod.coulomb_speed_moments(p, j, d, sigma, tau, digits=80)
+
+        def integrand(speed: float, component: int) -> float:
+            maxwellian_measure = 4 * inverse_sqrt_pi * speed**2 * np.exp(-(speed**2))
+            return (
+                maxwellian_measure
+                * speed ** (p + 2 * d)
+                * direct_speed_functions(speed, p, j, sigma, tau)[component]
+            )
+
+        projected = tuple(
+            quad(
+                lambda speed, component=component: integrand(speed, component),
+                1.0e-6,
+                12.0,
+                epsabs=2.0e-10,
+                epsrel=2.0e-10,
+                limit=300,
+            )[0]
+            for component in range(2)
+        )
+        np.testing.assert_allclose(generated, projected, rtol=3.0e-11, atol=3.0e-10)
+
+    density = mod.coulomb_speed_moments(0, 0, 0, 1.0, 1.0)
+    momentum = mod.coulomb_speed_moments(1, 0, 0, 1.0, 1.0)
+    np.testing.assert_allclose(density, 0.0, atol=2.0e-14)
+    np.testing.assert_allclose(sum(momentum), 0.0, atol=2.0e-14)
+
+    for args, message in (
+        ((-1, 0, 0, 1.0, 1.0), "basis orders"),
+        ((0, 0, 0, 0.0, 1.0), "mass_ratio"),
+        ((0, 0, 0, 1.0, 0.0), "temperature_ratio"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            mod.coulomb_speed_moments(*args)
+    with pytest.raises(ValueError, match="collision_frequency"):
+        mod.coulomb_speed_moments(0, 0, 0, 1.0, 1.0, collision_frequency=-1.0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.coulomb_speed_moments(0, 0, 0, 1.0, 1.0, digits=10)
+
+
 def test_associated_laguerre_monomial_coefficients_reconstruct_polynomials() -> None:
     """Frei et al. Eq. (3.10) must reconstruct independent polynomials."""
     from scipy.special import eval_genlaguerre
