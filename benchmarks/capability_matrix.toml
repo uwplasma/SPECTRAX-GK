@@ -135,7 +135,7 @@ group = "optional_extension"
 status = "validated_scoped"
 spectrax_owner = "spectraxgk.operators.linear.dissipation drift-kinetic Sugama and Coulomb six-moment contributions"
 comparison_owner = "published analytic six-gyromoment matrices"
-evidence = "Frei, Ernst & Ricci (2022) Appendix C equations C6a-C6f and C9a-C9f; exact matrix, null-space, invariant, symmetry, dissipation, and JVP/finite-difference gates"
+evidence = "Frei, Ernst & Ricci (2022) Appendix C equations C6a-C6f and C9a-C9f; exact matrix, null-space, invariant, symmetry, dissipation, generated-table checksum/direct identity, and JVP/finite-difference gates"
 
 [[capabilities]]
 id = "linearized_sugama_or_coulomb_collisions"

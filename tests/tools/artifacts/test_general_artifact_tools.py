@@ -1723,6 +1723,37 @@ def test_generate_kbm_branch_gate_summary_main_writes_strict_json(
     }
 
 
+def test_generate_collision_table_is_reproducible_and_matches_tracked_data(
+    tmp_path: Path,
+) -> None:
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    out = tmp_path / "collision.npy"
+    metadata_out = tmp_path / "collision.json"
+
+    assert (
+        mod.main(
+            [
+                "collision-table",
+                "--out",
+                str(out),
+                "--metadata-out",
+                str(metadata_out),
+                "--digits",
+                "80",
+            ]
+        )
+        == 0
+    )
+    metadata = json.loads(metadata_out.read_text())
+    tracked = np.load(mod.DEFAULT_COLLISION_TABLE, allow_pickle=False)
+    generated = np.load(out, allow_pickle=False)
+    np.testing.assert_array_equal(generated, tracked)
+    assert metadata["models"] == ["sugama", "coulomb"]
+    assert metadata["shape"] == [2, 8, 8]
+    assert metadata["sha256"] == mod.hashlib.sha256(out.read_bytes()).hexdigest()
+    assert metadata["precision_decimal_digits"] == 80
+
+
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
     mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"

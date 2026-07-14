@@ -329,6 +329,29 @@ six-moment projection and is therefore not selected by TOML or presented as a
 full Hermite--Laguerre hierarchy, finite-Larmor-radius, multispecies, or
 production Sugama/Coulomb implementation.
 
+The same C6/C9 coefficients also exercise the production table boundary. The
+maintainer command
+
+.. code-block:: console
+
+   python tools/artifacts/build_linear_validation_artifacts.py collision-table
+
+evaluates the analytic coefficients with 80-decimal-digit ``mpmath``
+arithmetic, writes a deterministic ``float64`` array, and records its SHA-256,
+mode ordering, polynomial convention, source equations, and claim scope in a
+JSON sidecar. ``load_collision_moment_matrix(model)`` verifies the package-data
+checksum before returning a host array. ``apply_collision_moment_matrix`` then
+packs ``(ell,m)`` into the paper's Hermite-major ordering, applies either one
+shared or one matrix per species in JAX, and restores the state layout. Tests
+require generated-table/direct-equation identity for both models and JVP/finite-
+difference agreement through state amplitude and collision frequency.
+
+This vertical slice establishes the table format and traced runtime application
+needed by the full operator. It does not imply that repeating the six-moment
+matrix at higher resolution is valid. Full tables must populate every retained
+Hermite--Laguerre coupling from the published finite-:math:`b`, mass-ratio, and
+temperature-ratio sums and pass the stronger gates below.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments

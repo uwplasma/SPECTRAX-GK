@@ -2,6 +2,7 @@
 """Generate linear-validation figures and gate reports.
 
 Subcommands:
+  collision-table Generate checked high-precision collision coefficient data.
   figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
@@ -10,6 +11,7 @@ Subcommands:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -55,6 +57,88 @@ DEFAULT_KBM_CANDIDATES = (
     REPO_ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv"
 )
 DEFAULT_KBM_BRANCH_OUT = REPO_ROOT / "docs" / "_static" / "kbm_branch_gate_summary.json"
+DEFAULT_COLLISION_TABLE = (
+    REPO_ROOT / "src" / "spectraxgk" / "data" / "advanced_collision_six_moment.npy"
+)
+DEFAULT_COLLISION_METADATA = DEFAULT_COLLISION_TABLE.with_suffix(".json")
+
+
+def build_collision_table(*, digits: int = 80) -> np.ndarray:
+    """Generate the published C6/C9 matrices using multiprecision arithmetic."""
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        inverse_sqrt_pi = 1 / mp.sqrt(mp.pi)
+        sqrt_two = mp.sqrt(2)
+        sqrt_three = mp.sqrt(3)
+        blocks = (
+            (
+                (-64 * sqrt_two / 45, 64 / 45, -32 * sqrt_two / 45),
+                (
+                    -361 * sqrt_two / 175,
+                    208 / (175 * sqrt_three),
+                    -1187 * sqrt_two / 525,
+                ),
+            ),
+            (
+                (-16 * sqrt_two / 15, 16 / 15, -8 * sqrt_two / 15),
+                (-8 * sqrt_two / 5, 8 / (5 * sqrt_three), -28 * sqrt_two / 15),
+            ),
+        )
+        matrices = np.zeros((2, 8, 8), dtype=np.float64)
+        temperature_modes = (4, 1)
+        heat_modes = (6, 3)
+        for model, (thermal, heat) in enumerate(blocks):
+            for modes, coefficients in (
+                (temperature_modes, thermal),
+                (heat_modes, heat),
+            ):
+                row0, row1 = modes
+                diagonal0, coupling, diagonal1 = coefficients
+                matrices[model, row0, row0] = float(diagonal0 * inverse_sqrt_pi)
+                matrices[model, row0, row1] = float(coupling * inverse_sqrt_pi)
+                matrices[model, row1, row0] = float(coupling * inverse_sqrt_pi)
+                matrices[model, row1, row1] = float(diagonal1 * inverse_sqrt_pi)
+    return matrices
+
+
+def write_collision_table(
+    out: Path, metadata_out: Path, *, digits: int = 80
+) -> dict[str, Any]:
+    matrices = build_collision_table(digits=digits)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("wb") as stream:
+        np.save(stream, matrices, allow_pickle=False)
+    digest = hashlib.sha256(out.read_bytes()).hexdigest()
+    metadata = {
+        "kind": "spectraxgk_collision_moment_coefficients",
+        "models": ["sugama", "coulomb"],
+        "shape": list(matrices.shape),
+        "dtype": str(matrices.dtype),
+        "sha256": digest,
+        "precision_decimal_digits": int(digits),
+        "moment_order": "hermite_major_index=p*Nl+j",
+        "Nl": 2,
+        "Nm": 4,
+        "laguerre_convention": "spectraxgk_opposite_to_paper",
+        "source": "Frei, Ernst & Ricci (2022), arXiv:2202.06293",
+        "equations": {"sugama": "C6a-C6f", "coulomb": "C9a-C9f"},
+        "claim_scope": "validated_drift_kinetic_like_species_six_moment_vertical_slice",
+    }
+    metadata_out.parent.mkdir(parents=True, exist_ok=True)
+    metadata_out.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+    return metadata
+
+
+def build_collision_table_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate collision coefficient tables."
+    )
+    parser.add_argument("--out", type=Path, default=DEFAULT_COLLISION_TABLE)
+    parser.add_argument("--metadata-out", type=Path, default=DEFAULT_COLLISION_METADATA)
+    parser.add_argument("--digits", type=int, default=80)
+    return parser
 
 
 def build_figures_parser() -> argparse.ArgumentParser:
@@ -512,12 +596,23 @@ def main_kbm_branch(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_table(argv: list[str] | None = None) -> int:
+    args = build_collision_table_parser().parse_args(argv)
+    metadata = write_collision_table(
+        args.out, args.metadata_out, digits=int(args.digits)
+    )
+    print(f"Wrote {args.out} ({metadata['sha256']})")
+    print(f"Wrote {args.metadata_out}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument(
-            "command", choices=("figures", "observed-order", "kbm-branch")
+            "command",
+            choices=("figures", "observed-order", "kbm-branch", "collision-table"),
         )
         parser.print_help()
         return 2
@@ -528,6 +623,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_observed_order(rest)
     if command == "kbm-branch":
         return main_kbm_branch(rest)
+    if command == "collision-table":
+        return main_collision_table(rest)
     raise SystemExit(f"unknown command: {command}")
 
 

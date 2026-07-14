@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -14,8 +15,16 @@ from spectraxgk.core.velocity import J_l_all, gamma0, sum_Jl2
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.operators import hermite_streaming
+from spectraxgk.operators.linear import (
+    apply_collision_moment_matrix,
+    load_collision_moment_matrix,
+)
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import TermConfig
+from spectraxgk.terms.linear_terms import (
+    drift_kinetic_coulomb_six_moment_contribution,
+    drift_kinetic_sugama_six_moment_contribution,
+)
 from spectraxgk.runtime import run_runtime_scan
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
@@ -62,6 +71,67 @@ def test_linear_operator_package_reexports_streaming_kernel() -> None:
 
     assert hermite_streaming is package_streaming
     assert package_streaming is streaming_impl
+
+
+@pytest.mark.parametrize(
+    ("model", "direct"),
+    [
+        ("sugama", drift_kinetic_sugama_six_moment_contribution),
+        ("coulomb", drift_kinetic_coulomb_six_moment_contribution),
+    ],
+)
+def test_generated_collision_matrix_matches_direct_published_equations(
+    model, direct
+) -> None:
+    state = (
+        jnp.arange(2 * 2 * 4 * 2, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 2) + 0.17j
+    ).astype(jnp.complex64)
+    frequency = jnp.asarray([0.2, 0.35], dtype=jnp.float32)
+    table_result = apply_collision_moment_matrix(
+        state,
+        load_collision_moment_matrix(model),
+        nu=frequency,
+        weight=jnp.asarray(0.7),
+    )
+    direct_result = direct(state, nu=frequency, weight=jnp.asarray(0.7))
+    np.testing.assert_allclose(
+        np.asarray(table_result), np.asarray(direct_result), rtol=2.0e-6, atol=2.0e-6
+    )
+
+
+def test_collision_matrix_application_is_differentiable_and_fail_closed() -> None:
+    state = (
+        jnp.arange(8, dtype=jnp.float32).reshape(2, 4, 1, 1, 1).astype(jnp.complex64)
+    )
+    matrix = jnp.asarray(load_collision_moment_matrix("coulomb"))
+    frequency = jnp.asarray([0.3], dtype=jnp.float32)
+    tangent = jax.jvp(
+        lambda scale, nu: apply_collision_moment_matrix(scale * state, matrix, nu=nu),
+        (jnp.asarray(1.0), frequency),
+        (jnp.asarray(0.4), jnp.asarray([0.2])),
+    )[1]
+    step = jnp.asarray(1.0e-3)
+    plus = apply_collision_moment_matrix(
+        (1.0 + 0.4 * step) * state, matrix, nu=frequency + 0.2 * step
+    )
+    minus = apply_collision_moment_matrix(
+        (1.0 - 0.4 * step) * state, matrix, nu=frequency - 0.2 * step
+    )
+    np.testing.assert_allclose(
+        np.asarray(tangent),
+        np.asarray((plus - minus) / (2.0 * step)),
+        rtol=3.0e-4,
+        atol=3.0e-4,
+    )
+
+    with pytest.raises(ValueError, match="collision model must be one of"):
+        load_collision_moment_matrix("unknown")
+    with pytest.raises(ValueError, match="collision matrix must have shape"):
+        apply_collision_moment_matrix(state, jnp.eye(7), nu=frequency)
+    with pytest.raises(ValueError, match="nu must have length 2"):
+        apply_collision_moment_matrix(
+            jnp.broadcast_to(state, (2,) + state.shape), matrix, nu=jnp.ones(3)
+        )
 
 
 def test_gamma0_basic_properties() -> None:
@@ -202,9 +272,7 @@ def test_full_operator_scan_relaxed() -> None:
         ntheta=32,
         nperiod=2,
     )
-    base_cfg, _ = load_runtime_from_toml(
-        "examples/linear/axisymmetric/cyclone.toml"
-    )
+    base_cfg, _ = load_runtime_from_toml("examples/linear/axisymmetric/cyclone.toml")
     cfg = replace(base_cfg, grid=grid)
     ky_values = np.array([0.2, 0.3, 0.4])
 

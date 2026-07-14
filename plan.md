@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 88% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published like-species drift-kinetic Sugama and exact Coulomb six-gyromoment matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates through one shared kernel. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a separate research lane requiring generated coefficients plus relaxation, conductivity, ITG, zonal, and convergence gates. |
+| Advanced collision operators | 91% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published like-species drift-kinetic Sugama and exact Coulomb six-gyromoment matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. An 80-digit generator, checksummed package table, and species-aware JAX dense-moment application reproduce both direct equations. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring all generated couplings plus relaxation, conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 97% | The bracket has one numerical owner and a clean A4000 profile; an identity-breaking FFT-layout rewrite was rejected. Require fresh identity and memory evidence for every future optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -283,6 +283,19 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-14: Completed the first advanced-collision generated-table vertical
+  slice without adding a source, test, or tool file. The consolidated linear
+  validation command now evaluates the published C6/C9 matrices with 80-digit
+  ``mpmath`` arithmetic and writes a deterministic 1.2 KB ``.npy`` table plus
+  SHA-256/source/convention metadata. Package-resource loading fails closed on
+  checksum or shape drift, and a generic species-aware JAX moment-matrix kernel
+  preserves Hermite-major paper ordering while restoring the code's state
+  layout. Generated Sugama/Coulomb results agree with both direct equation
+  kernels, and state/frequency JVPs agree with centered finite differences.
+  The office audit found no retained COSOlver source or coefficient matrices,
+  so the next tranche must implement or provenance-review the complete
+  finite-``b`` coefficient generator rather than silently import unknown data.
 
 - 2026-07-14: Added the exact linearized Coulomb companion to the reduced
   Sugama equation gate using Frei, Ernst & Ricci (2022), Appendix C, equations
