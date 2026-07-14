@@ -295,6 +295,14 @@ That topology is the reference design for the production parallel lane.
   package table now includes the independent equation-(103) endpoint. This is
   a friction-flow equation gate, not a conductivity promotion.
 
+- 2026-07-14: Added a time-integrated finite-wavelength admission boundary for
+  the reduced improved-Sugama operator. In a deterministic ``Nl=2, Nm=4``
+  Cyclone probe, strong collisions damp the intermediate ``ky`` mode but
+  destabilize the higher-``ky`` short-wave branch. This reproduces the failure
+  mechanism reported when collisional FLR terms are omitted and is retained as
+  negative evidence: the reduced drift-kinetic operator remains Python-only
+  and configuration-file promotion requires the full finite-``b`` hierarchy.
+
 - 2026-07-14: Added a vectorized physical-species assembler for the reduced
   multispecies Sugama pair operator and an independent matrix-exponential
   relaxation gate. A two-species state preserves particle number, total

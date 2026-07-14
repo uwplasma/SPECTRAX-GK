@@ -13,9 +13,15 @@ import pytest
 from spectraxgk.config import GridConfig
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all, gamma0, sum_Jl2
+from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.linear import LinearTerms, linear_rhs_cached
+from spectraxgk.linear import (
+    LinearParams,
+    LinearTerms,
+    build_linear_cache,
+    integrate_linear,
+    linear_rhs_cached,
+)
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
@@ -579,6 +585,64 @@ def test_multispecies_sugama_operator_runs_through_linear_rhs() -> None:
     np.testing.assert_allclose(rates.particle_density, 0.0, atol=2.0e-6)
     np.testing.assert_allclose(rates.total_parallel_momentum, 0.0, atol=4.0e-6)
     np.testing.assert_allclose(rates.total_thermal_energy, 0.0, atol=1.0e-5)
+
+
+def test_drift_kinetic_collision_model_is_blocked_for_short_wave_itg() -> None:
+    grid = build_spectral_grid(GridConfig(Nx=2, Ny=8, Nz=16, Lx=10.0, Ly=20.0))
+    geometry = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18)
+    params = LinearParams(R_over_Ln=2.2, R_over_LTi=6.9, damp_ends_amp=0.0)
+    random = np.random.default_rng(7)
+    state = jnp.asarray(
+        1.0e-5
+        * (
+            random.standard_normal((2, 4, 8, 2, 16))
+            + 1j * random.standard_normal((2, 4, 8, 2, 16))
+        ),
+        dtype=jnp.complex64,
+    )
+    operator = DriftKineticSugamaOperator.from_improved_species(
+        jnp.ones(1), jnp.ones(1), jnp.ones(1)
+    )
+    term_values = dict(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    growth = {}
+    for collision_frequency in (0.0, 3.0):
+        _, phi = integrate_linear(
+            state,
+            grid,
+            geometry,
+            params,
+            dt=0.01,
+            steps=1000,
+            method="rk4",
+            terms=LinearTerms(
+                collisions=collision_frequency,
+                **term_values,
+            ),
+            sample_stride=10,
+            collision_operator=None if collision_frequency == 0.0 else operator,
+        )
+        times = 0.1 * (np.arange(phi.shape[0]) + 1.0)
+        growth[collision_frequency] = {
+            index: fit_growth_rate(
+                times, np.asarray(phi[:, index, 0, 8]), tmin=5.0, tmax=10.0
+            )[0]
+            for index in (2, 3)
+        }
+
+    assert growth[3.0][2] < growth[0.0][2] - 0.3
+    assert growth[3.0][3] > growth[0.0][3] + 0.5
 
 
 def test_gamma0_basic_properties() -> None:

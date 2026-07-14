@@ -135,7 +135,7 @@ group = "optional_extension"
 status = "validated_scoped"
 spectrax_owner = "spectraxgk.operators.linear drift-kinetic original/improved-Sugama and Coulomb equations, multispecies pair matrices, and checked table application"
 comparison_owner = "published analytic six-gyromoment matrices"
-evidence = "Frei, Ernst & Ricci (2022) Appendix C equations 101-105 and C9; exact original/improved-Sugama and Coulomb equal/unequal-species coefficients, particle/total-momentum/total-energy conservation, unequal-species relaxation, equal-temperature matrix-wide dissipation, improved heat-flow proximity to Coulomb, generated-table checksum/direct identity, device-side kperp interpolation/spatial application, physical finite-b held-out interpolation convergence, and JVP/finite-difference gates"
+evidence = "Frei, Ernst & Ricci (2022) Appendix C equations 101-105 and C9; exact original/improved-Sugama and Coulomb equal/unequal-species coefficients, particle/total-momentum/total-energy conservation, unequal-species relaxation, equal-temperature matrix-wide dissipation, improved heat-flow proximity to Coulomb, generated-table checksum/direct identity, device-side kperp interpolation/spatial application, physical finite-b held-out interpolation convergence, JVP/finite-difference gates, and a fail-closed short-wave ITG probe"
 
 [[capabilities]]
 id = "linearized_sugama_or_coulomb_collisions"

@@ -443,6 +443,15 @@ operator approaches Coulomb within 1%; SPECTRAX-GK therefore keeps
 conductivity promotion blocked until the arbitrary-moment correction hierarchy
 and its driven steady-state gate are implemented.
 
+A deterministic Cyclone ITG probe also records the finite-wavelength failure
+boundary rather than hiding it. At :math:`k_y\rho\simeq0.63`, increasing the
+normalized collision weight from zero to three damps the fitted growth rate;
+at :math:`k_y\rho\simeq0.94`, the same drift-kinetic model instead excites the
+short-wave branch. This is the behavior identified when collisional FLR terms
+are omitted in the local collisional-ITG study. The regression test therefore
+requires both observations and keeps configuration-file selection fail-closed.
+Only a finite-:math:`b` operator may promote the short-wavelength lane.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments
