@@ -351,7 +351,7 @@ window bound from ``t=240`` through ``t=280`` preserves the reduction direction
 (``4.46--6.28%``). This closes the internal saturated-transport check for the
 periodic research path.
 
-A clean matched comparison campaign used the same ``64x64x24``, ``Nl=4``,
+A clean external comparison campaign used the same ``64x64x24``, ``Nl=4``,
 ``Nm=8``, periodic-domain contract and evolved both references from identical
 initial states to ``t=300``. Over ``t=[240,300]``, the comparison traces pass the
 same finite-sample, stationarity, and uncertainty checks but give
@@ -362,11 +362,15 @@ flow-suppression result. A dealiased real-field regression shows that the
 full-complex and compressed-real Poisson brackets agree before and immediately
 after both integer and fractional remaps. A short physical sheared integration
 also reproduces the full-complex state and heat-flux trace with the canonical
-compressed bracket. The unresolved difference is therefore outside the
-nonlinear Poisson-bracket representation; the next state-level audit must
-localize sheared linear/cache, field-solve, and diagnostic conventions. Matched
-response, linked-boundary, and IMEX gates must still pass, so no input-file
-flow-shear option is enabled.
+compressed bracket. A subsequent source audit localized a time-discretization
+difference: the external adaptive RK3 route advances shear once with the
+previous step size before selecting the next ``dt`` and holds that coordinate
+basis fixed across all RK stages. SPECTRAX-GK advances accepted physical time
+and evaluates each stage in its exact shearing basis. The ``-0.084%`` result is
+therefore negative cross-discretization evidence, not a model-identical parity
+failure. A fixed-dt refinement must show that this difference converges away;
+linked-boundary and IMEX gates must also pass before any input-file option is
+enabled.
 
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport

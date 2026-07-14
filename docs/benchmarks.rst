@@ -120,8 +120,9 @@ actually use the same physical and numerical contract.
      - coordinate kernel validated; model unshipped
      - zero-shear, shearing-wave, remap/dealias, cache, linear-suppression,
        AD/FD, and periodic saturated-transport gates pass; the clean matched
-       ``t=300`` comparison is stationary but fails the response-parity gate,
-       while linked-boundary, compressed-real, and IMEX gates remain required
+       ``t=300`` comparison is stationary but its adaptive RK3 shearing-time
+       policy differs at step and stage level, so fixed-dt refinement plus
+       linked-boundary and IMEX gates remain required
    * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
      - not shipped
      - separate reduced models are outside the full-gyrokinetic release claim
