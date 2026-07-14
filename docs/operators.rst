@@ -378,6 +378,23 @@ interpolation is tested with controlled coefficient families and the independent
 finite-:math:`b` Dougherty-like operator rather than presented as finite-
 :math:`b` Sugama/Coulomb physics. Repeating the six-moment matrix at higher
 resolution is not valid.
+
+The first exact primitive for generating the missing hierarchy is
+``bessel_laguerre_kernels(kperp_rho, n_max)`` in ``core.velocity``. It
+implements Frei et al. (2021), equation (2.13),
+
+.. math::
+
+   K_n(b) = e^{-b^2/4}\frac{(b^2/4)^n}{n!},
+
+using the stable recurrence :math:`K_{n+1}=K_n b^2/[4(n+1)]`. These
+coefficients expand :math:`J_0(b\sqrt{x})` in Laguerre polynomials and decay
+factorially, motivating the paper's finite-sum rule :math:`N>b^2/4`. The
+validation suite compares them with an independent 96-point Gauss--Laguerre
+projection, verifies the reported sub-0.1% tail at :math:`b=1,N=3`, and checks
+JIT and JVP/finite-difference agreement. This validates one generator building
+block; it does not supply the collision-specific coupling coefficients.
+
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.

@@ -622,6 +622,15 @@ not an accepted implementation path. The generated tables must first pass
 symmetry, conservation, adjointness, and entropy gates before any transport
 benchmark can promote the operator.
 
+The exact Bessel--Laguerre kernel entering those sums is already implemented as
+``core.velocity.bessel_laguerre_kernels``. Its recurrence is differentiable,
+avoids factorial overflow, and is independently checked by velocity-space
+quadrature and the finite-:math:`b` truncation behavior reported by
+`Frei et al. (2021) <https://doi.org/10.1017/S0022377821000761>`_. The
+collision-specific test- and field-particle sums remain offline-generator work;
+the presence of this kernel must not be interpreted as a complete finite-
+:math:`b` Sugama or Coulomb operator.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the

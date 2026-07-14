@@ -9,10 +9,16 @@ import jax.numpy as jnp
 import jax.scipy.linalg
 import numpy as np
 import pytest
+from scipy.special import eval_laguerre, j0
 
 from spectraxgk.config import GridConfig
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.core.velocity import J_l_all, gamma0, sum_Jl2
+from spectraxgk.core.velocity import (
+    J_l_all,
+    bessel_laguerre_kernels,
+    gamma0,
+    sum_Jl2,
+)
 from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import (
@@ -92,6 +98,60 @@ def test_linear_operator_package_reexports_streaming_kernel() -> None:
 
     assert hermite_streaming is package_streaming
     assert package_streaming is streaming_impl
+
+
+def test_bessel_laguerre_kernels_match_independent_velocity_projection() -> None:
+    """Eq. (2.13) must recover the weighted J0 Laguerre coefficients."""
+    nodes, weights = np.polynomial.laguerre.laggauss(96)
+    b_values = np.asarray([0.0, 0.5, 1.0, 2.0])
+    kernels = np.asarray(bessel_laguerre_kernels(jnp.asarray(b_values), 5))
+
+    projected = np.stack(
+        [
+            [
+                np.sum(weights * j0(b * np.sqrt(nodes)) * eval_laguerre(n, nodes))
+                for b in b_values
+            ]
+            for n in range(6)
+        ]
+    )
+    np.testing.assert_allclose(kernels, projected, rtol=2.0e-5, atol=2.0e-7)
+
+
+def test_bessel_laguerre_kernel_convergence_and_derivative() -> None:
+    """The published finite-b truncation behavior and JAX tangent must hold."""
+    b = jnp.asarray(1.0)
+    kernels = bessel_laguerre_kernels(b, 16)
+
+    # At b=1, the paper reports that retaining N=3 gives sub-0.1% FLR error.
+    assert float(1.0 - jnp.sum(kernels[:4])) < 1.0e-3
+    np.testing.assert_allclose(np.asarray(jnp.sum(kernels)), 1.0, atol=1.0e-7)
+    np.testing.assert_allclose(
+        np.asarray(kernels[1:] / kernels[:-1]),
+        0.25 / np.arange(1, 17),
+        rtol=2.0e-6,
+    )
+
+    tangent = jax.jvp(
+        lambda value: bessel_laguerre_kernels(value, 5),
+        (b,),
+        (jnp.asarray(0.3),),
+    )[1]
+    step = jnp.asarray(1.0e-3)
+    finite_difference = (
+        bessel_laguerre_kernels(b + 0.3 * step, 5)
+        - bessel_laguerre_kernels(b - 0.3 * step, 5)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(
+        np.asarray(tangent), np.asarray(finite_difference), rtol=2.0e-4, atol=2.0e-5
+    )
+
+    compiled = jax.jit(lambda value: bessel_laguerre_kernels(value, 3))
+    zero_limit = np.asarray(compiled(jnp.asarray(0.0)))
+    np.testing.assert_array_equal(zero_limit, np.asarray([1.0, 0.0, 0.0, 0.0]))
+
+    with pytest.raises(ValueError, match="n_max"):
+        bessel_laguerre_kernels(b, -1)
 
 
 @pytest.mark.parametrize(
@@ -235,16 +295,10 @@ def test_multispecies_collision_pair_table_interpolates_and_applies_in_jax() -> 
     grid = jnp.asarray([0.0, 0.5, 1.0], dtype=jnp.float32)
     pair_slopes = jnp.asarray([[0.2, -0.1], [0.35, 0.15]], dtype=jnp.float32)
     table = jnp.stack(
-        [
-            matrix_zero
-            * (1.0 + value * pair_slopes[..., None, None])
-            for value in grid
-        ],
+        [matrix_zero * (1.0 + value * pair_slopes[..., None, None]) for value in grid],
         axis=2,
     )
-    target = jnp.asarray(
-        [[[[0.0, 0.25]]], [[[0.75, 1.0]]]], dtype=jnp.float32
-    )
+    target = jnp.asarray([[[[0.0, 0.25]]], [[[0.75, 1.0]]]], dtype=jnp.float32)
     interpolated = jax.jit(
         lambda value: interpolate_collision_moment_matrix(grid, table, value)
     )(target)
@@ -259,9 +313,7 @@ def test_multispecies_collision_pair_table_interpolates_and_applies_in_jax() -> 
             + 0.13j
         )
     ).astype(jnp.complex64)
-    applied = jax.jit(apply_multispecies_collision_moment_matrix)(
-        state, interpolated
-    )
+    applied = jax.jit(apply_multispecies_collision_moment_matrix)(state, interpolated)
     for spatial_index in range(2):
         direct = apply_multispecies_collision_moment_matrix(
             state[..., spatial_index : spatial_index + 1],
@@ -288,9 +340,7 @@ def test_multispecies_collision_pair_table_interpolates_and_applies_in_jax() -> 
     np.testing.assert_allclose(zero_rates.total_parallel_momentum, 0.0, atol=4.0e-6)
     np.testing.assert_allclose(zero_rates.total_thermal_energy, 0.0, atol=1.0e-5)
 
-    direction = jnp.asarray(
-        [[[[0.0, 0.2]]], [[[-0.1, 0.0]]]], dtype=jnp.float32
-    )
+    direction = jnp.asarray([[[[0.0, 0.2]]], [[[-0.1, 0.0]]]], dtype=jnp.float32)
     tangent = jax.jvp(
         lambda value: interpolate_collision_moment_matrix(grid, table, value),
         (target,),
@@ -329,13 +379,9 @@ def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> 
     cache = build_linear_cache(grid, geometry, params, Nl=2, Nm=4)
     state = (
         1.0e-3
-        * jnp.arange(2 * 2 * 4 * 2 * 2 * 4, dtype=jnp.float32).reshape(
-            2, 2, 4, 2, 2, 4
-        )
+        * jnp.arange(2 * 2 * 4 * 2 * 2 * 4, dtype=jnp.float32).reshape(2, 2, 4, 2, 2, 4)
     ).astype(jnp.complex64)
-    matrix = assemble_drift_kinetic_improved_sugama_matrix(
-        density, mass, temperature
-    )
+    matrix = assemble_drift_kinetic_improved_sugama_matrix(density, mass, temperature)
     table = jnp.stack([matrix, matrix], axis=2)
     tabulated = TabulatedMultispeciesCollisionOperator(
         jnp.asarray([0.0, 2.0], dtype=jnp.float32), table
@@ -371,9 +417,7 @@ def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> 
         terms=terms,
         collision_operator=reduced,
     )
-    np.testing.assert_allclose(
-        tabulated_rhs, reduced_rhs, rtol=3.0e-6, atol=3.0e-6
-    )
+    np.testing.assert_allclose(tabulated_rhs, reduced_rhs, rtol=3.0e-6, atol=3.0e-6)
     assert len(jax.tree_util.tree_leaves(tabulated)) == 2
 
     bad_operator = TabulatedMultispeciesCollisionOperator(
