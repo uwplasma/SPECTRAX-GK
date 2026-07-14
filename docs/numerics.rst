@@ -629,9 +629,11 @@ quadrature and the finite-:math:`b` truncation behavior reported by
 `Frei et al. (2021) <https://doi.org/10.1017/S0022377821000761>`_. The
 associated-Laguerre prefactors for :math:`J_m`, :math:`m=0,1,2`, additionally
 reconstruct the independent Bessel functions over velocity space. The
-collision-specific speed-function and test-/field-particle sums remain
-offline-generator work; these expansion primitives must not be interpreted as
-a complete finite-:math:`b` Sugama or Coulomb operator.
+Appendix-A Coulomb speed integrals :math:`e_k` and :math:`E_k` are generated at
+80-digit precision and checked independently by improper quadrature for several
+orders and unequal thermal-speed ratios. The test-/field-particle matrix
+contractions remain offline-generator work; these exact primitives must not be
+interpreted as a complete finite-:math:`b` Sugama or Coulomb operator.
 
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,

@@ -67,6 +67,48 @@ DEFAULT_COLLISION_TABLE = (
 DEFAULT_COLLISION_METADATA = DEFAULT_COLLISION_TABLE.with_suffix(".json")
 
 
+def coulomb_speed_integrals(
+    max_order: int,
+    chi: float,
+    *,
+    digits: int = 80,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Return the Appendix-A Coulomb speed integrals ``e_k`` and ``E_k``.
+
+    ``chi`` is the thermal-speed ratio.  The recurrence-free multiprecision
+    formulas implement Frei et al. (2021), equations (A8a)--(A8b), and are
+    intended for offline coefficient generation rather than runtime kernels.
+    """
+
+    if max_order < 0:
+        raise ValueError("max_order must be >= 0")
+    if chi <= 0.0 or not math.isfinite(chi):
+        raise ValueError("chi must be finite and > 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        chi_mp = mp.mpf(chi)
+        denominator = 1 + chi_mp * chi_mp
+        e_values = [
+            mp.gamma(k + mp.mpf("0.5"))
+            / (mp.gamma(mp.mpf("0.5")) * denominator ** (k + mp.mpf("0.5")))
+            for k in range(max_order + 1)
+        ]
+        E_values = [
+            chi_mp
+            / 2
+            * sum(mp.factorial(k) / mp.factorial(j) * e_values[j] for j in range(k + 1))
+            for k in range(max_order + 1)
+        ]
+    return (
+        np.asarray([float(value) for value in e_values]),
+        np.asarray([float(value) for value in E_values]),
+    )
+
+
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
     """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 

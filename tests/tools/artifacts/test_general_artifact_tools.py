@@ -1795,6 +1795,43 @@ def test_generate_collision_table_is_reproducible_and_matches_tracked_data(
     assert metadata["precision_decimal_digits"] == 80
 
 
+def test_coulomb_speed_integrals_match_independent_quadrature() -> None:
+    """Frei et al. Eqs. (A8a)--(A8b) must match their defining integrals."""
+    from scipy.integrate import quad
+    from scipy.special import erf
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    for chi in (0.35, 1.0, 2.2):
+        e_values, E_values = mod.coulomb_speed_integrals(5, chi, digits=80)
+        for order in range(6):
+            e_reference = quad(
+                lambda speed: speed ** (2 * order)
+                * 2.0
+                / np.sqrt(np.pi)
+                * np.exp(-((chi * speed) ** 2))
+                * np.exp(-(speed**2)),
+                0.0,
+                np.inf,
+                epsabs=1.0e-13,
+            )[0]
+            E_reference = quad(
+                lambda speed: speed ** (2 * order + 1)
+                * erf(chi * speed)
+                * np.exp(-(speed**2)),
+                0.0,
+                np.inf,
+                epsabs=1.0e-13,
+            )[0]
+            np.testing.assert_allclose(e_values[order], e_reference, rtol=2.0e-12)
+            np.testing.assert_allclose(E_values[order], E_reference, rtol=2.0e-12)
+
+    for args, message in (((-1, 1.0), "max_order"), ((1, 0.0), "chi")):
+        with pytest.raises(ValueError, match=message):
+            mod.coulomb_speed_integrals(*args)
+    with pytest.raises(ValueError, match="digits"):
+        mod.coulomb_speed_integrals(1, 1.0, digits=10)
+
+
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
     mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"

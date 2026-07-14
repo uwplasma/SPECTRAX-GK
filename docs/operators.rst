@@ -408,6 +408,13 @@ wavenumber and velocity domain. This closes the Bessel-expansion layer used by
 the collision sums, but not the speed-function or test-/field-particle
 contractions themselves.
 
+The offline generator also evaluates the Coulomb speed integrals
+:math:`e_{ab}^k` and :math:`E_{ab}^k` from Appendix A, equations (A8a)--(A8b),
+with 80-digit arithmetic. Orders zero through five at three unequal thermal-
+speed ratios agree with direct improper quadrature of their defining
+integrals. They remain generator internals because the complete matrix
+contractions that consume them are not yet implemented.
+
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.
