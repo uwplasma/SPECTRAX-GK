@@ -21,7 +21,7 @@ ROOT = REPO_ROOT
 
 
 # Manuscript readiness status assertions
-def _write_manuscript_readiness_json(
+def _write_status_json(
     root: Path, relative: str, payload: dict[str, object]
 ) -> None:
     path = root / relative
@@ -29,15 +29,69 @@ def _write_manuscript_readiness_json(
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
+def _write_nonlinear_performance_status_inputs(
+    root: Path, *, include_device_metadata: bool = False
+) -> None:
+    sharding: dict[str, object] = {
+        "identity_gate_pass": False,
+        "engineering_speedup": 0.706,
+        "best_identity_preserving_candidate": {
+            "spec": None,
+            "engineering_speedup_median": None,
+        },
+    }
+    gpu_trace: dict[str, object] = {"warm_seconds": 0.0128}
+    if include_device_metadata:
+        sharding.update(device_count=2, default_backend="gpu")
+    else:
+        gpu_trace["hlo_token_counts"] = {"transpose": 32}
+
+    payloads: dict[str, dict[str, object]] = {
+        "nonlinear_sharding_profile_office_gpu_benchmark_grid": sharding,
+        "nonlinear_rhs_profile": {
+            "fastest_full_rhs_label": "GPU spectral",
+            "spectral_speedups": {
+                "cpu": {
+                    "full_rhs_grid_over_spectral": 1.11,
+                    "nonlinear_bracket_grid_over_spectral": 1.66,
+                },
+                "gpu": {
+                    "full_rhs_grid_over_spectral": 1.64,
+                    "nonlinear_bracket_grid_over_spectral": 2.20,
+                },
+            },
+        },
+        "nonlinear_rhs_profile_miller": {
+            "rows": {
+                "CPU grid": {"seconds": {"full_rhs": 0.32}},
+                "GPU grid": {"seconds": {"full_rhs": 0.013}},
+                "GPU spectral": {"seconds": {"full_rhs": 0.015}},
+            }
+        },
+        "nonlinear_rhs_profile_stellarator_runtime": {
+            "rows": {
+                "W7-X CPU": {"seconds": {"full_rhs": 0.31}},
+                "W7-X GPU": {"seconds": {"full_rhs": 0.027}},
+                "HSX CPU": {"seconds": {"full_rhs": 0.31}},
+                "HSX GPU": {"seconds": {"full_rhs": 0.027}},
+            }
+        },
+        "full_nonlinear_rhs_trace_summary": {"warm_seconds": 0.316},
+        "full_nonlinear_rhs_trace_gpu_summary": gpu_trace,
+    }
+    for name, payload in payloads.items():
+        _write_status_json(root, f"docs/_static/{name}.json", payload)
+
+
 def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     tmp_path: Path,
 ) -> None:
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -55,7 +109,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "quasilinear_shape_aware_saturation",
         "quasilinear_candidate_uncertainty",
     ):
-        _write_manuscript_readiness_json(
+        _write_status_json(
             tmp_path,
             f"docs/_static/{name}.json",
             {
@@ -65,7 +119,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
                 }
             },
         )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -81,12 +135,12 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_promotion_guardrails.json",
         {"passed": True},
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {
@@ -94,7 +148,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             "uq": {"sensitivity_map_rank": 2},
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/vmec_boozer_parity_matrix.json",
         {
@@ -102,7 +156,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             "summary": {"all_equal_arc_passed": True, "n_cases": 3},
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/stellarator_itg_optimization_comparison.json",
         {
@@ -120,7 +174,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             ]
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/stellarator_itg_optimization_uq.json",
         {
@@ -129,69 +183,8 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             "all_sensitivity_maps_full_rank": True,
         },
     )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
-        {
-            "identity_gate_pass": False,
-            "engineering_speedup": 0.706,
-            "best_identity_preserving_candidate": {
-                "spec": None,
-                "engineering_speedup_median": None,
-            },
-        },
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/nonlinear_rhs_profile.json",
-        {
-            "fastest_full_rhs_label": "GPU spectral",
-            "spectral_speedups": {
-                "cpu": {
-                    "full_rhs_grid_over_spectral": 1.11,
-                    "nonlinear_bracket_grid_over_spectral": 1.66,
-                },
-                "gpu": {
-                    "full_rhs_grid_over_spectral": 1.64,
-                    "nonlinear_bracket_grid_over_spectral": 2.20,
-                },
-            },
-        },
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/nonlinear_rhs_profile_miller.json",
-        {
-            "rows": {
-                "CPU grid": {"seconds": {"full_rhs": 0.32}},
-                "GPU grid": {"seconds": {"full_rhs": 0.013}},
-                "GPU spectral": {"seconds": {"full_rhs": 0.015}},
-            }
-        },
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
-        {
-            "rows": {
-                "W7-X CPU": {"seconds": {"full_rhs": 0.31}},
-                "W7-X GPU": {"seconds": {"full_rhs": 0.027}},
-                "HSX CPU": {"seconds": {"full_rhs": 0.31}},
-                "HSX GPU": {"seconds": {"full_rhs": 0.027}},
-            }
-        },
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/full_nonlinear_rhs_trace_summary.json",
-        {"warm_seconds": 0.316},
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
-        {"warm_seconds": 0.0128, "hlo_token_counts": {"transpose": 32}},
-    )
-    _write_manuscript_readiness_json(
+    _write_nonlinear_performance_status_inputs(tmp_path)
+    _write_status_json(
         tmp_path,
         "docs/_static/solver_objective_gradient_gate.json",
         {
@@ -207,7 +200,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "vmec_boozer_nonlinear_window_gradient_gate",
         "vmec_boozer_li383_nonlinear_window_gradient_gate",
     ):
-        _write_manuscript_readiness_json(
+        _write_status_json(
             tmp_path,
             f"docs/_static/{name}.json",
             {
@@ -219,7 +212,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
                 "eigenpair_gate": {"max_rel_error": 1.0e-3},
             },
         )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
         {
@@ -231,7 +224,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/nonlinear_window_fd_audit.json",
         {
@@ -248,7 +241,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
         {
@@ -263,7 +256,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         {
@@ -460,12 +453,12 @@ def _write_candidate_quasilinear_status_inputs(
     *,
     include_promotion_guardrail: bool,
 ) -> None:
-    _write_manuscript_readiness_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -481,12 +474,12 @@ def _write_candidate_quasilinear_status_inputs(
         "quasilinear_saturation_rule_sweep",
         "quasilinear_shape_aware_saturation",
     ):
-        _write_manuscript_readiness_json(
+        _write_status_json(
             root,
             f"docs/_static/{name}.json",
             {"promotion_gate": {"passed": False}},
         )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_candidate_uncertainty.json",
         {
@@ -496,7 +489,7 @@ def _write_candidate_quasilinear_status_inputs(
             }
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -509,7 +502,7 @@ def _write_candidate_quasilinear_status_inputs(
     )
     if not include_promotion_guardrail:
         return
-    _write_manuscript_readiness_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_model_selection_status.json",
         {
@@ -520,7 +513,7 @@ def _write_candidate_quasilinear_status_inputs(
             },
         },
     )
-    _write_manuscript_readiness_json(
+    _write_status_json(
         root,
         "docs/_static/quasilinear_promotion_guardrails.json",
         {"passed": True},
@@ -602,16 +595,8 @@ def test_write_manuscript_readiness_artifacts_writes_all_formats(
 
 
 # Open research-lane status assertions
-def _write_open_research_lane_json(
-    root: Path, relative: str, payload: dict[str, object]
-) -> None:
-    path = root / relative
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload), encoding="utf-8")
-
-
 def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/w7x_zonal_reference_compare.json",
         {
@@ -624,7 +609,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
         {
@@ -645,7 +630,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ]
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
         {
@@ -670,7 +655,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ],
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json",
         {
@@ -697,7 +682,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ]
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/w7x_fluctuation_spectrum_panel.json",
         {
@@ -709,7 +694,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             "dominant_heat_flux_ky": 0.4,
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/w7x_tem_extension_status.json",
         {
@@ -719,12 +704,12 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ]
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -735,22 +720,22 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ],
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
         {"promotion_gate": {"passed": False}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         {
@@ -762,27 +747,27 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
         {"gate_report": {"passed": True}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
         {"gate_report": {"passed": True}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {
@@ -793,69 +778,8 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             "booz_xform_jax_api_available": True,
         },
     )
-    _write_open_research_lane_json(
-        tmp_path,
-        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
-        {
-            "identity_gate_pass": False,
-            "engineering_speedup": 0.706,
-            "device_count": 2,
-            "default_backend": "gpu",
-            "best_identity_preserving_candidate": {
-                "spec": None,
-                "engineering_speedup_median": None,
-            },
-        },
-    )
-    _write_open_research_lane_json(
-        tmp_path,
-        "docs/_static/nonlinear_rhs_profile.json",
-        {
-            "fastest_full_rhs_label": "GPU spectral",
-            "spectral_speedups": {
-                "cpu": {
-                    "full_rhs_grid_over_spectral": 1.11,
-                    "nonlinear_bracket_grid_over_spectral": 1.66,
-                },
-                "gpu": {
-                    "full_rhs_grid_over_spectral": 1.64,
-                    "nonlinear_bracket_grid_over_spectral": 2.20,
-                },
-            },
-        },
-    )
-    _write_open_research_lane_json(
-        tmp_path,
-        "docs/_static/nonlinear_rhs_profile_miller.json",
-        {
-            "rows": {
-                "CPU grid": {"seconds": {"full_rhs": 0.32}},
-                "GPU grid": {"seconds": {"full_rhs": 0.013}},
-                "GPU spectral": {"seconds": {"full_rhs": 0.015}},
-            }
-        },
-    )
-    _write_open_research_lane_json(
-        tmp_path,
-        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
-        {
-            "rows": {
-                "W7-X CPU": {"seconds": {"full_rhs": 0.31}},
-                "W7-X GPU": {"seconds": {"full_rhs": 0.027}},
-                "HSX CPU": {"seconds": {"full_rhs": 0.31}},
-                "HSX GPU": {"seconds": {"full_rhs": 0.027}},
-            }
-        },
-    )
-    _write_open_research_lane_json(
-        tmp_path,
-        "docs/_static/full_nonlinear_rhs_trace_summary.json",
-        {"warm_seconds": 0.316},
-    )
-    _write_open_research_lane_json(
-        tmp_path,
-        "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
-        {"warm_seconds": 0.0128},
+    _write_nonlinear_performance_status_inputs(
+        tmp_path, include_device_metadata=True
     )
 
     payload = load_artifact_tool(
@@ -961,17 +885,17 @@ def test_build_status_payload_accepts_cth_like_high_grid_admission(
 ) -> None:
     """CTH-like can be admitted through the scoped high-grid gate without full-grid convergence."""
 
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {"passed": False, "points": []},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _write_open_research_lane_json(
+    _write_status_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
         {"promotion_gate": {"passed": True}},

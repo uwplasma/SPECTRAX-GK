@@ -80,6 +80,55 @@ def _base_runtime_cfg() -> RuntimeConfig:
     )
 
 
+def _write_root_eik_geometry(
+    path: Path,
+    sampled,
+    dataset_type,
+    *,
+    drift_scale: float = 1.0,
+    jacobian: float | None = None,
+    drhodpsi: float | None = None,
+    nfp: float | None = None,
+) -> None:
+    theta = np.asarray(sampled.theta)
+    profiles = {
+        "bmag": sampled.bmag_profile,
+        "gds2": sampled.gds2_profile,
+        "gds21": sampled.gds21_profile,
+        "gds22": sampled.gds22_profile,
+        "cvdrift": drift_scale * np.asarray(sampled.cv_profile),
+        "gbdrift": drift_scale * np.asarray(sampled.gb_profile),
+        "cvdrift0": drift_scale * np.asarray(sampled.cv0_profile),
+        "gbdrift0": drift_scale * np.asarray(sampled.gb0_profile),
+        "jacob": (
+            sampled.jacobian_profile
+            if jacobian is None
+            else np.full(theta.size, jacobian)
+        ),
+        "grho": sampled.grho_profile,
+        "gradpar": np.full(theta.size, sampled.gradpar_value),
+    }
+    scalars = {
+        "q": sampled.q,
+        "shat": sampled.s_hat,
+        "Rmaj": sampled.R0,
+        "kxfac": sampled.kxfac,
+        "scale": sampled.theta_scale,
+        "nfp": sampled.nfp if nfp is None else nfp,
+        "alpha": sampled.alpha,
+    }
+    if drhodpsi is not None:
+        scalars["drhodpsi"] = drhodpsi
+
+    with dataset_type(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        for name, values in profiles.items():
+            root.createVariable(name, "f8", ("z",))[:] = np.asarray(values)
+        for name, value in scalars.items():
+            root.createVariable(name, "f8", ())[:] = value
+
+
 def _glibc_random_pairs_reference(seed: int, count: int) -> np.ndarray:
     rand_max = float((1 << 31) - 1)
     seed_use = 1 if int(seed) == 0 else int(seed)
@@ -2415,39 +2464,7 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
     path = tmp_path / "geom.eik.nc"
     analytic = SAlphaGeometry.from_config(cfg.geometry)
     sampled = sample_flux_tube_geometry(analytic, theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
-            sampled.jacobian_profile
-        )
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(path, sampled, Dataset)
 
     cfg_nc = replace(
         cfg,
@@ -2480,39 +2497,7 @@ def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(
     path = tmp_path / "geom.eik.nc"
     analytic = SAlphaGeometry.from_config(cfg.geometry)
     sampled = sample_flux_tube_geometry(analytic, theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
-            sampled.jacobian_profile
-        )
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(path, sampled, Dataset)
 
     cfg_nc = replace(
         cfg,
@@ -2544,39 +2529,7 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
     path = tmp_path / "generated_geom.eik.nc"
     analytic = SAlphaGeometry.from_config(cfg.geometry)
     sampled = sample_flux_tube_geometry(analytic, theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
-            sampled.jacobian_profile
-        )
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(path, sampled, Dataset)
 
     monkeypatch.setattr(
         "spectraxgk.runtime.generate_runtime_vmec_eik", lambda cfg: path
@@ -2648,40 +2601,7 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(
         SAlphaGeometry.from_config(cfg.geometry), build_spectral_grid(cfg.grid).z
     )
     path = tmp_path / "miller.eiknc.nc"
-    theta = np.asarray(sampled.theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
-            sampled.jacobian_profile
-        )
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(path, sampled, Dataset)
 
     monkeypatch.setattr(
         "spectraxgk.runtime.generate_runtime_miller_eik", lambda cfg: path
@@ -2787,42 +2707,9 @@ def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_refer
     path = tmp_path / "geom.eik.nc"
     analytic = SAlphaGeometry.from_config(cfg.geometry)
     sampled = sample_flux_tube_geometry(analytic, theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.cv_profile
-        )
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.gb_profile
-        )
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("drhodpsi", "f8", ())[:] = 1.0
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(
+        path, sampled, Dataset, drift_scale=2.0, jacobian=7.0, drhodpsi=1.0
+    )
 
     cfg_nc = replace(
         cfg,
@@ -2856,42 +2743,9 @@ def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_refer
     path = tmp_path / "geom.eik.nc"
     analytic = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, alpha=0.0)
     sampled = sample_flux_tube_geometry(analytic, theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.cv_profile
-        )
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.gb_profile
-        )
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("drhodpsi", "f8", ())[:] = 1.0
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(
+        path, sampled, Dataset, drift_scale=2.0, jacobian=7.0, drhodpsi=1.0
+    )
 
     toml = f"""
 [[species]]
@@ -3046,42 +2900,15 @@ def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(
     path = tmp_path / f"geom_{model}.eik.nc"
     analytic = SAlphaGeometry.from_config(cfg.geometry)
     sampled = sample_flux_tube_geometry(analytic, theta)
-    with Dataset(path, "w") as root:
-        root.createDimension("z", theta.size)
-        root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
-            sampled.gds21_profile
-        )
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
-            sampled.gds22_profile
-        )
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.cv_profile
-        )
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.gb_profile
-        )
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.cv0_profile
-        )
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
-            sampled.gb0_profile
-        )
-        root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
-            theta.size, sampled.gradpar_value
-        )
-        root.createVariable("drhodpsi", "f8", ())[:] = 1.0
-        root.createVariable("q", "f8", ())[:] = sampled.q
-        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
-        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
-        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
-        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
-        root.createVariable("nfp", "f8", ())[:] = 5.0
-        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+    _write_root_eik_geometry(
+        path,
+        sampled,
+        Dataset,
+        drift_scale=2.0,
+        jacobian=7.0,
+        drhodpsi=1.0,
+        nfp=5.0,
+    )
 
     cfg_nc = replace(
         cfg, geometry=replace(cfg.geometry, model=model, geometry_file=str(path))
