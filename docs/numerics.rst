@@ -372,6 +372,16 @@ failure. A fixed-dt refinement must show that this difference converges away;
 linked-boundary and IMEX gates must also pass before any input-file option is
 enabled.
 
+A bounded fixed-step source-localization probe confirms that the external
+shearing path is active when the time policy is controlled. On a deterministic
+reduced periodic Cyclone-like case with :math:`\gamma_E=0.5`, the terminal
+``Phi2`` treatment ratios are ``0.64032``, ``0.64051``, and ``0.64060`` for
+``dt=0.02``, ``0.01``, and ``0.005``. The corresponding startup heat-flux
+ratios change from ``0.5079`` to ``0.5142`` and are not used as transport
+evidence. This closes only the short fixed-step response check: the production
+gate still requires a stationary, full-resolution fixed-step transport window
+at the physically relevant weaker shear.
+
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
 definitions. This path is a numerical foundation, not the production model. The

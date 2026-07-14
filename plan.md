@@ -1849,3 +1849,15 @@ under 5 minutes.
   failure. The next bounded comparison is a fixed-dt refinement of the shear
   response; no further long adaptive campaign is justified until that trend is
   established.
+
+- 2026-07-14: Completed the bounded fixed-step response refinement before
+  launching any further long campaign. A deterministic reduced periodic
+  Cyclone-like pair at ``gamma_E=0.5`` gives terminal ``Phi2`` treatment ratios
+  ``0.64032``, ``0.64051``, and ``0.64060`` at ``dt=0.02``, ``0.01``, and
+  ``0.005``. Thus the external implementation is active and its short response
+  is stable to roughly ``0.05%`` across this refinement. Startup heat-flux
+  ratios ``0.5079--0.5142`` are explicitly not admitted as saturated transport.
+  Raw office outputs were removed after harvesting these scalar diagnostics.
+  The remaining promotion gate is one full-resolution stationary fixed-step
+  weak-shear window, followed by linked-boundary and IMEX identity; it is not a
+  release blocker because the option remains unavailable to input files.
