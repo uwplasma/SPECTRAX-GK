@@ -400,9 +400,7 @@ def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> No
         physics=RuntimePhysicsConfig(
             adiabatic_electrons=False, adiabatic_ions=True, tau_e=1.25
         ),
-        species=(
-            RuntimeSpeciesConfig(name="electron", charge=-1.0, kinetic=True),
-        ),
+        species=(RuntimeSpeciesConfig(name="electron", charge=-1.0, kinetic=True),),
     )
     electron_params = startup.build_runtime_linear_params(
         electron_cfg, Nm=2, geom=fake_geom
@@ -414,9 +412,7 @@ def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> No
         species=(RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),),
     )
     with pytest.raises(ValueError, match="adiabatic_ions"):
-        startup.build_runtime_linear_params(
-            kinetic_ion_conflict, Nm=2, geom=fake_geom
-        )
+        startup.build_runtime_linear_params(kinetic_ion_conflict, Nm=2, geom=fake_geom)
 
     double_adiabatic = replace(
         electron_cfg,
@@ -2168,8 +2164,17 @@ def test_runtime_nonlinear_dealias_toggle_executes() -> None:
     assert np.all(np.isfinite(res.diagnostics.Wphi_t))
 
 
-def test_runtime_nonlinear_uses_explicit_method_default_cfl_fac(
+@pytest.mark.parametrize(
+    ("configured_cfl_fac", "expected_cfl_fac"),
+    [
+        pytest.param(None, 1.73, id="rk3-default"),
+        pytest.param(1.25, 1.25, id="explicit-override"),
+    ],
+)
+def test_runtime_nonlinear_resolves_cfl_factor(
     monkeypatch: pytest.MonkeyPatch,
+    configured_cfl_fac: float | None,
+    expected_cfl_fac: float,
 ) -> None:
     captured: dict[str, float] = {}
 
@@ -2243,7 +2248,7 @@ def test_runtime_nonlinear_uses_explicit_method_default_cfl_fac(
             diagnostics_stride=1,
             fixed_dt=False,
             cfl=1.0,
-            cfl_fac=None,
+            cfl_fac=configured_cfl_fac,
         ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
         terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
@@ -2251,93 +2256,7 @@ def test_runtime_nonlinear_uses_explicit_method_default_cfl_fac(
 
     run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=1)
 
-    assert captured["cfl_fac"] == pytest.approx(1.73)
-
-
-def test_runtime_nonlinear_preserves_explicit_cfl_fac(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    captured: dict[str, float] = {}
-
-    def _fake_integrator(
-        G0,
-        grid,
-        geom,
-        params,
-        *,
-        dt,
-        steps,
-        method,
-        terms,
-        sample_stride,
-        diagnostics_stride,
-        use_dealias_mask,
-        z_index=None,
-        compressed_real_fft=True,
-        laguerre_mode="grid",
-        omega_ky_index=None,
-        omega_kx_index=0,
-        flux_scale=1.0,
-        wphi_scale=1.0,
-        fixed_dt=True,
-        dt_min=1.0e-7,
-        dt_max=None,
-        cfl=0.9,
-        cfl_fac=1.0,
-        collision_split=True,
-        collision_scheme="strang",
-        implicit_tol=1.0e-6,
-        implicit_maxiter=120,
-        implicit_iters=3,
-        implicit_relax=0.7,
-        implicit_restart=20,
-        implicit_preconditioner=None,
-        fixed_mode_ky_index=None,
-        fixed_mode_kx_index=None,
-        external_phi=None,
-    ):
-        captured["cfl_fac"] = float(cfl_fac)
-        t = np.asarray([0.1], dtype=float)
-        diag = SimulationDiagnostics(
-            t=t,
-            dt_t=t,
-            dt_mean=float(t[0]),
-            gamma_t=np.zeros_like(t),
-            omega_t=np.zeros_like(t),
-            Wg_t=np.zeros_like(t),
-            Wphi_t=np.zeros_like(t),
-            Wapar_t=np.zeros_like(t),
-            heat_flux_t=np.zeros_like(t),
-            particle_flux_t=np.zeros_like(t),
-            energy_t=np.zeros_like(t),
-        )
-        return t, diag, np.asarray(G0), None
-
-    monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
-        _fake_integrator,
-    )
-
-    cfg = replace(
-        _base_runtime_cfg(),
-        time=TimeConfig(
-            t_max=0.1,
-            dt=0.1,
-            method="rk3",
-            use_diffrax=False,
-            sample_stride=1,
-            diagnostics_stride=1,
-            fixed_dt=False,
-            cfl=1.0,
-            cfl_fac=1.25,
-        ),
-        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
-        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
-    )
-
-    run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=1)
-
-    assert captured["cfl_fac"] == pytest.approx(1.25)
+    assert captured["cfl_fac"] == pytest.approx(expected_cfl_fac)
 
 
 def test_runtime_init_species_targets_all_vs_electrons_only() -> None:
@@ -4298,11 +4217,15 @@ def test_runtime_parameter_scan_updates_config_and_continues_state(
 
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run)
     result = run_runtime_parameter_scan(
-        cfg, [0.01, 0.02, 0.04], parameter_name="beta",
+        cfg,
+        [0.01, 0.02, 0.04],
+        parameter_name="beta",
         update_config=lambda base, value, _index: replace(
             base, physics=replace(base.physics, beta=value)
         ),
-        ky_target=0.25, linear_options={"solver": "krylov"}, continuation=True,
+        ky_target=0.25,
+        linear_options={"solver": "krylov"},
+        continuation=True,
     )
 
     assert isinstance(result, RuntimeParameterScanResult)
@@ -4322,9 +4245,13 @@ def test_runtime_parameter_scan_rejects_invalid_contracts(
         return base
 
     with pytest.raises(ValueError, match="parameter_name"):
-        run_runtime_parameter_scan(cfg, [1.0], parameter_name=" ", update_config=identity)
+        run_runtime_parameter_scan(
+            cfg, [1.0], parameter_name=" ", update_config=identity
+        )
     with pytest.raises(ValueError, match="one-dimensional"):
-        run_runtime_parameter_scan(cfg, [], parameter_name="beta", update_config=identity)
+        run_runtime_parameter_scan(
+            cfg, [], parameter_name="beta", update_config=identity
+        )
     with pytest.raises(TypeError, match="RuntimeConfig"):
         run_runtime_parameter_scan(
             cfg, [1.0], parameter_name="beta", update_config=lambda *_args: object()
@@ -4333,27 +4260,39 @@ def test_runtime_parameter_scan_rejects_invalid_contracts(
     import spectraxgk.runtime as runtime
 
     monkeypatch.setattr(
-        runtime, "run_runtime_linear",
+        runtime,
+        "run_runtime_linear",
         lambda *_args, **_kwargs: RuntimeLinearResult(
-            ky=0.3, gamma=0.0, omega=0.0,
+            ky=0.3,
+            gamma=0.0,
+            omega=0.0,
             selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         ),
     )
     with pytest.raises(ValueError, match="return state"):
         run_runtime_parameter_scan(
-            cfg, [1.0, 2.0], parameter_name="beta",
-            update_config=identity, continuation=True,
+            cfg,
+            [1.0, 2.0],
+            parameter_name="beta",
+            update_config=identity,
+            continuation=True,
         )
 
 
 def test_runtime_linear_rejects_incompatible_initial_state_shape() -> None:
     cfg = replace(
-        _base_runtime_cfg(), species=(RuntimeSpeciesConfig(name="ion"),),
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
         normalization=RuntimeNormalizationConfig(contract="cyclone"),
     )
     with pytest.raises(ValueError, match="initial_state shape"):
         run_runtime_linear(
-            cfg, ky_target=0.3, Nl=2, Nm=2, solver="time", steps=1,
+            cfg,
+            ky_target=0.3,
+            Nl=2,
+            Nm=2,
+            solver="time",
+            steps=1,
             initial_state=np.zeros((1, 2, 2, 1, 1, 1)),
         )
 
@@ -4368,7 +4307,9 @@ def test_runtime_parameter_scan_selects_one_candidate_branch(
         target = float(kwargs["krylov_cfg"])
         calls.append(target)
         return RuntimeLinearResult(
-            ky=0.3, gamma=target, omega=-target,
+            ky=0.3,
+            gamma=target,
+            omega=-target,
             selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
             state=np.asarray([target]),
         )
@@ -4377,10 +4318,13 @@ def test_runtime_parameter_scan_selects_one_candidate_branch(
 
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run)
     result = run_runtime_parameter_scan(
-        cfg, [0.01, 0.02], parameter_name="beta",
+        cfg,
+        [0.01, 0.02],
+        parameter_name="beta",
         update_config=lambda base, _value, _index: base,
         candidate_options=lambda _value, _index, _previous: (
-            {"krylov_cfg": 0.7}, {"krylov_cfg": 1.5}
+            {"krylov_cfg": 0.7},
+            {"krylov_cfg": 1.5},
         ),
         select_candidate=lambda value, _index, _candidates, _previous: (
             0 if value < 0.015 else 1
@@ -4393,7 +4337,9 @@ def test_runtime_parameter_scan_selects_one_candidate_branch(
 
     with pytest.raises(IndexError, match="out-of-range"):
         run_runtime_parameter_scan(
-            cfg, [0.01], parameter_name="beta",
+            cfg,
+            [0.01],
+            parameter_name="beta",
             update_config=lambda base, _value, _index: base,
             candidate_options=lambda *_args: ({"krylov_cfg": 0.7},),
             select_candidate=lambda *_args: 2,
@@ -4407,7 +4353,10 @@ def test_runtime_explicit_time_routes_cfl_trajectory(monkeypatch) -> None:
         normalization=RuntimeNormalizationConfig(contract="cyclone"),
         time=replace(
             _base_runtime_cfg().time,
-            t_max=1.2, dt=0.01, fixed_dt=False, cfl=0.7,
+            t_max=1.2,
+            dt=0.01,
+            fixed_dt=False,
+            cfl=0.7,
         ),
     )
     captured: dict[str, object] = {}
@@ -4426,9 +4375,17 @@ def test_runtime_explicit_time_routes_cfl_trajectory(monkeypatch) -> None:
         fake_explicit,
     )
     result = run_runtime_linear(
-        cfg, ky_target=0.3, Nl=2, Nm=2, solver="explicit_time",
-        fit_signal="phi", mode_method="z_index", auto_window=False,
-        tmin=0.2, tmax=1.0, require_positive=True,
+        cfg,
+        ky_target=0.3,
+        Nl=2,
+        Nm=2,
+        solver="explicit_time",
+        fit_signal="phi",
+        mode_method="z_index",
+        auto_window=False,
+        tmin=0.2,
+        tmax=1.0,
+        require_positive=True,
     )
 
     assert result.gamma == pytest.approx(0.3, rel=1.0e-6)
@@ -4442,14 +4399,15 @@ def test_runtime_trajectory_can_be_refit_without_integration() -> None:
     t = np.linspace(0.01, 2.0, 200)
     z = np.linspace(-np.pi, np.pi, 8, endpoint=False)
     mode = 1.0 + 0.2 * np.cos(z)
-    history = (
-        np.exp((0.25 - 0.6j) * t)[:, None, None, None]
-        * mode[None, None, None, :]
-    )
+    history = np.exp((0.25 - 0.6j) * t)[:, None, None, None] * mode[None, None, None, :]
     result = RuntimeLinearResult(
-        ky=0.3, gamma=0.0, omega=0.0,
+        ky=0.3,
+        gamma=0.0,
+        omega=0.0,
         selection=ModeSelection(ky_index=0, kx_index=0, z_index=4),
-        t=t, z=z, field_history=history,
+        t=t,
+        z=z,
+        field_history=history,
     )
 
     refit = refit_runtime_linear_trajectory(
