@@ -429,6 +429,41 @@ def test_replicated_transport_report_requires_seed_and_timestep_provenance() -> 
     assert report["seed_timestep_provenance"]["timestep_values"] == []
 
 
+@pytest.mark.parametrize("invalid_count", ["three", 2.5, -3, float("nan")])
+def test_replicated_transport_report_rejects_corrupt_pass_and_count_fields(
+    invalid_count,
+) -> None:
+    payload = _ensemble_payload(case="corrupt", mean=2.5)
+    payload["passed"] = "true"
+    payload["gate_report"]["passed"] = "true"
+    payload["statistics"]["n_reports"] = invalid_count
+
+    report = replicated_transport_ensemble_report("corrupt.json", payload)
+
+    assert report["passed"] is False
+    assert report["n_reports"] == 0
+    assert report["report_count_ok"] is False
+    assert report["qualifies_as_long_post_transient_replicate"] is False
+
+
+def test_matched_transport_report_rejects_string_gate_flags() -> None:
+    payload = _matched_audit_payload()
+    payload["passed"] = "true"
+    payload["baseline_ensemble"]["qualifies"] = "true"
+    payload["optimized_ensemble"]["qualifies"] = "true"
+    payload["selected_optimized_audit"]["passed"] = "true"
+    for gate in payload["gates"]:
+        gate["passed"] = "true"
+
+    report = matched_optimized_transport_report("corrupt.json", payload)
+
+    assert report["passed"] is False
+    assert report["baseline_ensemble_qualified"] is False
+    assert report["optimized_ensemble_qualified"] is False
+    assert report["selected_optimized_audit_closed"] is False
+    assert report["qualifies_for_production_optimization"] is False
+
+
 def test_optimized_equilibrium_marker_and_reduced_scope_reports_are_fail_closed() -> (
     None
 ):

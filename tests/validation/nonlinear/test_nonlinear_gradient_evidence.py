@@ -183,6 +183,20 @@ def test_startup_fd_artifact_is_recorded_but_not_promoted() -> None:
     assert "transport_average_gate_false" in row["scope_blockers"]
 
 
+def test_gradient_classifier_rejects_string_pass_flags() -> None:
+    artifact = _production_gradient()
+    artifact["passed"] = "true"
+    artifact["gate_report"] = {"passed": "true"}
+
+    row = classify_gradient_artifact(artifact)
+
+    assert row["artifact_passed"] is False
+    assert row["qualifies_for_production_turbulence_gradient"] is False
+    assert "artifact_passed" in {
+        gate["metric"] for gate in row["gates"] if not gate["passed"]
+    }
+
+
 def test_reduced_estimator_gradient_does_not_promote_even_with_replicates() -> None:
     reduced_gradient = {
         "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",

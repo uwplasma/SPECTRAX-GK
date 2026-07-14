@@ -455,7 +455,10 @@ Completed extractions:
   replicated long-window transport extraction, matched baseline-to-optimized
   audit gates, safety gates, promotion gates, evidence-gap accounting, and
   summary assembly so release safety and production-claim promotion cannot be
-  conflated. Explicit finite comparison metrics take precedence over fallback
+  conflated. Persisted pass flags and named gate rows require explicit Boolean
+  values, and replicate counts require finite nonnegative integers; malformed
+  evidence therefore produces blockers rather than promotion or exceptions.
+  Explicit finite comparison metrics take precedence over fallback
   statistics, including a physical zero; zero uncertainty separation can
   therefore never be replaced by a stale positive fallback and accidentally
   promote an audit. Replicate-spread diagnostics now live in
