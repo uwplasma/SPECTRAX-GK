@@ -148,145 +148,165 @@ def coulomb_speed_moments(
     import mpmath as mp
 
     with mp.workdps(digits):
-        p = spherical_order
-        j = spherical_radial_order
-        d = speed_power_order
-        sigma = mp.mpf(mass_ratio)
-        tau = mp.mpf(temperature_ratio)
-        nu = mp.mpf(collision_frequency)
-        chi = mp.sqrt(tau / sigma)
-        inverse_sqrt_pi = 1 / mp.sqrt(mp.pi)
-        test_moment = mp.mpf(0)
-        field_moment = mp.mpf(0)
+        test_moment, field_moment = _coulomb_speed_moments_mp(
+            spherical_order,
+            spherical_radial_order,
+            speed_power_order,
+            mass_ratio,
+            temperature_ratio,
+            collision_frequency,
+            mp,
+        )
+    return float(test_moment), float(field_moment)
 
-        for monomial_order in range(j + 1):
-            laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
-                j,
-                p,
-                monomial_order,
-                mp,
-            )
-            common_polynomial = (
-                4 * monomial_order**2
-                + 4 * monomial_order * (p - 1)
-                + mp.mpf("1.5") * p * (p - 1)
-            )
-            test_erf_coefficients = (
-                -4 * sigma * (tau - 1) / tau,
-                4 * sigma / tau * monomial_order * (tau - 2)
-                - p * (p - 2 * sigma + 4 * sigma / tau + 1),
-                sigma / tau * common_polynomial,
-            )
-            test_gaussian_coefficients = (
-                4 * (tau - 1) * (sigma + tau) / tau,
-                -2 * (p + 2 * monomial_order) * (sigma / tau * (tau - 2) - 1),
-                -sigma / tau * common_polynomial,
-            )
-            for summation_order in range(3):
-                erf_coefficient = test_erf_coefficients[summation_order]
-                gaussian_coefficient = test_gaussian_coefficients[summation_order]
-                if erf_coefficient != 0:
-                    integral_order = d + monomial_order + p - summation_order
-                    test_moment += (
-                        laguerre_coefficient
-                        * erf_coefficient
-                        * 4
-                        * nu
-                        * inverse_sqrt_pi
-                        * _coulomb_E_mp(integral_order, chi, mp)
-                    )
-                if gaussian_coefficient != 0:
-                    integral_order = d + monomial_order + p - summation_order + 1
-                    test_moment += (
-                        laguerre_coefficient
-                        * gaussian_coefficient
-                        * 4
-                        * chi
-                        * nu
-                        * inverse_sqrt_pi
-                        * _coulomb_e_mp(integral_order, chi, mp)
-                    )
 
-            field_prime_coefficients = (
-                4 * tau**2 / sigma,
-                -8 * (p * p + p - 1) / ((2 * p - 1) * (2 * p + 3)),
-            )
-            field_plus_coefficients = (
-                -8 * p * (p - 1) * (monomial_order + 1) / ((2 * p + 1) * (2 * p - 1))
-                - 8 * tau * (1 + p - sigma * p) / (sigma * (2 * p + 1)),
-                8 * (p + 1) * (p + 2) / ((2 * p + 1) * (2 * p + 3)),
-            )
-            field_minus_coefficients = (
-                4
-                * (p + 1)
-                * (p + 2)
-                * (2 * p + 2 * monomial_order + 3)
-                / ((2 * p + 1) * (2 * p + 3))
-                + 8 * chi**2 * (p - sigma * p - sigma) / (2 * p + 1),
-                -8 * p * (p - 1) / ((2 * p + 1) * (2 * p - 1)),
-            )
-            for summation_order in range(2):
-                beta_e = (
-                    4
+def _coulomb_speed_moments_mp(
+    spherical_order: int,
+    spherical_radial_order: int,
+    speed_power_order: int,
+    mass_ratio: Any,
+    temperature_ratio: Any,
+    collision_frequency: Any,
+    mp: Any,
+) -> tuple[Any, Any]:
+    p = spherical_order
+    j = spherical_radial_order
+    d = speed_power_order
+    sigma = mp.mpf(mass_ratio)
+    tau = mp.mpf(temperature_ratio)
+    nu = mp.mpf(collision_frequency)
+    chi = mp.sqrt(tau / sigma)
+    inverse_sqrt_pi = 1 / mp.sqrt(mp.pi)
+    test_moment = mp.mpf(0)
+    field_moment = mp.mpf(0)
+
+    for monomial_order in range(j + 1):
+        laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
+            j,
+            p,
+            monomial_order,
+            mp,
+        )
+        common_polynomial = (
+            4 * monomial_order**2
+            + 4 * monomial_order * (p - 1)
+            + mp.mpf("1.5") * p * (p - 1)
+        )
+        test_erf_coefficients = (
+            -4 * sigma * (tau - 1) / tau,
+            4 * sigma / tau * monomial_order * (tau - 2)
+            - p * (p - 2 * sigma + 4 * sigma / tau + 1),
+            sigma / tau * common_polynomial,
+        )
+        test_gaussian_coefficients = (
+            4 * (tau - 1) * (sigma + tau) / tau,
+            -2 * (p + 2 * monomial_order) * (sigma / tau * (tau - 2) - 1),
+            -sigma / tau * common_polynomial,
+        )
+        for summation_order in range(3):
+            erf_coefficient = test_erf_coefficients[summation_order]
+            gaussian_coefficient = test_gaussian_coefficients[summation_order]
+            if erf_coefficient != 0:
+                integral_order = d + monomial_order + p - summation_order
+                test_moment += (
+                    laguerre_coefficient
+                    * erf_coefficient
+                    * 4
                     * nu
                     * inverse_sqrt_pi
-                    * chi ** (p + 2 * monomial_order + 2 * summation_order - 1)
+                    * _coulomb_E_mp(integral_order, chi, mp)
+                )
+            if gaussian_coefficient != 0:
+                integral_order = d + monomial_order + p - summation_order + 1
+                test_moment += (
+                    laguerre_coefficient
+                    * gaussian_coefficient
+                    * 4
+                    * chi
+                    * nu
+                    * inverse_sqrt_pi
+                    * _coulomb_e_mp(integral_order, chi, mp)
+                )
+
+        field_prime_coefficients = (
+            4 * tau**2 / sigma,
+            -8 * (p * p + p - 1) / ((2 * p - 1) * (2 * p + 3)),
+        )
+        field_plus_coefficients = (
+            -8 * p * (p - 1) * (monomial_order + 1) / ((2 * p + 1) * (2 * p - 1))
+            - 8 * tau * (1 + p - sigma * p) / (sigma * (2 * p + 1)),
+            8 * (p + 1) * (p + 2) / ((2 * p + 1) * (2 * p + 3)),
+        )
+        field_minus_coefficients = (
+            4
+            * (p + 1)
+            * (p + 2)
+            * (2 * p + 2 * monomial_order + 3)
+            / ((2 * p + 1) * (2 * p + 3))
+            + 8 * chi**2 * (p - sigma * p - sigma) / (2 * p + 1),
+            -8 * p * (p - 1) / ((2 * p + 1) * (2 * p - 1)),
+        )
+        for summation_order in range(2):
+            beta_e = (
+                4
+                * nu
+                * inverse_sqrt_pi
+                * chi ** (p + 2 * monomial_order + 2 * summation_order - 1)
+                * _coulomb_e_mp(
+                    p + 1 + d + monomial_order + summation_order,
+                    chi,
+                    mp,
+                )
+            )
+            beta_plus = (
+                4
+                * nu
+                * inverse_sqrt_pi
+                * chi ** (p + 2 * summation_order - 1)
+                * sum(
+                    chi ** (2 * inner_order)
+                    * mp.factorial(monomial_order)
+                    / mp.factorial(inner_order)
                     * _coulomb_e_mp(
-                        p + 1 + d + monomial_order + summation_order,
+                        p + summation_order + 1 + d + inner_order,
                         chi,
                         mp,
                     )
+                    / 2
+                    for inner_order in range(monomial_order + 1)
                 )
-                beta_plus = (
-                    4
-                    * nu
-                    * inverse_sqrt_pi
-                    * chi ** (p + 2 * summation_order - 1)
-                    * sum(
-                        chi ** (2 * inner_order)
-                        * mp.factorial(monomial_order)
-                        / mp.factorial(inner_order)
+            )
+            gamma_factor = mp.gamma(p + monomial_order + mp.mpf("1.5"))
+            beta_minus = (
+                4
+                * nu
+                * inverse_sqrt_pi
+                * chi ** (2 * summation_order - p - 2)
+                * (
+                    gamma_factor
+                    / mp.gamma(mp.mpf("1.5"))
+                    * _coulomb_E_mp(d + summation_order, chi, mp)
+                    / 2
+                    - sum(
+                        chi ** (2 * inner_order + 1)
+                        * gamma_factor
+                        / mp.gamma(inner_order + mp.mpf("1.5"))
                         * _coulomb_e_mp(
-                            p + summation_order + 1 + d + inner_order,
+                            d + summation_order + inner_order + 1,
                             chi,
                             mp,
                         )
                         / 2
-                        for inner_order in range(monomial_order + 1)
+                        for inner_order in range(p + monomial_order + 1)
                     )
                 )
-                gamma_factor = mp.gamma(p + monomial_order + mp.mpf("1.5"))
-                beta_minus = (
-                    4
-                    * nu
-                    * inverse_sqrt_pi
-                    * chi ** (2 * summation_order - p - 2)
-                    * (
-                        gamma_factor
-                        / mp.gamma(mp.mpf("1.5"))
-                        * _coulomb_E_mp(d + summation_order, chi, mp)
-                        / 2
-                        - sum(
-                            chi ** (2 * inner_order + 1)
-                            * gamma_factor
-                            / mp.gamma(inner_order + mp.mpf("1.5"))
-                            * _coulomb_e_mp(
-                                d + summation_order + inner_order + 1,
-                                chi,
-                                mp,
-                            )
-                            / 2
-                            for inner_order in range(p + monomial_order + 1)
-                        )
-                    )
-                )
-                field_moment += laguerre_coefficient * (
-                    field_prime_coefficients[summation_order] * beta_e
-                    + field_plus_coefficients[summation_order] * beta_plus
-                    + field_minus_coefficients[summation_order] * beta_minus
-                )
-
-    return float(test_moment), float(field_moment)
+            )
+            field_moment += laguerre_coefficient * (
+                field_prime_coefficients[summation_order] * beta_e
+                + field_plus_coefficients[summation_order] * beta_plus
+                + field_minus_coefficients[summation_order] * beta_minus
+            )
+    return test_moment, field_moment
 
 
 def associated_laguerre_monomial_coefficients(
@@ -928,50 +948,639 @@ def gyroaveraged_spherical_moment_coefficient(
     import mpmath as mp
 
     with mp.workdps(digits):
-        b = mp.mpf(kperp_rho)
-        half_b = b / 2
-        argument = half_b * half_b
-        coefficient = mp.mpf(0)
-        maximum_auxiliary_laguerre = (
-            spherical_radial_order + (spherical_order + bessel_order) // 2
+        coefficient = _gyroaveraged_spherical_moment_coefficient_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            hermite_order,
+            laguerre_order,
+            kperp_rho,
+            maximum_bessel_laguerre_order,
+            mp,
         )
-        for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
-            transform = _associated_legendre_to_hermite_laguerre_mp(
-                spherical_order,
-                spherical_radial_order,
+    return float(coefficient)
+
+
+def _gyroaveraged_spherical_moment_coefficient_mp(
+    spherical_order: int,
+    spherical_radial_order: int,
+    bessel_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    kperp_rho: Any,
+    maximum_bessel_laguerre_order: int,
+    mp: Any,
+) -> Any:
+    b = mp.mpf(kperp_rho)
+    half_b = b / 2
+    argument = half_b * half_b
+    coefficient = mp.mpf(0)
+    maximum_auxiliary_laguerre = (
+        spherical_radial_order + (spherical_order + bessel_order) // 2
+    )
+    for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
+        transform = _associated_legendre_to_hermite_laguerre_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            hermite_order,
+            auxiliary_laguerre_order,
+            mp,
+        )
+        if transform == 0:
+            continue
+        for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
+            product = _laguerre_product_expansion_coefficient_mp(
                 bessel_order,
-                hermite_order,
+                bessel_laguerre_order,
                 auxiliary_laguerre_order,
+                laguerre_order,
+                bessel_order,
                 mp,
             )
-            if transform == 0:
+            if product == 0:
                 continue
-            for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
+            kernel = (
+                mp.exp(-argument)
+                * argument**bessel_laguerre_order
+                / mp.factorial(bessel_laguerre_order)
+            )
+            coefficient += (
+                transform
+                * product
+                * mp.factorial(bessel_laguerre_order)
+                * kernel
+                * half_b**bessel_order
+                / mp.factorial(bessel_laguerre_order + bessel_order)
+            )
+    coefficient *= mp.sqrt(mp.power(2, hermite_order) * mp.factorial(hermite_order))
+    return coefficient
+
+
+def _gyroaveraged_polarization_coefficient_mp(
+    spherical_order: int,
+    spherical_radial_order: int,
+    bessel_order: int,
+    kperp_rho: Any,
+    maximum_bessel_laguerre_order: int,
+    mp: Any,
+) -> Any:
+    b = mp.mpf(kperp_rho)
+    half_b = b / 2
+    argument = half_b * half_b
+    total = mp.mpf(0)
+    maximum_auxiliary_laguerre = (
+        spherical_radial_order + (spherical_order + bessel_order) // 2
+    )
+    kernels = [
+        mp.exp(-argument) * argument**order / mp.factorial(order)
+        for order in range(
+            2 * maximum_bessel_laguerre_order
+            + bessel_order
+            + maximum_auxiliary_laguerre
+            + 1
+        )
+    ]
+    for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
+        transform = _associated_legendre_to_hermite_laguerre_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            0,
+            auxiliary_laguerre_order,
+            mp,
+        )
+        if transform == 0:
+            continue
+        for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
+            leading = (
+                transform
+                * half_b**bessel_order
+                * mp.factorial(bessel_laguerre_order)
+                * kernels[bessel_laguerre_order]
+                / mp.factorial(bessel_laguerre_order + bessel_order)
+            )
+            if leading == 0:
+                continue
+            for output_order in range(
+                bessel_laguerre_order + bessel_order + auxiliary_laguerre_order + 1
+            ):
                 product = _laguerre_product_expansion_coefficient_mp(
                     bessel_order,
                     bessel_laguerre_order,
                     auxiliary_laguerre_order,
-                    laguerre_order,
+                    output_order,
                     bessel_order,
                     mp,
                 )
-                if product == 0:
-                    continue
-                kernel = (
-                    mp.exp(-argument)
-                    * argument**bessel_laguerre_order
-                    / mp.factorial(bessel_laguerre_order)
-                )
-                coefficient += (
-                    transform
-                    * product
-                    * mp.factorial(bessel_laguerre_order)
-                    * kernel
-                    * half_b**bessel_order
-                    / mp.factorial(bessel_laguerre_order + bessel_order)
-                )
-        coefficient *= mp.sqrt(mp.power(2, hermite_order) * mp.factorial(hermite_order))
+                total += leading * kernels[output_order] * product
+    return total
+
+
+def gyroaveraged_polarization_coefficient(
+    spherical_order: int,
+    spherical_radial_order: int,
+    bessel_order: int,
+    kperp_rho: float,
+    *,
+    maximum_bessel_laguerre_order: int = 24,
+    digits: int = 80,
+) -> float:
+    r"""Return equation (3.41)'s finite-``b`` polarization coefficient."""
+
+    if any(
+        order < 0
+        for order in (
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            maximum_bessel_laguerre_order,
+        )
+    ):
+        raise ValueError("basis and truncation orders must be >= 0")
+    if bessel_order > spherical_order:
+        raise ValueError("bessel_order must be <= spherical_order")
+    if not math.isfinite(kperp_rho) or kperp_rho < 0.0:
+        raise ValueError("kperp_rho must be finite and >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        coefficient = _gyroaveraged_polarization_coefficient_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            kperp_rho,
+            maximum_bessel_laguerre_order,
+            mp,
+        )
     return float(coefficient)
+
+
+def coulomb_nonpolarized_moment_matrices(
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    kperp_rho: float,
+    mass_ratio: float,
+    temperature_ratio: float,
+    *,
+    maximum_spherical_order: int | None = None,
+    maximum_spherical_radial_order: int | None = None,
+    maximum_bessel_laguerre_order: int = 24,
+    digits: int = 80,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Generate finite-``b`` Coulomb test and field moment matrices.
+
+    This contracts equations (3.48)--(3.49) of Frei et al. (2021), excluding
+    the electrostatic polarization terms in equation (3.50).  Rows and columns
+    use Hermite-major ``p * Nl + j`` ordering and the paper's Laguerre
+    convention.  Every finite truncation is explicit so convergence can be
+    assessed before a table is promoted.
+    """
+
+    if maximum_hermite_order < 0:
+        raise ValueError("maximum_hermite_order must be >= 0")
+    if maximum_laguerre_order < 0:
+        raise ValueError("maximum_laguerre_order must be >= 0")
+    if not math.isfinite(kperp_rho) or kperp_rho < 0.0:
+        raise ValueError("kperp_rho must be finite and >= 0")
+    if mass_ratio <= 0.0 or not math.isfinite(mass_ratio):
+        raise ValueError("mass_ratio must be finite and > 0")
+    if temperature_ratio <= 0.0 or not math.isfinite(temperature_ratio):
+        raise ValueError("temperature_ratio must be finite and > 0")
+    if maximum_bessel_laguerre_order < 0:
+        raise ValueError("maximum_bessel_laguerre_order must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
+    spherical_limit = (
+        maximum_degree if maximum_spherical_order is None else maximum_spherical_order
+    )
+    radial_limit = (
+        maximum_degree // 2
+        if maximum_spherical_radial_order is None
+        else maximum_spherical_radial_order
+    )
+    if spherical_limit < 0:
+        raise ValueError("maximum_spherical_order must be >= 0")
+    if radial_limit < 0:
+        raise ValueError("maximum_spherical_radial_order must be >= 0")
+
+    import mpmath as mp
+
+    n_laguerre = maximum_laguerre_order + 1
+    n_modes = (maximum_hermite_order + 1) * n_laguerre
+    with mp.workdps(digits):
+        b = mp.mpf(kperp_rho)
+        sigma = mp.mpf(mass_ratio)
+        tau = mp.mpf(temperature_ratio)
+        half_b = b / 2
+        bessel_argument = half_b * half_b
+        test_matrix = mp.matrix(n_modes, n_modes)
+        field_matrix = mp.matrix(n_modes, n_modes)
+        moment_cache: dict[tuple[int, int, int, int, int], Any] = {}
+        speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
+
+        def spherical_moment(
+            p: int,
+            j: int,
+            m: int,
+            g: int,
+            s: int,
+        ) -> Any:
+            key = (p, j, m, g, s)
+            if key not in moment_cache:
+                moment_cache[key] = _gyroaveraged_spherical_moment_coefficient_mp(
+                    p,
+                    j,
+                    m,
+                    g,
+                    s,
+                    b,
+                    maximum_bessel_laguerre_order,
+                    mp,
+                )
+            return moment_cache[key]
+
+        def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
+            key = (p, j, t)
+            if key not in speed_cache:
+                test_speed = mp.mpf(0)
+                field_speed = mp.mpf(0)
+                for speed_power in range(t + 1):
+                    laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
+                        t,
+                        p,
+                        speed_power,
+                        mp,
+                    )
+                    test_term, field_term = _coulomb_speed_moments_mp(
+                        p,
+                        j,
+                        speed_power,
+                        sigma,
+                        tau,
+                        1,
+                        mp,
+                    )
+                    test_speed += laguerre_coefficient * test_term
+                    field_speed += laguerre_coefficient * field_term
+                speed_cache[key] = (test_speed, field_speed)
+            return speed_cache[key]
+
+        for output_hermite in range(maximum_hermite_order + 1):
+            output_normalization = mp.sqrt(
+                mp.power(2, output_hermite) * mp.factorial(output_hermite)
+            )
+            for output_laguerre in range(n_laguerre):
+                row = output_hermite * n_laguerre + output_laguerre
+                for p in range(spherical_limit + 1):
+                    for j in range(radial_limit + 1):
+                        sigma_pj = (
+                            mp.factorial(p)
+                            * mp.gamma(p + j + mp.mpf("1.5"))
+                            / (
+                                mp.power(2, p)
+                                * mp.gamma(p + mp.mpf("1.5"))
+                                * mp.factorial(j)
+                            )
+                        )
+                        angular_base = (
+                            mp.power(2, p)
+                            * mp.factorial(p) ** 2
+                            / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
+                        )
+                        for m in range(p + 1):
+                            moment_vector = [
+                                spherical_moment(p, j, m, input_hermite, input_laguerre)
+                                for input_hermite in range(maximum_hermite_order + 1)
+                                for input_laguerre in range(n_laguerre)
+                            ]
+                            if not any(value != 0 for value in moment_vector):
+                                continue
+                            angular = (1 if m == 0 else 2) * angular_base
+                            for n in range(maximum_bessel_laguerre_order + 1):
+                                kernel = (
+                                    mp.exp(-bessel_argument)
+                                    * bessel_argument**n
+                                    / mp.factorial(n)
+                                )
+                                bessel_factor = (
+                                    mp.factorial(n)
+                                    * kernel
+                                    * half_b**m
+                                    / mp.factorial(n + m)
+                                )
+                                if bessel_factor == 0:
+                                    continue
+                                for product_order in range(output_laguerre + n + 1):
+                                    product = (
+                                        _laguerre_product_expansion_coefficient_mp(
+                                            m,
+                                            n,
+                                            output_laguerre,
+                                            product_order,
+                                            0,
+                                            mp,
+                                        )
+                                    )
+                                    if product == 0:
+                                        continue
+                                    if p > output_hermite + m + 2 * product_order:
+                                        continue
+                                    maximum_speed_order = (
+                                        product_order + (output_hermite + m) // 2
+                                    )
+                                    for speed_order in range(maximum_speed_order + 1):
+                                        inverse = (
+                                            _hermite_laguerre_to_associated_legendre_mp(
+                                                output_hermite,
+                                                product_order,
+                                                p,
+                                                speed_order,
+                                                m,
+                                                mp,
+                                            )
+                                        )
+                                        if inverse == 0:
+                                            continue
+                                        test_speed, field_speed = integrated_speed(
+                                            p,
+                                            j,
+                                            speed_order,
+                                        )
+                                        common = (
+                                            angular
+                                            * product
+                                            * inverse
+                                            * bessel_factor
+                                            / output_normalization
+                                        )
+                                        for column, moment in enumerate(moment_vector):
+                                            if moment != 0:
+                                                test_matrix[row, column] += (
+                                                    common * moment * test_speed
+                                                )
+                                                field_matrix[row, column] += (
+                                                    common * moment * field_speed
+                                                )
+
+        test = np.asarray(test_matrix.tolist(), dtype=np.float64)
+        field = np.asarray(field_matrix.tolist(), dtype=np.float64)
+    return test, field
+
+
+def coulomb_polarization_vectors(
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    target_kperp_rho: float,
+    source_kperp_rho: float,
+    mass_ratio: float,
+    temperature_ratio: float,
+    *,
+    maximum_spherical_order: int | None = None,
+    maximum_spherical_radial_order: int | None = None,
+    maximum_bessel_laguerre_order: int = 24,
+    digits: int = 80,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    r"""Generate the four Coulomb polarization vectors in equation (3.50).
+
+    The result is ``(test_phi1, field_phi1, test_phi2, field_phi2)`` in the
+    paper's Laguerre convention.  Test vectors multiply ``q_a phi / T_a``;
+    field vectors multiply ``q_b phi / T_b``.  Target and source gyroradii are
+    separate because unlike-species polarization uses both.
+    """
+
+    if maximum_hermite_order < 0:
+        raise ValueError("maximum_hermite_order must be >= 0")
+    if maximum_laguerre_order < 0:
+        raise ValueError("maximum_laguerre_order must be >= 0")
+    for value, name in (
+        (target_kperp_rho, "target_kperp_rho"),
+        (source_kperp_rho, "source_kperp_rho"),
+    ):
+        if not math.isfinite(value) or value < 0.0:
+            raise ValueError(f"{name} must be finite and >= 0")
+    if mass_ratio <= 0.0 or not math.isfinite(mass_ratio):
+        raise ValueError("mass_ratio must be finite and > 0")
+    if temperature_ratio <= 0.0 or not math.isfinite(temperature_ratio):
+        raise ValueError("temperature_ratio must be finite and > 0")
+    if maximum_bessel_laguerre_order < 0:
+        raise ValueError("maximum_bessel_laguerre_order must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
+    spherical_limit = (
+        maximum_degree if maximum_spherical_order is None else maximum_spherical_order
+    )
+    radial_limit = (
+        maximum_degree // 2
+        if maximum_spherical_radial_order is None
+        else maximum_spherical_radial_order
+    )
+    if spherical_limit < 0:
+        raise ValueError("maximum_spherical_order must be >= 0")
+    if radial_limit < 0:
+        raise ValueError("maximum_spherical_radial_order must be >= 0")
+
+    import mpmath as mp
+
+    n_laguerre = maximum_laguerre_order + 1
+    n_modes = (maximum_hermite_order + 1) * n_laguerre
+    with mp.workdps(digits):
+        target_b = mp.mpf(target_kperp_rho)
+        source_b = mp.mpf(source_kperp_rho)
+        sigma = mp.mpf(mass_ratio)
+        tau = mp.mpf(temperature_ratio)
+        half_target_b = target_b / 2
+        target_argument = half_target_b * half_target_b
+        test_phi1 = mp.matrix(n_modes, 1)
+        field_phi1 = mp.matrix(n_modes, 1)
+        test_phi2 = mp.matrix(n_modes, 1)
+        field_phi2 = mp.matrix(n_modes, 1)
+        speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
+        target_polarization_cache: dict[tuple[int, int, int], Any] = {}
+        source_polarization_cache: dict[tuple[int, int, int], Any] = {}
+
+        def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
+            key = (p, j, t)
+            if key not in speed_cache:
+                test_speed = mp.mpf(0)
+                field_speed = mp.mpf(0)
+                for speed_power in range(t + 1):
+                    coefficient = _associated_laguerre_monomial_coefficient_mp(
+                        t,
+                        p,
+                        speed_power,
+                        mp,
+                    )
+                    test_term, field_term = _coulomb_speed_moments_mp(
+                        p,
+                        j,
+                        speed_power,
+                        sigma,
+                        tau,
+                        1,
+                        mp,
+                    )
+                    test_speed += coefficient * test_term
+                    field_speed += coefficient * field_term
+                speed_cache[key] = (test_speed, field_speed)
+            return speed_cache[key]
+
+        def polarization(p: int, j: int, m: int, *, source: bool) -> Any:
+            cache = source_polarization_cache if source else target_polarization_cache
+            key = (p, j, m)
+            if key not in cache:
+                cache[key] = _gyroaveraged_polarization_coefficient_mp(
+                    p,
+                    j,
+                    m,
+                    source_b if source else target_b,
+                    maximum_bessel_laguerre_order,
+                    mp,
+                )
+            return cache[key]
+
+        for output_hermite in range(maximum_hermite_order + 1):
+            output_normalization = mp.sqrt(
+                mp.power(2, output_hermite) * mp.factorial(output_hermite)
+            )
+            for output_laguerre in range(n_laguerre):
+                row = output_hermite * n_laguerre + output_laguerre
+                for n in range(maximum_bessel_laguerre_order + 1):
+                    kernel = (
+                        mp.exp(-target_argument) * target_argument**n / mp.factorial(n)
+                    )
+                    if kernel == 0:
+                        continue
+                    for product_order in range(output_laguerre + n + 1):
+                        product = _laguerre_product_expansion_coefficient_mp(
+                            0,
+                            n,
+                            output_laguerre,
+                            product_order,
+                            0,
+                            mp,
+                        )
+                        for speed_order in range(
+                            product_order + output_hermite // 2 + 1
+                        ):
+                            inverse = _hermite_laguerre_to_associated_legendre_mp(
+                                output_hermite,
+                                product_order,
+                                0,
+                                speed_order,
+                                0,
+                                mp,
+                            )
+                            if product == 0 or inverse == 0:
+                                continue
+                            test_speed, field_speed = integrated_speed(
+                                0,
+                                0,
+                                speed_order,
+                            )
+                            common = product * kernel * inverse / output_normalization
+                            test_phi1[row] -= common * test_speed
+                            field_phi1[row] -= common * field_speed
+
+                for p in range(spherical_limit + 1):
+                    for j in range(radial_limit + 1):
+                        sigma_pj = (
+                            mp.factorial(p)
+                            * mp.gamma(p + j + mp.mpf("1.5"))
+                            / (
+                                mp.power(2, p)
+                                * mp.gamma(p + mp.mpf("1.5"))
+                                * mp.factorial(j)
+                            )
+                        )
+                        angular_base = (
+                            mp.power(2, p)
+                            * mp.factorial(p) ** 2
+                            / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
+                        )
+                        for m in range(p + 1):
+                            target_polarization = polarization(p, j, m, source=False)
+                            source_polarization = polarization(p, j, m, source=True)
+                            if target_polarization == 0 and source_polarization == 0:
+                                continue
+                            angular = (1 if m == 0 else 2) * angular_base
+                            for n in range(maximum_bessel_laguerre_order + 1):
+                                kernel = (
+                                    mp.exp(-target_argument)
+                                    * target_argument**n
+                                    / mp.factorial(n)
+                                )
+                                bessel_factor = (
+                                    mp.factorial(n)
+                                    * kernel
+                                    * half_target_b**m
+                                    / mp.factorial(n + m)
+                                )
+                                if bessel_factor == 0:
+                                    continue
+                                for product_order in range(output_laguerre + n + 1):
+                                    product = (
+                                        _laguerre_product_expansion_coefficient_mp(
+                                            m,
+                                            n,
+                                            output_laguerre,
+                                            product_order,
+                                            0,
+                                            mp,
+                                        )
+                                    )
+                                    if (
+                                        product == 0
+                                        or p > output_hermite + m + 2 * product_order
+                                    ):
+                                        continue
+                                    maximum_speed_order = (
+                                        product_order + (output_hermite + m) // 2
+                                    )
+                                    for speed_order in range(maximum_speed_order + 1):
+                                        inverse = (
+                                            _hermite_laguerre_to_associated_legendre_mp(
+                                                output_hermite,
+                                                product_order,
+                                                p,
+                                                speed_order,
+                                                m,
+                                                mp,
+                                            )
+                                        )
+                                        if inverse == 0:
+                                            continue
+                                        test_speed, field_speed = integrated_speed(
+                                            p,
+                                            j,
+                                            speed_order,
+                                        )
+                                        common = (
+                                            angular
+                                            * product
+                                            * inverse
+                                            * bessel_factor
+                                            / output_normalization
+                                        )
+                                        test_phi2[row] += (
+                                            common * target_polarization * test_speed
+                                        )
+                                        field_phi2[row] += (
+                                            common * source_polarization * field_speed
+                                        )
+
+        vectors = tuple(
+            np.asarray(vector.tolist(), dtype=np.float64).reshape(n_modes)
+            for vector in (test_phi1, field_phi1, test_phi2, field_phi2)
+        )
+    return vectors
 
 
 def build_collision_table(*, digits: int = 80) -> np.ndarray:

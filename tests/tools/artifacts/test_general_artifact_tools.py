@@ -2456,6 +2456,174 @@ def test_gyroaveraged_spherical_moment_matches_direct_velocity_projection() -> N
         mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, 1.0, digits=10)
 
 
+def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
+    """Frei et al. Eqs. (3.48)--(3.49) must recover the published DK block."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    test_matrix, field_matrix = mod.coulomb_nonpolarized_moment_matrices(
+        3,
+        1,
+        0.0,
+        1.0,
+        1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        maximum_bessel_laguerre_order=0,
+        digits=80,
+    )
+    laguerre_sign = np.asarray([1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0])
+    code_convention = (
+        laguerre_sign[:, None] * laguerre_sign[None, :] * (test_matrix + field_matrix)
+    )
+    published = mod.build_collision_table(digits=80)[2]
+    published_entries = published != 0.0
+    np.testing.assert_allclose(
+        code_convention[published_entries],
+        published[published_entries],
+        rtol=3.0e-13,
+        atol=3.0e-13,
+    )
+
+    np.testing.assert_allclose(code_convention, code_convention.T, atol=2.0e-13)
+    assert np.max(np.linalg.eigvalsh(code_convention)) < 1.0e-12
+    density = np.eye(8)[0]
+    parallel_momentum = np.eye(8)[2]
+    thermal_energy = np.asarray([0.0, 1.0, 0.0, 0.0, 1.0 / np.sqrt(2), 0.0, 0.0, 0.0])
+    for invariant in (density, parallel_momentum, thermal_energy):
+        np.testing.assert_allclose(code_convention @ invariant, 0.0, atol=5.0e-13)
+
+    assert np.count_nonzero(np.abs(code_convention) > 1.0e-14) > np.count_nonzero(
+        published_entries
+    )
+    for args, message in (
+        ((-1, 1, 0.0, 1.0, 1.0), "maximum_hermite_order"),
+        ((1, -1, 0.0, 1.0, 1.0), "maximum_laguerre_order"),
+        ((1, 1, -1.0, 1.0, 1.0), "kperp_rho"),
+        ((1, 1, 0.0, 0.0, 1.0), "mass_ratio"),
+        ((1, 1, 0.0, 1.0, 0.0), "temperature_ratio"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            mod.coulomb_nonpolarized_moment_matrices(*args)
+    with pytest.raises(ValueError, match="maximum_bessel_laguerre_order"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            1, 1, 0.0, 1.0, 1.0, maximum_bessel_laguerre_order=-1
+        )
+    with pytest.raises(ValueError, match="maximum_spherical_order"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            1, 1, 0.0, 1.0, 1.0, maximum_spherical_order=-1
+        )
+    with pytest.raises(ValueError, match="maximum_spherical_radial_order"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            1, 1, 0.0, 1.0, 1.0, maximum_spherical_radial_order=-1
+        )
+    with pytest.raises(ValueError, match="digits"):
+        mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)
+
+
+def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
+    """Frei et al. Eqs. (3.41) and (3.50) must satisfy direct and null gates."""
+    from scipy.special import eval_genlaguerre, jv, lpmv
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    parallel, parallel_weights = np.polynomial.hermite.hermgauss(80)
+    perpendicular, perpendicular_weights = np.polynomial.laguerre.laggauss(80)
+    x_parallel = parallel[:, None]
+    x_perpendicular = perpendicular[None, :]
+    speed = np.sqrt(x_parallel**2 + x_perpendicular)
+    pitch = x_parallel / speed
+    cases = (
+        (0, 0, 0, 0.7),
+        (1, 0, 1, 0.7),
+        (2, 0, 0, 0.7),
+        (2, 0, 2, 0.7),
+        (3, 1, 1, 1.2),
+    )
+    for spherical_order, spherical_radial_order, bessel_order, b in cases:
+        coefficient = mod.gyroaveraged_polarization_coefficient(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            b,
+            maximum_bessel_laguerre_order=14,
+            digits=80,
+        )
+        spherical_basis = (
+            speed**spherical_order
+            * lpmv(bessel_order, spherical_order, pitch)
+            * eval_genlaguerre(
+                spherical_radial_order,
+                spherical_order + 0.5,
+                speed**2,
+            )
+        )
+        projected = np.sum(
+            parallel_weights[:, None]
+            * perpendicular_weights[None, :]
+            * spherical_basis
+            * jv(0, b * np.sqrt(x_perpendicular))
+            * jv(bessel_order, b * np.sqrt(x_perpendicular))
+        ) / np.sqrt(np.pi)
+        np.testing.assert_allclose(
+            coefficient,
+            projected,
+            rtol=3.0e-10,
+            atol=3.0e-10,
+        )
+
+    assert mod.gyroaveraged_polarization_coefficient(0, 0, 0, 0.0) == 1.0
+    low = mod.coulomb_polarization_vectors(
+        1,
+        0,
+        0.7,
+        0.7,
+        1.0,
+        1.0,
+        maximum_spherical_order=1,
+        maximum_spherical_radial_order=0,
+        maximum_bessel_laguerre_order=3,
+        digits=60,
+    )
+    high = mod.coulomb_polarization_vectors(
+        1,
+        0,
+        0.7,
+        0.7,
+        1.0,
+        1.0,
+        maximum_spherical_order=1,
+        maximum_spherical_radial_order=0,
+        maximum_bessel_laguerre_order=5,
+        digits=60,
+    )
+    for low_vector, high_vector in zip(low, high):
+        np.testing.assert_allclose(low_vector, high_vector, rtol=2.0e-6, atol=4.0e-8)
+    np.testing.assert_allclose(sum(high), 0.0, atol=3.0e-13)
+
+    with pytest.raises(ValueError, match="basis and truncation"):
+        mod.gyroaveraged_polarization_coefficient(-1, 0, 0, 1.0)
+    with pytest.raises(ValueError, match="bessel_order"):
+        mod.gyroaveraged_polarization_coefficient(1, 0, 2, 1.0)
+    with pytest.raises(ValueError, match="kperp_rho"):
+        mod.gyroaveraged_polarization_coefficient(1, 0, 1, -1.0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.gyroaveraged_polarization_coefficient(1, 0, 1, 1.0, digits=10)
+    for args, message in (
+        ((-1, 0, 0.0, 0.0, 1.0, 1.0), "maximum_hermite_order"),
+        ((0, -1, 0.0, 0.0, 1.0, 1.0), "maximum_laguerre_order"),
+        ((0, 0, -1.0, 0.0, 1.0, 1.0), "target_kperp_rho"),
+        ((0, 0, 0.0, -1.0, 1.0, 1.0), "source_kperp_rho"),
+        ((0, 0, 0.0, 0.0, 0.0, 1.0), "mass_ratio"),
+        ((0, 0, 0.0, 0.0, 1.0, 0.0), "temperature_ratio"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            mod.coulomb_polarization_vectors(*args)
+    with pytest.raises(ValueError, match="maximum_bessel_laguerre_order"):
+        mod.coulomb_polarization_vectors(
+            0, 0, 0.0, 0.0, 1.0, 1.0, maximum_bessel_laguerre_order=-1
+        )
+    with pytest.raises(ValueError, match="digits"):
+        mod.coulomb_polarization_vectors(0, 0, 0.0, 0.0, 1.0, 1.0, digits=10)
+
+
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
     mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"

@@ -668,8 +668,17 @@ reconstruct their defining products pointwise. Equation (3.35)'s finite-
 the finite-:math:`m` basis transform, and the exact :math:`K_n(b)` kernel.
 Independent Bessel-weighted velocity projection verifies six coefficients
 through :math:`m=3`; agreement between 20- and 32-term sums provides a local
-truncation gate. The next accepted step is the complete velocity-integrated
-test-/field-particle contraction, not direct runtime use of this intermediate.
+truncation gate. These intermediate coefficients are not direct runtime APIs.
+
+That contraction is now implemented offline. Equations (3.48)--(3.49) produce
+test and field matrices in Hermite-major order, while equations (3.41) and
+(3.50) produce separately coupled polarization vectors for target and source
+species. The :math:`b=0` endpoint recovers the independent drift-kinetic
+Coulomb coefficients and passes symmetry, negative-semidefinite, density,
+momentum, and energy gates. Direct :math:`J_0J_m` quadrature verifies the
+polarization coefficient. Runtime promotion still requires multispecies
+quasineutrality assembly, finite-:math:`b` truncation scans, and transport
+benchmarks.
 
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,

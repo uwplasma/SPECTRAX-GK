@@ -467,11 +467,20 @@ finite-:math:`m` transform and :math:`K_n(b)` yields
 (3.35). Six coefficients through :math:`m=3` and :math:`b=1.3` agree with
 independent Bessel-weighted velocity projection; 20- and 32-term Bessel sums
 also agree. This validates the gyro-moment-to-spherical-moment map consumed by
-the Coulomb contractions, not equations (3.48)--(3.50) themselves.
+the Coulomb contractions.
 
-Full tables must populate every retained Hermite--Laguerre coupling from the
-published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
-stronger gates below.
+The offline generator now contracts equations (3.48)--(3.49) into complete
+finite-:math:`b` test- and field-particle matrices with explicit Hermite,
+Laguerre, spherical-harmonic, and Bessel truncations. At :math:`b=0`, every
+published nonzero six-moment Coulomb entry is recovered. The larger generated
+block is symmetric to ``8.33e-17``, negative semidefinite, and preserves
+density, parallel momentum, and thermal energy within ``3.3e-16``. Equation
+(3.41)'s :math:`\Pi^{pjm}` agrees with five independent
+:math:`J_0J_m`-weighted velocity projections to about :math:`10^{-13}`.
+Equation (3.50) remains four separate vectors multiplying
+:math:`q_a\phi/T_a` and :math:`q_b\phi/T_b`, because quasineutrality couples
+species; like-species test/field polarization cancels. This closes the offline
+algebra, not runtime multispecies assembly or transport promotion.
 
 The lowest-order multispecies drift-kinetic boundary is also implemented
 without assuming equal species. For an ordered pair :math:`(a,b)`,
