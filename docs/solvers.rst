@@ -64,6 +64,13 @@ Krylov--Schur with harmonic extraction for this interior mode and must pass the
 same physical residual, branch-identity, memory, and runtime gates before it
 can replace time integration.
 
+The generic inner solve is intentionally not migrated to SOLVAX yet. A matched
+SOLVAX 0.7.3 FGMRES probe at reduced ``Nl=8,Nm=24`` resolution selected a
+damped ``-2.1301+0.8333i`` eigenvalue with physical residual ``0.912``, compared
+with ``0.584`` for the current JAX GMRES route. SOLVAX remains the owner of the
+admitted implicit linear and nonlinear solves; shift-invert migration requires
+both lower residual and identical KBM branch selection.
+
 Acceptance also follows the requested spectral selection. Growth-selected
 searches enforce ``fallback_real_floor``; nearest-shift, overlap, and explicit
 shift searches may intentionally select a stable mode and therefore use

@@ -2435,3 +2435,13 @@ under 5 minutes.
   pre-manuscript JSON writer was removed in favor of the file's common writer.
   All 119 owner tests and the combined 213-case owner/release tranche pass; the
   95-file suite now contains 92,436 lines.
+
+- 2026-07-14: Re-audited the last generic JAX GMRES owner against published
+  SOLVAX 0.7.3 after the warm-retry correction. At matched reduced KBM
+  ``Nl=8,Nm=24`` resolution, SOLVAX FGMRES returned the damped
+  ``-2.1301+0.8333i`` branch with physical residual ``0.912099`` in ``36.8 s``;
+  the current JAX route returns residual ``0.583557`` on the target branch in
+  ``38.4 s``. The adapter was never added to source. SOLVAX continues to own
+  admitted implicit linear/nonlinear solves, while shift-invert remains on JAX
+  GMRES until retained-subspace extraction passes branch, residual, memory,
+  and runtime gates together.
