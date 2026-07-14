@@ -54,6 +54,21 @@ def test_runtime_profile_normalizes_peak_rss_units() -> None:
     assert runtime_kernels._peak_rss_bytes(123, system="Linux") == 123 * 1024
 
 
+def test_sspx3_stage_profile_preserves_identity_without_speedup_claim() -> None:
+    profile = json.loads(
+        (REPO_ROOT / "docs/_static/linear_sspx3_stage_profile.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert profile["identity_gate"]["passed"] is True
+    assert profile["before"]["finite"] is True
+    assert profile["after"]["finite"] is True
+    assert profile["performance_gate"]["measurable_speedup"] is False
+    assert profile["performance_gate"]["passed"] is False
+    assert abs(profile["performance_gate"]["relative_median_time_change"]) < 0.03
+
+
 def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
     cpu = json.loads(
         (

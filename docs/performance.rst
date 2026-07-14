@@ -32,6 +32,28 @@ maps to a concrete cache-construction phase.
      --json-out tools_out/linear_cache_cyclone_gpu.json \
      --csv-out tools_out/linear_cache_cyclone_gpu.csv
 
+Fixed-step linear integrator profiling
+--------------------------------------
+
+Use the maintained integrator benchmark for matched warm fixed-step profiles;
+it accepts explicit method, timestep, resolution, and JSON-output controls:
+
+.. code-block:: bash
+
+   python benchmarks/performance/benchmark_integrators.py \
+     --skip-diffrax --method sspx3 --steps 480 --dt 0.005 \
+     --Nl 7 --Nm 14 --ky 0.3 --warmup 1 --repeat 5 \
+     --out-json tools_out/linear_sspx3_profile.json
+
+The tracked before/after artifact
+``docs/_static/linear_sspx3_stage_profile.json`` compares the same finite
+Cyclone trajectory before and after explicit-stage consolidation. State and
+field-history norms agree exactly, while median CPU times are 3.202 s and
+3.223 s. The 0.7% difference is below the 3% reporting threshold and has the
+wrong sign for a speedup claim. XLA already removed the unused SSPX3 stage from
+the compiled graph; the change therefore improves single ownership and eager
+execution without a measurable end-to-end compiled speedup.
+
 No speedup claim should be made from a local profile, scaling panel, or
 parallelization artifact unless the matching numerical-identity gate and
 hardware-specific profiler artifact are cited together. Current production

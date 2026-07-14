@@ -22,6 +22,7 @@ cases = [
 ]
 profiling_tools = [
   "benchmarks/performance/benchmark_runtime_memory.py",
+  "benchmarks/performance/benchmark_integrators.py",
   "tools/profiling/profile_runtime_kernels.py",
 ]
 metrics = [
@@ -30,11 +31,13 @@ metrics = [
   "warm_run_time_s",
   "peak_rss_mb",
   "status",
+  "fixed_step_integrator_median_s",
 ]
 artifact_paths = [
   "tools/runtime_memory_manifest.toml",
   "docs/_static/runtime_memory_benchmark.png",
   "docs/_static/runtime_memory_benchmark.pdf",
+  "docs/_static/linear_sspx3_stage_profile.json",
 ]
 bottleneck_hypotheses = [
   "short nonlinear GPU cases are dominated by JAX startup and first-integrator compilation",

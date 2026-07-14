@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
-| Test consolidation | 92% | The 96-file topology target is met, but the suite still has 94,200 lines and several oversized owners. The largest artifact-tool owner is down to 6,303 lines and the runtime runner to 4,395 through shared evidence fixtures and named parameter rows; continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
+| Test consolidation | 92% | The 96-file topology target is met, but the suite still has 94,215 lines and several oversized owners. The largest artifact-tool owner is down to 6,303 lines and the runtime runner to 4,395 through shared evidence fixtures and named parameter rows; continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
 | Source consolidation | 97% | The 223-file/zero-exception architecture gate passes after deleting redundant solver-gradient and QA-objective facades, merging nonlinear Laguerre transforms into their velocity-basis owner, and reducing VMEC/Boozer, nonlinear-promotion, linear-workflow, quasilinear-calibration, hypercollision-routing, and explicit-stage duplication. The package has 88,155 lines and no module at the 1,000-line ceiling; continue reducing the remaining near-ceiling owners without adding compatibility facades. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
@@ -2150,8 +2150,8 @@ under 5 minutes.
   all low-level explicit-method tests, five observed-order rows, seven
   integration-marked linear solves, and four forced two-device trajectory,
   electromagnetic, collision-invariant, and derivative identity gates pass
-  under x64. Wall-time claims remain deferred until a physical profiler artifact
-  measures the end-to-end effect.
+  under x64. The matched physical profile described below confirms exact
+  compiled-trajectory identity but no measurable end-to-end speedup.
 
 - 2026-07-14: Restored discoverability of the two shortest executable workflows
   by advertising the no-argument self-contained demo and top-level ``--plot``
@@ -2173,3 +2173,16 @@ under 5 minutes.
   removing non-benchmark comparison-code terminology; all three x64 rows pass.
   The 96-file suite is now 94,200 lines, with its largest owners at 6,303 and
   4,395 lines.
+
+- 2026-07-14: Repaired and expanded the existing fixed-step integrator benchmark
+  rather than adding another profiler. It now imports the canonical Diffrax
+  owner, blocks warmups correctly, accepts method/timestep/resolution controls,
+  reuses the physical cache, and writes machine-readable timing plus finite
+  trajectory fingerprints. A matched ``Nl=7``, ``Nm=14``, 480-step Cyclone
+  SSPX3 run at ``dt=0.005`` has exactly equal finite state and field-history
+  norms before and after stage consolidation. Median CPU times are 3.202 s and
+  3.223 s, so the 0.7% change fails the 3% reportable-speedup gate. The tracked
+  artifact and contract test explicitly prohibit a compiled speedup claim:
+  XLA had already eliminated the unused result. Performance evidence remains
+  honest while the source still benefits from one stage-equation owner and a
+  cheaper eager route. The 96-file suite is now 94,215 lines.
