@@ -2395,3 +2395,16 @@ under 5 minutes.
   branch claim is promoted. The next bounded solver action is the planned
   field-coupled preconditioner, followed by a branch-preserving thick restart
   only if that physical residual remains inadequate.
+
+- 2026-07-14: Completed the bounded field-coupled/restart discriminator without
+  promoting experimental code. One full-operator defect correction reduced the
+  physical KBM residual to ``0.379115`` at ``Nl=8,Nm=24`` and ``0.329959`` at
+  canonical ``Nl=16,Nm=48,Nz=96``; the latter cost ``149.75 s`` and ``0.96 GB``
+  on CPU. A second branch-preserving cycle improved the reduced residual to
+  ``0.217062`` but returned ``0.325558`` on the canonical operator in ``69.26 s``
+  on an RTX A4000, so reduced-grid convergence did not transfer and the
+  candidate was removed. SLEPc's non-Hermitian guidance identifies
+  Krylov--Schur with retained basis vectors and harmonic extraction as the next
+  technically admissible interior-eigenvalue design. That larger change is
+  explicitly separated from the released, residual-qualified time-integrated
+  KBM path; no threshold, branch claim, or default was changed.

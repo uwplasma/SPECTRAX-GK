@@ -42,7 +42,8 @@ preconditioner if that residual is not converged. An outer eigenpair-residual
 gate then rejects both primary and fallback pairs. These corrections reduce a
 representative reduced shifted-solve residual from ``4.76`` to ``1.14e-5`` and
 recover its dense-reference mode with residual ``3.18e-6``. The full canonical
-KBM audit still reports outer residual ``0.981`` against the ``0.1`` threshold,
+KBM audit now reports outer residual ``0.936`` against the ``0.1`` threshold
+after preserving the preconditioned iterate as the unpreconditioned retry seed,
 so this lane remains unpromoted rather than silently returning that branch;
 validated time integration remains the release path.
 
@@ -54,6 +55,14 @@ non-finite pair without reducing the roughly ``133`` second CPU runtime. The
 released implementation therefore retains the finite fail-closed baseline;
 future work requires a branch-preserving thick restart or field-coupled complex
 preconditioner with a lower physical residual, not another tolerance sweep.
+
+A bounded full-operator defect-correction preconditioner lowered the same
+full-resolution residual to ``0.330``, but a second explicit restart returned
+``0.326`` and therefore added cost without canonical-grid convergence. The
+candidate was removed. A future revisit should use retained-subspace
+Krylov--Schur with harmonic extraction for this interior mode and must pass the
+same physical residual, branch-identity, memory, and runtime gates before it
+can replace time integration.
 
 Acceptance also follows the requested spectral selection. Growth-selected
 searches enforce ``fallback_real_floor``; nearest-shift, overlap, and explicit

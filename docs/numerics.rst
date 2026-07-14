@@ -477,8 +477,9 @@ end-to-end JAX differentiability:
   gates before those aliases can advertise streaming-line acceleration.
   A preconditioned solve is checked against the original shifted system; if its
   true residual exceeds the requested tolerance by an order of magnitude, the
-  solve is retried without that preconditioner. This prevents convergence in a
-  transformed norm from hiding a poor physical solve.
+  solve is retried without that preconditioner, starting from the finite
+  rejected iterate so useful Krylov progress is not discarded. This prevents
+  convergence in a transformed norm from hiding a poor physical solve.
   Every returned pair is checked with the matrix-free relative residual
   :math:`\lVert Av-\lambda v\rVert/
   \max(\lVert Av\rVert,|\lambda|\lVert v\rVert)`. Configure the acceptance
