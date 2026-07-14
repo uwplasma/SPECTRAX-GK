@@ -4092,14 +4092,33 @@ def _rerun_wout_admission_gate(root: Path, *, passed: bool) -> None:
         (root / "wout_final_rerun.nc").write_bytes(b"authoritative-rerun-wout")
 
 
-def test_payload_admits_only_authoritative_solved_wout_gates(
-    tmp_path: Path, monkeypatch
-) -> None:
+def _candidate_comparison_payload(
+    tmp_path: Path,
+    monkeypatch,
+    *,
+    transport_gate_passed: bool | None = None,
+    transport_history_qs: float = 0.02,
+    transport_gate_qs: float = 0.02,
+    reproducibility_passed: bool | None = None,
+    rerun_admission_passed: bool | None = None,
+) -> dict[str, object]:
+    """Build the common two-branch QA candidate evidence fixture."""
+
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
     _history(constraints)
-    _history(transport)
+    _history(transport, qs=transport_history_qs)
     _solved_gate(constraints, passed=True)
+    if transport_gate_passed is not None:
+        _solved_gate(
+            transport,
+            passed=transport_gate_passed,
+            qs=transport_gate_qs,
+        )
+    if reproducibility_passed is not None:
+        _wout_reproducibility_gate(transport, passed=reproducibility_passed)
+    if rerun_admission_passed is not None:
+        _rerun_wout_admission_gate(transport, passed=rerun_admission_passed)
     monkeypatch.setattr(
         candidate_mod,
         "_load_iota_profiles",
@@ -4108,8 +4127,13 @@ def test_payload_admits_only_authoritative_solved_wout_gates(
             np.asarray([0.412, 0.421]),
         ),
     )
+    return candidate_mod.build_payload(constraints, transport)
 
-    payload = candidate_mod.build_payload(constraints, transport)
+
+def test_payload_admits_only_authoritative_solved_wout_gates(
+    tmp_path: Path, monkeypatch
+) -> None:
+    payload = _candidate_comparison_payload(tmp_path, monkeypatch)
     branches = {branch["label"]: branch for branch in payload["branches"]}
 
     assert (
@@ -4146,22 +4170,11 @@ def test_payload_admits_only_authoritative_solved_wout_gates(
 def test_payload_admits_transport_candidate_with_authoritative_gate(
     tmp_path: Path, monkeypatch
 ) -> None:
-    constraints = tmp_path / "constraints"
-    transport = tmp_path / "transport"
-    _history(constraints)
-    _history(transport)
-    _solved_gate(constraints, passed=True)
-    _solved_gate(transport, passed=True)
-    monkeypatch.setattr(
-        candidate_mod,
-        "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (
-            np.asarray([0.0, 0.414, 0.427]),
-            np.asarray([0.412, 0.421]),
-        ),
+    payload = _candidate_comparison_payload(
+        tmp_path,
+        monkeypatch,
+        transport_gate_passed=True,
     )
-
-    payload = candidate_mod.build_payload(constraints, transport)
 
     assert payload["summary"]["all_branches_passed_solved_wout_gate"] is True
     assert payload["summary"]["all_branches_have_authoritative_gate"] is True
@@ -4175,23 +4188,12 @@ def test_payload_admits_transport_candidate_with_authoritative_gate(
 def test_failed_wout_reproducibility_gate_blocks_authoritative_transport_candidate(
     tmp_path: Path, monkeypatch
 ) -> None:
-    constraints = tmp_path / "constraints"
-    transport = tmp_path / "transport"
-    _history(constraints)
-    _history(transport)
-    _solved_gate(constraints, passed=True)
-    _solved_gate(transport, passed=True)
-    _wout_reproducibility_gate(transport, passed=False)
-    monkeypatch.setattr(
-        candidate_mod,
-        "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (
-            np.asarray([0.0, 0.414, 0.427]),
-            np.asarray([0.412, 0.421]),
-        ),
+    payload = _candidate_comparison_payload(
+        tmp_path,
+        monkeypatch,
+        transport_gate_passed=True,
+        reproducibility_passed=False,
     )
-
-    payload = candidate_mod.build_payload(constraints, transport)
     branches = {branch["label"]: branch for branch in payload["branches"]}
     transport_branch = branches["QA + SPECTRAX-GK transport"]
 
@@ -4207,24 +4209,13 @@ def test_failed_wout_reproducibility_gate_blocks_authoritative_transport_candida
 def test_authoritative_rerun_wout_gate_admits_transport_candidate(
     tmp_path: Path, monkeypatch
 ) -> None:
-    constraints = tmp_path / "constraints"
-    transport = tmp_path / "transport"
-    _history(constraints)
-    _history(transport)
-    _solved_gate(constraints, passed=True)
-    _solved_gate(transport, passed=True)
-    _wout_reproducibility_gate(transport, passed=False)
-    _rerun_wout_admission_gate(transport, passed=True)
-    monkeypatch.setattr(
-        candidate_mod,
-        "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (
-            np.asarray([0.0, 0.414, 0.427]),
-            np.asarray([0.412, 0.421]),
-        ),
+    payload = _candidate_comparison_payload(
+        tmp_path,
+        monkeypatch,
+        transport_gate_passed=True,
+        reproducibility_passed=False,
+        rerun_admission_passed=True,
     )
-
-    payload = candidate_mod.build_payload(constraints, transport)
     branches = {branch["label"]: branch for branch in payload["branches"]}
     transport_branch = branches["QA + SPECTRAX-GK transport"]
 
@@ -4242,21 +4233,13 @@ def test_authoritative_rerun_wout_gate_admits_transport_candidate(
 def test_candidate_comparison_plot_handles_normalized_gate_metrics(
     tmp_path: Path, monkeypatch
 ) -> None:
-    constraints = tmp_path / "constraints"
-    transport = tmp_path / "transport"
-    _history(constraints)
-    _history(transport, qs=0.04)
-    _solved_gate(constraints, passed=True)
-    _solved_gate(transport, passed=False, qs=0.08)
-    monkeypatch.setattr(
-        candidate_mod,
-        "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (
-            np.asarray([0.0, 0.414, 0.427]),
-            np.asarray([0.412, 0.421]),
-        ),
+    payload = _candidate_comparison_payload(
+        tmp_path,
+        monkeypatch,
+        transport_gate_passed=False,
+        transport_history_qs=0.04,
+        transport_gate_qs=0.08,
     )
-    payload = candidate_mod.build_payload(constraints, transport)
     out = tmp_path / "panel.png"
 
     candidate_mod.plot_payload(payload, out)
@@ -4510,24 +4493,48 @@ def _supporting_artifacts(
     }
 
 
-def test_build_payload_separates_gate_failures_from_transport_metrics(
+def _optimization_status_payload(
     tmp_path: Path,
-) -> None:
+    *,
+    projected_step_metric: float = 0.09,
+    baseline_reproducibility_passed: bool | None = None,
+    baseline_rerun_admission_passed: bool | None = None,
+    nonlinear_claim_level: str = status_mod.EXPECTED_NONLINEAR_AUDIT_CLAIM_LEVEL,
+) -> dict[str, object]:
+    """Build the common QA transport-optimization status portfolio."""
+
     constraints = tmp_path / "constraints"
     direct = tmp_path / "direct"
     projected_base = tmp_path / "projected_base"
     projected_step = tmp_path / "projected_step"
-    _candidate(constraints, passed=True, metric=None)
+    _candidate(
+        constraints,
+        passed=True,
+        metric=None,
+        wout_reproducibility_passed=baseline_reproducibility_passed,
+        rerun_wout_admission_passed=baseline_rerun_admission_passed,
+    )
     _candidate(direct, passed=False, metric=None, qs=1.0)
     _candidate(projected_base, passed=True, metric=0.1)
-    _candidate(projected_step, passed=True, metric=0.11)
-
-    payload = status_mod.build_payload(
+    _candidate(projected_step, passed=True, metric=projected_step_metric)
+    return status_mod.build_payload(
         constraints_dir=constraints,
         direct_transport_dir=direct,
         projected_baseline_dir=projected_base,
         projected_step_dir=projected_step,
-        **_supporting_artifacts(tmp_path),
+        **_supporting_artifacts(
+            tmp_path,
+            nonlinear_claim_level=nonlinear_claim_level,
+        ),
+    )
+
+
+def test_build_payload_separates_gate_failures_from_transport_metrics(
+    tmp_path: Path,
+) -> None:
+    payload = _optimization_status_payload(
+        tmp_path,
+        projected_step_metric=0.11,
     )
 
     assert payload["summary"]["qa_baseline_gate_passed"] is True
@@ -4557,21 +4564,7 @@ def test_build_payload_separates_gate_failures_from_transport_metrics(
 def test_status_plot_and_json_ready_handle_missing_transport_metric(
     tmp_path: Path,
 ) -> None:
-    constraints = tmp_path / "constraints"
-    direct = tmp_path / "direct"
-    projected_base = tmp_path / "projected_base"
-    projected_step = tmp_path / "projected_step"
-    _candidate(constraints, passed=True, metric=None)
-    _candidate(direct, passed=False, metric=None, qs=1.0)
-    _candidate(projected_base, passed=True, metric=0.1)
-    _candidate(projected_step, passed=True, metric=0.09)
-    payload = status_mod.build_payload(
-        constraints_dir=constraints,
-        direct_transport_dir=direct,
-        projected_baseline_dir=projected_base,
-        projected_step_dir=projected_step,
-        **_supporting_artifacts(tmp_path),
-    )
+    payload = _optimization_status_payload(tmp_path)
 
     out = tmp_path / "status.png"
     status_mod.plot_payload(payload, out)
@@ -4586,26 +4579,9 @@ def test_status_plot_and_json_ready_handle_missing_transport_metric(
 def test_failed_wout_reproducibility_gate_blocks_status_admission(
     tmp_path: Path,
 ) -> None:
-    constraints = tmp_path / "constraints"
-    direct = tmp_path / "direct"
-    projected_base = tmp_path / "projected_base"
-    projected_step = tmp_path / "projected_step"
-    _candidate(
-        constraints,
-        passed=True,
-        metric=None,
-        wout_reproducibility_passed=False,
-    )
-    _candidate(direct, passed=False, metric=None, qs=1.0)
-    _candidate(projected_base, passed=True, metric=0.1)
-    _candidate(projected_step, passed=True, metric=0.09)
-
-    payload = status_mod.build_payload(
-        constraints_dir=constraints,
-        direct_transport_dir=direct,
-        projected_baseline_dir=projected_base,
-        projected_step_dir=projected_step,
-        **_supporting_artifacts(tmp_path),
+    payload = _optimization_status_payload(
+        tmp_path,
+        baseline_reproducibility_passed=False,
     )
     candidates = {candidate["label"]: candidate for candidate in payload["candidates"]}
     baseline = candidates["QA max_mode=5 baseline"]
@@ -4617,27 +4593,10 @@ def test_failed_wout_reproducibility_gate_blocks_status_admission(
 
 
 def test_status_admits_explicit_authoritative_rerun_wout(tmp_path: Path) -> None:
-    constraints = tmp_path / "constraints"
-    direct = tmp_path / "direct"
-    projected_base = tmp_path / "projected_base"
-    projected_step = tmp_path / "projected_step"
-    _candidate(
-        constraints,
-        passed=True,
-        metric=None,
-        wout_reproducibility_passed=False,
-        rerun_wout_admission_passed=True,
-    )
-    _candidate(direct, passed=False, metric=None, qs=1.0)
-    _candidate(projected_base, passed=True, metric=0.1)
-    _candidate(projected_step, passed=True, metric=0.09)
-
-    payload = status_mod.build_payload(
-        constraints_dir=constraints,
-        direct_transport_dir=direct,
-        projected_baseline_dir=projected_base,
-        projected_step_dir=projected_step,
-        **_supporting_artifacts(tmp_path),
+    payload = _optimization_status_payload(
+        tmp_path,
+        baseline_reproducibility_passed=False,
+        baseline_rerun_admission_passed=True,
     )
     candidates = {candidate["label"]: candidate for candidate in payload["candidates"]}
     baseline = candidates["QA max_mode=5 baseline"]
@@ -4651,23 +4610,9 @@ def test_status_admits_explicit_authoritative_rerun_wout(tmp_path: Path) -> None
 
 
 def test_nonlinear_audit_requires_expected_claim_level(tmp_path: Path) -> None:
-    constraints = tmp_path / "constraints"
-    direct = tmp_path / "direct"
-    projected_base = tmp_path / "projected_base"
-    projected_step = tmp_path / "projected_step"
-    _candidate(constraints, passed=True, metric=None)
-    _candidate(direct, passed=False, metric=None, qs=1.0)
-    _candidate(projected_base, passed=True, metric=0.1)
-    _candidate(projected_step, passed=True, metric=0.09)
-
-    payload = status_mod.build_payload(
-        constraints_dir=constraints,
-        direct_transport_dir=direct,
-        projected_baseline_dir=projected_base,
-        projected_step_dir=projected_step,
-        **_supporting_artifacts(
-            tmp_path, nonlinear_claim_level="startup_window_observable"
-        ),
+    payload = _optimization_status_payload(
+        tmp_path,
+        nonlinear_claim_level="startup_window_observable",
     )
     audit = payload["long_window_nonlinear_audit"]
 

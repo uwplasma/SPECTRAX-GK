@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
 | Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, linear/TEM/QA/nonlinear-window validation artifacts, zonal-response artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks now have one owner per domain; the enforced 99-tool target is met. |
-| Test consolidation | 92% | The 96-file topology target is met, but the suite still has 94,284 lines and several oversized owners. The largest artifact-tool owner is down to 6,358 lines and the runtime runner to 4,424 through shared evidence fixtures and named parameter rows; continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
+| Test consolidation | 92% | The 96-file topology target is met, but the suite still has 94,200 lines and several oversized owners. The largest artifact-tool owner is down to 6,303 lines and the runtime runner to 4,395 through shared evidence fixtures and named parameter rows; continue collapsing repeated tool/campaign contracts without reducing physics or coverage gates. |
 | Source consolidation | 97% | The 223-file/zero-exception architecture gate passes after deleting redundant solver-gradient and QA-objective facades, merging nonlinear Laguerre transforms into their velocity-basis owner, and reducing VMEC/Boozer, nonlinear-promotion, linear-workflow, quasilinear-calibration, hypercollision-routing, and explicit-stage duplication. The package has 88,155 lines and no module at the 1,000-line ceiling; continue reducing the remaining near-ceiling owners without adding compatibility facades. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
@@ -2162,3 +2162,14 @@ under 5 minutes.
   TOML, summary, time series, eigenfunction, and 2290x921 panel directly to the
   current directory with no auxiliary output folder. This deliberate five-line
   usability addition leaves package source at 88,155 lines.
+
+- 2026-07-14: Reduced the two largest remaining test owners by another 84 lines
+  without removing a test or assertion. The stellarator artifact owner now uses
+  one QA candidate-comparison fixture and one nonlinear-optimization portfolio
+  fixture for authoritative gate, failed reproducibility, rerun admission,
+  plotting, and claim-level negative controls; all 126 artifact tests pass in
+  7.2 s. The runtime owner now expresses single-mode, Gaussian, and random
+  initialization as named rows of one Hermite moment-normalization invariant,
+  removing non-benchmark comparison-code terminology; all three x64 rows pass.
+  The 96-file suite is now 94,200 lines, with its largest owners at 6,303 and
+  4,395 lines.
