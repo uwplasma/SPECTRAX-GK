@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 # ---- test_autodiff_validation.py ----
 
 import jax
@@ -1300,9 +1299,7 @@ def test_solver_objective_sampling_helpers_validate_contracts() -> None:
     np.testing.assert_allclose(
         sampling._aggregate_weights(None, 3), np.full(3, 1.0 / 3.0)
     )
-    np.testing.assert_allclose(
-        sampling._aggregate_weights([1.0, 3.0], 2), [0.25, 0.75]
-    )
+    np.testing.assert_allclose(sampling._aggregate_weights([1.0, 3.0], 2), [0.25, 0.75])
     with pytest.raises(ValueError, match="positive"):
         sampling._aggregate_weights([0.0, 0.0], 2)
     with pytest.raises(ValueError, match="finite"):
@@ -2651,9 +2648,10 @@ def test_public_optimization_examples_keep_editable_constant_style() -> None:
         assert "def _main(" not in text
         assert 'if __name__ == "__main__"' not in text
         if script.name in optimizer_scripts:
-            assert "SPECTRAX_SURFACES = (0.45, 0.64, 0.78)" in text
-            assert "SPECTRAX_ALPHAS = (0.0, np.pi / 4.0)" in text
-            assert "SPECTRAX_KY_VALUES = (0.10, 0.30, 0.50)" in text
+            assert "SURFACE_INDEX = 7" in text
+            assert "ALPHA = 0.0" in text
+            assert "NTHETA = 24" in text
+            assert "SELECTED_KY_INDEX = 1" in text
         elif script.name == "QA_parameter_scan.py":
             assert 'COEFFICIENT = "RBC(1,1)"' in text
             assert 'FRACTIONS = "-0.75,-0.70,-0.65' in text

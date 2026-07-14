@@ -16,22 +16,26 @@ VMEC-JAX objective tuple list.
   live outside ``examples/optimization`` and are not README-facing
   stellarator-optimization examples.
 
-The VMEC-JAX-style scripts intentionally preserve the upstream QA constants
-``MAX_MODE = 5``, ``TARGET_ASPECT = 5.0``, ``TARGET_IOTA = 0.41``, and
-``IOTA_WEIGHT = 10_000.0``. The SPECTRAX-GK objective is appended with a small
-editable weight so the QA/aspect/iota gates remain dominant. Any production
-nonlinear heat-flux claim still requires matched long post-transient
-SPECTRAX-GK nonlinear audits, replicate statistics, and running-average
+The VMEC-JAX-style scripts preserve the current upstream QA constants:
+mode-1-through-5 continuation, ``ASPECT_TARGET = 6.0``, ``IOTA_TARGET = 0.42``,
+and a weight of 10 on the mean-iota residual. The SPECTRAX-GK objective is
+appended with a small editable weight so the QA/aspect/iota gates remain
+dominant. Any production nonlinear heat-flux claim still requires matched long
+post-transient SPECTRAX-GK audits, replicate statistics, and running-average
 convergence checks.
 
 Source Map
 ----------
 
 - Core API: :mod:`spectraxgk.objectives.stellarator`
-- VMEC-JAX transport objective hook:
-  :class:`spectraxgk.VMECJAXSpectraxTransportObjective`
-- VMEC-JAX transport objective config:
-  :class:`spectraxgk.VMECJAXTransportObjectiveConfig`
+- Current VMEC-JAX equilibrium-to-flux-tube adapter:
+  ``vmec_jax.core.turbulence.flux_tube_geometry``
+- Current growth, quasilinear, and reduced nonlinear-window callbacks:
+  ``vmec_jax.core.turbulence.turbulent_growth_rate``,
+  ``quasilinear_flux_proxy``, and ``nonlinear_heat_flux_proxy``
+- Lower-level SPECTRAX objective kernels used by those callbacks:
+  :func:`spectraxgk.solver_linear_operator_matrix_from_geometry`,
+  :func:`spectraxgk.solver_objective_vector_from_geometry`
 - Production in-memory geometry boundary:
   :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
 - Production-adjacent linear/quasilinear objective evaluator:
@@ -71,83 +75,67 @@ Source Map
 VMEC-JAX-Style QA Transport Scripts
 -----------------------------------
 
-The three solved-boundary examples are deliberately close to the upstream
-VMEC-JAX QA optimizer. They keep top-level constants instead of an argparse
-``main()`` wrapper:
+The three solved-boundary examples follow the current upstream
+``vmec_jax/examples/optimization/QA_optimization.py`` protocol. They use
+``VmecInput``, ``solve_equilibrium``, and ``opt.least_squares`` directly; no
+legacy fixed-boundary optimizer object, objective-term wrapper, or disk bridge
+is involved:
 
 .. code-block:: bash
 
    python examples/optimization/QA_optimization_linear_ITG.py
    python examples/optimization/QA_optimization_quasilinear_ITG.py
    python examples/optimization/QA_optimization_nonlinear_ITG.py
-   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
-   python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
-   python examples/optimization/QA_parameter_scan.py
 
-The objective block should look familiar to VMEC-JAX users:
+The circular seed perturbation, mode-1-through-5 continuation, QA residual,
+aspect target ``A=6``, and mean-iota target ``0.42`` match upstream. SPECTRAX-GK
+adds only the last tuple:
 
 .. code-block:: python
 
-   aspect = vj.AspectRatio()
-   iota = vj.MeanIota()
-   qs = vj.QuasisymmetryRatioResidual(
-       helicity_m=HELICITY_M,
-       helicity_n=HELICITY_N,
-       surfaces=SURFACES,
-   )
-   transport = VMECJAXSpectraxTransportObjective(
-       config=VMECJAXTransportObjectiveConfig(
-           kind=SPECTRAX_KIND,
-           sample_set=transport_sample_set,
-           ntheta=SPECTRAX_NTHETA,
-           mboz=SPECTRAX_MBOZ,
-           nboz=SPECTRAX_NBOZ,
-           n_laguerre=SPECTRAX_N_LAGUERRE,
-           n_hermite=SPECTRAX_N_HERMITE,
-           objective_transform=SPECTRAX_OBJECTIVE_TRANSFORM,
-           objective_scale=SPECTRAX_OBJECTIVE_SCALE,
-       ),
-       name="spectraxgk_transport",
-   )
-   objective_tuples = [
-       (aspect.J, TARGET_ASPECT, ASPECT_WEIGHT),
-       (iota.J, TARGET_IOTA, IOTA_WEIGHT),
-       (qs.J, 0.0, QS_WEIGHT),
-       (transport.J, 0.0, SPECTRAX_WEIGHT),
+   objective_terms = [
+       (qs, 0.0, 1.0),
+       (opt.aspect_ratio, ASPECT_TARGET, 1.0),
+       (opt.mean_iota, IOTA_TARGET, 10.0),
+       (transport_objective, 0.0, TRANSPORT_WEIGHT),
    ]
+   result = opt.least_squares(
+       objective_terms,
+       inp,
+       max_mode=max_mode,
+       jac=JAC,
+       use_ess=True,
+   )
 
-The first three tuples are the upstream QA/aspect/iota objective. The final
-SPECTRAX-GK tuple can be changed between ``growth``, ``quasilinear_flux``, and
-``nonlinear_window_heat_flux``. The scripts use ``mboz = nboz = 21`` and the
-admission-grade default sample set ``s=(0.45,0.64,0.78)``,
-``alpha=(0,pi/4)``, and ``k_y rho_i=(0.10,0.30,0.50)``. For exploratory
-debugging, a one-point sample may still be edited into the scripts manually,
-but any paper-facing transport candidate should return to the 18-point default
-before nonlinear audit launch.
+``transport_objective(state, runtime)`` calls one of the current VMEC-JAX
+SPECTRAX adapters on a fixed ITG flux tube:
 
-The current optimizer gradient scope is explicit. ``growth`` objectives use
-eigenvalue-only AD and avoid nonsymmetric eigenvector differentiation.
-``quasilinear_flux`` and ``nonlinear_window_heat_flux`` objectives combine that
-solver growth rate with differentiable geometry-level transport weights. That
-is a useful, trace-safe design residual, but the full eigenfunction-weight
-adjoint remains a promotion gate before claiming fully differentiated absolute
-quasilinear or nonlinear turbulent flux optimization.
+- ``turbulent_growth_rate`` returns the dominant linear growth rate. It is
+  traceable through geometry and the eigensolve, so ``JAC="implicit"`` composes
+  the equilibrium implicit Jacobian with the turbulence derivative.
+- ``quasilinear_flux_proxy`` returns the eigenvector-weighted mixing-length
+  diagnostic. It sets ``JAC=None`` because current JAX does not differentiate
+  nonsymmetric eigenvectors in the required mode.
+- ``nonlinear_heat_flux_proxy`` applies the documented smooth saturation rule
+  to the same linear mode. It also sets ``JAC=None`` and remains a candidate-
+  generation proxy, not a nonlinear time average.
 
-The VMEC-JAX-style transport scripts default to ``METHOD = "scalar_trust"``.
-This is intentional: SPECTRAX-GK transport residuals include reverse-mode
-custom-VJP components, while the pure VMEC-JAX dense ``scipy``/``exact`` path
-requests forward-mode JVP columns. The recommended paper workflow is two-stage:
+This derivative policy is deliberate: unsupported eigenvector derivatives are
+not replaced by a zero or mislabeled as end-to-end AD. Each example exposes the
+surface index, field-line label, angular and velocity-space resolution, selected
+``k_y`` index, and density/temperature gradients as top-level constants.
 
-1. Run the upstream QA baseline and verify the solved aspect-ratio,
-   mean-iota, quasisymmetry, WOUT, LCFS ``|B|``, and Boozer ``|B|`` outputs.
-2. Restart from that solved input/WOUT with a small transport weight, a
-   scalar-adjoint optimizer, and explicit AD/finite-difference gradient gates.
-3. Promote a candidate only after matched long-window nonlinear audits show a
-   statistically resolved post-transient heat-flux reduction.
+The optimizer output must then pass solved-equilibrium geometry gates and the
+separate long-window transport workflow:
 
-Therefore the scripts demonstrate how to append a differentiable SPECTRAX-GK
-transport objective to VMEC-JAX QA optimization; by themselves they are not a
-transport-optimization success claim.
+.. code-block:: bash
+
+   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
+   python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
+
+Only converged, replicated, post-transient nonlinear windows can support a
+nonlinear turbulent-flux reduction. Linear growth, quasilinear screening, and
+reduced nonlinear-window residuals retain their narrower claim scopes.
 
 Optimizer Strategy and Literature Anchor
 ----------------------------------------

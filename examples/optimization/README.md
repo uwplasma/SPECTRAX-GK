@@ -1,87 +1,77 @@
 # Optimization Examples
 
-This directory is reserved for actual VMEC-JAX QA stellarator optimization workflows with SPECTRAX-GK transport objectives.
+These examples use the current VMEC-JAX equilibrium/optimization API and
+SPECTRAX-GK turbulence objectives without an intermediate file or legacy
+optimizer adapter.
 
-## VMEC-JAX-Style QA Transport Scripts
+## QA Transport Optimizations
 
-Use these when the goal is a real VMEC-JAX QA optimization with the upstream high-weight iota target preserved and one SPECTRAX-GK transport objective appended to the VMEC-JAX objective tuple list:
+Each script follows `vmec_jax/examples/optimization/QA_optimization.py`: it
+starts from the same perturbed circular seed, continues boundary modes 1 through
+5, and retains the QA, aspect-ratio 6, and mean-iota 0.42 objective terms. The
+only added tuple is one SPECTRAX-GK ITG observable:
 
 ```bash
 python examples/optimization/QA_optimization_linear_ITG.py
 python examples/optimization/QA_optimization_quasilinear_ITG.py
 python examples/optimization/QA_optimization_nonlinear_ITG.py
+```
+
+The examples are deliberately configured through readable constants rather
+than argument parsers or hidden high-level drivers. Their core is the current
+VMEC-JAX least-squares interface:
+
+```python
+objective_terms = [
+    (qs, 0.0, 1.0),
+    (opt.aspect_ratio, ASPECT_TARGET, 1.0),
+    (opt.mean_iota, IOTA_TARGET, 10.0),
+    (transport_objective, 0.0, TRANSPORT_WEIGHT),
+]
+result = opt.least_squares(
+    objective_terms,
+    inp,
+    max_mode=max_mode,
+    jac=JAC,
+    use_ess=True,
+)
+```
+
+The fixed flux-tube controls are `SURFACE_INDEX`, `ALPHA`, `NTHETA`,
+`SELECTED_KY_INDEX`, `N_LAGUERRE`, `N_HERMITE`, `R_OVER_LT`, and `R_OVER_LN`.
+Change them explicitly when moving the objective to another surface, field
+line, wavenumber, velocity resolution, or drive.
+
+| Script | Objective and derivative route | Claim boundary |
+| --- | --- | --- |
+| `QA_optimization_linear_ITG.py` | Dominant linear ITG growth rate; implicit equilibrium Jacobian plus differentiable eigensolve | Linear microstability optimization at the selected flux tube |
+| `QA_optimization_quasilinear_ITG.py` | Mixing-length heat-flux proxy; finite-difference outer Jacobian because it uses a nonsymmetric eigenvector | Screening/model-development evidence, not universal absolute flux |
+| `QA_optimization_nonlinear_ITG.py` | Smooth reduced nonlinear-window proxy; finite-difference outer Jacobian | Candidate generation only, not a saturated turbulent-flux average |
+
+Current JAX supports the growth objective in the implicit path. The QL and
+reduced nonlinear objectives use dominant eigenvectors, for which the required
+nonsymmetric eigenvector derivative is unavailable; those two examples
+therefore set `JAC = None` honestly rather than silently dropping a gradient.
+
+All scripts write an optimized input deck, WOUT file, and standard VMEC-JAX
+plots. They do not embed a long campaign launcher. To evaluate a candidate,
+use the separate reproducible audit examples:
+
+```bash
 python examples/optimization/QA_nonlinear_ITG_matched_audit.py
 python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
 python examples/optimization/QA_parameter_scan.py
 ```
 
-Each script deliberately follows the structure of `vmec_jax/examples/optimization/QA_optimization.py`: constants are visible at the top level, the objective blocks are assembled in `objective_tuples`, and there is no argparse `main()` wrapper. The only supported command-line argument is `--help`; any other argument fails before a `results/` directory can be created.
+Set `BASELINE_VMEC_FILE` and `CANDIDATE_VMEC_FILE` in the matrix example to
+the solved WOUT files being compared; the matched-audit example similarly
+points to their accepted ensemble sidecars.
 
-```python
-MAX_MODE = 5
-TARGET_ASPECT = 5.0
-TARGET_IOTA = 0.41
-IOTA_WEIGHT = 10_000.0
-objective_tuples = [
-    (aspect.J, TARGET_ASPECT, ASPECT_WEIGHT),
-    (iota.J, TARGET_IOTA, IOTA_WEIGHT),
-    (qs.J, 0.0, QS_WEIGHT),
-    (transport.J, 0.0, SPECTRAX_WEIGHT),
-]
-```
-
-Keep `SPECTRAX_WEIGHT` small while tuning. The QA, aspect-ratio, and iota constraints must remain the dominant solved-equilibrium gate before any final WOUT is sent to long-window SPECTRAX-GK nonlinear transport audits.
-
-The transport scripts default to `METHOD = "scalar_trust"`. SPECTRAX-GK transport residuals include reverse-mode custom-VJP components, while the pure VMEC-JAX dense `scipy`/`exact` least-squares path requests forward-mode JVP columns. For publication work, use a two-stage workflow:
-
-1. Solve and verify the upstream VMEC-JAX QA baseline first.
-2. Restart/refine from that solved input or WOUT with a small SPECTRAX-GK transport weight.
-3. Gate the result with AD/finite-difference checks, solved-WOUT aspect/iota/QS checks, Boozer/geometry diagnostics, and matched long post-transient nonlinear heat-flux audits.
-
-Running one script is not a transport-optimization success claim, and is not,
-by itself, a nonlinear turbulent-flux optimization success claim.
-
-## How To Modify The Optimization Examples
-
-The production examples are meant to be edited in-place, not wrapped by hidden
-driver APIs. Keep the upstream QA/aspect/iota block intact and change only the
-top-level constants needed for the scientific question:
-
-| What to change | Constants or files | Notes |
-| --- | --- | --- |
-| Optimizer algorithm | `METHOD`, `SCIPY_TR_SOLVER`, `USE_ESS`, `ALPHA`, `MAX_NFEV`, `INNER_MAX_ITER`, `INNER_FTOL` | Use `scalar_trust` or `lbfgs_adjoint` for SPECTRAX-GK transport objectives. Use dense `scipy`/`exact` mainly for constraints-only QA baselines because it asks for forward-mode JVP columns. |
-| Geometry or VMEC seed | `WARM_START_INPUT_FILE`, `SIMPLE_SEED_INPUT_FILE`, `INPUT_FILE`, `MAX_MODE`, `MIN_VMEC_MODE`, `USE_SIMPLE_SEED` | Point these to another VMEC-JAX input deck when studying a different QA/QH/QI family. For matrix audits, edit `BASELINE_VMEC_FILE` and `CANDIDATE_VMEC_FILE` in `QA_nonlinear_ITG_transport_matrix.py` to use solved WOUT files. |
-| Transport objective | `SPECTRAX_KIND`, `SPECTRAX_WEIGHT`, `SPECTRAX_OBJECTIVE_TRANSFORM`, `SPECTRAX_OBJECTIVE_SCALE` | Supported example objectives are `growth`, `quasilinear_flux`, and `nonlinear_window_heat_flux`. Treat the nonlinear-window objective as a differentiable screening residual, not as a saturated turbulent-flux average. |
-| Physics sample set | `SPECTRAX_SURFACES`, `SPECTRAX_ALPHAS`, `SPECTRAX_KY_VALUES`, `SPECTRAX_NTHETA`, `SPECTRAX_MBOZ`, `SPECTRAX_NBOZ` | Keep `mboz,nboz >= 21` for VMEC/Boozer transport rows. The default sample set matches the broad matrix gate: three surfaces, two field-line labels, and three `k_y` values. |
-| Extra equilibrium objectives | Append another `(objective.J, target, weight)` tuple to `objective_tuples` | Examples include magnetic well, `LgradB`, finite-beta, bootstrap-current, or current-profile terms from VMEC-JAX. Keep weights explicit so transport changes cannot silently weaken the QA/iota/aspect gate. |
-| Production nonlinear audit | `NONLINEAR_AUDIT_*` constants or `QA_nonlinear_ITG_transport_matrix.py` | A production claim requires long post-transient replicated windows over `t=[1100,1500]`, followed by the matched audit or broad matrix portfolio gate. Do not promote optimizer residuals or startup traces. |
-
-For a new geometry family, first run a constraints-only QA/QH/QI equilibrium
-solve, save the admitted WOUT, and only then add a small SPECTRAX-GK transport
-weight. For a new objective function, add it as one explicit tuple in
-`objective_tuples`, run AD/finite-difference checks, and keep the long-window
-nonlinear audit separate from the differentiable optimizer residual.
-
-Use the following claim boundaries when citing these scripts or their generated
-sidecars:
-
-| Script | Differentiable objective | Claim boundary |
-| --- | --- | --- |
-| `QA_optimization_linear_ITG.py` | Linear ITG growth-rate residual | Trace-safe VMEC-JAX plus SPECTRAX-GK objective-refinement evidence only; not a quasilinear calibration and not a nonlinear heat-flux reduction claim. |
-| `QA_optimization_quasilinear_ITG.py` | Electrostatic quasilinear heat-flux residual | Screening/model-development evidence only; not an absolute flux predictor and not a nonlinear turbulent-flux optimization claim. |
-| `QA_optimization_nonlinear_ITG.py` | Reduced nonlinear-window heat-flux screening residual | Startup/window-estimator evidence only; not a converged nonlinear transport average and not a nonlinear turbulent-flux optimization success claim. |
-| `QA_nonlinear_ITG_matched_audit.py` | Matched replicated nonlinear heat-flux ensemble comparison | Production-evidence audit for already-run long post-transient baseline/candidate ensembles; this is the gate that accepts or rejects a nonlinear turbulent-flux reduction. |
-| `QA_nonlinear_ITG_transport_matrix.py` | Multi-surface, multi-field-line, multi-`k_y` matched nonlinear matrix writer | Broad nonlinear turbulent-flux optimization launch contract; this writes the campaign and promotion scripts but the claim passes only after every long-window ensemble and matched comparison passes. |
-| `QA_parameter_scan.py` | `RBC(1,1)` linear/QL landscape plus concrete nonlinear sidecars | Landscape and noise/convergence diagnostics only; reduced/startup nonlinear-window diagnostics are excluded from optimization-promotion claims. |
-
-The optimization scripts write strict long-window initial/final nonlinear ITG
-audit config manifests after the VMEC-JAX solve. The current promotion policy
-uses staged horizons `700,1100,1500`, averages only over `t=[1100,1500]`, and
-replicates the final window with seed and timestep variants. These audits are
-not launched by default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside
-the script to run them and build the initial-vs-final nonlinear `Q(t)`
-comparison plot, or run the commands from the generated `run_manifest.json` on
-a GPU node.
+A nonlinear reduction is promoted only from converged, replicated,
+post-transient windows. The current production policy uses staged horizons
+`700,1100,1500`, averages over `t=[1100,1500]`, and includes independent seed
+and timestep variants. Optimizer residuals, startup traces, and reduced
+nonlinear-window proxies are not saturated heat-flux evidence.
 
 After those long-window runs finish, edit the ensemble paths at the top of
 `QA_nonlinear_ITG_matched_audit.py` and run:

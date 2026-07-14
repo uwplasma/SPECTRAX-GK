@@ -2242,3 +2242,19 @@ under 5 minutes.
   QA campaign and examples to that current, substantially simpler protocol is
   the next compatibility and source-reduction tranche; old API emulation will
   not be added to package source.
+
+- 2026-07-14: Migrated the three public QA ITG optimization examples from the
+  removed VMEC-JAX ``FixedBoundaryVMEC``/``LeastSquaresProblem`` object model to
+  current ``VmecInput``/``solve_equilibrium``/``opt.least_squares`` callbacks.
+  They now mirror current upstream ``QA_optimization.py``: the same perturbed
+  circular seed, mode-1-through-5 continuation, ``A=6`` and mean-``iota=0.42``
+  targets, and one explicit turbulence tuple. The examples fall from 1,173 to
+  395 lines. Growth uses the equilibrium implicit Jacobian and differentiable
+  eigenvalue path; eigenvector-weighted QL and reduced nonlinear-window
+  objectives state and use finite-difference outer Jacobians. The upstream
+  12-case turbulence integration suite passes in 54.5 s. A real bounded
+  max-mode-1 implicit optimization reduced ``gamma`` from 0.299785 to 0.258962
+  and the QA residual from 0.2043 to 0.001381; its four-evaluation CI budget did
+  not converge iota and is therefore recorded only as API/derivative evidence.
+  Public docs now separate these optimizer objectives from the replicated long-
+  window nonlinear promotion workflow.

@@ -24,9 +24,9 @@ ROOT = REPO_ROOT
 EXAMPLES = ROOT / "examples" / "optimization"
 DRIVER = ROOT / "tools" / "campaigns" / "vmec_jax_qa_low_turbulence_optimization.py"
 EXACT_QA_SCRIPTS = {
-    "QA_optimization_linear_ITG.py": "growth",
-    "QA_optimization_quasilinear_ITG.py": "quasilinear_flux",
-    "QA_optimization_nonlinear_ITG.py": "nonlinear_window_heat_flux",
+    "QA_optimization_linear_ITG.py": ("turbulent_growth_rate", 'JAC = "implicit"'),
+    "QA_optimization_quasilinear_ITG.py": ("quasilinear_flux_proxy", "JAC = None"),
+    "QA_optimization_nonlinear_ITG.py": ("nonlinear_heat_flux_proxy", "JAC = None"),
 }
 
 
@@ -37,7 +37,7 @@ def _load_driver():
 def test_vmec_jax_style_qa_scripts_keep_upstream_iota_tuple_and_append_transport() -> (
     None
 ):
-    for filename, kind in EXACT_QA_SCRIPTS.items():
+    for filename, (transport_function, jacobian_policy) in EXACT_QA_SCRIPTS.items():
         script = EXAMPLES / filename
         text = script.read_text(encoding="utf-8")
 
@@ -46,38 +46,22 @@ def test_vmec_jax_style_qa_scripts_keep_upstream_iota_tuple_and_append_transport
         assert "argparse" not in text
         assert "optimize_stellarator_itg" not in text
         assert "run_stellarator_itg_adam" not in text
-        assert "examples/optimization/QA_optimization.py" in text
+        assert "current ``QA_optimization.py`` workflow" in text
 
-        assert "MAX_MODE = 5" in text
-        assert "MIN_VMEC_MODE = MAX_MODE + 2" in text
-        assert "USE_SIMPLE_SEED = True" in text
-        assert 'METHOD = "scalar_trust"' in text
-        assert "custom VJP" in text
-        assert "Pure VMEC-JAX QA only" in text
-        assert 'SCIPY_TR_SOLVER = "exact"' in text
-        assert "TARGET_ASPECT = 5.0" in text
-        assert "TARGET_IOTA = 0.41" in text
-        assert "IOTA_WEIGHT = 10_000.0" in text
-        assert "SPECTRAX_MBOZ = 21" in text
-        assert "SPECTRAX_NBOZ = 21" in text
-        assert f'SPECTRAX_KIND = "{kind}"' in text
-        assert 'NONLINEAR_AUDIT_HORIZONS = "700,1100,1500"' in text
-        assert "NONLINEAR_AUDIT_WINDOW_TMIN = 1100.0" in text
-        assert "NONLINEAR_AUDIT_WINDOW_TMAX = 1500.0" in text
-        assert "NONLINEAR_AUDIT_SEED_VARIANTS = (32, 33)" in text
-
-        assert "aspect = vj.AspectRatio()" in text
-        assert "iota = vj.MeanIota()" in text
-        assert "qs = vj.QuasisymmetryRatioResidual(" in text
-        assert "transport = VMECJAXSpectraxTransportObjective(" in text
-        assert "VMECJAXTransportObjectiveConfig(" in text
-        assert "objective_tuples = [" in text
-        assert "(aspect.J, TARGET_ASPECT, ASPECT_WEIGHT)," in text
-        assert "(iota.J, TARGET_IOTA, IOTA_WEIGHT)," in text
-        assert "(qs.J, 0.0, QS_WEIGHT)," in text
-        assert "(transport.J, 0.0, SPECTRAX_WEIGHT)," in text
-        assert "problem = vj.LeastSquaresProblem.from_tuples(objective_tuples)" in text
-        assert "result = vj.least_squares_solve(" in text
+        assert "MAX_MODE_SCHEDULE = (1, 2, 3, 4, 5)" in text
+        assert "SEED_PERTURBATION = 0.01" in text
+        assert "ASPECT_TARGET = 6.0" in text
+        assert "IOTA_TARGET = 0.42" in text
+        assert "SURFACE_INDEX = 7" in text
+        assert "NTHETA = 24" in text
+        assert jacobian_policy in text
+        assert f"turb.{transport_function}(" in text
+        assert "objective_terms = [" in text
+        assert "(qs, 0.0, 1.0)," in text
+        assert "(opt.aspect_ratio, ASPECT_TARGET, 1.0)," in text
+        assert "(opt.mean_iota, IOTA_TARGET, 10.0)," in text
+        assert "(transport_objective, 0.0, TRANSPORT_WEIGHT)," in text
+        assert "result = opt.least_squares(" in text
 
 
 def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
@@ -124,7 +108,7 @@ def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
 
 
 def test_exact_qa_scripts_help_does_not_launch_optimization(tmp_path: Path) -> None:
-    for filename, kind in EXACT_QA_SCRIPTS.items():
+    for filename in EXACT_QA_SCRIPTS:
         script = EXAMPLES / filename
 
         completed = subprocess.run(
@@ -137,10 +121,9 @@ def test_exact_qa_scripts_help_does_not_launch_optimization(tmp_path: Path) -> N
         )
 
         assert "Usage:" in completed.stdout
-        assert "edit the constants" in completed.stdout
-        assert (
-            "linear" if kind == "growth" else kind.split("_")[0]
-        ) in completed.stdout
+        assert "edit the constants" in completed.stdout.lower()
+        assert "itg" in completed.stdout.lower()
+        assert "objective" in completed.stdout.lower()
         assert not (tmp_path / "results").exists()
 
 
@@ -296,9 +279,10 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
         assert "nonlinear" in text, path
         assert "replicated" in text or "two-stage" in text, path
         if path.name != "README.md":
-            assert "scalar_trust" in text, path
-            assert "custom-VJP" in text or "custom VJP" in text, path
-            assert "not a transport-optimization success claim" in normalized, path
+            assert "opt.least_squares" in text, path
+            assert 'JAC="implicit"' in text, path
+            assert "JAC=None" in text, path
+            assert "not a nonlinear time average" in normalized, path
             assert (
                 "tools/campaigns/finalize_nonlinear_transport_matrix_release.py" in text
             ), path
@@ -307,24 +291,23 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
 def test_optimization_examples_document_user_customization_knobs() -> None:
     examples_readme = (EXAMPLES / "README.md").read_text(encoding="utf-8")
 
-    assert "How To Modify The Optimization Examples" in examples_readme
-    assert "METHOD" in examples_readme
-    assert "SCIPY_TR_SOLVER" in examples_readme
-    assert "WARM_START_INPUT_FILE" in examples_readme
-    assert "SIMPLE_SEED_INPUT_FILE" in examples_readme
+    assert "QA Transport Optimizations" in examples_readme
+    assert "MAX_MODE_SCHEDULE" not in examples_readme or "max_mode" in examples_readme
+    assert "JAC" in examples_readme
+    assert "SURFACE_INDEX" in examples_readme
+    assert "ALPHA" in examples_readme
+    assert "NTHETA" in examples_readme
+    assert "SELECTED_KY_INDEX" in examples_readme
+    assert "N_LAGUERRE" in examples_readme
+    assert "N_HERMITE" in examples_readme
+    assert "R_OVER_LT" in examples_readme
+    assert "R_OVER_LN" in examples_readme
     assert "BASELINE_VMEC_FILE" in examples_readme
     assert "CANDIDATE_VMEC_FILE" in examples_readme
-    assert "SPECTRAX_KIND" in examples_readme
-    assert "SPECTRAX_SURFACES" in examples_readme
-    assert "SPECTRAX_ALPHAS" in examples_readme
-    assert "SPECTRAX_KY_VALUES" in examples_readme
-    assert "NONLINEAR_AUDIT_*" in examples_readme
-    assert "objective_tuples" in examples_readme
-    assert "mboz,nboz >= 21" in examples_readme
-    assert (
-        "long post-transient replicated windows over `t=[1100,1500]`" in examples_readme
-    )
-    assert "Do not promote optimizer residuals or startup traces" in examples_readme
+    assert "objective_terms" in examples_readme
+    assert "opt.least_squares" in examples_readme
+    assert "t=[1100,1500]" in examples_readme
+    assert "Optimizer residuals, startup traces" in examples_readme
 
 
 def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None:

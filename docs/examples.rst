@@ -503,45 +503,23 @@ with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
    python examples/optimization/QA_parameter_scan.py
 
 The three ``QA_optimization_*_ITG.py`` scripts intentionally mirror upstream
-``vmec_jax/examples/optimization/QA_optimization.py`` and preserve the
-high-weight ``iota = 0.41`` target. Keep the SPECTRAX-GK transport weight small
-until the solved-equilibrium aspect, iota, and quasisymmetry gates pass.
-They are deliberately edited through top-level constants, not command-line
-arguments. Reproducible campaign drivers, dry-runs, and plotting/gate
-generation scripts live under ``tools/``; for example:
+``vmec_jax/examples/optimization/QA_optimization.py`` on the current
+``VmecInput``/``opt.least_squares`` API. They preserve its ``A=6`` and mean-
+``iota=0.42`` targets and add only one SPECTRAX-GK objective tuple. Keep the
+transport weight small until solved-equilibrium aspect, iota, and
+quasisymmetry gates pass. They are deliberately edited through top-level
+constants, not command-line arguments.
+
+The linear-growth script uses VMEC-JAX's implicit Jacobian. The quasilinear
+and reduced nonlinear-window scripts use finite-difference outer Jacobians
+because their dominant-eigenvector weights do not yet have the required JAX
+derivative. None of these optimizer residuals is a saturated heat-flux claim.
 
 ``QA_nonlinear_ITG_matched_audit.py`` is the production-evidence companion:
 after long SPECTRAX-GK nonlinear baseline/candidate campaigns finish, edit its
 ensemble paths and run it to build the matched reduction and uncertainty gate.
 It does not launch simulations and does not consume reduced/startup nonlinear
 optimizer residuals.
-
-.. code-block:: bash
-
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py --dry-run
-
-For a paper-facing constraints-only baseline that uses the same simple seed,
-ESS scaling, and max-mode-5 objective recipe but tighter admission tolerances,
-run:
-
-.. code-block:: bash
-
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --strict-upstream-qa-baseline --solver-device gpu \
-     --outdir tools_out/vmec_jax_qa_strict_baseline
-
-Use that strict baseline before comparing transport-weight candidates; a
-baseline that terminates just below ``iota >= 0.41`` should be refined rather
-than promoted by relaxing the solved-WOUT gate. The strict preset keeps the
-admission gate at ``iota >= 0.41`` and uses a small default optimizer target
-buffer, ``target iota = 0.4102``, so roundoff-level target undershoot does not
-invalidate an otherwise precise QA solve.
-The tracked strict-baseline sidecar
-``docs/_static/vmec_jax_qa_strict_baseline/summary.json`` records the current
-office-GPU exact SciPy/ESS result: ``nfev = 39``, aspect ``5.000154``,
-mean iota ``0.4101997``, QS residual ``2.60e-4``, and a passed solved-WOUT
-gate. This is a constraints-only QA reference, not a transport-optimized
-stellarator.
 
 Reduced synthetic scripts are kept outside ``examples/optimization`` as
 development diagnostics only:
