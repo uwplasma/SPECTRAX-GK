@@ -259,7 +259,7 @@ and the radial scale against centered finite differences.
 The integer nearest-mode decision is piecewise constant and therefore uses a
 stopped tangent. Continuous effective wavenumbers and phases remain
 differentiable between the measure-zero remap events. This kernel is not yet a
-shipped equilibrium-flow-shear model. The periodic-boundary cache updater
+shipped equilibrium-flow-shear model. The periodic/linked-boundary cache updater
 :func:`spectraxgk.operators.linear.cache_builder.update_linear_cache_for_sheared_kx`
 already rebuilds :math:`k_\perp^2`, drift frequencies, gyroaverages, Bessel
 tables, field-solve inputs, bracket multipliers, and hyperdiffusion from the
@@ -291,6 +291,31 @@ factor-two timestep refinement and reduces the final potential norm by more
 than 20% when :math:`\gamma_E=1`. This is the expected decorrelation direction
 when the shearing rate exceeds the instability rate [Biglari90]_ [Waltz95]_,
 but it is not a nonlinear transport validation.
+
+Standard linked flux tubes use the cache-normalized radial spacing selected by
+the twist-and-shift construction. The equilibrium-flow displacement is constant
+along a fixed-:math:`k_y` linked chain, so the chain topology and endpoint
+separation are unchanged while :math:`k_\perp`, drifts, gyroaverages, and field
+operators are rebuilt. RK2 and RK3 recover the established linked trajectory
+exactly at zero shear. At nonzero shear, tests preserve every linked-neighbor
+spacing and compare the cache tangent with a centered finite difference.
+Non-twist flux tubes remain unsupported because their radial coordinate is
+:math:`z` dependent.
+
+The fixed-step ``method="imex"`` route applies explicit nonlinear forcing in the
+current sheared basis, remaps its right-hand side and warm start to
+:math:`t_{n+1}`, rebuilds the matrix-free endpoint operator, and solves
+
+.. math::
+
+   [I-\Delta t L(t_{n+1})]G_{n+1}
+   = G_n^* + \Delta t\,N(G_n,t_n)^*.
+
+The tolerance-controlled solve uses the shared SOLVAX implicit derivative rule.
+It is exactly identical to the static linked IMEX trajectory at zero shear,
+recovers first-order convergence on a physical nonzero-shear trajectory, and
+passes endpoint heat-flux plus JVP/VJP finite-difference gates. Adaptive sheared
+IMEX and custom collision operators remain explicitly rejected.
 
 State-only campaigns may set ``return_fields=False``. This follows the main
 nonlinear-integrator contract and avoids the endpoint field/RHS evaluation and
@@ -368,9 +393,9 @@ previous step size before selecting the next ``dt`` and holds that coordinate
 basis fixed across all RK stages. SPECTRAX-GK advances accepted physical time
 and evaluates each stage in its exact shearing basis. The ``-0.084%`` result is
 therefore negative cross-discretization evidence, not a model-identical parity
-failure. A fixed-dt refinement must show that this difference converges away;
-linked-boundary and IMEX gates must also pass before any input-file option is
-enabled.
+failure. Linked-boundary and fixed-step IMEX implementation gates now pass. A
+full-resolution fixed-dt response refinement must still show that the remaining
+time-policy difference converges away before any input-file option is enabled.
 
 A bounded fixed-step source-localization probe confirms that the external
 shearing path is active when the time policy is controlled. On a deterministic
@@ -386,8 +411,8 @@ RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
 definitions. This path is a numerical foundation, not the production model. The
 compressed-real bracket is an opt-in research route, while non-twist and linked
-boundaries fail closed because their boundary phases are not implemented. IMEX
-routing and resolution of the failed matched-response gate remain mandatory
+boundaries remain distinct: linked standard tubes are gated, while non-twist
+tubes fail closed. Resolution of the matched-response gate remains mandatory
 before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion

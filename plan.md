@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic RK2/RK3 trajectory, canonical heat-flux trace, linear suppression, transport-objective AD, and internal saturated-transport gates validated | run fixed-dt response refinement after localizing the external adaptive stage-policy mismatch; then close linked and IMEX routing before shipping |
+| Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic/linked RK2/RK3 trajectory, fixed-step sheared IMEX, canonical heat-flux trace, linear suppression, transport-objective AD, and internal saturated-transport gates validated | complete one full-resolution fixed-dt response window after localizing the external adaptive stage-policy mismatch before exposing an input-file option |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1990,3 +1990,19 @@ under 5 minutes.
   inherits that dtype instead of becoming ``float64`` when x64 is enabled. The
   exact seven-file CI shard passes all ``111`` tests locally with the CI x64
   environment.
+
+- 2026-07-14: Closed the linked-standard-boundary and fixed-step IMEX
+  implementation gates for equilibrium ExB flow shear. Shearing coordinates
+  now use the cache-normalized radial grid, preserving the small fixed-aspect
+  rescaling applied while constructing linked twist-and-shift chains. Linked
+  RK2/RK3 trajectories are exactly identical to the established integrator at
+  zero shear; nonzero-shear link spacing remains invariant and the cache JVP
+  matches centered finite differences. The new first-order sheared IMEX route
+  evaluates explicit nonlinear forcing in the current basis, remaps the right-
+  hand side and warm start, rebuilds ``I-dt L`` at the endpoint, and solves it
+  through the shared SOLVAX implicit derivative. It passes linked zero-shear
+  multistep identity, physical first-order convergence, endpoint heat-flux, and
+  JVP/VJP finite-difference gates. Adaptive sheared IMEX, non-twist geometry,
+  and custom collision operators remain fail-closed. Flow shear remains absent
+  from input files until the full-resolution fixed-step matched-response window
+  is closed.

@@ -24,6 +24,9 @@ from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import (
+    update_linear_cache_for_sheared_kx,
+)
 from spectraxgk.nonlinear import (
     _apply_collision_split,
     _collision_damping,
@@ -750,7 +753,7 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
             shear_rate=1.0,
             cache=cache,
         )
-    with pytest.raises(ValueError, match="method must be 'euler', 'rk2', or 'rk3'"):
+    with pytest.raises(ValueError, match="method must be"):
         integrate_nonlinear_sheared(
             state,
             grid,
@@ -762,6 +765,117 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
             method="rk4",
             cache=cache,
         )
+
+
+@pytest.mark.parametrize("method", ["rk2", "rk3", "imex"])
+def test_linked_sheared_integrator_has_exact_zero_shear_trajectory_identity(
+    method: str,
+) -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=8,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="linked",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(rho_star=0.3, nu_hyper=0.0, nu_hyper_m=0.0)
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=2)
+    state = jnp.zeros((1, 2, 4, 8, 8), dtype=jnp.complex64)
+    state = state.at[0, 0, 1, 0, :].set(0.2 + 0.1j)
+    state = _make_hermitian_projector(np.asarray(grid.ky), nx=grid.kx.size)(state)
+    streaming_only = TermConfig(
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+        nonlinear=0.0,
+    )
+    state_host = np.asarray(state)
+
+    reference_state, reference_fields = integrate_nonlinear_cached(
+        jnp.asarray(state_host.copy()),
+        cache,
+        params,
+        dt=0.01,
+        steps=2,
+        method=method,
+        terms=streaming_only,
+        compressed_real_fft=False,
+    )
+    sheared_state, sheared_fields = integrate_nonlinear_sheared(
+        jnp.asarray(state_host.copy()),
+        grid,
+        geom,
+        params,
+        dt=0.01,
+        steps=2,
+        shear_rate=0.0,
+        method=method,
+        cache=cache,
+        terms=streaming_only,
+        compressed_real_fft=False,
+    )
+
+    np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
+    np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
+
+
+def test_linked_sheared_cache_preserves_chains_and_has_correct_tangent() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=8,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="linked",
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(rho_star=0.3, nu_hyper=0.0, nu_hyper_m=0.0)
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=2)
+
+    def shifted_cache(displacement):
+        effective_kx = cache.kx_grid - cache.ky_grid * displacement
+        return update_linear_cache_for_sheared_kx(
+            cache, grid, geom, params, effective_kx
+        )
+
+    updated = shifted_cache(jnp.asarray(0.17, dtype=cache.kx_grid.dtype))
+    np.testing.assert_array_equal(updated.kx_link_plus, cache.kx_link_plus)
+    np.testing.assert_array_equal(updated.kx_link_minus, cache.kx_link_minus)
+    for ky_index in range(cache.kx_link_plus.shape[0]):
+        valid = np.asarray(cache.kx_link_mask_plus[ky_index])
+        linked = np.asarray(cache.kx_link_plus[ky_index])[valid]
+        source = np.arange(cache.kx_link_plus.shape[1])[valid]
+        before = np.asarray(
+            cache.kx_grid[ky_index, linked] - cache.kx_grid[ky_index, source]
+        )
+        after = np.asarray(
+            updated.kx_grid[ky_index, linked] - updated.kx_grid[ky_index, source]
+        )
+        np.testing.assert_allclose(after, before, atol=2.0e-7)
+
+    def objective(displacement):
+        return jnp.sum(shifted_cache(displacement).kperp2**2)
+
+    displacement = jnp.asarray(0.17, dtype=cache.kx_grid.dtype)
+    _, tangent = jax.jvp(objective, (displacement,), (jnp.ones_like(displacement),))
+    step = jnp.asarray(1.0e-3, dtype=displacement.dtype)
+    finite_difference = (
+        objective(displacement + step) - objective(displacement - step)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=2.0e-3, atol=2.0e-4)
 
 
 def _small_sheared_transport_case():
@@ -794,7 +908,40 @@ def _small_sheared_transport_case():
     return grid, geom, params, cache, state, terms
 
 
-def test_sheared_transport_trace_matches_canonical_final_heat_flux() -> None:
+def test_sheared_imex_rejects_unvalidated_adaptive_and_collision_routes() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+    with pytest.raises(ValueError, match="requires fixed_dt=True"):
+        integrate_nonlinear_sheared_transport(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=2,
+            shear_rate=0.1,
+            method="imex",
+            cache=cache,
+            terms=terms,
+            fixed_dt=False,
+        )
+    with pytest.raises(NotImplementedError, match="custom collision operators"):
+        integrate_nonlinear_sheared(
+            state,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=2,
+            shear_rate=0.1,
+            method="imex",
+            cache=cache,
+            terms=terms,
+            collision_operator=object(),
+        )
+
+
+@pytest.mark.parametrize("method", ["rk2", "imex"])
+def test_sheared_transport_trace_matches_canonical_final_heat_flux(method: str) -> None:
     grid, geom, params, cache, state, terms = _small_sheared_transport_case()
 
     trace = integrate_nonlinear_sheared_transport(
@@ -805,6 +952,7 @@ def test_sheared_transport_trace_matches_canonical_final_heat_flux() -> None:
         dt=0.02,
         steps=3,
         shear_rate=0.0,
+        method=method,
         cache=cache,
         terms=terms,
     )
@@ -1016,7 +1164,10 @@ def test_sheared_transport_restart_preserves_physical_time_and_state() -> None:
     )
 
 
-def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> None:
+@pytest.mark.parametrize("method", ["rk2", "imex"])
+def test_sheared_transport_gradient_matches_tangent_and_finite_difference(
+    method: str,
+) -> None:
     jax.clear_caches()
     grid, geom, params, cache, state, terms = _small_sheared_transport_case()
 
@@ -1029,6 +1180,7 @@ def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> N
             dt=0.02,
             steps=2,
             shear_rate=shear_rate,
+            method=method,
             cache=cache,
             terms=terms,
         )
@@ -1055,7 +1207,7 @@ def test_sheared_transport_gradient_matches_tangent_and_finite_difference() -> N
 
 @pytest.mark.parametrize(
     ("method", "minimum_order"),
-    [("rk2", 1.8), ("rk3", 2.6)],
+    [("rk2", 1.8), ("rk3", 2.6), ("imex", 0.8)],
 )
 def test_sheared_runge_kutta_recovers_observed_order_on_physical_rhs(
     method: str,

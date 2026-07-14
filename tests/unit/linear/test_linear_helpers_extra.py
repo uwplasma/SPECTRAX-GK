@@ -663,11 +663,11 @@ def test_sheared_kx_cache_zero_shear_identity_and_tangent() -> None:
     )
     np.testing.assert_allclose(tangent, finite_difference, rtol=5.0e-4)
 
-    linked_grid = replace(grid, boundary="linked")
-    with pytest.raises(NotImplementedError, match="periodic standard flux tube"):
+    non_twist_grid = replace(grid, boundary="linked", non_twist=True)
+    with pytest.raises(NotImplementedError, match="periodic or linked standard"):
         linear_cache.update_linear_cache_for_sheared_kx(
             cache,
-            linked_grid,
+            non_twist_grid,
             geom,
             params,
             cache.kx_grid,
