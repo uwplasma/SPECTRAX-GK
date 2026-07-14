@@ -208,7 +208,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence; a residual-convergent full KBM restart/preconditioner remains before broad branch promotion. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 93% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published like-species drift-kinetic Sugama and exact Coulomb six-gyromoment matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and species/spatial JAX dense-moment application reproduce both direct equations. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring all generated couplings plus relaxation, conductivity, ITG, zonal, and convergence gates. |
+| Advanced collision operators | 94% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published like-species drift-kinetic Sugama and exact Coulomb six-gyromoment matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. An 80-digit generator, checksummed package table, device-side finite-b interpolation boundary, and species/spatial JAX dense-moment application reproduce both direct equations; held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Full-hierarchy finite-b multispecies Sugama/Coulomb remains a research lane requiring all generated couplings plus relaxation, conductivity, ITG, zonal, and convergence gates. |
 | Nonlinear GPU performance | 97% | The bracket has one numerical owner and a clean A4000 profile; an identity-breaking FFT-layout rewrite was rejected. Require fresh identity and memory evidence for every future optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -283,6 +283,16 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-14: Replaced the controlled finite-``b`` table check as the sole
+  interpolation evidence with a held-out physical-operator convergence gate.
+  Dense matrices are constructed by direct application of the implemented
+  Mandell--Dorland--Landreman finite-Larmor-radius equations, independently
+  interpolated at four off-grid :math:`k_\perp` values, and compared on a
+  nontrivial complex state. Refining table spacing from 0.4 to 0.1 reduces the
+  relative error from about ``1.46e-2`` to ``8.87e-4`` with observed order near
+  two. This validates the runtime table boundary on real finite-``b``
+  coefficients while leaving Sugama/Coulomb finite-``b`` promotion blocked.
 
 - 2026-07-14: Extended the checked collision-table boundary to the spatially
   varying finite-``b`` application required by a full operator. A JAX-native

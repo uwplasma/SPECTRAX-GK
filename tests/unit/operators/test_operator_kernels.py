@@ -20,6 +20,7 @@ from spectraxgk.operators.linear import (
     interpolate_collision_moment_matrix,
     load_collision_moment_matrix,
 )
+from spectraxgk.operators.linear.dissipation import collisions_contribution
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.linear_terms import (
@@ -201,6 +202,77 @@ def test_collision_matrix_kperp_interpolation_species_jvp_and_validation() -> No
         interpolate_collision_moment_matrix(grid, jnp.ones((3, 8, 7)), scalar)
     with pytest.raises(ValueError, match="species-leading"):
         interpolate_collision_moment_matrix(grid, species_table, jnp.ones((3, 1)))
+
+
+def test_collision_table_converges_for_physical_finite_larmor_operator() -> None:
+    """Held-out Mandell finite-b matrices converge at interpolation design order."""
+
+    nl, nm = 2, 3
+    mode_count = nl * nm
+    eigenvalues = jnp.asarray(
+        [[2 * ell + hermite for hermite in range(nm)] for ell in range(nl)],
+        dtype=jnp.float32,
+    )
+
+    def collision_matrix(kperp: float) -> jnp.ndarray:
+        b = jnp.asarray([[[[kperp**2]]]], dtype=jnp.float32)
+        gyroaverage = jnp.moveaxis(J_l_all(b, nl - 1), 0, 1)
+        lower = jnp.pad(gyroaverage[:, :-1], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+        columns = []
+        for column in range(mode_count):
+            ell, hermite = column % nl, column // nl
+            basis = jnp.zeros((1, nl, nm, 1, 1, 1), dtype=jnp.complex64)
+            basis = basis.at[0, ell, hermite, 0, 0, 0].set(1.0)
+            contribution = collisions_contribution(
+                basis,
+                G=basis,
+                Jl=gyroaverage,
+                JlB=gyroaverage + lower,
+                b=b,
+                nu=jnp.asarray([1.0]),
+                lb_lam=eigenvalues,
+                weight=jnp.asarray(1.0),
+            )
+            packed = jnp.swapaxes(contribution, 1, 2).reshape(1, mode_count)
+            columns.append(packed[0])
+        return jnp.stack(columns, axis=1).real
+
+    targets = (0.17, 0.43, 0.79, 1.11)
+    state = (
+        jnp.arange(mode_count * 4, dtype=jnp.float32).reshape(nl, nm, 2, 1, 2) + 0.2j
+    ).astype(jnp.complex64)
+    spacings = np.asarray([0.4, 0.2, 0.1])
+    errors = []
+    for spacing in spacings:
+        grid = jnp.arange(0.0, 1.6 + spacing / 2.0, spacing, dtype=jnp.float32)
+        table = jnp.stack([collision_matrix(float(value)) for value in grid])
+        interpolated = []
+        direct = []
+        for target in targets:
+            matrix = interpolate_collision_moment_matrix(
+                grid, table, jnp.asarray(target)
+            )
+            interpolated.append(
+                apply_collision_moment_matrix(state, matrix, nu=jnp.asarray(1.0))
+            )
+            direct.append(
+                apply_collision_moment_matrix(
+                    state, collision_matrix(target), nu=jnp.asarray(1.0)
+                )
+            )
+        interpolated_stack = jnp.stack(interpolated)
+        direct_stack = jnp.stack(direct)
+        errors.append(
+            float(
+                jnp.linalg.norm(interpolated_stack - direct_stack)
+                / jnp.linalg.norm(direct_stack)
+            )
+        )
+
+    observed_order = float(np.polyfit(np.log(spacings), np.log(errors), 1)[0])
+    assert all(fine < coarse for coarse, fine in zip(errors, errors[1:]))
+    assert errors[-1] < 1.0e-3
+    assert 1.8 <= observed_order <= 2.3
 
 
 def test_gamma0_basic_properties() -> None:

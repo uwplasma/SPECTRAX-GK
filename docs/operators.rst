@@ -351,13 +351,18 @@ every perpendicular/parallel grid point without leaving traced JAX execution.
 Tests require node and endpoint identity, generated-table/direct-equation
 identity for both models, species-local spatial application, and JVP/finite-
 difference agreement through state amplitude, collision frequency, and an
-interior :math:`k_\perp` target.
+interior :math:`k_\perp` target. A separate held-out gate constructs matrices
+from the implemented Mandell--Dorland--Landreman finite-Larmor-radius collision
+equations, never from the interpolator, and recovers the expected second-order
+table-spacing convergence against direct operator evaluations.
 
 This vertical slice establishes the table format, finite-:math:`b` interpolation,
 and traced spatial application needed by the full operator. Its current table
-contains only the drift-kinetic six-moment matrices, so interpolation is tested
-with controlled coefficient families rather than presented as finite-:math:`b`
-collision physics. Repeating that matrix at higher resolution is not valid.
+contains only the drift-kinetic six-moment matrices, so the advanced-operator
+interpolation is tested with controlled coefficient families and the independent
+finite-:math:`b` Dougherty-like operator rather than presented as finite-
+:math:`b` Sugama/Coulomb physics. Repeating the six-moment matrix at higher
+resolution is not valid.
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.
