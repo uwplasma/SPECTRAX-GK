@@ -1,4 +1,5 @@
 import numpy as np
+import jax
 import jax.numpy as jnp
 import pytest
 
@@ -462,14 +463,20 @@ def test_compressed_real_fft_toggle_matches_full_fft_for_hermitian():
     nx = grid.kx.size
     rng = np.random.default_rng(123)
     normalization = float(ny * nx)
-    G_full = np.fft.fft2(
-        rng.normal(size=(1, 1, 1, ny, nx, grid.z.size)),
-        axes=(-3, -2),
-    ) / normalization
-    chi_full = np.fft.fft2(
-        rng.normal(size=(ny, nx, grid.z.size)),
-        axes=(-3, -2),
-    ) / normalization
+    G_full = (
+        np.fft.fft2(
+            rng.normal(size=(1, 1, 1, ny, nx, grid.z.size)),
+            axes=(-3, -2),
+        )
+        / normalization
+    )
+    chi_full = (
+        np.fft.fft2(
+            rng.normal(size=(ny, nx, grid.z.size)),
+            axes=(-3, -2),
+        )
+        / normalization
+    )
     mask = np.asarray(grid.dealias_mask)
     G_full *= mask[None, None, None, :, :, None]
     chi_full *= mask[:, :, None]
@@ -545,15 +552,84 @@ def test_compressed_real_fft_toggle_matches_full_fft_for_hermitian():
         atol=2.0e-6,
     )
 
+    # At a fractional shift, the full kernel carries the residual radial phase
+    # explicitly. The compressed kernel evaluates the equivalent canonical
+    # shearing-coordinate bracket with the base radial wavenumbers.
+    state_fractional = advance_shearing_coordinates(
+        jnp.asarray(G_full),
+        kx=grid.kx,
+        ky=grid.ky,
+        x0=grid.x0,
+        shear_rate=1.0,
+        previous_time=0.0,
+        time=0.23,
+        dealias_mask=grid.dealias_mask,
+    )
+    field_fractional = advance_shearing_coordinates(
+        jnp.asarray(chi_full),
+        kx=grid.kx,
+        ky=grid.ky,
+        x0=grid.x0,
+        shear_rate=1.0,
+        previous_time=0.0,
+        time=0.23,
+        dealias_mask=grid.dealias_mask,
+    )
+    assert float(jnp.max(jnp.abs(state_fractional.phase - 1.0))) > 0.1
+    bracket_fractional_full = _spectral_bracket(
+        state_fractional.state,
+        field_fractional.state,
+        kx_grid=state_fractional.effective_kx,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        radial_phase=state_fractional.phase,
+        compressed_real_fft=False,
+    )
+    bracket_fractional_compressed = _spectral_bracket(
+        state_fractional.state,
+        field_fractional.state,
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        compressed_real_fft=True,
+    )
+    np.testing.assert_allclose(
+        bracket_fractional_compressed,
+        bracket_fractional_full,
+        rtol=2.0e-5,
+        atol=2.0e-6,
+    )
+
+    def bracket_norm(scale):
+        bracket = _spectral_bracket(
+            scale * state_fractional.state,
+            field_fractional.state,
+            kx_grid=state_fractional.effective_kx,
+            ky_grid=grid.ky_grid,
+            dealias_mask=grid.dealias_mask,
+            kxfac=jnp.asarray(1.0),
+            radial_phase=state_fractional.phase,
+            compressed_real_fft=True,
+        )
+        return jnp.real(jnp.vdot(bracket, bracket))
+
+    scale = jnp.asarray(1.0, dtype=jnp.float32)
+    _, tangent = jax.jvp(bracket_norm, (scale,), (jnp.ones_like(scale),))
+    step = jnp.asarray(1.0e-3, dtype=scale.dtype)
+    finite_difference = (bracket_norm(scale + step) - bracket_norm(scale - step)) / (
+        2.0 * step
+    )
+    np.testing.assert_allclose(tangent, finite_difference, rtol=2.0e-4)
+
 
 def test_full_fft_shearing_phase_preserves_poisson_bracket_coordinates():
     grid = build_spectral_grid(
         GridConfig(Nx=6, Ny=6, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
     rng = np.random.default_rng(401)
-    G = rng.normal(size=(1, 1, 1, 6, 6, 1)) + 1j * rng.normal(
-        size=(1, 1, 1, 6, 6, 1)
-    )
+    G = rng.normal(size=(1, 1, 1, 6, 6, 1)) + 1j * rng.normal(size=(1, 1, 1, 6, 6, 1))
     chi = rng.normal(size=(6, 6, 1)) + 1j * rng.normal(size=(6, 6, 1))
     mask = np.asarray(grid.dealias_mask)
     G *= mask[None, None, None, :, :, None]
@@ -585,7 +661,7 @@ def test_full_fft_shearing_phase_preserves_poisson_bracket_coordinates():
     )
     np.testing.assert_allclose(sheared, reference, rtol=2.0e-5, atol=2.0e-5)
 
-    with pytest.raises(NotImplementedError, match="compressed_real_fft=False"):
+    with pytest.raises(ValueError, match="radial_phase must have shape"):
         _spectral_bracket(
             jnp.asarray(G),
             jnp.asarray(chi),
@@ -593,7 +669,7 @@ def test_full_fft_shearing_phase_preserves_poisson_bracket_coordinates():
             ky_grid=grid.ky_grid,
             dealias_mask=grid.dealias_mask,
             kxfac=jnp.asarray(1.0),
-            radial_phase=phase,
+            radial_phase=phase[:, :-1],
             compressed_real_fft=True,
         )
 

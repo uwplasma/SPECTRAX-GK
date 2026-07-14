@@ -551,9 +551,9 @@ def test_shearing_coordinates_follow_analytic_wave_and_inverse_remap() -> None:
 def test_shearing_coordinates_zero_shear_and_dealias_boundary() -> None:
     kx = jnp.asarray([0.0, 1.0, 2.0, 3.0, -4.0, -3.0, -2.0, -1.0])
     ky = jnp.asarray([0.0, 1.0])
-    state = (
-        jnp.arange(16, dtype=jnp.float32).reshape(1, 2, 8, 1) + 0.25j
-    ).astype(jnp.complex64)
+    state = (jnp.arange(16, dtype=jnp.float32).reshape(1, 2, 8, 1) + 0.25j).astype(
+        jnp.complex64
+    )
     identity = nonlinear_projection.advance_shearing_coordinates(
         state,
         kx=kx,
@@ -692,8 +692,12 @@ def test_sheared_integrator_zero_shear_identity_and_full_step_remap() -> None:
             terms=nonlinear_only,
         )
         np.testing.assert_allclose(sheared_state, reference_state, atol=2.0e-7)
-        np.testing.assert_allclose(sheared_fields.phi, reference_fields.phi, atol=2.0e-7)
-        np.testing.assert_allclose(sheared_state, project_state(sheared_state), atol=1.0e-7)
+        np.testing.assert_allclose(
+            sheared_fields.phi, reference_fields.phi, atol=2.0e-7
+        )
+        np.testing.assert_allclose(
+            sheared_state, project_state(sheared_state), atol=1.0e-7
+        )
         state_only = integrate_nonlinear_sheared(
             state,
             grid,
@@ -828,6 +832,34 @@ def test_sheared_transport_trace_matches_canonical_final_heat_flux() -> None:
         flux_fac,
     )
     np.testing.assert_allclose(trace.heat_flux[-1], expected, rtol=2.0e-6, atol=2.0e-7)
+
+
+def test_sheared_transport_compressed_bracket_matches_full_fractional_phase() -> None:
+    grid, geom, params, cache, state, terms = _small_sheared_transport_case()
+    options = dict(
+        dt=0.017,
+        steps=3,
+        shear_rate=0.37,
+        method="rk3",
+        cache=cache,
+        terms=terms,
+        differentiable=False,
+    )
+
+    full = integrate_nonlinear_sheared_transport(
+        state, grid, geom, params, compressed_real_fft=False, **options
+    )
+    compressed = integrate_nonlinear_sheared_transport(
+        state, grid, geom, params, compressed_real_fft=True, **options
+    )
+
+    np.testing.assert_allclose(compressed.time, full.time, atol=1.0e-7)
+    np.testing.assert_allclose(
+        compressed.final_state, full.final_state, rtol=2.0e-5, atol=2.0e-7
+    )
+    np.testing.assert_allclose(
+        compressed.heat_flux, full.heat_flux, rtol=2.0e-5, atol=2.0e-7
+    )
 
 
 def test_sheared_transport_preserves_x64_scan_carry_dtype() -> None:
@@ -1096,7 +1128,9 @@ def test_sheared_runge_kutta_recovers_observed_order_on_physical_rhs(
     assert observed_order > minimum_order
 
 
-def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement() -> None:
+def test_strong_flow_shear_suppresses_linear_itg_amplitude_after_dt_refinement() -> (
+    None
+):
     grid = build_spectral_grid(
         GridConfig(
             Nx=8,

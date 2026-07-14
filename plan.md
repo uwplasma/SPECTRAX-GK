@@ -275,7 +275,7 @@ That topology is the reference design for the production parallel lane.
 | --- | --- | --- |
 | Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
-| Equilibrium ExB flow shear | coordinate/cache/split-phase bracket, periodic RK2 trajectory, canonical heat-flux trace, linear suppression, and transport-objective AD gates validated | complete adaptive/IMEX/compressed/linked routing plus saturated-transport and matched-comparison gates before shipping |
+| Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic RK2/RK3 trajectory, canonical heat-flux trace, linear suppression, transport-objective AD, and internal saturated-transport gates validated | localize the failed matched response in linear/cache, field-solve, or diagnostic conventions; then close linked and IMEX routing before shipping |
 | Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
 | Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
@@ -1825,3 +1825,14 @@ under 5 minutes.
   residual-qualified pair. No artifact or option was promoted. The next solver
   action is a field-coupled complex preconditioner or better-conditioned
   physical shifted solve, not additional time-seed sweeps.
+
+- 2026-07-14: Closed the fractional flow-shear Poisson-bracket representation
+  audit without promoting the model. For physical Hermitian, dealiased states,
+  the common residual radial phase cancels from the bracket and the canonical
+  compressed-real route agrees with the split-phase full-complex route within
+  ``2e-5``. A JAX tangent agrees with centered finite differences, and a
+  three-step RK3 physical integration reproduces both the final state and heat-
+  flux trace. The matched ``-0.084%`` versus internal ``6.10%`` response cannot
+  be attributed to the bracket representation; the next audit is now confined
+  to sheared linear/cache, field-solve, and diagnostic conventions. Linked-
+  boundary and IMEX support remain closed, and no input-file option was added.

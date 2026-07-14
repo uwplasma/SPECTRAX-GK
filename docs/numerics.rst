@@ -273,7 +273,12 @@ full-complex state is projected onto its Hermitian subspace after every remap
 and Runge--Kutta stage, matching the real-field constraint implicit in the
 production real-FFT layout. Without this projection a physical pilot accumulated
 a 3.15% conjugate-symmetry defect by :math:`t=5`; the corrected trajectory keeps
-that residual at machine zero. The
+that residual at machine zero. The compressed bracket can also evaluate this
+fractional state in canonical shearing coordinates: the common residual phase
+of the distribution and potential cancels from their Poisson bracket, leaving
+the row-relative :math:`k_x` mesh. Direct full/compressed bracket, JAX-tangent,
+three-step state, and heat-flux gates agree within ``2e-5`` relative tolerance.
+The
 research function
 :func:`spectraxgk.nonlinear.integrate_nonlinear_sheared` verifies zero-shear
 trajectory identity and cumulative full-step remapping. Its midpoint RK2 and
@@ -355,19 +360,20 @@ corresponding ``-0.084%`` reduction is only ``-0.10`` combined SEM and disagrees
 with the internal ``6.10%`` response. This is negative parity evidence, not a
 flow-suppression result. A dealiased real-field regression shows that the
 full-complex and compressed-real Poisson brackets agree before and immediately
-after an exact integer remap, where the residual phase is unity. The unresolved
-difference is therefore narrower than a generic FFT-representation mismatch,
-but it still includes fractional-phase ordering and other treatment-dependent
-operators. It must be localized at state level before the matched-code,
-linked-boundary, compressed-real, or IMEX gates can pass, so no input-file
+after both integer and fractional remaps. A short physical sheared integration
+also reproduces the full-complex state and heat-flux trace with the canonical
+compressed bracket. The unresolved difference is therefore outside the
+nonlinear Poisson-bracket representation; the next state-level audit must
+localize sheared linear/cache, field-solve, and diagnostic conventions. Matched
+response, linked-boundary, and IMEX gates must still pass, so no input-file
 flow-shear option is enabled.
 
 RK3 is the preferred research-campaign method because it expands the stable
 explicit operating envelope without changing the coordinate or transport
 definitions. This path is a numerical foundation, not the production model. The
-compressed-real FFT rejects radial phases, and non-twist and linked boundaries
-fail closed because their Hermitian and boundary phases are not implemented.
-IMEX routing and resolution of the failed matched-response gate remain mandatory
+compressed-real bracket is an opt-in research route, while non-twist and linked
+boundaries fail closed because their boundary phases are not implemented. IMEX
+routing and resolution of the failed matched-response gate remain mandatory
 before enabling flow shear in input files.
 
 De-aliasing and hyperdiffusion
