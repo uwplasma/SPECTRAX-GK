@@ -502,8 +502,24 @@ end-to-end JAX differentiability:
   residual from ``0.881`` to ``0.922`` and ``0.991``. Merely carrying several
   Ritz vectors is therefore not treated as Krylov--Schur: a future retained
   implementation must perform ordered Schur compression or an equivalently
-  branch-preserving Jacobi--Davidson correction. JAX's current Schur primitive
-  is CPU-only, so it is not used in the CPU/GPU solver API. See the
+  branch-preserving correction. Two further physical discriminators were also
+  rejected at reduced ``Nl=4, Nm=8`` resolution. An exact projected
+  Jacobi--Davidson correction solved its correction equation to relative
+  residual ``0.035`` but worsened the eigenpair residual from ``0.742`` to
+  ``0.876`` on the first step. Ordered complex-Schur compression retaining four
+  vectors selected a damped branch and changed the residual from ``0.755`` to
+  ``0.956`` while costing about ``61`` seconds per restart. A propagated seed
+  reduced the residual to ``0.521`` but selected the wrong damped branch. These
+  failures rule out one-vector projection, generic thick restart, and seed
+  changes as release repairs. The next candidate must couple the field and
+  low-moment blocks or use a two-sided interior-eigenvalue correction, and must
+  pass branch identity, physical residual, runtime, and peak-memory gates.
+  A bounded A4000 check at ``Nl=8, Nm=24`` reached only ``0.429`` after three
+  projected corrections from ``0.975`` and moved to the wrong high-frequency
+  branch; the projected systems themselves remained poorly converged. The
+  failure therefore persists beyond the smallest CPU discriminator.
+  JAX's current Schur primitive is CPU-only, so it is not used in the CPU/GPU
+  solver API. See the
   `SLEPc Krylov--Schur documentation
   <https://slepc.upv.es/release/manualpages/EPS/EPSKRYLOVSCHUR.html>`_ and
   `harmonic extraction guidance

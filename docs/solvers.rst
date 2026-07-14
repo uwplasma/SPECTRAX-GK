@@ -64,6 +64,20 @@ Krylov--Schur with harmonic extraction for this interior mode and must pass the
 same physical residual, branch-identity, memory, and runtime gates before it
 can replace time integration.
 
+Three subsequent reduced-operator discriminators further narrow that work.
+An exact projected Jacobi--Davidson step solved its correction equation to
+relative residual ``0.035`` but worsened the physical eigenpair residual from
+``0.742`` to ``0.876``. Ordered complex-Schur compression retaining four
+vectors selected a damped branch, worsened ``0.755`` to ``0.956``, and cost
+about ``61`` seconds per restart. Seeding shift-invert from a short propagator
+lowered the residual to ``0.521`` but also selected the wrong damped branch.
+No implementation was retained. A release candidate must instead demonstrate
+a branch-preserving two-sided or field-coupled low-moment correction on the
+physical operator, not only convergence of its inner projected equation.
+A bounded A4000 run at ``Nl=8,Nm=24`` likewise reached residual ``0.429`` only
+after moving to the wrong high-frequency branch, so the negative result is not
+confined to the smallest CPU case.
+
 The generic inner solve is intentionally not migrated to SOLVAX yet. A matched
 SOLVAX 0.7.3 FGMRES probe at reduced ``Nl=8,Nm=24`` resolution selected a
 damped ``-2.1301+0.8333i`` eigenvalue with physical residual ``0.912``, compared
