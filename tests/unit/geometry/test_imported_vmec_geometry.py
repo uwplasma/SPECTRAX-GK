@@ -11,11 +11,6 @@ import spectraxgk.geometry.vmec_boozer_derivatives as vmec_derivatives
 import spectraxgk.geometry.backend_discovery as vmec_backend_discovery
 import spectraxgk.geometry.imported_vmec as vmec_facade
 import spectraxgk.geometry.vmec_field_line_sampling as vmec_fieldline_numerics
-import spectraxgk.geometry.imported_vmec as vmec_fieldlines
-import spectraxgk.geometry.imported_vmec as vmec_io
-import spectraxgk.geometry.imported_vmec as vmec_pipeline
-import spectraxgk.geometry.imported_vmec as vmec_remap
-import spectraxgk.geometry.vmec_field_line_sampling as vmec_splines
 from spectraxgk.geometry.imported_vmec import _Struct
 from spectraxgk.geometry.imported_vmec import (
     _apply_flux_tube_cut,
@@ -34,7 +29,7 @@ from spectraxgk.geometry.imported_vmec import (
 )
 
 
-def test_vmec_facade_reexports_focused_backend_owners() -> None:
+def test_imported_vmec_reuses_focused_backend_contracts() -> None:
     assert vmec_facade.internal_vmec_backend_available is (
         vmec_backend_discovery.internal_vmec_backend_available
     )
@@ -43,15 +38,7 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     )
     assert vmec_facade.nperiod_set is vmec_fieldline_numerics.nperiod_set
     assert vmec_facade.dermv is vmec_fieldline_numerics.dermv
-    assert vmec_facade._vmec_splines is vmec_fieldlines._vmec_splines
-    assert vmec_fieldlines._vmec_splines is vmec_splines._vmec_splines
-    assert vmec_facade._vmec_fieldlines is vmec_fieldlines._vmec_fieldlines
-    assert vmec_facade._apply_flux_tube_cut is vmec_remap._apply_flux_tube_cut
-    assert vmec_facade._equal_arc_remap is vmec_remap._equal_arc_remap
-    assert vmec_facade.write_vmec_eik_netcdf is vmec_io.write_vmec_eik_netcdf
-    assert vmec_facade.generate_vmec_eik_internal is (
-        vmec_pipeline.generate_vmec_eik_internal
-    )
+    assert vmec_facade._vmec_splines is vmec_fieldline_numerics._vmec_splines
 
 
 def test_vmec_struct_accepts_named_fields_and_remains_mutable() -> None:

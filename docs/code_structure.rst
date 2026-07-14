@@ -210,7 +210,10 @@ Completed extractions:
   profile assembly keeps central-surface normalization, period extension,
   Bishop coefficients, metric coefficients, magnetic drifts, target-grid
   interpolation, ballooning conversion, and final EIK profile packing as
-  explicit stages inside ``geometry.imported_miller``.
+  explicit stages inside ``geometry.imported_miller``. Ownership tests import
+  the VMEC orchestrator once and compare only its genuinely shared backend and
+  field-line contracts against those focused owners; former section names are
+  not represented by duplicate aliases of the same module.
 - mode selection/eigenfunction extraction and late-time growth/frequency
   fitting:
   ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``,
