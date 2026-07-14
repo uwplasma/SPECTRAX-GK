@@ -32,7 +32,9 @@ The repository uses four non-source-code areas with distinct jobs:
 - ``tools/`` contains maintainer commands for artifacts, campaigns,
   comparisons, profiling, and releases.
 - ``tests/`` contains automated gates that CI can run without relying on raw
-  generated outputs.
+  generated outputs. Consolidated test owners keep shared imports once at the
+  file boundary; section markers describe the retained physics families but do
+  not recreate former files through repeated imports or module aliases.
 
 Files that do not fit one of those roles should be deleted from ``main`` or
 moved to a draft experiment branch. Benchmark or comparison references to other

@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
+import inspect
+import json
+from pathlib import Path
+from types import SimpleNamespace
+
+from support.paths import REPO_ROOT, load_artifact_tool, load_repo_script
 
 # ---- test_autodiff_validation.py ----
 
@@ -829,13 +836,6 @@ def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
 
 
 # ---- test_solver_objective_gradients.py ----
-
-import json
-from dataclasses import dataclass
-from pathlib import Path
-
-from support.paths import REPO_ROOT, load_artifact_tool
-
 
 import spectraxgk.objectives.gradient_gates as gradient_gates
 import spectraxgk.objectives.sampling as sampling
@@ -2524,12 +2524,6 @@ def test_objective_portfolio_helpers_are_exported_at_package_top_level() -> None
 
 # ---- test_stellarator_optimization.py ----
 
-from dataclasses import asdict
-
-from support.paths import REPO_ROOT, load_repo_script
-from types import SimpleNamespace
-
-
 import spectraxgk.objectives.stellarator as so
 from spectraxgk.objectives.stellarator import (
     OBSERVABLE_NAMES,
@@ -3296,11 +3290,6 @@ def test_compare_stellarator_itg_objectives_parallel_preserves_order(
 
 
 # ---- test_zonal_objective.py ----
-
-import inspect
-
-import numpy as np
-import pytest
 
 from spectraxgk.objectives.zonal import (
     ZONAL_FLOW_OBJECTIVE_NAMES,

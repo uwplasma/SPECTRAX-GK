@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from importlib import import_module
+import json
+from pathlib import Path
+
+from support.paths import REPO_ROOT
 
 # ---- test_parallel.py ----
 
@@ -9,7 +14,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
-from importlib import import_module
 
 import spectraxgk
 import spectraxgk.parallel as parallel
@@ -617,8 +621,6 @@ def test_cpu_gpu_short_window_gate_matches_within_tolerance() -> None:
 
 # ---- test_sharding.py ----
 
-import pytest
-
 import spectraxgk.parallel.state as sharding_mod
 from spectraxgk.parallel.state import resolve_state_sharding
 
@@ -765,13 +767,6 @@ def test_mesh_from_devices_uses_visible_devices_and_returns_none_for_one_device(
 
 
 # ---- test_parallel_decomposition.py ----
-
-import json
-from pathlib import Path
-
-from support.paths import REPO_ROOT
-
-import pytest
 
 from spectraxgk.parallel.decomposition import (
     DecompositionContract,

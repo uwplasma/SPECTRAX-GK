@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+from types import SimpleNamespace
 
 # ---- test_status_readiness_artifacts.py ----
 
@@ -13,6 +15,9 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+
+import numpy as np
+import pytest
 
 from support.paths import REPO_ROOT, load_artifact_tool
 
@@ -1791,15 +1796,6 @@ def test_write_pre_manuscript_runbook_artifacts(tmp_path: Path) -> None:
 
 # ---- test_vmec_boozer_artifact_reports.py ----
 
-"""Tests for VMEC/Boozer artifact reports and promotion gates."""
-
-
-from types import SimpleNamespace
-
-import numpy as np
-import pytest
-
-
 from tools.artifacts import build_vmec_boozer_aggregate_holdout_gate as holdout_gate
 from tools.artifacts import build_vmec_boozer_aggregate_objective_gate as objective_gate
 
@@ -3546,13 +3542,6 @@ def test_vmec_boozer_aggregate_writers(
 
 
 # ---- test_vmec_jax_qa_artifact_contracts.py ----
-
-import argparse
-
-import pytest
-
-from support.paths import REPO_ROOT
-
 
 ROOT = REPO_ROOT
 STRATEGY_SCRIPT = ROOT / "tools" / "artifacts" / "build_qa_optimizer_strategy_report.py"

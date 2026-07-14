@@ -642,8 +642,6 @@ def test_stellarator_optimization_uq_summary_artifacts_and_shape_gate(
 
 # ---- test_make_cyclone_assets.py ----
 
-from pathlib import Path
-
 import jax.numpy as jnp
 
 
@@ -1319,11 +1317,6 @@ def test_run_kinetic_tables_restores_fixed_krylov_contract(
 
 
 # ---- test_linear_validation_artifact_reports.py ----
-
-"""Tests for linear-validation artifact builders and gate reports."""
-
-
-from pathlib import Path
 
 import pandas as pd
 from PIL import ImageDraw
@@ -2053,15 +2046,6 @@ def test_make_validation_gate_index_main_writes_json_csv_and_plot(
 
 
 # ---- test_w7x_artifact_panels.py ----
-
-"""Tests for W7-X and zonal-response artifact panels."""
-
-
-from pathlib import Path
-
-import matplotlib
-
-matplotlib.use("Agg")
 
 import netCDF4 as nc
 
