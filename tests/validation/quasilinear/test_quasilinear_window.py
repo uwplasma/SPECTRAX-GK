@@ -14,18 +14,10 @@ import pytest
 from spectraxgk.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
-)
-from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_from_csv,
     nonlinear_window_convergence_from_summary,
-)
-from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_report,
-)
-from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_ensemble_report,
-)
-from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_stats_promotion_ready,
 )
 
@@ -499,3 +491,55 @@ def test_nonlinear_window_promotion_ready_reports_all_missing_contracts() -> Non
     assert "missing declared transient cutoff policy" in failures
     assert "window has no finite late samples" in failures
     assert "missing passed gate_report" in failures
+
+
+def test_nonlinear_window_promotion_rejects_string_pass_flags() -> None:
+    t, heat = _saturated_trace()
+    report = nonlinear_window_convergence_report(
+        t,
+        heat,
+        source_artifact="persisted.csv",
+        config=NonlinearWindowConvergenceConfig(
+            transient_fraction=0.5,
+            min_samples=64,
+            max_running_mean_rel_drift=0.02,
+            max_sem_rel=0.02,
+        ),
+    )
+    report["passed"] = "true"
+    report["gate_report"]["passed"] = "true"
+
+    ready, failures = nonlinear_window_stats_promotion_ready(report)
+
+    assert ready is False
+    assert "nonlinear window convergence report did not pass" in failures
+    assert "missing passed gate_report" in failures
+
+
+def test_nonlinear_window_ensemble_promotion_rejects_string_pass_flags() -> None:
+    t, heat = _saturated_trace()
+    windows = [
+        nonlinear_window_convergence_report(
+            t,
+            heat + offset,
+            source_artifact=f"seed_{index}.csv",
+            config=NonlinearWindowConvergenceConfig(
+                transient_fraction=0.5,
+                min_samples=64,
+                max_running_mean_rel_drift=0.02,
+                max_sem_rel=0.02,
+            ),
+        )
+        for index, offset in enumerate((-0.01, 0.01))
+    ]
+    report = nonlinear_window_ensemble_report(windows)
+    report["passed"] = "true"
+    report["gate_report"]["passed"] = "true"
+    report["rows"][0]["promotion_ready"] = "true"
+
+    ready, failures = nonlinear_window_stats_promotion_ready(report)
+
+    assert ready is False
+    assert "nonlinear window ensemble report did not pass" in failures
+    assert "missing passed ensemble gate_report" in failures
+    assert "not all ensemble rows are promotion-ready" in failures

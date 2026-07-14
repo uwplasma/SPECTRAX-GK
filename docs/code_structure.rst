@@ -473,9 +473,10 @@ Completed extractions:
 - quasilinear nonlinear-window convergence metadata is consolidated in
   ``diagnostics/transport_windows.py`` for statistics, CSV/summary IO,
   promotion readiness, and ensemble uncertainty; replicate readiness belongs
-  to ``diagnostics/nonlinear_replicates.py``. The public
-  ``validation/quasilinear/window.py`` module remains the stable facade used by
-  calibration and tool scripts. The statistics owner stages validated
+  to ``diagnostics/nonlinear_replicates.py``. The public API re-exports the
+  documented transport-window helpers directly from these diagnostics owners.
+  Persisted report, gate, and row pass flags must be explicit booleans; strings
+  and numeric lookalikes fail closed. The statistics owner stages validated
   late-window selection, finite-sample counts, drift/terminal-window metrics,
   block/bootstrap uncertainty, and gate-report assembly in one file so
   nonlinear transport admission rules remain auditable. The ensemble owner
@@ -484,11 +485,10 @@ Completed extractions:
   so seed/timestep promotion evidence can be tested without rerunning
   simulations.
 - quasilinear model-selection claim boundaries live in
-  ``validation/quasilinear/model_selection.py``. The public owner now separates
+  ``diagnostics/quasilinear_model_selection.py``. This owner separates
   candidate-skill gate rows, absolute-flux overclaim guardrails, optional
   optimized-equilibrium audit gates, and final ledger assembly, while
-  ``validation/quasilinear/model_selection_inputs.py`` owns artifact loading and
-  required-candidate metric normalization.
+  artifact loading and required-candidate metric normalization.
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
   ``operators/nonlinear/parallel.py``,
