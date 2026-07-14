@@ -526,6 +526,15 @@ end-to-end JAX differentiability:
   baseline and returned residual ``0.972`` on the wrong branch. Future work
   must therefore assemble and factor a genuinely reduced field/moment Schur
   block rather than nesting another full-operator Krylov solve.
+  That reduced-block route was subsequently tested with a ``1536 x 1536``
+  complex field/moment block. Assembly took ``0.49`` seconds, factorization
+  ``0.15`` seconds, and storage ``36`` MiB, so construction was not the
+  bottleneck. However, diagonal and Hermite-line high-moment complements
+  returned physical residuals ``0.936`` and ``0.999`` on incorrect branches,
+  each taking about ``55`` seconds and more than ``1.3`` GB resident memory.
+  The omitted high-moment drift/mirror coupling is therefore material; adding
+  more coarse layers is not an accepted path without a new spectral
+  transformation and an independently converged physical discriminator.
   JAX's current Schur primitive is CPU-only, so it is not used in the CPU/GPU
   solver API. See the
   `SLEPc Krylov--Schur documentation

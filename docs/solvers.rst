@@ -87,6 +87,17 @@ on the wrong branch. Any future field-coupled candidate must use an explicitly
 reduced Schur block; nesting a full-operator solve is neither accurate nor
 competitive.
 
+An explicitly assembled field/moment block confirmed that the remaining
+problem is the complement, not block construction. The ``1536 x 1536`` complex
+coarse matrix assembled in ``0.49`` seconds, factored in ``0.15`` seconds, and
+used ``36`` MiB. Coupling it to either a diagonal or full Hermite-line
+high-moment smoother nevertheless selected incorrect branches with residuals
+``0.936`` and ``0.999``; both complete solves took about ``55`` seconds and
+exceeded ``1.3`` GB resident memory. These variants were removed. The release
+continues to use validated time integration for KBM, while a future direct
+interior spectral transformation must establish branch identity before it can
+be considered an acceleration.
+
 The generic inner solve is intentionally not migrated to SOLVAX yet. A matched
 SOLVAX 0.7.3 FGMRES probe at reduced ``Nl=8,Nm=24`` resolution selected a
 damped ``-2.1301+0.8333i`` eigenvalue with physical residual ``0.912``, compared
