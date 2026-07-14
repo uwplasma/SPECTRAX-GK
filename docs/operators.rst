@@ -271,9 +271,10 @@ autodiff-tested; it does not by itself promote a multispecies collision model.
 Reduced drift-kinetic Sugama equation gate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``drift_kinetic_sugama_six_moment_contribution`` implements the complete
-like-species six-gyromoment matrix reported in Appendix C, equations
-(C6a)--(C6f), of the `improved Sugama moment formulation
+``drift_kinetic_sugama_six_moment_contribution`` and
+``drift_kinetic_coulomb_six_moment_contribution`` implement the complete
+like-species six-gyromoment matrices reported in Appendix C, equations
+(C6a)--(C6f) and (C9a)--(C9f), of the `improved Sugama moment formulation
 <https://arxiv.org/abs/2202.06293>`_.  In SPECTRAX-GK ordering, the nontrivial
 moment vector is
 
@@ -303,6 +304,22 @@ and the heat-flux block is
    624/\sqrt{3} & -1187\sqrt{2}
    \end{pmatrix}.
 
+For the exact linearized Coulomb operator, the corresponding blocks are
+
+.. math::
+
+   M_T^L=\frac{1}{15\sqrt{\pi}}
+   \begin{pmatrix}
+   -16\sqrt{2} & 16\\
+   16 & -8\sqrt{2}
+   \end{pmatrix},
+   \qquad
+   M_q^L=\frac{1}{15\sqrt{\pi}}
+   \begin{pmatrix}
+   -24\sqrt{2} & 24/\sqrt{3}\\
+   24/\sqrt{3} & -28\sqrt{2}
+   \end{pmatrix}.
+
 Tests evaluate every matrix entry, symmetry, non-positive eigenvalues, the
 Maxwellian thermal null direction, density/momentum/energy invariants, and a
 collision-frequency JVP against centered finite differences.  This is a real
@@ -310,7 +327,7 @@ high-collisionality reduced operator and an equation-level acceptance gate for
 the future coefficient generator.  It intentionally returns zero outside the
 six-moment projection and is therefore not selected by TOML or presented as a
 full Hermite--Laguerre hierarchy, finite-Larmor-radius, multispecies, or
-production Sugama implementation.
+production Sugama/Coulomb implementation.
 
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
@@ -358,6 +375,12 @@ Relevant derivations and verification targets include the
 the `advanced linearized gyrokinetic moment operators <https://arxiv.org/abs/2104.11480>`_,
 the `improved Sugama moment implementation <https://arxiv.org/abs/2202.06293>`_,
 and the `local collisional ITG study <https://arxiv.org/abs/2201.02860>`_.
+The independent GYACOMO source implementation loads full Sugama/Landau test and
+field matrices generated offline by COSOlver, interpolates them in
+:math:`k_\perp`, and applies the dense moment coupling at runtime. That audit
+supports the same separation here: generate cancellation-sensitive
+coefficients in high precision, store provenance and checksums, then keep the
+JAX runtime to validated table interpolation and matrix application.
 
 Controls:
 
