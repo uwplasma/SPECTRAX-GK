@@ -455,16 +455,18 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
-def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
-    tmp_path: Path,
+def _write_candidate_quasilinear_status_inputs(
+    root: Path,
+    *,
+    include_promotion_guardrail: bool,
 ) -> None:
     _write_manuscript_readiness_json(
-        tmp_path,
+        root,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
     _write_manuscript_readiness_json(
-        tmp_path,
+        root,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
             "passed": False,
@@ -475,18 +477,17 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             ],
         },
     )
+    for name in (
+        "quasilinear_saturation_rule_sweep",
+        "quasilinear_shape_aware_saturation",
+    ):
+        _write_manuscript_readiness_json(
+            root,
+            f"docs/_static/{name}.json",
+            {"promotion_gate": {"passed": False}},
+        )
     _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_saturation_rule_sweep.json",
-        {"promotion_gate": {"passed": False}},
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_shape_aware_saturation.json",
-        {"promotion_gate": {"passed": False}},
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
+        root,
         "docs/_static/quasilinear_candidate_uncertainty.json",
         {
             "promotion_gate": {
@@ -496,7 +497,7 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
         },
     )
     _write_manuscript_readiness_json(
-        tmp_path,
+        root,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
             "promotion_gate": {"passed": True},
@@ -506,8 +507,10 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             },
         },
     )
+    if not include_promotion_guardrail:
+        return
     _write_manuscript_readiness_json(
-        tmp_path,
+        root,
         "docs/_static/quasilinear_model_selection_status.json",
         {
             "promotion_gate": {"passed": True, "blockers": []},
@@ -518,9 +521,18 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
         },
     )
     _write_manuscript_readiness_json(
-        tmp_path,
+        root,
         "docs/_static/quasilinear_promotion_guardrails.json",
         {"passed": True},
+    )
+
+
+def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
+    tmp_path: Path,
+) -> None:
+    _write_candidate_quasilinear_status_inputs(
+        tmp_path,
+        include_promotion_guardrail=True,
     )
 
     payload = load_artifact_tool(
@@ -545,50 +557,9 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
 def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(
     tmp_path: Path,
 ) -> None:
-    _write_manuscript_readiness_json(
+    _write_candidate_quasilinear_status_inputs(
         tmp_path,
-        "docs/_static/quasilinear_validated_calibration_inputs.json",
-        {"passed": True},
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
-        {
-            "passed": False,
-            "by_split": {"holdout": {"mean_abs_relative_error": 2.5}},
-            "points": [
-                {"case": "cyclone", "split": "train"},
-                {"case": "w7x", "split": "holdout"},
-            ],
-        },
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_saturation_rule_sweep.json",
-        {"promotion_gate": {"passed": False}},
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_shape_aware_saturation.json",
-        {"promotion_gate": {"passed": False}},
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_candidate_uncertainty.json",
-        {
-            "promotion_gate": {
-                "passed": True,
-                "accepted_candidates": ["spectral_envelope_ridge"],
-            }
-        },
-    )
-    _write_manuscript_readiness_json(
-        tmp_path,
-        "docs/_static/quasilinear_dataset_sufficiency.json",
-        {
-            "promotion_gate": {"passed": True},
-            "requirements": {"current_total_cases": 7},
-        },
+        include_promotion_guardrail=False,
     )
 
     payload = load_artifact_tool(
@@ -3151,70 +3122,64 @@ def test_surface_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
     assert calls["holdout_surface_indices"] == (19,)
 
 
-def test_line_search_gate_main_uses_report(monkeypatch, tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("report_name", "payload_factory", "command_prefix", "command_args", "expected"),
+    [
+        pytest.param(
+            "vmec_boozer_aggregate_scalar_objective_line_search_report",
+            _line_search_payload,
+            ["line-search"],
+            ["--selected-ky-indices", "1", "2", "--max-steps", "2"],
+            {"selected_ky_indices": (1, 2), "max_steps": 2, "mboz": 21},
+            id="line-search",
+        ),
+        pytest.param(
+            "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+            _objective_payload,
+            [],
+            [
+                "--selected-ky-indices",
+                "1",
+                "2",
+                "--surface-indices",
+                "3",
+                "5",
+            ],
+            {"surface_indices": (3, 5), "selected_ky_indices": (1, 2), "mboz": 21},
+            id="finite-difference",
+        ),
+    ],
+)
+def test_objective_gate_main_uses_report(
+    monkeypatch,
+    tmp_path: Path,
+    report_name: str,
+    payload_factory,
+    command_prefix: list[str],
+    command_args: list[str],
+    expected: dict[str, object],
+) -> None:
     calls: dict[str, object] = {}
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
         calls.update(kwargs)
-        return _line_search_payload()
+        return payload_factory()
 
-    monkeypatch.setattr(
-        objective_gate,
-        "vmec_boozer_aggregate_scalar_objective_line_search_report",
-        fake_report,
-    )
+    monkeypatch.setattr(objective_gate, report_name, fake_report)
 
     result = objective_gate.main(
         [
-            "line-search",
+            *command_prefix,
             "--out",
-            str(tmp_path / "line_search.png"),
-            "--selected-ky-indices",
-            "1",
-            "2",
-            "--max-steps",
-            "2",
+            str(tmp_path / f"{report_name}.png"),
+            *command_args,
             "--json-only",
         ]
     )
 
     assert result == 0
-    assert calls["selected_ky_indices"] == (1, 2)
-    assert calls["max_steps"] == 2
-    assert calls["mboz"] == 21
-
-
-def test_objective_gate_main_uses_report(monkeypatch, tmp_path: Path) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _objective_payload()
-
-    monkeypatch.setattr(
-        objective_gate,
-        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_report,
-    )
-
-    result = objective_gate.main(
-        [
-            "--out",
-            str(tmp_path / "gate.png"),
-            "--selected-ky-indices",
-            "1",
-            "2",
-            "--surface-indices",
-            "3",
-            "5",
-            "--json-only",
-        ]
-    )
-
-    assert result == 0
-    assert calls["surface_indices"] == (3, 5)
-    assert calls["selected_ky_indices"] == (1, 2)
-    assert calls["mboz"] == 21
+    for key, value in expected.items():
+        assert calls[key] == value
 
 
 def test_objective_gate_maps_physical_ky_and_torflux(
@@ -6252,13 +6217,36 @@ def test_time_horizon_gate_passes_for_stable_high_grid_means(tmp_path: Path) -> 
     assert Path(paths["csv"]).exists()
 
 
-def test_time_horizon_gate_fails_large_horizon_shift(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("means", "second_passed", "failed_metric", "claim_level"),
+    [
+        pytest.param(
+            ((10.0, 10.0), (14.0, 14.0)),
+            True,
+            "common_window_time_horizon_relative_change",
+            "negative_time_horizon_result_not_transport_validation",
+            id="large-horizon-shift",
+        ),
+        pytest.param(
+            ((10.0, 10.4), (10.2, 10.5)),
+            False,
+            "failed_grid_gate_count",
+            None,
+            id="failed-input-grid-gate",
+        ),
+    ],
+)
+def test_time_horizon_gate_fails_closed(
+    tmp_path: Path,
+    means: tuple[tuple[float, float], tuple[float, float]],
+    second_passed: bool,
+    failed_metric: str,
+    claim_level: str | None,
+) -> None:
     mod = load_artifact_tool("plot_external_vmec_nonlinear_convergence_gate")
-    first = _plot_external_vmec_time_horizon_gate_write_gate(
-        tmp_path, "t250", (10.0, 10.0)
-    )
+    first = _plot_external_vmec_time_horizon_gate_write_gate(tmp_path, "t250", means[0])
     second = _plot_external_vmec_time_horizon_gate_write_gate(
-        tmp_path, "t350", (14.0, 14.0)
+        tmp_path, "t350", means[1], passed=second_passed
     )
 
     payload = mod.build_time_horizon_payload(
@@ -6270,32 +6258,9 @@ def test_time_horizon_gate_fails_large_horizon_shift(tmp_path: Path) -> None:
         gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]
     }
     assert payload["passed"] is False
-    assert (
-        payload["claim_level"]
-        == "negative_time_horizon_result_not_transport_validation"
-    )
-    assert "common_window_time_horizon_relative_change" in failed
-
-
-def test_time_horizon_gate_fails_when_input_grid_gate_failed(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_external_vmec_nonlinear_convergence_gate")
-    first = _plot_external_vmec_time_horizon_gate_write_gate(
-        tmp_path, "t250", (10.0, 10.4)
-    )
-    second = _plot_external_vmec_time_horizon_gate_write_gate(
-        tmp_path, "t350", (10.2, 10.5), passed=False
-    )
-
-    payload = mod.build_time_horizon_payload(
-        [(250.0, first), (350.0, second)],
-        case="synthetic time horizon",
-    )
-
-    failed = {
-        gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]
-    }
-    assert payload["passed"] is False
-    assert "failed_grid_gate_count" in failed
+    assert failed_metric in failed
+    if claim_level is not None:
+        assert payload["claim_level"] == claim_level
 
 
 # VMEC-JAX equilibrium inventory assertions
