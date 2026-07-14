@@ -146,7 +146,7 @@ def associated_laguerre_monomial_coefficients(
 
 def _associated_laguerre_monomial_coefficient_mp(
     polynomial_order: int,
-    tensor_order: int,
+    tensor_order: Any,
     monomial_order: int,
     mp: Any,
 ) -> Any:
@@ -529,6 +529,178 @@ def associated_basis_transform_matrices(
         forward = np.asarray(forward_mp.tolist(), dtype=np.float64)
         inverse = np.asarray(inverse_mp.tolist(), dtype=np.float64)
     return right_orders, left_orders, forward, inverse
+
+
+def _laguerre_product_expansion_coefficient_mp(
+    associated_order: int,
+    associated_polynomial_order: int,
+    laguerre_order: int,
+    output_order: int,
+    radial_power: int,
+    mp: Any,
+) -> Any:
+    if output_order > associated_polynomial_order + laguerre_order + radial_power:
+        return mp.mpf(0)
+
+    half = mp.mpf("0.5")
+    total = mp.mpf(0)
+    for associated_power in range(associated_polynomial_order + 1):
+        associated_coefficient = _associated_laguerre_monomial_coefficient_mp(
+            associated_polynomial_order,
+            associated_order - half,
+            associated_power,
+            mp,
+        )
+        for laguerre_power in range(laguerre_order + 1):
+            laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
+                laguerre_order,
+                -half,
+                laguerre_power,
+                mp,
+            )
+            for output_power in range(output_order + 1):
+                output_coefficient = _associated_laguerre_monomial_coefficient_mp(
+                    output_order,
+                    -half,
+                    output_power,
+                    mp,
+                )
+                total += (
+                    associated_coefficient
+                    * laguerre_coefficient
+                    * output_coefficient
+                    * mp.factorial(
+                        associated_power + laguerre_power + output_power + radial_power
+                    )
+                )
+    return total
+
+
+def laguerre_product_expansion_coefficient(
+    associated_order: int,
+    associated_polynomial_order: int,
+    laguerre_order: int,
+    output_order: int,
+    *,
+    radial_power: int = 0,
+    digits: int = 80,
+) -> float:
+    r"""Expand ``x**r L_n^m(x) L_k(x)`` in ordinary Laguerre modes.
+
+    ``radial_power=associated_order`` implements equations (3.36)--(3.37) of
+    Frei et al. (2021); ``radial_power=0`` implements equations
+    (3.44)--(3.45).  The returned coefficient multiplies ``L_output_order``.
+    """
+
+    indices = (
+        associated_order,
+        associated_polynomial_order,
+        laguerre_order,
+        output_order,
+        radial_power,
+    )
+    if any(index < 0 for index in indices):
+        raise ValueError("Laguerre orders and radial_power must be >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        coefficient = _laguerre_product_expansion_coefficient_mp(
+            associated_order,
+            associated_polynomial_order,
+            laguerre_order,
+            output_order,
+            radial_power,
+            mp,
+        )
+    return float(coefficient)
+
+
+def gyroaveraged_spherical_moment_coefficient(
+    spherical_order: int,
+    spherical_radial_order: int,
+    bessel_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    kperp_rho: float,
+    *,
+    maximum_bessel_laguerre_order: int = 24,
+    digits: int = 80,
+) -> float:
+    r"""Map one gyro-moment into a finite-``m`` spherical particle moment.
+
+    This evaluates one ``N^(g,s)`` coefficient in equation (3.35) of Frei et
+    al. (2021).  The Bessel--Laguerre sum is explicitly truncated at
+    ``maximum_bessel_laguerre_order``; convergence must be checked when tables
+    are generated.
+    """
+
+    indices = (
+        spherical_order,
+        spherical_radial_order,
+        bessel_order,
+        hermite_order,
+        laguerre_order,
+        maximum_bessel_laguerre_order,
+    )
+    if any(index < 0 for index in indices):
+        raise ValueError("basis and truncation orders must be >= 0")
+    if bessel_order > spherical_order:
+        raise ValueError("bessel_order must be <= spherical_order")
+    if not math.isfinite(kperp_rho) or kperp_rho < 0.0:
+        raise ValueError("kperp_rho must be finite and >= 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    import mpmath as mp
+
+    with mp.workdps(digits):
+        b = mp.mpf(kperp_rho)
+        half_b = b / 2
+        argument = half_b * half_b
+        coefficient = mp.mpf(0)
+        maximum_auxiliary_laguerre = (
+            spherical_radial_order + (spherical_order + bessel_order) // 2
+        )
+        for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
+            transform = _associated_legendre_to_hermite_laguerre_mp(
+                spherical_order,
+                spherical_radial_order,
+                bessel_order,
+                hermite_order,
+                auxiliary_laguerre_order,
+                mp,
+            )
+            if transform == 0:
+                continue
+            for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
+                product = _laguerre_product_expansion_coefficient_mp(
+                    bessel_order,
+                    bessel_laguerre_order,
+                    auxiliary_laguerre_order,
+                    laguerre_order,
+                    bessel_order,
+                    mp,
+                )
+                if product == 0:
+                    continue
+                kernel = (
+                    mp.exp(-argument)
+                    * argument**bessel_laguerre_order
+                    / mp.factorial(bessel_laguerre_order)
+                )
+                coefficient += (
+                    transform
+                    * product
+                    * mp.factorial(bessel_laguerre_order)
+                    * kernel
+                    * half_b**bessel_order
+                    / mp.factorial(bessel_laguerre_order + bessel_order)
+                )
+        coefficient *= mp.sqrt(mp.power(2, hermite_order) * mp.factorial(hermite_order))
+    return float(coefficient)
 
 
 def build_collision_table(*, digits: int = 80) -> np.ndarray:

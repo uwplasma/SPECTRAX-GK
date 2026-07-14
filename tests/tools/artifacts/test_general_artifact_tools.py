@@ -2130,6 +2130,151 @@ def test_associated_basis_transform_precision_and_validation() -> None:
         mod.associated_basis_transform_matrices(0, 2, digits=10)
 
 
+def test_laguerre_product_coefficients_reconstruct_collision_products() -> None:
+    """Frei et al. Eqs. (3.36) and (3.44) must hold pointwise."""
+    from scipy.special import eval_genlaguerre, eval_laguerre
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    x = np.linspace(0.0, 8.0, 41)
+    cases = (
+        (0, 2, 3, 0),
+        (1, 2, 1, 0),
+        (1, 2, 1, 1),
+        (2, 1, 2, 2),
+    )
+    for associated_order, first_order, second_order, radial_power in cases:
+        maximum_order = first_order + second_order + radial_power
+        coefficients = np.asarray(
+            [
+                mod.laguerre_product_expansion_coefficient(
+                    associated_order,
+                    first_order,
+                    second_order,
+                    output_order,
+                    radial_power=radial_power,
+                )
+                for output_order in range(maximum_order + 1)
+            ]
+        )
+        expected = (
+            x**radial_power
+            * eval_genlaguerre(first_order, associated_order, x)
+            * eval_laguerre(second_order, x)
+        )
+        reconstructed = sum(
+            coefficient * eval_laguerre(output_order, x)
+            for output_order, coefficient in enumerate(coefficients)
+        )
+        np.testing.assert_allclose(
+            reconstructed,
+            expected,
+            rtol=3.0e-12,
+            atol=2.0e-9,
+        )
+
+    assert mod.laguerre_product_expansion_coefficient(1, 1, 1, 4) == 0.0
+    with pytest.raises(ValueError, match="Laguerre orders"):
+        mod.laguerre_product_expansion_coefficient(-1, 0, 0, 0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.laguerre_product_expansion_coefficient(0, 0, 0, 0, digits=10)
+
+
+def test_gyroaveraged_spherical_moment_matches_direct_velocity_projection() -> None:
+    """Frei et al. Eq. (3.35) must match a Bessel-weighted projection."""
+    from scipy.special import (
+        eval_genlaguerre,
+        eval_hermite,
+        eval_laguerre,
+        jv,
+        lpmv,
+    )
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    parallel, parallel_weights = np.polynomial.hermite.hermgauss(80)
+    perpendicular, perpendicular_weights = np.polynomial.laguerre.laggauss(80)
+    x_parallel = parallel[:, None]
+    x_perpendicular = perpendicular[None, :]
+    speed = np.sqrt(x_parallel**2 + x_perpendicular)
+    pitch = x_parallel / speed
+    cases = (
+        (0, 0, 0, 0, 0, 0.7),
+        (1, 0, 1, 0, 0, 0.7),
+        (2, 0, 1, 1, 0, 0.7),
+        (3, 1, 2, 1, 1, 1.1),
+        (4, 0, 2, 0, 2, 1.1),
+        (5, 0, 3, 2, 1, 1.3),
+    )
+    for (
+        spherical_order,
+        spherical_radial_order,
+        bessel_order,
+        hermite_order,
+        laguerre_order,
+        b,
+    ) in cases:
+        coefficient = mod.gyroaveraged_spherical_moment_coefficient(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            hermite_order,
+            laguerre_order,
+            b,
+            maximum_bessel_laguerre_order=32,
+            digits=80,
+        )
+        observable = (
+            jv(bessel_order, b * np.sqrt(x_perpendicular))
+            * speed**spherical_order
+            * lpmv(bessel_order, spherical_order, pitch)
+            * eval_genlaguerre(
+                spherical_radial_order,
+                spherical_order + 0.5,
+                speed**2,
+            )
+        )
+        gyro_moment_basis = eval_hermite(hermite_order, x_parallel) * eval_laguerre(
+            laguerre_order,
+            x_perpendicular,
+        )
+        projected = np.sum(
+            parallel_weights[:, None]
+            * perpendicular_weights[None, :]
+            * observable
+            * gyro_moment_basis
+        ) / (np.sqrt(np.pi) * np.sqrt(2**hermite_order * math.factorial(hermite_order)))
+        np.testing.assert_allclose(
+            coefficient,
+            projected,
+            rtol=2.0e-10,
+            atol=8.0e-9,
+        )
+
+        coefficient_20 = mod.gyroaveraged_spherical_moment_coefficient(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            hermite_order,
+            laguerre_order,
+            b,
+            maximum_bessel_laguerre_order=20,
+        )
+        np.testing.assert_allclose(
+            coefficient_20, coefficient, rtol=2.0e-12, atol=2.0e-11
+        )
+
+    assert mod.gyroaveraged_spherical_moment_coefficient(0, 0, 0, 0, 0, 0.0) == 1.0
+    assert mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, 0.0) == 0.0
+
+    with pytest.raises(ValueError, match="basis and truncation"):
+        mod.gyroaveraged_spherical_moment_coefficient(-1, 0, 0, 0, 0, 1.0)
+    with pytest.raises(ValueError, match="bessel_order"):
+        mod.gyroaveraged_spherical_moment_coefficient(1, 0, 2, 0, 0, 1.0)
+    with pytest.raises(ValueError, match="kperp_rho"):
+        mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, -1.0)
+    with pytest.raises(ValueError, match="digits"):
+        mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, 1.0, digits=10)
+
+
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
     mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"

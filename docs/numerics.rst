@@ -655,6 +655,16 @@ the full forward matrix with 80-digit arithmetic and casts only the accepted
 table. Complete collision contractions and conductivity, ITG, zonal-response,
 and velocity-resolution gates remain required before runtime promotion.
 
+The associated-Laguerre product coefficients in equations (3.36)--(3.37) and
+(3.44)--(3.45) are evaluated by the same multiprecision generator and
+reconstruct their defining products pointwise. Equation (3.35)'s finite-
+:math:`b` gyro-moment-to-spherical-moment map then combines those products,
+the finite-:math:`m` basis transform, and the exact :math:`K_n(b)` kernel.
+Independent Bessel-weighted velocity projection verifies six coefficients
+through :math:`m=3`; agreement between 20- and 32-term sums provides a local
+truncation gate. The next accepted step is the complete velocity-integrated
+test-/field-particle contraction, not direct runtime use of this intermediate.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the

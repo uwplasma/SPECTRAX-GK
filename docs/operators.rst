@@ -447,6 +447,18 @@ identity, so the accepted inverse is formed from the complete 80-digit block
 before the final ``float64`` table cast. This closes coefficient generation,
 not the test-/field-particle contractions or their transport validation.
 
+The next algebraic layer is also generated and independently checked.
+``laguerre_product_expansion_coefficient`` implements both the unweighted
+product in equations (3.44)--(3.45) and the :math:`x^m`-weighted product in
+equations (3.36)--(3.37) of Frei et al. (2021). Pointwise polynomial
+reconstruction covers :math:`m=0,1,2`. Combining that product with the
+finite-:math:`m` transform and :math:`K_n(b)` yields
+``gyroaveraged_spherical_moment_coefficient``, one coefficient of equation
+(3.35). Six coefficients through :math:`m=3` and :math:`b=1.3` agree with
+independent Bessel-weighted velocity projection; 20- and 32-term Bessel sums
+also agree. This validates the gyro-moment-to-spherical-moment map consumed by
+the Coulomb contractions, not equations (3.48)--(3.50) themselves.
+
 Full tables must populate every retained Hermite--Laguerre coupling from the
 published finite-:math:`b`, mass-ratio, and temperature-ratio sums and pass the
 stronger gates below.
