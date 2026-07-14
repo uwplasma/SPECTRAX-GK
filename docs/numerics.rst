@@ -56,7 +56,7 @@ JAX execution model
 The implementation leverages the following JAX primitives:
 
 - **JIT compilation**: ``jax.jit`` is used in
-  :func:`spectraxgk.linear._integrate_linear_cached` to stage time-stepping
+  :func:`spectraxgk.linear.integrate_linear` to stage time-stepping
   kernels.
 - **Loop fusion**: ``jax.lax.scan`` drives the time integration loop.
 - **FFT grids**: ``jax.numpy.fft.fftfreq`` is used in

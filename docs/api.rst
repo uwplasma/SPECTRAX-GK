@@ -223,6 +223,7 @@ Linear Parameters
 .. automodule:: spectraxgk.operators.linear.params
    :members:
    :private-members:
+   :no-index:
 
 Linear RHS
 ----------

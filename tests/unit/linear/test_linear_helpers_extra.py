@@ -14,38 +14,14 @@ from spectraxgk.config import GridConfig
 from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all
-import spectraxgk.linear as linear_mod
 import spectraxgk.operators.linear as linear_cache
-import spectraxgk.operators.linear.linked as linear_linked
-import spectraxgk.operators.linear.moments as linear_moments
 import spectraxgk.solvers.linear.implicit as linear_implicit
-import spectraxgk.solvers.linear.integrators as linear_integrators
-import spectraxgk.solvers.linear.parallel as linear_parallel
-import spectraxgk.operators.linear.params as linear_params
 import spectraxgk.operators.linear.dissipation as linear_dissipation
 import spectraxgk.terms.linear_terms as linear_terms
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
     build_linear_cache,
-    _is_tracer,
-    _as_species_array,
-    _build_implicit_operator,
-    _build_end_damping_profile_array,
-    _build_gyroaverage_cache_arrays,
-    _build_linked_fft_maps,
-    _build_linked_end_damping_profile,
-    _build_low_rank_moment_cache_arrays,
-    _check_nonnegative,
-    _check_positive,
-    _integrate_linear_cached_impl,
-    _resolve_implicit_preconditioner,
-    _resolve_parallel_devices,
-    _signed_to_index,
-    _integrate_linear_implicit_cached,
-    _is_electrostatic_field_terms,
-    _is_electrostatic_slice_terms,
-    _is_streaming_only_terms,
     build_H,
     hypercollision_damping,
     integrate_linear,
@@ -56,6 +32,34 @@ from spectraxgk.linear import (
     lenard_bernstein_eigenvalues,
     linear_terms_to_term_config,
     term_config_to_linear_terms,
+)
+from spectraxgk.operators.linear.cache_arrays import (
+    _build_end_damping_profile_array,
+    _build_gyroaverage_cache_arrays,
+    _build_low_rank_moment_cache_arrays,
+)
+from spectraxgk.operators.linear.linked import (
+    _build_linked_end_damping_profile,
+    _build_linked_fft_maps,
+    _signed_to_index,
+)
+from spectraxgk.operators.linear.params import (
+    _as_species_array,
+    _check_nonnegative,
+    _check_positive,
+    _is_tracer,
+    _resolve_implicit_preconditioner,
+)
+from spectraxgk.solvers.linear.implicit import (
+    _build_implicit_operator,
+    _integrate_linear_implicit_cached,
+)
+from spectraxgk.solvers.linear.integrators import _integrate_linear_cached_impl
+from spectraxgk.solvers.linear.parallel import (
+    _is_electrostatic_field_terms,
+    _is_electrostatic_slice_terms,
+    _is_streaming_only_terms,
+    _resolve_parallel_devices,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
 
@@ -138,51 +142,6 @@ def test_structured_tridiagonal_last_axis_matches_fused_reference_and_jvp() -> N
         atol=tolerance,
     )
 
-
-
-def test_linear_linked_helpers_preserve_public_exports() -> None:
-    for name in linear_linked.__all__:
-        assert getattr(linear_mod, name) is getattr(linear_linked, name)
-
-
-def test_linear_param_helpers_preserve_public_exports() -> None:
-    for name in linear_params.__all__:
-        assert getattr(linear_mod, name) is getattr(linear_params, name)
-
-
-def test_linear_cache_helpers_preserve_public_exports() -> None:
-    cache_exports = (
-        "LinearCache",
-        "_build_end_damping_profile_array",
-        "_build_gyroaverage_cache_arrays",
-        "_build_low_rank_moment_cache_arrays",
-        "_numpy_dtype_for_jax",
-        "build_linear_cache",
-        "collision_damping",
-        "hypercollision_damping",
-    )
-    for name in cache_exports:
-        assert getattr(linear_mod, name) is getattr(linear_cache, name)
-
-
-def test_linear_moment_helpers_preserve_public_exports() -> None:
-    for name in linear_moments.__all__:
-        assert getattr(linear_mod, name) is getattr(linear_moments, name)
-
-
-def test_linear_implicit_helpers_preserve_public_exports() -> None:
-    for name in linear_implicit.__all__:
-        assert getattr(linear_mod, name) is getattr(linear_implicit, name)
-
-
-def test_linear_integrator_helpers_preserve_public_exports() -> None:
-    for name in linear_integrators.__all__:
-        assert getattr(linear_mod, name) is getattr(linear_integrators, name)
-
-
-def test_linear_parallel_helpers_preserve_public_exports() -> None:
-    for name in linear_parallel.__all__:
-        assert getattr(linear_mod, name) is getattr(linear_parallel, name)
 
 
 def test_linear_dissipation_terms_have_single_canonical_owner() -> None:

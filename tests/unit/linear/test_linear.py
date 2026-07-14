@@ -12,15 +12,12 @@ from spectraxgk.diagnostics.analysis import estimate_observed_order
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
-    _build_linked_fft_maps,
-    _x64_enabled,
     LinearCache,
     LinearParams,
     LinearTerms,
     apply_hermite_v,
     apply_laguerre_x,
     build_H,
-    _build_implicit_operator,
     build_linear_cache,
     compute_b,
     diamagnetic_drive_coeffs,
@@ -32,9 +29,12 @@ from spectraxgk.linear import (
     quasineutrality_phi,
     streaming_term,
 )
+from spectraxgk.operators.linear.linked import _build_linked_fft_maps
+from spectraxgk.operators.linear.params import _x64_enabled
 from spectraxgk.operators.linear.streaming import grad_z_linked_fft
 from spectraxgk.core.velocity import J_l_all
 from spectraxgk.solvers.linear.krylov import dominant_eigenpair
+from spectraxgk.solvers.linear.implicit import _build_implicit_operator
 from spectraxgk.terms.linear_terms import (
     collision_invariant_rates,
     collision_quadratic_rate,

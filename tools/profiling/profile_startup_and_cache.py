@@ -394,7 +394,9 @@ def build_low_rank_moment_cache(
     """
 
     import jax.numpy as jnp
-    from spectraxgk.linear import _build_low_rank_moment_cache_arrays
+    from spectraxgk.operators.linear.cache_arrays import (
+        _build_low_rank_moment_cache_arrays,
+    )
 
     return {
         **_build_low_rank_moment_cache_arrays(nl, nm, params, real_dtype),
@@ -489,13 +491,17 @@ def main_linear_cache(argv: list[str] | None = None) -> None:
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
     from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-    from spectraxgk.linear import (
+    from spectraxgk.linear import build_linear_cache
+    from spectraxgk.operators.linear.cache_arrays import (
         _build_end_damping_profile_array,
         _build_gyroaverage_cache_arrays,
+    )
+    from spectraxgk.operators.linear.linked import (
         _build_linked_end_damping_profile,
         _build_linked_fft_maps,
+    )
+    from spectraxgk.operators.linear.params import (
         _x64_enabled,
-        build_linear_cache,
     )
     from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params
 

@@ -37,11 +37,11 @@ from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
-    _as_species_array,
     build_H,
     build_linear_cache,
     linear_terms_to_term_config,
 )
+from spectraxgk.operators.linear.params import _as_species_array
 from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config
 from spectraxgk.terms.linear_terms import (
     collisions_contribution,

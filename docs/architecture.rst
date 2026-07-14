@@ -8,8 +8,9 @@ Core modules
   coefficients, and polarization helpers.
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
-- ``spectraxgk.linear``: public linear API facade for documented linear imports
-  and fixed-step integration entry points.
+- ``spectraxgk.linear``: explicit public linear API for documented operators,
+  cache construction, parallel kernels, and integrators. Private kernel helpers
+  stay in their owning modules and are not compatibility exports.
 - ``spectraxgk.operators.linear``: cache construction, linked-boundary maps,
   Hermite/Laguerre moment operators, linear parameter pytrees, and cached RHS
   assembly entry points.

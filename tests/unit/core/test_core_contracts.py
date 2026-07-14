@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 import spectraxgk.config as public_config
+import spectraxgk.linear as public_linear
 from spectraxgk.config import (
     CycloneBaseCase,
     REFERENCE_ELECTRON_MASS,
@@ -84,7 +85,6 @@ def test_shape_and_differentiability_contracts_validate_core_metadata() -> None:
             dynamic_arg_names=("model",),
             gradient_checks=("finite_difference",),
         )
-
     with pytest.raises(ValueError, match="gradient_checks"):
         DifferentiabilityContract(differentiable=True, jit_safe=True, vmap_safe=True)
 
@@ -107,6 +107,14 @@ def test_shape_and_differentiability_contracts_validate_core_metadata() -> None:
             vmap_safe=True,
             custom_derivative="vjp",
         )
+
+
+def test_linear_facade_exposes_only_supported_public_names() -> None:
+    assert public_linear.__all__
+    assert not any(name.startswith("_") for name in public_linear.__all__)
+    assert {"LinearParams", "build_linear_cache", "integrate_linear"} <= set(
+        public_linear.__all__
+    )
 
 
 def test_module_refactor_contract_tracks_facades_gates_and_extension_points() -> None:
