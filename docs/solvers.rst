@@ -46,6 +46,12 @@ KBM audit still reports outer residual ``0.981`` against the ``0.1`` threshold,
 so this lane remains unpromoted rather than silently returning that branch;
 validated time integration remains the release path.
 
+Acceptance also follows the requested spectral selection. Growth-selected
+searches enforce ``fallback_real_floor``; nearest-shift, overlap, and explicit
+shift searches may intentionally select a stable mode and therefore use
+finiteness plus the physical outer residual instead. Rejection messages identify
+which of the non-finite, growth-floor, or residual criteria failed.
+
 Optional damping
 ----------------
 

@@ -642,8 +642,46 @@ def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     assert jnp.allclose(eig_w, jnp.asarray(0.2 + 0.05j, dtype=v0.dtype))
     assert jnp.allclose(vec_w, 4.0 + 0.0j)
 
+    # Nearest-shift selection may intentionally target a stable eigenvalue.
+    monkeypatch.setattr(
+        lk,
+        "dominant_eigenpair_shift_invert_cached",
+        lambda *args, **kwargs: (
+            jnp.asarray(-0.2 + 0.5j, dtype=v0.dtype),
+            jnp.ones_like(v0),
+        ),
+    )
+    eig_stable, _ = lk.dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms=terms,
+        method="shift_invert",
+        shift=0.5j,
+        shift_source="reference",
+        shift_selection="nearest",
+        fallback_method="none",
+        fallback_real_floor=0.0,
+    )
+    assert jnp.allclose(eig_stable, jnp.asarray(-0.2 + 0.5j, dtype=v0.dtype))
+
+    with pytest.raises(RuntimeError, match="growth-selection floor"):
+        lk.dominant_eigenpair(
+            v0,
+            cache,
+            params,
+            terms=terms,
+            method="shift_invert",
+            shift=0.5j,
+            shift_source="reference",
+            shift_selection="growth",
+            fallback_method="none",
+            fallback_real_floor=0.0,
+        )
+
     # A rejected pair without a fallback must fail rather than escape as NaN.
-    with pytest.raises(RuntimeError, match="outer residual gate"):
+    monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", fake_shift)
+    with pytest.raises(RuntimeError, match="non-finite"):
         lk.dominant_eigenpair(
             v0,
             cache,

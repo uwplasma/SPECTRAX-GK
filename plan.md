@@ -213,7 +213,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
 | Docs/readme release pass | 100% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
-| CI/release hygiene | 100% | Preserve the green 24-shard 95% wide-coverage gate and its bounded logical-CPU supplements. |
+| CI/release hygiene | 99% | Confirm the stable-target Krylov acceptance fix in the next 24-shard run; preserve the bounded 95% package gate. |
 
 ## Prioritized Implementation Steps
 
@@ -1805,3 +1805,23 @@ under 5 minutes.
   rather than pushing ``workflows/linear.py`` above its 1,000-line budget. The
   architecture manifest again reports ``226/96/99`` source/test/tool files,
   zero complexity exceptions, and all topology targets met.
+
+- 2026-07-14: CI run ``29264009360`` exposed a selection-policy defect made
+  visible by the corrected shifted solve. A nearest-shift streaming mode passed
+  its physical residual gate (``0.0243 < 0.06``) but was rejected because the
+  growth floor was applied unconditionally. The floor now applies only to
+  growth-selected searches; nearest, overlap, and explicit-shift selections may
+  admit stable modes when finite and residual-converged. Distinct errors report
+  residual, growth-floor, and non-finite failures. The exact CI environment
+  passes both physical shift-invert tests, and the complete former shard 8
+  passes ``95`` tests in ``144.69 s`` under the unchanged 300-second cap.
+
+- 2026-07-14: Bounded full-resolution KBM continuation probes ruled out the
+  current time trajectory as a Krylov seed. Fixed RK4 at ``dt=1e-3`` is already
+  numerically unstable by ``t=0.2`` (state norm ``4.37e28`` and spurious fitted
+  growth ``613.7``). IMEX2 at ``dt=1e-4`` keeps the state norm bounded through
+  ``t=0.1`` but remains transient-dominated (fitted growth ``33.36``), and its
+  seeded GPU Arnoldi solve terminates in cuSolver rather than producing a
+  residual-qualified pair. No artifact or option was promoted. The next solver
+  action is a field-coupled complex preconditioner or better-conditioned
+  physical shifted solve, not additional time-seed sweeps.
