@@ -702,26 +702,11 @@ module = "spectraxgk.geometry.vmec_boundary_chain"
 source_path = "src/spectraxgk/geometry/vmec_boundary_chain.py"
 facade_module = "spectraxgk.api"
 status = "active"
-responsibility = "scalar VMEC-JAX boundary-chain probe classification and public collection summary assembly"
+responsibility = "scalar and collection-level VMEC-JAX boundary-chain classification, counts, decisions, and public summary assembly"
 moved_exports = [
   "boundary_chain_summary_from_probe",
   "build_boundary_chain_collection_summary",
   "build_boundary_chain_summary",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_transport_objectives.py", "tests/tools/artifacts/test_stellarator_artifact_tools.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry.vmec_boundary_collection"
-source_path = "src/spectraxgk/geometry/vmec_boundary_collection.py"
-facade_module = "spectraxgk.geometry.vmec_boundary_chain"
-status = "active"
-responsibility = "collection-level VMEC-JAX boundary-chain row, count, and decision policy for multi-probe promotion gates"
-moved_exports = [
-  "_boundary_chain_collection_counts",
-  "_boundary_chain_collection_decision",
-  "_collection_row",
-  "_empty_boundary_chain_counts",
 ]
 fast_tests = ["tests/unit/objectives/test_vmec_transport_objectives.py", "tests/tools/artifacts/test_stellarator_artifact_tools.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

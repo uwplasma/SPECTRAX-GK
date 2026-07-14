@@ -11,7 +11,6 @@ import math
 import pytest
 
 import spectraxgk
-import spectraxgk.geometry.vmec_boundary_collection as boundary_collection
 import spectraxgk.geometry.vmec_boundary_chain as boundary_chain
 from spectraxgk.geometry.vmec_boundary_chain import (
     boundary_chain_summary_from_probe,
@@ -55,15 +54,12 @@ def test_boundary_chain_error_and_pass_helpers_handle_optional_linear_values() -
 
 
 def test_boundary_chain_collection_helpers_have_canonical_owner() -> None:
-    assert boundary_chain._empty_boundary_chain_counts is (
-        boundary_collection._empty_boundary_chain_counts
-    )
-    assert boundary_chain._boundary_chain_collection_counts is (
-        boundary_collection._boundary_chain_collection_counts
-    )
-    assert boundary_chain._boundary_chain_collection_decision is (
-        boundary_collection._boundary_chain_collection_decision
-    )
+    for helper in (
+        boundary_chain._empty_boundary_chain_counts,
+        boundary_chain._boundary_chain_collection_counts,
+        boundary_chain._boundary_chain_collection_decision,
+    ):
+        assert helper.__module__ == "spectraxgk.geometry.vmec_boundary_chain"
 
 
 def test_boundary_chain_summary_classifies_frozen_axis_branch_sensitivity() -> None:

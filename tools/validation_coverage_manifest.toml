@@ -2512,7 +2512,6 @@ owned_modules = [
   "spectraxgk.objectives.stellarator",
   "spectraxgk.objectives.stellarator_contracts",
   "spectraxgk.geometry.vmec_boundary_chain",
-  "spectraxgk.geometry.vmec_boundary_collection",
   "spectraxgk.objectives.vmec_transport_gradient",
   "spectraxgk.objectives.vmec_transport_line_search",
   "spectraxgk.objectives.vmec_transport",
