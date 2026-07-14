@@ -2804,15 +2804,26 @@ def _second_line_payload() -> dict[str, object]:
     return payload
 
 
-def test_alpha_holdout_payload_uses_default_split(monkeypatch) -> None:
-    calls: dict[str, object] = {}
+def _capture_report_calls(monkeypatch, owner, name: str, report_factory):
+    """Patch one report owner and return every keyword-call snapshot."""
+
+    calls: list[dict[str, object]] = []
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _alpha_holdout_payload()
+        call = dict(kwargs)
+        calls.append(call)
+        return report_factory(call)
 
-    monkeypatch.setattr(
-        alpha_gate, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    monkeypatch.setattr(owner, name, fake_report)
+    return calls
+
+
+def test_alpha_holdout_payload_uses_default_split(monkeypatch) -> None:
+    calls = _capture_report_calls(
+        monkeypatch,
+        alpha_gate,
+        "vmec_boozer_aggregate_line_search_holdout_report",
+        lambda _call: _alpha_holdout_payload(),
     )
 
     payload = alpha_gate.build_vmec_boozer_aggregate_alpha_holdout_payload(
@@ -2823,21 +2834,18 @@ def test_alpha_holdout_payload_uses_default_split(monkeypatch) -> None:
     assert payload["passed"] is True
     assert payload["holdout_split"]["training_alphas"] == [0.0]
     assert payload["holdout_split"]["holdout_alphas"] == [0.5]
-    assert calls["training_selected_ky_indices"] == (1, 2)
-    assert calls["holdout_selected_ky_indices"] == (1, 2)
-    assert calls["mboz"] == 21
-    assert calls["nboz"] == 21
+    assert calls[0]["training_selected_ky_indices"] == (1, 2)
+    assert calls[0]["holdout_selected_ky_indices"] == (1, 2)
+    assert calls[0]["mboz"] == 21
+    assert calls[0]["nboz"] == 21
 
 
 def test_alpha_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _alpha_holdout_payload()
-
-    monkeypatch.setattr(
-        alpha_gate, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    calls = _capture_report_calls(
+        monkeypatch,
+        alpha_gate,
+        "vmec_boozer_aggregate_line_search_holdout_report",
+        lambda _call: _alpha_holdout_payload(),
     )
 
     result = alpha_gate.main(
@@ -2855,19 +2863,16 @@ def test_alpha_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
     )
 
     assert result == 0
-    assert calls["holdout_alphas"] == (0.25,)
-    assert calls["training_selected_ky_indices"] == (1, 2)
+    assert calls[0]["holdout_alphas"] == (0.25,)
+    assert calls[0]["training_selected_ky_indices"] == (1, 2)
 
 
 def test_surface_holdout_payload_contracts(monkeypatch) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _surface_holdout_payload()
-
-    monkeypatch.setattr(
-        surface_gate, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    calls = _capture_report_calls(
+        monkeypatch,
+        surface_gate,
+        "vmec_boozer_aggregate_line_search_holdout_report",
+        lambda _call: _surface_holdout_payload(),
     )
 
     payload = surface_gate.build_vmec_boozer_aggregate_surface_holdout_payload(
@@ -2880,8 +2885,8 @@ def test_surface_holdout_payload_contracts(monkeypatch) -> None:
     assert payload["blockers"] == []
     assert payload["holdout_split"]["training_surface_indices"] == [18]
     assert payload["holdout_split"]["holdout_surface_indices"] == [19]
-    assert calls["training_surface_indices"] == (18,)
-    assert calls["holdout_surface_indices"] == (19,)
+    assert calls[0]["training_surface_indices"] == (18,)
+    assert calls[0]["holdout_surface_indices"] == (19,)
 
 
 def test_surface_holdout_payload_fails_closed_on_execution_error(monkeypatch) -> None:
@@ -2904,14 +2909,11 @@ def test_surface_holdout_payload_fails_closed_on_execution_error(monkeypatch) ->
 
 
 def test_surface_holdout_payload_rejects_non_holdout_surface_split(monkeypatch) -> None:
-    calls: list[object] = []
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.append(kwargs)
-        return _surface_holdout_payload()
-
-    monkeypatch.setattr(
-        surface_gate, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    calls = _capture_report_calls(
+        monkeypatch,
+        surface_gate,
+        "vmec_boozer_aggregate_line_search_holdout_report",
+        lambda _call: _surface_holdout_payload(),
     )
 
     payload = surface_gate.build_vmec_boozer_aggregate_surface_holdout_payload(
@@ -2925,14 +2927,11 @@ def test_surface_holdout_payload_rejects_non_holdout_surface_split(monkeypatch) 
 
 
 def test_surface_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _surface_holdout_payload()
-
-    monkeypatch.setattr(
-        surface_gate, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    calls = _capture_report_calls(
+        monkeypatch,
+        surface_gate,
+        "vmec_boozer_aggregate_line_search_holdout_report",
+        lambda _call: _surface_holdout_payload(),
     )
 
     result = surface_gate.main(
@@ -2949,8 +2948,8 @@ def test_surface_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
     )
 
     assert result == 0
-    assert calls["training_surface_indices"] == (18,)
-    assert calls["holdout_surface_indices"] == (19,)
+    assert calls[0]["training_surface_indices"] == (18,)
+    assert calls[0]["holdout_surface_indices"] == (19,)
 
 
 @pytest.mark.parametrize(
@@ -2990,13 +2989,9 @@ def test_objective_gate_main_uses_report(
     command_args: list[str],
     expected: dict[str, object],
 ) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return payload_factory()
-
-    monkeypatch.setattr(objective_gate, report_name, fake_report)
+    calls = _capture_report_calls(
+        monkeypatch, objective_gate, report_name, lambda _call: payload_factory()
+    )
 
     result = objective_gate.main(
         [
@@ -3010,22 +3005,17 @@ def test_objective_gate_main_uses_report(
 
     assert result == 0
     for key, value in expected.items():
-        assert calls[key] == value
+        assert calls[0][key] == value
 
 
 def test_objective_gate_maps_physical_ky_and_torflux(
     monkeypatch, tmp_path: Path
 ) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _objective_payload()
-
-    monkeypatch.setattr(
+    calls = _capture_report_calls(
+        monkeypatch,
         objective_gate,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_report,
+        lambda _call: _objective_payload(),
     )
 
     result = objective_gate.main(
@@ -3040,9 +3030,9 @@ def test_objective_gate_maps_physical_ky_and_torflux(
         ]
     )
     assert result == 0
-    assert calls["selected_ky_indices"] == (1, 3, 5)
-    assert calls["ny"] == 12
-    assert calls["ly"] == pytest.approx(2.0 * np.pi / 0.1)
+    assert calls[-1]["selected_ky_indices"] == (1, 3, 5)
+    assert calls[-1]["ny"] == 12
+    assert calls[-1]["ly"] == pytest.approx(2.0 * np.pi / 0.1)
 
     result = objective_gate.main(
         [
@@ -3055,8 +3045,8 @@ def test_objective_gate_maps_physical_ky_and_torflux(
         ]
     )
     assert result == 0
-    assert calls["surface_indices"] == (None,)
-    assert calls["torflux_values"] == (0.5, 0.7)
+    assert calls[-1]["surface_indices"] == (None,)
+    assert calls[-1]["torflux_values"] == (0.5, 0.7)
 
     with pytest.raises(ValueError, match="torflux-values or --surface-indices"):
         objective_gate.main(
@@ -3082,19 +3072,17 @@ def test_physical_ky_annotation_adds_resolved_metadata() -> None:
 
 
 def test_comparison_report_uses_same_sample_set(monkeypatch) -> None:
-    calls: list[dict[str, object]] = []
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.append(dict(kwargs))
-        objective = str(kwargs["objective"])
+    def report_factory(call: dict[str, object]) -> dict[str, object]:
+        objective = str(call["objective"])
         if objective == "growth":
             return _line_search_payload(objective, 2.0, 0.30, 0.29)
         return _line_search_payload(objective, 5.0, 0.90, 0.88)
 
-    monkeypatch.setattr(
+    calls = _capture_report_calls(
+        monkeypatch,
         comparison_gate,
         "vmec_boozer_aggregate_scalar_objective_line_search_report",
-        fake_report,
+        report_factory,
     )
 
     payload = comparison_gate.build_vmec_boozer_aggregate_line_search_comparison_report(
@@ -3114,16 +3102,11 @@ def test_comparison_report_uses_same_sample_set(monkeypatch) -> None:
 
 
 def test_comparison_main_uses_report(monkeypatch, tmp_path: Path) -> None:
-    calls: list[dict[str, object]] = []
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.append(dict(kwargs))
-        return _line_search_payload(str(kwargs["objective"]), 1.0, 1.0, 0.9)
-
-    monkeypatch.setattr(
+    calls = _capture_report_calls(
+        monkeypatch,
         comparison_gate,
         "vmec_boozer_aggregate_scalar_objective_line_search_report",
-        fake_report,
+        lambda call: _line_search_payload(str(call["objective"]), 1.0, 1.0, 0.9),
     )
 
     result = comparison_gate.main(
@@ -3148,16 +3131,11 @@ def test_comparison_main_uses_report(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_multi_point_payload_contracts(monkeypatch) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _multi_point_payload()
-
-    monkeypatch.setattr(
+    calls = _capture_report_calls(
+        monkeypatch,
         multi_point_gate,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_report,
+        lambda _call: _multi_point_payload(),
     )
 
     payload = multi_point_gate.build_vmec_boozer_multi_point_objective_payload(
@@ -3170,24 +3148,19 @@ def test_multi_point_payload_contracts(monkeypatch) -> None:
     assert payload["multi_point_coverage"]["multi_alpha_or_surface"] is True
     assert payload["multi_point_coverage"]["n_samples_requested"] == 4
     assert payload["bounded_runtime"]["max_samples"] == 8
-    assert calls["surface_indices"] == (None,)
-    assert calls["alphas"] == (0.0, 0.5)
-    assert calls["selected_ky_indices"] == (1, 2)
-    assert calls["mboz"] == 21
-    assert calls["nboz"] == 21
+    assert calls[0]["surface_indices"] == (None,)
+    assert calls[0]["alphas"] == (0.0, 0.5)
+    assert calls[0]["selected_ky_indices"] == (1, 2)
+    assert calls[0]["mboz"] == 21
+    assert calls[0]["nboz"] == 21
 
 
 def test_multi_point_payload_accepts_two_surfaces(monkeypatch) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _multi_point_payload()
-
-    monkeypatch.setattr(
+    calls = _capture_report_calls(
+        monkeypatch,
         multi_point_gate,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_report,
+        lambda _call: _multi_point_payload(),
     )
 
     payload = multi_point_gate.build_vmec_boozer_multi_point_objective_payload(
@@ -3199,22 +3172,17 @@ def test_multi_point_payload_accepts_two_surfaces(monkeypatch) -> None:
 
     assert payload["multi_point_coverage"]["surface_indices"] == [3, 5]
     assert payload["multi_point_coverage"]["n_samples_requested"] == 2
-    assert calls["surface_indices"] == (3, 5)
-    assert calls["alphas"] == (0.0,)
-    assert calls["selected_ky_indices"] == (1,)
+    assert calls[0]["surface_indices"] == (3, 5)
+    assert calls[0]["alphas"] == (0.0,)
+    assert calls[0]["selected_ky_indices"] == (1,)
 
 
 def test_multi_point_main_uses_report_and_bounds(monkeypatch, tmp_path: Path) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_report(**kwargs):  # noqa: ANN003, ANN202
-        calls.update(kwargs)
-        return _multi_point_payload()
-
-    monkeypatch.setattr(
+    calls = _capture_report_calls(
+        monkeypatch,
         multi_point_gate,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_report,
+        lambda _call: _multi_point_payload(),
     )
 
     result = multi_point_gate.main(
@@ -3236,9 +3204,9 @@ def test_multi_point_main_uses_report_and_bounds(monkeypatch, tmp_path: Path) ->
     )
 
     assert result == 0
-    assert calls["surface_indices"] == (3, 5)
-    assert calls["alphas"] == (0.0,)
-    assert calls["selected_ky_indices"] == (1,)
+    assert calls[0]["surface_indices"] == (3, 5)
+    assert calls[0]["alphas"] == (0.0,)
+    assert calls[0]["selected_ky_indices"] == (1,)
 
 
 @pytest.mark.parametrize(
@@ -3280,25 +3248,17 @@ def test_multi_point_main_rejects_invalid_coverage(
 
 
 def test_second_equilibrium_payload_passes_with_mode21_defaults(monkeypatch) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_fd(**kwargs):  # noqa: ANN003, ANN202
-        calls["fd"] = kwargs
-        return _second_fd_payload()
-
-    def fake_line(**kwargs):  # noqa: ANN003, ANN202
-        calls["line"] = kwargs
-        return _second_line_payload()
-
-    monkeypatch.setattr(
+    fd_calls = _capture_report_calls(
+        monkeypatch,
         second_gate,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_fd,
+        lambda _call: _second_fd_payload(),
     )
-    monkeypatch.setattr(
+    line_calls = _capture_report_calls(
+        monkeypatch,
         second_gate,
         "vmec_boozer_aggregate_scalar_objective_line_search_report",
-        fake_line,
+        lambda _call: _second_line_payload(),
     )
 
     payload = second_gate.build_vmec_boozer_second_equilibrium_aggregate_payload(
@@ -3317,9 +3277,9 @@ def test_second_equilibrium_payload_passes_with_mode21_defaults(monkeypatch) -> 
     assert payload["coverage"]["selected_ky_indices"] == [1, 2]
     assert payload["finite_difference_summary"]["central_derivative"] == -1.0e5
     assert payload["line_search_summary"]["accepted_steps"] == 1
-    assert calls["fd"]["mboz"] == 21
-    assert calls["fd"]["nboz"] == 21
-    assert calls["line"]["case_name"] == "li383_low_res"
+    assert fd_calls[0]["mboz"] == 21
+    assert fd_calls[0]["nboz"] == 21
+    assert line_calls[0]["case_name"] == "li383_low_res"
 
 
 def test_second_equilibrium_payload_fails_closed_on_backend_error(monkeypatch) -> None:
@@ -3344,25 +3304,17 @@ def test_second_equilibrium_payload_fails_closed_on_backend_error(monkeypatch) -
 
 
 def test_second_equilibrium_json_only_uses_reports(monkeypatch, capsys) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_fd(**kwargs):  # noqa: ANN003, ANN202
-        calls["fd"] = kwargs
-        return _second_fd_payload()
-
-    def fake_line(**kwargs):  # noqa: ANN003, ANN202
-        calls["line"] = kwargs
-        return _second_line_payload()
-
-    monkeypatch.setattr(
+    fd_calls = _capture_report_calls(
+        monkeypatch,
         second_gate,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
-        fake_fd,
+        lambda _call: _second_fd_payload(),
     )
-    monkeypatch.setattr(
+    line_calls = _capture_report_calls(
+        monkeypatch,
         second_gate,
         "vmec_boozer_aggregate_scalar_objective_line_search_report",
-        fake_line,
+        lambda _call: _second_line_payload(),
     )
 
     result = second_gate.main(
@@ -3382,8 +3334,8 @@ def test_second_equilibrium_json_only_uses_reports(monkeypatch, capsys) -> None:
     assert result == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["passed"] is True
-    assert calls["fd"]["case_name"] == "nfp3_QI_fixed_resolution_final"
-    assert calls["line"]["selected_ky_indices"] == (1, 2)
+    assert fd_calls[0]["case_name"] == "nfp3_QI_fixed_resolution_final"
+    assert line_calls[0]["selected_ky_indices"] == (1, 2)
 
 
 @pytest.mark.parametrize(
