@@ -2494,6 +2494,34 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
     assert np.count_nonzero(np.abs(code_convention) > 1.0e-14) > np.count_nonzero(
         published_entries
     )
+
+    same_test, same_field = mod.coulomb_nonpolarized_moment_matrices(
+        1,
+        0,
+        0.4,
+        2.0,
+        0.8,
+        source_kperp_rho=0.4,
+        maximum_spherical_order=2,
+        maximum_spherical_radial_order=1,
+        maximum_bessel_laguerre_order=3,
+        digits=60,
+    )
+    unequal_test, unequal_field = mod.coulomb_nonpolarized_moment_matrices(
+        1,
+        0,
+        0.4,
+        2.0,
+        0.8,
+        source_kperp_rho=0.9,
+        maximum_spherical_order=2,
+        maximum_spherical_radial_order=1,
+        maximum_bessel_laguerre_order=3,
+        digits=60,
+    )
+    np.testing.assert_allclose(unequal_test, same_test, rtol=0.0, atol=1.0e-14)
+    assert np.linalg.norm(unequal_field - same_field) > 5.0e-2
+
     for args, message in (
         ((-1, 1, 0.0, 1.0, 1.0), "maximum_hermite_order"),
         ((1, -1, 0.0, 1.0, 1.0), "maximum_laguerre_order"),
@@ -2514,6 +2542,10 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
     with pytest.raises(ValueError, match="maximum_spherical_radial_order"):
         mod.coulomb_nonpolarized_moment_matrices(
             1, 1, 0.0, 1.0, 1.0, maximum_spherical_radial_order=-1
+        )
+    with pytest.raises(ValueError, match="source_kperp_rho"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            1, 1, 0.0, 1.0, 1.0, source_kperp_rho=-1.0
         )
     with pytest.raises(ValueError, match="digits"):
         mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)

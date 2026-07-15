@@ -471,7 +471,11 @@ the Coulomb contractions.
 
 The offline generator now contracts equations (3.48)--(3.49) into complete
 finite-:math:`b` test- and field-particle matrices with explicit Hermite,
-Laguerre, spherical-harmonic, and Bessel truncations. At :math:`b=0`, every
+Laguerre, spherical-harmonic, and Bessel truncations. Unlike-species generation
+keeps :math:`b_a=k_\perp\rho_a` in the test and outer gyroaverage factors and
+:math:`b_b=k_\perp\rho_b` in the field-particle source moments; a regression
+holds :math:`b_a` fixed and verifies that only the field block changes with
+:math:`b_b`. At :math:`b=0`, every
 published nonzero six-moment Coulomb entry is recovered. The larger generated
 block is symmetric to ``8.33e-17``, negative semidefinite, and preserves
 density, parallel momentum, and thermal energy within ``3.3e-16``. Equation

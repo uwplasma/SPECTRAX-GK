@@ -1130,10 +1130,11 @@ def gyroaveraged_polarization_coefficient(
 def coulomb_nonpolarized_moment_matrices(
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
-    kperp_rho: float,
+    target_kperp_rho: float,
     mass_ratio: float,
     temperature_ratio: float,
     *,
+    source_kperp_rho: float | None = None,
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
@@ -1144,16 +1145,23 @@ def coulomb_nonpolarized_moment_matrices(
     This contracts equations (3.48)--(3.49) of Frei et al. (2021), excluding
     the electrostatic polarization terms in equation (3.50).  Rows and columns
     use Hermite-major ``p * Nl + j`` ordering and the paper's Laguerre
-    convention.  Every finite truncation is explicit so convergence can be
-    assessed before a table is promoted.
+    convention. ``target_kperp_rho`` enters the outer gyroaverage and the test
+    moments; ``source_kperp_rho`` enters the field-particle source moments and
+    defaults to the target value for like species. Every finite truncation is
+    explicit so convergence can be assessed before a table is promoted.
     """
 
     if maximum_hermite_order < 0:
         raise ValueError("maximum_hermite_order must be >= 0")
     if maximum_laguerre_order < 0:
         raise ValueError("maximum_laguerre_order must be >= 0")
-    if not math.isfinite(kperp_rho) or kperp_rho < 0.0:
-        raise ValueError("kperp_rho must be finite and >= 0")
+    if not math.isfinite(target_kperp_rho) or target_kperp_rho < 0.0:
+        raise ValueError("target_kperp_rho must be finite and >= 0")
+    source_kperp_rho = (
+        target_kperp_rho if source_kperp_rho is None else source_kperp_rho
+    )
+    if not math.isfinite(source_kperp_rho) or source_kperp_rho < 0.0:
+        raise ValueError("source_kperp_rho must be finite and >= 0")
     if mass_ratio <= 0.0 or not math.isfinite(mass_ratio):
         raise ValueError("mass_ratio must be finite and > 0")
     if temperature_ratio <= 0.0 or not math.isfinite(temperature_ratio):
@@ -1182,14 +1190,15 @@ def coulomb_nonpolarized_moment_matrices(
     n_laguerre = maximum_laguerre_order + 1
     n_modes = (maximum_hermite_order + 1) * n_laguerre
     with mp.workdps(digits):
-        b = mp.mpf(kperp_rho)
+        target_b = mp.mpf(target_kperp_rho)
+        source_b = mp.mpf(source_kperp_rho)
         sigma = mp.mpf(mass_ratio)
         tau = mp.mpf(temperature_ratio)
-        half_b = b / 2
+        half_b = target_b / 2
         bessel_argument = half_b * half_b
         test_matrix = mp.matrix(n_modes, n_modes)
         field_matrix = mp.matrix(n_modes, n_modes)
-        moment_cache: dict[tuple[int, int, int, int, int], Any] = {}
+        moment_cache: dict[tuple[bool, int, int, int, int, int], Any] = {}
         speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
 
         def spherical_moment(
@@ -1198,8 +1207,10 @@ def coulomb_nonpolarized_moment_matrices(
             m: int,
             g: int,
             s: int,
+            *,
+            source: bool,
         ) -> Any:
-            key = (p, j, m, g, s)
+            key = (source, p, j, m, g, s)
             if key not in moment_cache:
                 moment_cache[key] = _gyroaveraged_spherical_moment_coefficient_mp(
                     p,
@@ -1207,7 +1218,7 @@ def coulomb_nonpolarized_moment_matrices(
                     m,
                     g,
                     s,
-                    b,
+                    source_b if source else target_b,
                     maximum_bessel_laguerre_order,
                     mp,
                 )
@@ -1262,12 +1273,34 @@ def coulomb_nonpolarized_moment_matrices(
                             / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
                         )
                         for m in range(p + 1):
-                            moment_vector = [
-                                spherical_moment(p, j, m, input_hermite, input_laguerre)
+                            test_moment_vector = [
+                                spherical_moment(
+                                    p,
+                                    j,
+                                    m,
+                                    input_hermite,
+                                    input_laguerre,
+                                    source=False,
+                                )
                                 for input_hermite in range(maximum_hermite_order + 1)
                                 for input_laguerre in range(n_laguerre)
                             ]
-                            if not any(value != 0 for value in moment_vector):
+                            field_moment_vector = [
+                                spherical_moment(
+                                    p,
+                                    j,
+                                    m,
+                                    input_hermite,
+                                    input_laguerre,
+                                    source=True,
+                                )
+                                for input_hermite in range(maximum_hermite_order + 1)
+                                for input_laguerre in range(n_laguerre)
+                            ]
+                            if not any(
+                                value != 0
+                                for value in test_moment_vector + field_moment_vector
+                            ):
                                 continue
                             angular = (1 if m == 0 else 2) * angular_base
                             for n in range(maximum_bessel_laguerre_order + 1):
@@ -1327,11 +1360,17 @@ def coulomb_nonpolarized_moment_matrices(
                                             * bessel_factor
                                             / output_normalization
                                         )
-                                        for column, moment in enumerate(moment_vector):
-                                            if moment != 0:
+                                        for column, moment in enumerate(
+                                            test_moment_vector
+                                        ):
+                                            if moment != 0 and test_speed != 0:
                                                 test_matrix[row, column] += (
                                                     common * moment * test_speed
                                                 )
+                                        for column, moment in enumerate(
+                                            field_moment_vector
+                                        ):
+                                            if moment != 0 and field_speed != 0:
                                                 field_matrix[row, column] += (
                                                     common * moment * field_speed
                                                 )

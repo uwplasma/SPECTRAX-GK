@@ -341,6 +341,12 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-15: Corrected unlike-species finite-wavelength Coulomb generation.
+  The test-particle block and outer gyroaverage use target :math:`b_a`, while
+  the field-particle moment map uses source :math:`b_b`, as required by
+  equations (3.48)--(3.49). A held-target regression changes :math:`b_b` and
+  verifies that the test block is unchanged while the field block responds.
+
 - 2026-07-14: Added the tracked Coulomb operator closure artifact. One command
   writes a 228-KB publication panel and strict JSON covering finite-:math:`b`
   Bessel convergence, five independent manufactured velocity projections,
