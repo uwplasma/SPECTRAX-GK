@@ -680,6 +680,18 @@ polarization coefficient. Runtime promotion still requires multispecies
 quasineutrality assembly, finite-:math:`b` truncation scans, and transport
 benchmarks.
 
+The tracked ``collision_operator_verification.json`` and matching panel in
+:doc:`operators` turn this into a numerical gate rather than a visual claim.
+The present level covers arbitrary-precision coefficient generation, direct
+manufactured velocity-space projection, Bessel-sum convergence, the three
+collision-invariant null modes, and non-positive entropy production. The next
+levels are intentionally sequential: Hermite/Laguerre/spherical truncation of
+the assembled runtime table; multispecies field coupling; Spitzer--Härm and
+Braginskii transport; collision-frequency and velocity-resolution convergence;
+finite-:math:`b` ITG; and collisionless versus collisional zonal response.
+Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
+a substitute for the Hinton--Rosenbluth collisional damping test.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the

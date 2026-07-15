@@ -203,12 +203,12 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
-| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. The existing linear-validation owner now includes the multiprecision Coulomb speed-integral, associated-Laguerre coefficient, and isotropic/finite-m Hermite--Legendre transform generator; no tool was added. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted, and the enforced 95-tool target is met at 90,416 lines. |
-| Test consolidation | 100% | The enforced 95-file topology target and 95% package-wide coverage gate are met; the suite has 93,341 lines after adding ordered-pair interpolation, full-RHS tabulated-collision, and independent finite-Larmor kernel/projection/reconstruction, Coulomb speed-integral/moment, generalized-Laguerre, velocity-projection, finite-m parity-block/analytic-inverse, Laguerre-product, gyroaveraged-spherical-moment, inverse-shell, and high-condition gates. Current-API campaign contracts replaced compatibility tests, status-dashboard metrics moved to mapping-subset assertions, installed-wheel/nonlinear-gate/Miller-cache regressions were added, and repeated runtime, geometry, objective, diagnostic, and artifact setup moved to shared fixtures. Large objective, parallel, artifact, and comparison owners retain domain-local scientific cases and one import boundary. An AST/fan-in audit found that the remaining repeated two-line tool loaders intentionally reload monkeypatch-heavy scripts per test; centralizing them would leak state or add indirection without reducing setup. The planned test-normalization lane is closed: future reductions must remove a demonstrated duplicate contract, never a physics, convergence, failure-mode, or coverage gate. |
+| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. The existing linear-validation owner now includes the multiprecision Coulomb generator and its paper-facing verification artifact; no tool was added. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted, and the enforced 95-tool target is met at 90,781 lines. |
+| Test consolidation | 100% | The enforced 95-file topology target and 95% package-wide coverage gate are met; the suite has 93,368 lines after adding ordered-pair interpolation, full-RHS tabulated-collision, and independent finite-Larmor kernel/projection/reconstruction, Coulomb speed-integral/moment, generalized-Laguerre, velocity-projection, finite-m parity-block/analytic-inverse, Laguerre-product, gyroaveraged-spherical-moment, inverse-shell, high-condition, and publication-artifact gates. Current-API campaign contracts replaced compatibility tests, status-dashboard metrics moved to mapping-subset assertions, installed-wheel/nonlinear-gate/Miller-cache regressions were added, and repeated runtime, geometry, objective, diagnostic, and artifact setup moved to shared fixtures. Large objective, parallel, artifact, and comparison owners retain domain-local scientific cases and one import boundary. An AST/fan-in audit found that the remaining repeated two-line tool loaders intentionally reload monkeypatch-heavy scripts per test; centralizing them would leak state or add indirection without reducing setup. The planned test-normalization lane is closed: future reductions must remove a demonstrated duplicate contract, never a physics, convergence, failure-mode, or coverage gate. |
 | Source consolidation | 100% | The zero-exception architecture gate passes at 218 installable modules after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver/cache/workflow/gradient/nonlinear-report policy, and removing private compatibility exports and obsolete optimizer adapters from solver, operator, VMEC transport, and nonlinear-parallel facades. The package has 87,224 lines after adding ordered-pair collision-table interpolation, its protocol operator, and the exact Bessel--Laguerre finite-Larmor expansion primitives without adding modules; no inert merged-module strings or module at the 1,000-line ceiling remains. Single-consumer QA, stellarator residual, growth-series, and VMEC boundary-chain policy splits have been consolidated into 653-, 637-, 580-, and 730-line owners. Reusable contracts, fit/window algorithms, tables, tensor mappings, and solved-state sensitivity retain separate owners because they have independent consumers or numerical responsibilities. The planned source simplification lane is closed; future merges require new fan-in evidence and must not trade domain clarity for file-count reduction. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence. Retained-Ritz, one- and two-sided Jacobi--Davidson, ordered-Schur thick restart, alternative seeds, nested field solves, and explicit field blocks with diagonal/Hermite complements were physically rejected. KBM remains on validated time integration; future acceleration requires a different branch-preserving interior spectral transformation. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
-| Advanced collision operators | 99.5% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, and device-side finite-b interpolation support shared, per-species, and ordered target/source pair tables with target-species spatial kperp fields. A JAX-pytree tabulated operator derives kperp from the real cache and is full-RHS identical to the reduced Sugama protocol for a constant pair table; JIT/JVP/application and zero-kperp multispecies invariant gates pass. The exact Bessel--Laguerre kernel, arbitrary-order associated expansion coefficients, Appendix-A Coulomb speed integrals and integrated test/field moments, generalized-Laguerre monomial and product coefficients, isotropic/finite-m Hermite--Legendre transforms, and the finite-b gyro-moment-to-spherical-moment map from the primary papers pass independent projection, reconstruction, improper-quadrature, truncation, high-condition inverse, JIT, and derivative gates. The finite-m generator retains all lower parity shells, applies the independently required 2(-1)^m convention factor, and inverts complete 80-digit blocks after rejecting the inconsistent printed inverse. Held-out matrices from the physical finite-b Dougherty-like operator recover second-order interpolation convergence. Assemble the generated matrices and polarization vectors through multispecies quasineutrality next, then require conductivity, ITG, zonal, and velocity-resolution promotion gates. |
+| Advanced collision operators | 99.6% | The shipped model has independent drift-kinetic and finite-b equation, invariant, dissipation, asymptotic, and AD gates. Published drift-kinetic original/improved-Sugama and Coulomb low-order matrices pass exact coefficient, null-space, symmetry, dissipation, invariant, and derivative gates. Ordered pairs support unequal mass/temperature species, conserve physical multispecies invariants, and approach the original-Sugama collision null space in a time-domain relaxation gate. The improved correction passes its independent equal-species endpoint, matrix-wide equal-temperature dissipation, and heat-flow proximity-to-Coulomb gates. An 80-digit generator, checksummed package table, and device-side finite-b interpolation support shared, per-species, and ordered target/source pair tables with target-species spatial kperp fields. A JAX-pytree tabulated operator derives kperp from the real cache and is full-RHS identical to the reduced Sugama protocol for a constant pair table; JIT/JVP/application and zero-kperp multispecies invariant gates pass. The exact Bessel--Laguerre kernel, arbitrary-order associated expansion coefficients, Appendix-A Coulomb speed integrals and integrated test/field moments, generalized-Laguerre monomial and product coefficients, isotropic/finite-m Hermite--Legendre transforms, and the finite-b gyro-moment-to-spherical-moment map from the primary papers pass independent projection, reconstruction, improper-quadrature, truncation, high-condition inverse, JIT, and derivative gates. The complete offline Coulomb blocks now have a machine-readable publication artifact covering finite-b spectral convergence, direct velocity-space projection, published coefficients, symmetry, invariant nulls, and the H-theorem. Assemble those matrices and polarization vectors through multispecies quasineutrality next, then require conductivity, ITG, zonal, and velocity-resolution promotion gates. |
 | Nonlinear GPU performance | 97% | The bracket has one numerical owner and a clean A4000 profile; an identity-breaking FFT-layout rewrite was rejected. Require fresh identity and memory evidence for every future optimization. |
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
@@ -267,6 +267,59 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
    release tests, package build, docs build, package-wide coverage gate, then bump
    version and tag only when CI is green.
 
+## Collision Verification And Promotion Plan
+
+Collision validation follows the physical hierarchy in [Abel et al.
+(2008)](https://arxiv.org/abs/0808.1300), the numerical tests in [Barnes et al.
+(2009)](https://arxiv.org/abs/0809.3945), and the Hermite--Laguerre Coulomb
+implementation and figures in [Frei et al.
+(2021)](https://arxiv.org/abs/2104.11480) and [Frei, Ernst & Ricci
+(2022)](https://arxiv.org/abs/2202.06293). A lower-level pass never substitutes
+for a higher-level physical result.
+
+1. **Operator algebra and MMS/projection (closed).** Generate equations
+   (3.41) and (3.48)--(3.50) at arbitrary precision. Require independent
+   Gauss--Hermite/Laguerre velocity projection, reconstruction of manufactured
+   moment states, published low-order coefficients, Maxwellian/density nulls,
+   total momentum and energy invariants, adjointness, and non-positive entropy
+   production. The tracked JSON/PNG artifact passes all six numerical gates.
+2. **Finite-truncation convergence (operator closed; runtime pending).** Track
+   Bessel--Laguerre convergence at finite :math:`k_\perp\rho`, then repeat the
+   assembled operator over increasing Hermite, Laguerre, spherical, and Bessel
+   cutoffs. Require stable low-order matrix entries, invariant residuals, and
+   entropy spectrum. Runtime tables are admitted only where interpolation and
+   truncation errors are separately below the stated tolerance.
+3. **Multispecies runtime assembly.** Couple the four polarization vectors
+   through quasineutrality without collapsing target/source
+   :math:`q_s\phi/T_s` factors. Require ordered-pair particle conservation,
+   total momentum/energy conservation, equal-species cancellation, JIT/JVP/VJP,
+   CPU/GPU identity, and direct agreement between generated and runtime blocks.
+4. **Strongly collisional transport.** Reproduce Spitzer--Härm parallel
+   conductivity and the Braginskii/Chapman--Enskog friction, heat-flow, and
+   viscosity coefficients as resolution scans. Use the Coulomb value as the
+   reference and retain the published finding that improved Sugama approaches
+   it within about 1%; do not infer this limit from matrix proximity alone.
+5. **Weakly collisional kinetic limit.** Scan collision frequency toward zero
+   and require continuous recovery of collisionless growth/frequency while
+   resolving the Hermite--Laguerre tail. Track the spectral cutoff and entropy
+   dissipation rather than adding artificial damping. Reproduce the exponential
+   velocity-resolution trend and its deterioration at low collisionality shown
+   by Frei et al., Figure 9.
+6. **Integrated ITG gate.** Reproduce the slab finite-b ITG scan of Frei et
+   al., Figures 4--5, including the short-wavelength polarization sensitivity,
+   with at least the paper's converged :math:`(P,J)=(20,8)` endpoint. Compare
+   drift-kinetic, finite-b Coulomb, original Sugama, and improved Sugama under
+   identical geometry, normalization, and branch tracking.
+7. **Zonal-response gates.** Keep the collisionless Rosenbluth--Hinton residual
+   separate from Hinton--Rosenbluth collisional damping. Reproduce the
+   drift-kinetic damping trace, late-time Hermite--Laguerre spectrum, and
+   finite-b radial-wavenumber comparison in Frei et al., Figures 6--8. Admit a
+   claim only after damping-window and velocity-resolution convergence.
+8. **Publication and release.** Put the algebra/convergence panel in README and
+   all operator, transport, ITG, and zonal panels in the collision docs. Promote
+   the full operator to input files only after steps 3--7 pass; until then it
+   remains an explicitly scoped Python research boundary.
+
 ## GX-Informed Gap Assessment
 
 The source audit at revision `bc2fe552` is a design input, not a mandate to
@@ -287,6 +340,14 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-14: Added the tracked Coulomb operator closure artifact. One command
+  writes a 228-KB publication panel and strict JSON covering finite-:math:`b`
+  Bessel convergence, five independent manufactured velocity projections,
+  published coefficients, symmetry, three invariant nulls, and the H-theorem.
+  All six gates pass; README and the operator/numerics docs state explicitly
+  that Braginskii/Spitzer transport, collisional ITG, and zonal damping remain
+  runtime promotion gates.
 
 - 2026-07-14: Completed the offline finite-:math:`b` Coulomb algebra from Frei
   et al. (2021), equations (3.41) and (3.48)--(3.50). Test and field matrices

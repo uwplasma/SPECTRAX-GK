@@ -482,6 +482,47 @@ Equation (3.50) remains four separate vectors multiplying
 species; like-species test/field polarization cancels. This closes the offline
 algebra, not runtime multispecies assembly or transport promotion.
 
+The reproducible algebra/convergence artifact is generated with
+
+.. code-block:: console
+
+   python tools/artifacts/build_linear_validation_artifacts.py collision-verification
+
+.. figure:: _static/collision_operator_verification.png
+   :alt: Coulomb collision operator convergence, projection, entropy, and matrix gates
+   :width: 100%
+
+   **Offline Coulomb-operator closure.** Panel (a) shows spectral convergence
+   of a finite-:math:`b` polarization coefficient to a 24-term reference;
+   panel (b) compares five generated coefficients with independent
+   80-by-80 Gauss--Hermite/Laguerre velocity projection; panel (c) shows five
+   dissipative modes and the three density, parallel-momentum, and thermal-
+   energy null modes; panel (d) exposes the complete retained drift-kinetic
+   moment block. The machine-readable gate is stored beside the figure in
+   ``collision_operator_verification.json``.
+
+The largest direct-projection relative error is :math:`3.2\times10^{-13}`;
+the published-coefficient, symmetry, and invariant residuals are at or below
+:math:`1.2\times10^{-16}`. These checks implement the conservation,
+Maxwellian-null, adjointness, and H-theorem requirements emphasized by
+`Abel et al. (2008) <https://arxiv.org/abs/0808.1300>`_ and the
+finite-:math:`b` moment algebra of
+`Frei et al. (2021) <https://arxiv.org/abs/2104.11480>`_. The quadrature check
+is a deterministic manufactured-projection test: it verifies the generated
+operator against its continuous velocity-space definition, independently of
+the symbolic contraction path.
+
+Physical promotion is deliberately stricter. After multispecies
+quasineutrality is assembled, the operator must reproduce Spitzer--Härm/
+Braginskii transport, the weakly collisional Hermite--Laguerre convergence and
+finite-:math:`b` ITG scans, and the separately defined collisionless
+Rosenbluth--Hinton residual and Hinton--Rosenbluth collisional damping traces.
+The target resolutions, observables, and figure protocols follow Figures
+4--9 of Frei et al. (2021) and the conductivity study of
+`Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_. Until those
+runtime gates pass, the panel supports operator algebra and numerical closure,
+not a production Landau-transport claim.
+
 The lowest-order multispecies drift-kinetic boundary is also implemented
 without assuming equal species. For an ordered pair :math:`(a,b)`,
 ``drift_kinetic_sugama_pair_matrices`` evaluates Appendix C, equations

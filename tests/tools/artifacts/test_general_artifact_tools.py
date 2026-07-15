@@ -2624,6 +2624,33 @@ def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None
         mod.coulomb_polarization_vectors(0, 0, 0.0, 0.0, 1.0, 1.0, digits=10)
 
 
+def test_coulomb_operator_verification_artifact_closes_physical_gates(
+    tmp_path: Path,
+) -> None:
+    """The paper-facing Coulomb panel must remain gated and reproducible."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    out_json = tmp_path / "collision_verification.json"
+    out_png = tmp_path / "collision_verification.png"
+    summary = mod.write_coulomb_operator_verification_artifacts(
+        out_json,
+        out_png,
+        digits=60,
+    )
+
+    assert summary["gate_passed"] is True
+    assert all(summary["gates"].values())
+    assert summary["claim_scope"] == "offline_operator_algebra_not_runtime_transport"
+    assert np.asarray(summary["matrix"]).shape == (8, 8)
+    assert len(summary["eigenvalues"]) == 8
+    assert sum(abs(value) < 5.0e-13 for value in summary["eigenvalues"]) == 3
+    assert summary["metrics"]["maximum_projection_relative_error"] < 5.0e-10
+    assert summary["metrics"]["maximum_invariant_residual"] < 5.0e-13
+    assert summary["metrics"]["maximum_eigenvalue"] < 1.0e-12
+
+    assert json.loads(out_json.read_text())["gate_passed"] is True
+    assert out_png.stat().st_size > 100_000
+
+
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
     mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"

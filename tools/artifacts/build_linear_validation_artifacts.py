@@ -3,6 +3,8 @@
 
 Subcommands:
   collision-table Generate checked high-precision collision coefficient data.
+  collision-verification
+                  Build the Coulomb algebra/convergence verification panel.
   figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
@@ -65,6 +67,12 @@ DEFAULT_COLLISION_TABLE = (
     REPO_ROOT / "src" / "spectraxgk" / "data" / "advanced_collision_six_moment.npy"
 )
 DEFAULT_COLLISION_METADATA = DEFAULT_COLLISION_TABLE.with_suffix(".json")
+DEFAULT_COLLISION_VERIFICATION_JSON = (
+    REPO_ROOT / "docs" / "_static" / "collision_operator_verification.json"
+)
+DEFAULT_COLLISION_VERIFICATION_PNG = (
+    REPO_ROOT / "docs" / "_static" / "collision_operator_verification.png"
+)
 
 
 def _coulomb_e_mp(order: int, chi: Any, mp: Any) -> Any:
@@ -1583,6 +1591,326 @@ def coulomb_polarization_vectors(
     return vectors
 
 
+def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str, Any]:
+    r"""Build equation, convergence, conservation, and entropy gates.
+
+    This is an offline verification artifact for Frei et al. (2021), equations
+    (3.41) and (3.48)--(3.50).  It deliberately stops short of transport claims:
+    those require the generated blocks to be coupled through the runtime field
+    solve and quasineutrality relation.
+    """
+
+    from scipy.special import eval_genlaguerre, jv, lpmv
+
+    truncation_orders = np.asarray((0, 1, 2, 3, 4, 6, 8, 12), dtype=int)
+    reference_order = 24
+    truncation_values = np.asarray(
+        [
+            gyroaveraged_polarization_coefficient(
+                3,
+                1,
+                1,
+                1.8,
+                maximum_bessel_laguerre_order=int(order),
+                digits=digits,
+            )
+            for order in truncation_orders
+        ]
+    )
+    reference_value = gyroaveraged_polarization_coefficient(
+        3,
+        1,
+        1,
+        1.8,
+        maximum_bessel_laguerre_order=reference_order,
+        digits=digits,
+    )
+    truncation_errors = np.abs(truncation_values - reference_value) / max(
+        abs(reference_value), np.finfo(float).tiny
+    )
+
+    parallel, parallel_weights = np.polynomial.hermite.hermgauss(80)
+    perpendicular, perpendicular_weights = np.polynomial.laguerre.laggauss(80)
+    x_parallel = parallel[:, None]
+    x_perpendicular = perpendicular[None, :]
+    speed = np.sqrt(x_parallel**2 + x_perpendicular)
+    pitch = x_parallel / speed
+    projection_cases = (
+        (0, 0, 0, 0.7),
+        (1, 0, 1, 0.7),
+        (2, 0, 0, 0.7),
+        (2, 0, 2, 0.7),
+        (3, 1, 1, 1.2),
+    )
+    projection_labels: list[str] = []
+    projection_errors: list[float] = []
+    for spherical_order, radial_order, bessel_order, b_value in projection_cases:
+        generated = gyroaveraged_polarization_coefficient(
+            spherical_order,
+            radial_order,
+            bessel_order,
+            b_value,
+            maximum_bessel_laguerre_order=14,
+            digits=digits,
+        )
+        spherical_basis = (
+            speed**spherical_order
+            * lpmv(bessel_order, spherical_order, pitch)
+            * eval_genlaguerre(
+                radial_order,
+                spherical_order + 0.5,
+                speed**2,
+            )
+        )
+        projected = np.sum(
+            parallel_weights[:, None]
+            * perpendicular_weights[None, :]
+            * spherical_basis
+            * jv(0, b_value * np.sqrt(x_perpendicular))
+            * jv(bessel_order, b_value * np.sqrt(x_perpendicular))
+        ) / np.sqrt(np.pi)
+        projection_labels.append(
+            rf"$\Pi^{{{spherical_order},{radial_order},{bessel_order}}}$"
+        )
+        projection_errors.append(
+            float(abs(generated - projected) / max(abs(projected), 1.0e-14))
+        )
+
+    test_matrix, field_matrix = coulomb_nonpolarized_moment_matrices(
+        3,
+        1,
+        0.0,
+        1.0,
+        1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        maximum_bessel_laguerre_order=0,
+        digits=digits,
+    )
+    laguerre_sign = np.asarray(
+        [(-1.0) ** laguerre for _hermite in range(4) for laguerre in range(2)]
+    )
+    collision_matrix = (
+        laguerre_sign[:, None]
+        * laguerre_sign[None, :]
+        * (test_matrix + field_matrix)
+    )
+    symmetric_matrix = 0.5 * (collision_matrix + collision_matrix.T)
+    eigenvalues = np.linalg.eigvalsh(symmetric_matrix)
+    published = build_collision_table(digits=digits)[2]
+    published_mask = published != 0.0
+
+    invariants = {
+        "density": np.eye(8)[0],
+        "parallel_momentum": np.eye(8)[2],
+        "thermal_energy": np.asarray(
+            [0.0, 1.0, 0.0, 0.0, 1.0 / np.sqrt(2), 0.0, 0.0, 0.0]
+        ),
+    }
+    invariant_residuals = {
+        name: float(np.linalg.norm(collision_matrix @ vector, ord=np.inf))
+        for name, vector in invariants.items()
+    }
+    metrics = {
+        "final_bessel_relative_error": float(truncation_errors[-1]),
+        "maximum_projection_relative_error": float(max(projection_errors)),
+        "published_coefficient_maximum_absolute_error": float(
+            np.max(np.abs(collision_matrix[published_mask] - published[published_mask]))
+        ),
+        "symmetry_maximum_absolute_error": float(
+            np.max(np.abs(collision_matrix - collision_matrix.T))
+        ),
+        "maximum_eigenvalue": float(np.max(eigenvalues)),
+        "maximum_invariant_residual": float(max(invariant_residuals.values())),
+    }
+    thresholds = {
+        "final_bessel_relative_error": 5.0e-9,
+        "maximum_projection_relative_error": 5.0e-9,
+        "published_coefficient_maximum_absolute_error": 5.0e-12,
+        "symmetry_maximum_absolute_error": 5.0e-12,
+        "maximum_eigenvalue": 1.0e-12,
+        "maximum_invariant_residual": 5.0e-12,
+    }
+    gates = {
+        name: bool(value <= thresholds[name]) for name, value in metrics.items()
+    }
+    return _json_clean(
+        {
+            "case": "finite_b_coulomb_operator_algebra",
+            "claim_scope": "offline_operator_algebra_not_runtime_transport",
+            "precision_decimal_digits": int(digits),
+            "basis": {"maximum_hermite_order": 3, "maximum_laguerre_order": 1},
+            "truncation": {
+                "coefficient": "Pi^(3,1,1)(b=1.8)",
+                "orders": truncation_orders,
+                "values": truncation_values,
+                "relative_errors": truncation_errors,
+                "reference_order": reference_order,
+                "reference_value": reference_value,
+            },
+            "direct_projection": {
+                "quadrature": "80-point Gauss-Hermite x 80-point Gauss-Laguerre",
+                "labels": projection_labels,
+                "relative_errors": projection_errors,
+            },
+            "matrix": collision_matrix,
+            "eigenvalues": eigenvalues,
+            "invariant_residuals": invariant_residuals,
+            "metrics": metrics,
+            "thresholds": thresholds,
+            "gates": gates,
+            "gate_passed": all(gates.values()),
+            "references": [
+                {
+                    "title": "Frei et al. (2021), advanced gyrokinetic collision operators",
+                    "url": "https://arxiv.org/abs/2104.11480",
+                    "equations": ["3.41", "3.48", "3.49", "3.50"],
+                },
+                {
+                    "title": "Abel et al. (2008), collision-operator physical constraints",
+                    "url": "https://arxiv.org/abs/0808.1300",
+                    "tests": ["conservation", "H-theorem", "Maxwellian null space"],
+                },
+            ],
+        }
+    )
+
+
+def write_coulomb_operator_verification_figure(
+    summary: dict[str, Any], out_png: Path
+) -> None:
+    """Write the compact paper-facing collision algebra verification panel."""
+
+    from matplotlib.colors import TwoSlopeNorm
+
+    colors = {
+        "blue": "#16697A",
+        "orange": "#E56B1F",
+        "red": "#A23B3B",
+        "ink": "#18232E",
+    }
+    fig, axes = plt.subplots(2, 2, figsize=(10.8, 7.6), constrained_layout=True)
+    truncation = summary["truncation"]
+    errors = np.maximum(
+        np.asarray(truncation["relative_errors"], dtype=float), 1.0e-16
+    )
+    axes[0, 0].semilogy(
+        truncation["orders"], errors, "o-", color=colors["blue"], lw=2.2, ms=5.5
+    )
+    axes[0, 0].axhline(
+        summary["thresholds"]["final_bessel_relative_error"],
+        color=colors["red"],
+        ls="--",
+        lw=1.5,
+        label="acceptance threshold",
+    )
+    axes[0, 0].set(
+        xlabel="Bessel–Laguerre truncation $N_b$",
+        ylabel="relative coefficient error",
+        title="(a) Finite-$b$ spectral convergence",
+    )
+    axes[0, 0].legend(frameon=False, fontsize=8)
+
+    projection = summary["direct_projection"]
+    projection_errors = np.maximum(
+        np.asarray(projection["relative_errors"], dtype=float), 1.0e-16
+    )
+    axes[0, 1].bar(
+        np.arange(len(projection_errors)),
+        projection_errors,
+        color=colors["orange"],
+        edgecolor="white",
+        linewidth=0.8,
+    )
+    axes[0, 1].axhline(
+        summary["thresholds"]["maximum_projection_relative_error"],
+        color=colors["red"],
+        ls="--",
+        lw=1.5,
+    )
+    axes[0, 1].set_yscale("log")
+    axes[0, 1].set_xticks(
+        np.arange(len(projection_errors)), projection["labels"], fontsize=8
+    )
+    axes[0, 1].set(
+        ylabel="relative projection error",
+        title="(b) Independent velocity-space projection",
+    )
+
+    eigenvalues = np.asarray(summary["eigenvalues"], dtype=float)
+    dissipation = np.maximum(-np.sort(eigenvalues), 1.0e-17)
+    axes[1, 0].semilogy(
+        np.arange(1, dissipation.size + 1),
+        dissipation,
+        "o",
+        color=colors["blue"],
+        ms=6,
+    )
+    axes[1, 0].axhspan(1.0e-17, 5.0e-13, color="#DDE9E7", alpha=0.9)
+    axes[1, 0].set(
+        xlabel="ordered moment-space eigenmode",
+        ylabel=r"dissipation rate $-\lambda(C)$",
+        title="(c) H-theorem and three invariant null modes",
+    )
+    axes[1, 0].text(
+        0.04,
+        0.06,
+        "shaded: numerical null space\n"
+        + rf"max invariant residual $={summary['metrics']['maximum_invariant_residual']:.1e}$",
+        transform=axes[1, 0].transAxes,
+        fontsize=8,
+        color=colors["ink"],
+    )
+
+    matrix = np.asarray(summary["matrix"], dtype=float)
+    matrix_limit = float(np.max(np.abs(matrix)))
+    image = axes[1, 1].imshow(
+        matrix,
+        origin="upper",
+        cmap="RdBu_r",
+        norm=TwoSlopeNorm(vmin=-matrix_limit, vcenter=0.0, vmax=matrix_limit),
+        interpolation="nearest",
+    )
+    mode_labels = [rf"$({p},{j})$" for p in range(4) for j in range(2)]
+    axes[1, 1].set_xticks(range(8), mode_labels, rotation=45, ha="right", fontsize=7)
+    axes[1, 1].set_yticks(range(8), mode_labels, fontsize=7)
+    axes[1, 1].set(
+        xlabel="input moment $(p,j)$",
+        ylabel="output moment $(p,j)$",
+        title="(d) Drift-kinetic Coulomb moment block",
+    )
+    fig.colorbar(image, ax=axes[1, 1], shrink=0.82, label="normalized collision rate")
+
+    for axis in axes.flat:
+        axis.grid(axis="y", alpha=0.2, lw=0.6)
+        axis.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(
+        "Linearized Coulomb operator: algebraic and numerical closure",
+        fontsize=15,
+        color=colors["ink"],
+    )
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=220, metadata={"Software": "SPECTRAX-GK"})
+    plt.close(fig)
+
+
+def write_coulomb_operator_verification_artifacts(
+    out_json: Path,
+    out_png: Path,
+    *,
+    digits: int = 80,
+) -> dict[str, Any]:
+    """Generate and persist the collision verification report and figure."""
+
+    summary = build_coulomb_operator_verification_summary(digits=digits)
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(
+        json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    )
+    write_coulomb_operator_verification_figure(summary, out_png)
+    return summary
+
+
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
     """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 
@@ -1667,6 +1995,20 @@ def build_collision_table_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--out", type=Path, default=DEFAULT_COLLISION_TABLE)
     parser.add_argument("--metadata-out", type=Path, default=DEFAULT_COLLISION_METADATA)
+    parser.add_argument("--digits", type=int, default=80)
+    return parser
+
+
+def build_collision_verification_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate the finite-b Coulomb operator verification artifacts."
+    )
+    parser.add_argument(
+        "--out-json", type=Path, default=DEFAULT_COLLISION_VERIFICATION_JSON
+    )
+    parser.add_argument(
+        "--out-png", type=Path, default=DEFAULT_COLLISION_VERIFICATION_PNG
+    )
     parser.add_argument("--digits", type=int, default=80)
     return parser
 
@@ -1804,6 +2146,8 @@ def _json_clean(value: Any) -> Any:
 
     if isinstance(value, dict):
         return {str(key): _json_clean(item) for key, item in value.items()}
+    if isinstance(value, np.ndarray):
+        return [_json_clean(item) for item in value.tolist()]
     if isinstance(value, (list, tuple)):
         return [_json_clean(item) for item in value]
     if isinstance(value, np.generic):
@@ -2159,13 +2503,32 @@ def main_collision_table(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_verification(argv: list[str] | None = None) -> int:
+    args = build_collision_verification_parser().parse_args(argv)
+    summary = write_coulomb_operator_verification_artifacts(
+        args.out_json,
+        args.out_png,
+        digits=int(args.digits),
+    )
+    print(f"Wrote {args.out_json}")
+    print(f"Wrote {args.out_png}")
+    print(f"Collision verification gate: {'PASS' if summary['gate_passed'] else 'FAIL'}")
+    return 0 if summary["gate_passed"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument(
             "command",
-            choices=("figures", "observed-order", "kbm-branch", "collision-table"),
+            choices=(
+                "figures",
+                "observed-order",
+                "kbm-branch",
+                "collision-table",
+                "collision-verification",
+            ),
         )
         parser.print_help()
         return 2
@@ -2178,6 +2541,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_kbm_branch(rest)
     if command == "collision-table":
         return main_collision_table(rest)
+    if command == "collision-verification":
+        return main_collision_verification(rest)
     raise SystemExit(f"unknown command: {command}")
 
 
