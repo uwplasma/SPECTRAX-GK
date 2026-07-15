@@ -527,6 +527,24 @@ The target resolutions, observables, and figure protocols follow Figures
 runtime gates pass, the panel supports operator algebra and numerical closure,
 not a production Landau-transport claim.
 
+The runtime research boundary now mirrors the same decomposition.
+``FiniteWavelengthCoulombOperator`` stores test, field, and four polarization
+tables with independent target/source :math:`k_\perp\rho` axes. A bilinear JAX
+interpolator evaluates those axes at :math:`b_a` and :math:`b_b`; the resolved
+kernel applies equations (3.48)--(3.49) to gyrocenter moments :math:`G_a` and
+:math:`G_b`, then adds equation (3.50) using the solved potential and distinct
+:math:`q_a/T_a` and :math:`q_b/T_b` factors. It intentionally does not apply
+the matrices to ``build_H`` because that would double-count the pullback
+polarization.
+
+Independent Python pair loops, JIT execution, JVP/finite-difference checks,
+like-species polarization cancellation, generated-coefficient application,
+and the complete cached linear-RHS seam pass. This closes runtime algebra and
+differentiable interpolation. It does not yet close table-generation cost,
+Hermite/Laguerre truncation, multispecies physical invariants at finite
+:math:`b`, or any transport benchmark; therefore this class remains a Python
+research API and has no input-file selector.
+
 The lowest-order multispecies drift-kinetic boundary is also implemented
 without assuming equal species. For an ordered pair :math:`(a,b)`,
 ``drift_kinetic_sugama_pair_matrices`` evaluates Appendix C, equations

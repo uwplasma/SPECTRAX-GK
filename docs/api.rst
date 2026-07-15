@@ -210,6 +210,13 @@ Linear Cache
    :members:
    :no-index:
 
+Linear Collisions
+-----------------
+
+.. automodule:: spectraxgk.operators.linear.collisions
+   :members:
+   :no-index:
+
 Linear Moments
 --------------
 

@@ -492,6 +492,7 @@ The target root should be mostly packages plus a few user-facing facades:
          cache_model.py
          cache_arrays.py
          cache_builder.py
+         collisions.py
        nonlinear/
          bracket.py
          rhs.py

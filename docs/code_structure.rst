@@ -586,8 +586,11 @@ Completed extractions:
   branch-selection/preconditioner/Krylov algorithms, and velocity-parallel RHS
   dispatch live under ``operators/linear/`` and ``solvers/linear/``. The cache
   path is split into ``cache_model.py`` for the JAX pytree, ``cache_arrays.py``
-  for moment/damping/gyroaverage array factories, and ``cache_builder.py`` for
-  geometry-dependent construction. The builder itself now has explicit private
+  for moment/damping/gyroaverage array factories, ``cache_builder.py`` for
+  geometry-dependent construction, and ``collisions.py`` for collision-matrix
+  assembly, table interpolation, and runtime application. This keeps the
+  collision equations independent of cache allocation without introducing a
+  compatibility facade. The builder itself now has explicit private
   stages for twist-shift policy, perpendicular wavenumber/drift arrays,
   Laguerre gyroaverage construction, and linked-boundary metadata so extension
   work can test one numerical policy at a time; ``operators.linear`` remains

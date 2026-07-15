@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from types import SimpleNamespace
 
 import jax
 import jax.numpy as jnp
@@ -12,6 +13,7 @@ import pytest
 from scipy.special import eval_genlaguerre, eval_laguerre, j0, jv
 
 from spectraxgk.config import GridConfig
+from spectraxgk.core.extension_points import CollisionContext
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import (
     J_l_all,
@@ -32,14 +34,17 @@ from spectraxgk.linear import (
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,
+    apply_finite_wavelength_coulomb_moment_operator,
     apply_multispecies_collision_moment_matrix,
     assemble_drift_kinetic_improved_sugama_matrix,
     assemble_drift_kinetic_sugama_matrix,
     DriftKineticSugamaOperator,
+    FiniteWavelengthCoulombOperator,
     TabulatedMultispeciesCollisionOperator,
     drift_kinetic_improved_sugama_pair_matrices,
     drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
+    interpolate_collision_pair_table,
     load_collision_moment_matrix,
 )
 from spectraxgk.operators.linear.dissipation import (
@@ -48,7 +53,7 @@ from spectraxgk.operators.linear.dissipation import (
     multispecies_collision_invariant_rates,
 )
 from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.terms.config import TermConfig
+from spectraxgk.terms.config import FieldState, TermConfig
 from spectraxgk.terms.linear_terms import (
     drift_kinetic_coulomb_six_moment_contribution,
     drift_kinetic_sugama_six_moment_contribution,
@@ -395,6 +400,291 @@ def test_multispecies_collision_pair_table_interpolates_and_applies_in_jax() -> 
         interpolate_collision_moment_matrix(grid, table[:, :1], jnp.asarray(0.4))
     with pytest.raises(ValueError, match="target-species-leading"):
         interpolate_collision_moment_matrix(grid, table, jnp.ones((3, 1)))
+
+
+def test_coulomb_pair_table_bilinear_interpolation_and_jvp() -> None:
+    """Unlike-species tables interpolate independently in target and source b."""
+
+    grid = jnp.asarray([0.0, 1.0, 2.0], dtype=jnp.float32)
+    ns, mode_count = 2, 2
+    base = 1.0 + jnp.arange(
+        ns * ns * mode_count * mode_count, dtype=jnp.float32
+    ).reshape(ns, ns, mode_count, mode_count)
+    target_grid = grid[None, None, :, None, None, None]
+    source_grid = grid[None, None, None, :, None, None]
+    table = base[:, :, None, None, ...] * (
+        1.0 + 0.2 * target_grid + 0.3 * source_grid + 0.1 * target_grid * source_grid
+    )
+    target = jnp.asarray([[[[0.25, 1.5]]], [[[0.8, 1.7]]]], dtype=jnp.float32)
+    interpolated = jax.jit(
+        lambda values: interpolate_collision_pair_table(grid, table, values)
+    )(target)
+    expected = np.empty((ns, ns, mode_count, mode_count, 1, 1, 2))
+    for target_species in range(ns):
+        for source_species in range(ns):
+            target_b = np.asarray(target[target_species])
+            source_b = np.asarray(target[source_species])
+            factor = 1.0 + 0.2 * target_b + 0.3 * source_b + 0.1 * target_b * source_b
+            expected[target_species, source_species] = (
+                np.asarray(base[target_species, source_species])[..., None, None, None]
+                * factor
+            )
+    np.testing.assert_allclose(interpolated, expected, rtol=2.0e-6, atol=2.0e-6)
+
+    vector_table = table[..., 0]
+    vector_result = interpolate_collision_pair_table(grid, vector_table, target)
+    np.testing.assert_allclose(vector_result, expected[:, :, :, 0, ...], rtol=2.0e-6)
+
+    direction = jnp.asarray([[[[0.1, -0.2]]], [[[0.15, -0.1]]]], dtype=jnp.float32)
+    tangent = jax.jvp(
+        lambda values: interpolate_collision_pair_table(grid, table, values),
+        (target,),
+        (direction,),
+    )[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        interpolate_collision_pair_table(grid, table, target + step * direction)
+        - interpolate_collision_pair_table(grid, table, target - step * direction)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=8.0e-4, atol=8.0e-4)
+
+    with pytest.raises(ValueError, match="equal target/source"):
+        interpolate_collision_pair_table(grid, table[:, :1], target)
+    with pytest.raises(ValueError, match="leading axis"):
+        interpolate_collision_pair_table(grid, table, jnp.ones((3, 1)))
+
+
+def test_finite_wavelength_coulomb_runtime_assembly_matches_pair_equations() -> None:
+    """Frei Eqs. (3.47)--(3.50) retain target/source and phi couplings."""
+
+    ns, nl, nm = 2, 1, 2
+    spatial_shape = (1, 1, 2)
+    mode_count = nl * nm
+    state = (
+        jnp.arange(ns * nl * nm * 2, dtype=jnp.float32).reshape(
+            (ns, nl, nm) + spatial_shape
+        )
+        + 0.2j
+    ).astype(jnp.complex64)
+    phi = jnp.asarray([[[0.3, -0.2]]], dtype=jnp.float32)
+    frequency = jnp.asarray([[0.7, 0.2], [0.4, 0.9]], dtype=jnp.float32)
+    charge_temperature = jnp.asarray([1.3, -0.8], dtype=jnp.float32)
+
+    base = jnp.arange(ns * ns * mode_count * mode_count, dtype=jnp.float32).reshape(
+        ns, ns, mode_count, mode_count
+    )
+    test_matrix = 0.01 * (base + 1.0)
+    field_matrix = -0.006 * (base + 0.5)
+    vector_base = jnp.arange(ns * ns * mode_count, dtype=jnp.float32).reshape(
+        ns, ns, mode_count
+    )
+    test_phi1 = 0.013 * (vector_base + 1.0)
+    field_phi1 = -0.011 * (vector_base + 0.7)
+    test_phi2 = -0.004 * (vector_base + 0.2)
+    field_phi2 = 0.008 * (vector_base + 0.4)
+
+    def apply(value: jnp.ndarray, potential: jnp.ndarray) -> jnp.ndarray:
+        return apply_finite_wavelength_coulomb_moment_operator(
+            value,
+            test_matrix,
+            field_matrix,
+            test_phi1,
+            field_phi1,
+            test_phi2,
+            field_phi2,
+            phi=potential,
+            pair_frequency=frequency,
+            charge_over_temperature=charge_temperature,
+        )
+
+    result = jax.jit(apply)(state, phi)
+    packed = np.swapaxes(np.asarray(state), 1, 2).reshape(
+        (ns, mode_count) + spatial_shape
+    )
+    expected = np.zeros_like(packed)
+    for target in range(ns):
+        for source in range(ns):
+            for output_mode in range(mode_count):
+                particle = sum(
+                    float(test_matrix[target, source, output_mode, input_mode])
+                    * packed[target, input_mode]
+                    + float(field_matrix[target, source, output_mode, input_mode])
+                    * packed[source, input_mode]
+                    for input_mode in range(mode_count)
+                )
+                polarization = (
+                    float(charge_temperature[target])
+                    * float(
+                        test_phi1[target, source, output_mode]
+                        + test_phi2[target, source, output_mode]
+                    )
+                    + float(charge_temperature[source])
+                    * float(
+                        field_phi1[target, source, output_mode]
+                        + field_phi2[target, source, output_mode]
+                    )
+                ) * np.asarray(phi)
+                expected[target, output_mode] += float(frequency[target, source]) * (
+                    particle + polarization
+                )
+    expected = np.swapaxes(expected.reshape((ns, nm, nl) + spatial_shape), 1, 2)
+    np.testing.assert_allclose(result, expected, rtol=2.0e-6, atol=2.0e-6)
+
+    state_direction = jnp.full_like(state, 0.07 - 0.03j)
+    phi_direction = jnp.full_like(phi, -0.04)
+    tangent = jax.jvp(apply, (state, phi), (state_direction, phi_direction))[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        apply(state + step * state_direction, phi + step * phi_direction)
+        - apply(state - step * state_direction, phi - step * phi_direction)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=8.0e-4, atol=8.0e-4)
+
+    cancelling = jnp.asarray([[[0.2, -0.1]]], dtype=jnp.float32)
+    zero = apply_finite_wavelength_coulomb_moment_operator(
+        jnp.zeros((1, 1, 2, 1, 1, 2), dtype=jnp.complex64),
+        jnp.zeros((1, 1, 2, 2)),
+        jnp.zeros((1, 1, 2, 2)),
+        cancelling,
+        -cancelling,
+        2.0 * cancelling,
+        -2.0 * cancelling,
+        phi=phi,
+        pair_frequency=jnp.ones((1, 1)),
+        charge_over_temperature=jnp.ones(1),
+    )
+    np.testing.assert_allclose(zero, 0.0, atol=1.0e-7)
+
+    grid = jnp.asarray([0.0, 2.0], dtype=jnp.float32)
+
+    def constant_pair_table(coefficients: jnp.ndarray) -> jnp.ndarray:
+        return jnp.broadcast_to(
+            coefficients[:, :, None, None, ...],
+            coefficients.shape[:2] + (2, 2) + coefficients.shape[2:],
+        )
+
+    operator = FiniteWavelengthCoulombOperator(
+        grid,
+        frequency,
+        constant_pair_table(test_matrix),
+        constant_pair_table(field_matrix),
+        constant_pair_table(test_phi1),
+        constant_pair_table(field_phi1),
+        constant_pair_table(test_phi2),
+        constant_pair_table(field_phi2),
+    )
+    context = CollisionContext(
+        distribution=state,
+        hamiltonian=99.0 * state,
+        fields=FieldState(phi=phi, apar=None, bpar=None),
+        cache=SimpleNamespace(
+            b=jnp.asarray([[[[0.04, 0.64]]], [[[0.16, 1.0]]]], dtype=jnp.float32)
+        ),
+        parameters=SimpleNamespace(tz=1.0 / charge_temperature),
+    )
+    np.testing.assert_allclose(
+        operator.apply(context), result, rtol=2.0e-6, atol=2.0e-6
+    )
+    assert len(jax.tree_util.tree_leaves(operator)) == 8
+
+    with pytest.raises(ValueError, match="pair_frequency"):
+        apply_finite_wavelength_coulomb_moment_operator(
+            state,
+            test_matrix,
+            field_matrix,
+            test_phi1,
+            field_phi1,
+            test_phi2,
+            field_phi2,
+            phi=phi,
+            pair_frequency=jnp.ones((2, 1)),
+            charge_over_temperature=charge_temperature,
+        )
+
+
+def test_finite_wavelength_coulomb_operator_runs_through_linear_rhs() -> None:
+    """The post-field collision protocol must add the complete Coulomb RHS."""
+
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0, -1.0]),
+        density=jnp.asarray([1.0, 0.8]),
+        mass=jnp.asarray([2.0, 0.5]),
+        temp=jnp.asarray([1.2, 0.7]),
+        vth=jnp.asarray([0.8, 1.1]),
+        rho=jnp.asarray([0.7, 0.3]),
+        tz=jnp.asarray([1.2, -0.7]),
+    )
+    grid = build_spectral_grid(GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0))
+    cache = build_linear_cache(
+        grid,
+        SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18),
+        params,
+        Nl=1,
+        Nm=2,
+    )
+    state = (
+        1.0e-3
+        * jnp.arange(2 * 1 * 2 * 2 * 2 * 4, dtype=jnp.float32).reshape(2, 1, 2, 2, 2, 4)
+    ).astype(jnp.complex64)
+    frequency = jnp.asarray([[0.5, 0.2], [0.3, 0.6]], dtype=jnp.float32)
+    base_matrix = 0.02 * (
+        1.0 + jnp.arange(2 * 2 * 2 * 2, dtype=jnp.float32).reshape(2, 2, 2, 2)
+    )
+    base_vector = 0.01 * (
+        1.0 + jnp.arange(2 * 2 * 2, dtype=jnp.float32).reshape(2, 2, 2)
+    )
+    coefficient_grid = jnp.asarray([0.0, 4.0], dtype=jnp.float32)
+
+    def constant_table(coefficients: jnp.ndarray) -> jnp.ndarray:
+        return jnp.broadcast_to(
+            coefficients[:, :, None, None, ...],
+            coefficients.shape[:2] + (2, 2) + coefficients.shape[2:],
+        )
+
+    operator = FiniteWavelengthCoulombOperator(
+        coefficient_grid,
+        frequency,
+        constant_table(-base_matrix),
+        constant_table(0.4 * base_matrix),
+        constant_table(base_vector),
+        constant_table(-0.5 * base_vector),
+        constant_table(-0.2 * base_vector),
+        constant_table(0.1 * base_vector),
+    )
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.4,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    rhs, phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        collision_operator=operator,
+        use_jit=False,
+    )
+    expected = 0.4 * apply_finite_wavelength_coulomb_moment_operator(
+        state,
+        -base_matrix,
+        0.4 * base_matrix,
+        base_vector,
+        -0.5 * base_vector,
+        -0.2 * base_vector,
+        0.1 * base_vector,
+        phi=phi,
+        pair_frequency=frequency,
+        charge_over_temperature=1.0 / jnp.asarray(params.tz),
+    )
+    np.testing.assert_allclose(rhs, expected, rtol=3.0e-6, atol=3.0e-6)
 
 
 def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> None:

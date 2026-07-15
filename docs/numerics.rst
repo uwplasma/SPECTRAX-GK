@@ -692,6 +692,15 @@ finite-:math:`b` ITG; and collisionless versus collisional zonal response.
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
 
+For unlike species, runtime interpolation is two-dimensional: target
+:math:`k_\perp\rho_a` controls the outer/test factors and source
+:math:`k_\perp\rho_b` controls the field-particle moment map. The pure JAX
+kernel contracts the resulting test block with :math:`G_a`, the field block
+with :math:`G_b`, and the four polarization vectors with the solved
+:math:`\phi`. This ordering is JIT- and JVP-gated and prevents the common error
+of applying the complete finite-wavelength matrix to the nonadiabatic
+Hamiltonian response, which would count the pullback field terms twice.
+
 Python workflows may supply any JAX-compatible object implementing
 ``apply(context)`` to ``linear_rhs``, ``linear_rhs_cached``,
 ``integrate_linear``, or ``nonlinear_rhs_cached`` through the

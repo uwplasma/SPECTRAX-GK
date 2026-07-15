@@ -2554,6 +2554,9 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
     """Frei et al. Eqs. (3.41) and (3.50) must satisfy direct and null gates."""
     from scipy.special import eval_genlaguerre, jv, lpmv
+    from spectraxgk.operators.linear import (
+        apply_finite_wavelength_coulomb_moment_operator,
+    )
 
     mod = load_artifact_tool("build_linear_validation_artifacts")
     parallel, parallel_weights = np.polynomial.hermite.hermgauss(80)
@@ -2629,6 +2632,32 @@ def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None
     for low_vector, high_vector in zip(low, high):
         np.testing.assert_allclose(low_vector, high_vector, rtol=2.0e-6, atol=4.0e-8)
     np.testing.assert_allclose(sum(high), 0.0, atol=3.0e-13)
+
+    test_matrix, field_matrix = mod.coulomb_nonpolarized_moment_matrices(
+        1,
+        0,
+        0.7,
+        1.0,
+        1.0,
+        source_kperp_rho=0.7,
+        maximum_spherical_order=1,
+        maximum_spherical_radial_order=0,
+        maximum_bessel_laguerre_order=5,
+        digits=60,
+    )
+    state = jnp.asarray([[[[[[0.3 + 0.1j]]], [[[0.2 - 0.05j]]]]]])
+    runtime = apply_finite_wavelength_coulomb_moment_operator(
+        state,
+        jnp.asarray(test_matrix)[None, None],
+        jnp.asarray(field_matrix)[None, None],
+        *(jnp.asarray(vector)[None, None] for vector in high),
+        phi=jnp.asarray([[[0.4]]]),
+        pair_frequency=jnp.ones((1, 1)),
+        charge_over_temperature=jnp.ones(1),
+    )
+    packed_state = np.asarray(state).reshape(2)
+    expected = ((test_matrix + field_matrix) @ packed_state).reshape(state.shape)
+    np.testing.assert_allclose(runtime, expected, rtol=3.0e-6, atol=3.0e-6)
 
     with pytest.raises(ValueError, match="basis and truncation"):
         mod.gyroaveraged_polarization_coefficient(-1, 0, 0, 1.0)

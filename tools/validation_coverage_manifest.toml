@@ -330,13 +330,10 @@ reference_anchors = [
 physics_contracts = [
   "cached gyroaverages, drifts, magnetic geometry, and damping factors preserve the operator seen by RHS kernels",
   "species-dependent collision and hypercollision factors keep the intended multi-species broadcast semantics",
-  "ordered target/source finite-wavelength collision tables preserve the zero-kperp multispecies invariant boundary before any full Sugama/Coulomb promotion",
-  "the tabulated collision protocol acts on the post-field Hamiltonian and is full-RHS identical to the reduced Sugama protocol for a constant pair table",
 ]
 numerics_contracts = [
   "LinearCache remains a stable JAX pytree with deterministic flatten/unflatten ordering",
   "cache builders preserve dtype policy, linked-boundary metadata, dealias masks, and moment-space array shapes",
-  "shared, per-species, and ordered-pair collision tables interpolate and differentiate on device with explicit target-species spatial semantics",
 ]
 fast_tests = [
   "tests/unit/linear/test_linear.py",
@@ -351,6 +348,41 @@ artifact_paths = [
 next_tests = [
   "add direct cache-construction fixtures for sampled geometry, linked geometry, and multispecies damping paths",
   "keep spectraxgk.linear public cache exports documented while developer helpers live in operators.linear",
+]
+
+[[modules]]
+module = "spectraxgk.operators.linear.collisions"
+path = "src/spectraxgk/operators/linear/collisions.py"
+owner_lane = "linearized collision matrices, finite-wavelength interpolation, and runtime application"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Frei et al. (2021) gyro-moment linearized Coulomb and Sugama operators",
+  "Frei, Ernst, and Ricci (2022) improved Sugama operator",
+  "Abel et al. (2008) and Barnes et al. (2009) gyrokinetic collision-operator constraints",
+]
+physics_contracts = [
+  "ordered target/source finite-wavelength blocks use distinct target and source gyroaverages",
+  "test and field blocks act on gyrocenter moments while four polarization vectors couple to the solved potential without double counting the pullback",
+  "like-species polarization cancellation and multispecies invariant boundaries hold at their derived limits",
+]
+numerics_contracts = [
+  "shared, per-species, and ordered-pair tables interpolate and differentiate on device with explicit spatial semantics",
+  "runtime pair contractions agree with an independent species-loop oracle under eager, JIT, and tangent execution",
+  "the collision protocol is identical through the complete cache-backed linear RHS seam",
+]
+fast_tests = [
+  "tests/unit/operators/test_operator_kernels.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
+]
+artifact_paths = [
+  "docs/_static/collision_operator_verification.json",
+  "docs/_static/collision_operator_verification.png",
+]
+next_tests = [
+  "add finite-wavelength multispecies invariant and moment-resolution sweeps",
+  "require conductivity, finite-b ITG, and collisional zonal-response gates before input-file promotion",
 ]
 
 [[modules]]
