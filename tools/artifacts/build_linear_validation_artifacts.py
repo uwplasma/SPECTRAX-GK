@@ -1140,11 +1140,10 @@ def _hermite_laguerre_to_associated_legendre_mp(
     if (hermite_order - spherical_order - bessel_order) % 2:
         return mp.mpf(0)
 
+    # The Hermite normalization in equation (3.33) cancels exactly between
+    # the inverse-basis prefactor and the velocity-space projection.
     prefactor = (
-        mp.sqrt(mp.pi)
-        * mp.power(2, hermite_order)
-        * mp.factorial(hermite_order)
-        * mp.factorial(spherical_radial_order)
+        mp.factorial(spherical_radial_order)
         * (spherical_order + mp.mpf("0.5"))
         / mp.gamma(spherical_radial_order + spherical_order + mp.mpf("1.5"))
         * mp.factorial(spherical_order - bessel_order)
@@ -1163,6 +1162,18 @@ def _hermite_laguerre_to_associated_legendre_mp(
             _laguerre_exponential_moment_mp(k, power, mp)
         )
 
+    polynomial = associated_spherical_polynomial(
+        spherical_order,
+        spherical_radial_order,
+        bessel_order,
+    )
+    if not polynomial:
+        return mp.mpf(0)
+    if hermite_order > max(term[0] for term in polynomial):
+        return mp.mpf(0)
+    if laguerre_order > max(term[1] + bessel_order for term in polynomial):
+        return mp.mpf(0)
+
     # Equation (3.33) expands x**m L_k in ordinary Laguerre modes and then
     # projects each mode.  Laguerre orthogonality collapses that sum to this
     # single weighted projection of the factored spherical polynomial.
@@ -1173,15 +1184,7 @@ def _hermite_laguerre_to_associated_legendre_mp(
             laguerre_order,
             perpendicular_power + bessel_order,
         )
-        for parallel_power, perpendicular_power, coefficient in associated_spherical_polynomial(
-            spherical_order,
-            spherical_radial_order,
-            bessel_order,
-        )
-    ) / (
-        mp.sqrt(mp.pi)
-        * mp.power(2, hermite_order)
-        * mp.factorial(hermite_order)
+        for parallel_power, perpendicular_power, coefficient in polynomial
     )
     return prefactor * contraction
 
@@ -1282,6 +1285,41 @@ def gyroaveraged_spherical_moment_coefficient(
     return float(coefficient)
 
 
+def _bessel_laguerre_kernels_mp(
+    bessel_argument: Any,
+    bessel_order: int,
+    count: int,
+    mp: Any,
+) -> tuple[Any, ...]:
+    """Return the finite-m Poisson weights shared by collision projections."""
+
+    half_argument = mp.mpf(bessel_argument) / 2
+    radial_argument = half_argument**2
+    exponential = mp.exp(-radial_argument)
+    return tuple(
+        exponential
+        * radial_argument**order
+        * half_argument**bessel_order
+        / mp.factorial(order + bessel_order)
+        for order in range(count)
+    )
+
+
+def _radial_poisson_kernels_mp(
+    bessel_argument: Any,
+    count: int,
+    mp: Any,
+) -> tuple[Any, ...]:
+    """Return radial Poisson weights used by the polarization contraction."""
+
+    radial_argument = (mp.mpf(bessel_argument) / 2) ** 2
+    exponential = mp.exp(-radial_argument)
+    return tuple(
+        exponential * radial_argument**order / mp.factorial(order)
+        for order in range(count)
+    )
+
+
 def _gyroaveraged_spherical_moment_coefficient_mp(
     spherical_order: int,
     spherical_radial_order: int,
@@ -1294,14 +1332,19 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
     *,
     associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
+    bessel_kernels: tuple[Any, ...] | None = None,
 ) -> Any:
     b = mp.mpf(bessel_argument)
-    half_b = b / 2
-    argument = half_b * half_b
     coefficient = mp.mpf(0)
-    maximum_auxiliary_laguerre = (
-        spherical_radial_order + (spherical_order + bessel_order) // 2
+    remaining_degree = (
+        spherical_order
+        + 2 * spherical_radial_order
+        - bessel_order
+        - hermite_order
     )
+    if remaining_degree < 0 or remaining_degree % 2:
+        return coefficient
+    maximum_auxiliary_laguerre = remaining_degree // 2
     if associated_transform is None:
 
         def associated_transform(p: int, j: int, m: int, g: int, s: int) -> Any:
@@ -1313,6 +1356,14 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
             return _laguerre_product_expansion_coefficient_mp(
                 m, n, k, output, radial, mp
             )
+
+    if bessel_kernels is None:
+        bessel_kernels = _bessel_laguerre_kernels_mp(
+            b,
+            bessel_order,
+            maximum_bessel_laguerre_order + 1,
+            mp,
+        )
 
     for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
         transform = associated_transform(
@@ -1334,18 +1385,8 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
             )
             if product == 0:
                 continue
-            kernel = (
-                mp.exp(-argument)
-                * argument**bessel_laguerre_order
-                / mp.factorial(bessel_laguerre_order)
-            )
             coefficient += (
-                transform
-                * product
-                * mp.factorial(bessel_laguerre_order)
-                * kernel
-                * half_b**bessel_order
-                / mp.factorial(bessel_laguerre_order + bessel_order)
+                transform * product * bessel_kernels[bessel_laguerre_order]
             )
     coefficient *= mp.sqrt(mp.power(2, hermite_order) * mp.factorial(hermite_order))
     return coefficient
@@ -1361,23 +1402,34 @@ def _gyroaveraged_polarization_coefficient_mp(
     *,
     associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
+    bessel_kernels: tuple[Any, ...] | None = None,
+    radial_kernels: tuple[Any, ...] | None = None,
 ) -> Any:
     b = mp.mpf(bessel_argument)
-    half_b = b / 2
-    argument = half_b * half_b
     total = mp.mpf(0)
-    maximum_auxiliary_laguerre = (
-        spherical_radial_order + (spherical_order + bessel_order) // 2
+    remaining_degree = spherical_order + 2 * spherical_radial_order - bessel_order
+    if remaining_degree % 2:
+        return total
+    maximum_auxiliary_laguerre = remaining_degree // 2
+    kernel_count = (
+        2 * maximum_bessel_laguerre_order
+        + bessel_order
+        + maximum_auxiliary_laguerre
+        + 1
     )
-    kernels = [
-        mp.exp(-argument) * argument**order / mp.factorial(order)
-        for order in range(
-            2 * maximum_bessel_laguerre_order
-            + bessel_order
-            + maximum_auxiliary_laguerre
-            + 1
+    if radial_kernels is None:
+        radial_kernels = _radial_poisson_kernels_mp(
+            b,
+            kernel_count,
+            mp,
         )
-    ]
+    if bessel_kernels is None:
+        bessel_kernels = _bessel_laguerre_kernels_mp(
+            b,
+            bessel_order,
+            maximum_bessel_laguerre_order + 1,
+            mp,
+        )
     if associated_transform is None:
 
         def associated_transform(p: int, j: int, m: int, g: int, s: int) -> Any:
@@ -1403,10 +1455,7 @@ def _gyroaveraged_polarization_coefficient_mp(
         for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
             leading = (
                 transform
-                * half_b**bessel_order
-                * mp.factorial(bessel_laguerre_order)
-                * kernels[bessel_laguerre_order]
-                / mp.factorial(bessel_laguerre_order + bessel_order)
+                * bessel_kernels[bessel_laguerre_order]
             )
             if leading == 0:
                 continue
@@ -1420,7 +1469,7 @@ def _gyroaveraged_polarization_coefficient_mp(
                     output_order,
                     bessel_order,
                 )
-                total += leading * kernels[output_order] * product
+                total += leading * radial_kernels[output_order] * product
     return total
 
 
@@ -1701,6 +1750,7 @@ def coulomb_nonpolarized_moment_matrices(
         field_matrix = mp.matrix(n_modes, n_modes)
         assembly_cache = {} if _assembly_cache is None else _assembly_cache
         moment_cache = assembly_cache.setdefault("spherical_moment", {})
+        bessel_kernel_cache = assembly_cache.setdefault("spherical_bessel_kernel", {})
         speed_cache = assembly_cache.setdefault("integrated_speed", {})
         product_cache = assembly_cache.setdefault("laguerre_product", {})
         inverse_cache = assembly_cache.setdefault("inverse_transform", {})
@@ -1734,6 +1784,18 @@ def coulomb_nonpolarized_moment_matrices(
             wavelength = source_b if source else target_b
             key = (float(wavelength), p, j, m, g, s)
             if key not in moment_cache:
+                kernel_key = (
+                    float(wavelength),
+                    m,
+                    maximum_bessel_laguerre_order,
+                )
+                if kernel_key not in bessel_kernel_cache:
+                    bessel_kernel_cache[kernel_key] = _bessel_laguerre_kernels_mp(
+                        wavelength,
+                        m,
+                        maximum_bessel_laguerre_order + 1,
+                        mp,
+                    )
                 moment_cache[key] = _gyroaveraged_spherical_moment_coefficient_mp(
                     p,
                     j,
@@ -1745,6 +1807,7 @@ def coulomb_nonpolarized_moment_matrices(
                     mp,
                     associated_transform=inverse_associated,
                     laguerre_product=inverse_product,
+                    bessel_kernels=bessel_kernel_cache[kernel_key],
                 )
             return moment_cache[key]
 
@@ -2441,6 +2504,12 @@ def coulomb_polarization_vectors(
         assembly_cache = {} if _assembly_cache is None else _assembly_cache
         speed_cache = assembly_cache.setdefault("integrated_speed", {})
         polarization_cache = assembly_cache.setdefault("polarization", {})
+        polarization_bessel_cache = assembly_cache.setdefault(
+            "polarization_bessel_kernel", {}
+        )
+        polarization_radial_cache = assembly_cache.setdefault(
+            "polarization_radial_kernel", {}
+        )
         product_cache = assembly_cache.setdefault("laguerre_product", {})
         inverse_cache = assembly_cache.setdefault("inverse_transform", {})
         coefficient_functions = (
@@ -2481,6 +2550,35 @@ def coulomb_polarization_vectors(
             wavelength = source_b if source else target_b
             key = (float(wavelength), p, j, m)
             if key not in polarization_cache:
+                bessel_key = (
+                    float(wavelength),
+                    m,
+                    maximum_bessel_laguerre_order,
+                )
+                if bessel_key not in polarization_bessel_cache:
+                    polarization_bessel_cache[bessel_key] = (
+                        _bessel_laguerre_kernels_mp(
+                            wavelength,
+                            m,
+                            maximum_bessel_laguerre_order + 1,
+                            mp,
+                        )
+                    )
+                radial_count = (
+                    2 * maximum_bessel_laguerre_order
+                    + 2 * spherical_limit
+                    + radial_limit
+                    + 1
+                )
+                radial_key = (float(wavelength), radial_count)
+                if radial_key not in polarization_radial_cache:
+                    polarization_radial_cache[radial_key] = (
+                        _radial_poisson_kernels_mp(
+                            wavelength,
+                            radial_count,
+                            mp,
+                        )
+                    )
                 polarization_cache[key] = _gyroaveraged_polarization_coefficient_mp(
                     p,
                     j,
@@ -2490,6 +2588,8 @@ def coulomb_polarization_vectors(
                     mp,
                     associated_transform=inverse_associated,
                     laguerre_product=inverse_product,
+                    bessel_kernels=polarization_bessel_cache[bessel_key],
+                    radial_kernels=polarization_radial_cache[radial_key],
                 )
             return polarization_cache[key]
 

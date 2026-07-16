@@ -2566,6 +2566,65 @@ def test_gyroaveraged_spherical_moment_matches_direct_velocity_projection() -> N
         mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, 1.0, digits=10)
 
 
+def test_finite_wavelength_kernel_factorization_preserves_multiprecision() -> None:
+    """Cached Poisson kernels must preserve Frei et al. Eqs. (3.35), (3.41)."""
+    import mpmath as mp
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    with mp.workdps(70):
+        bessel_argument = mp.mpf("0.7")
+        half_argument = bessel_argument / 2
+        radial_argument = half_argument**2
+        exponential = mp.exp(-radial_argument)
+        truncation = 6
+        bessel_order = 1
+        bessel_kernels = tuple(
+            exponential
+            * radial_argument**order
+            * half_argument**bessel_order
+            / mp.factorial(order + bessel_order)
+            for order in range(truncation + 1)
+        )
+        radial_kernels = tuple(
+            exponential * radial_argument**order / mp.factorial(order)
+            for order in range(16)
+        )
+
+        moment_args = (3, 1, bessel_order, 0, 1, bessel_argument, truncation, mp)
+        direct_moment = mod._gyroaveraged_spherical_moment_coefficient_mp(
+            *moment_args
+        )
+        cached_moment = mod._gyroaveraged_spherical_moment_coefficient_mp(
+            *moment_args,
+            bessel_kernels=bessel_kernels,
+        )
+        assert mp.almosteq(cached_moment, direct_moment)
+
+        polarization_args = (3, 1, bessel_order, bessel_argument, truncation, mp)
+        direct_polarization = mod._gyroaveraged_polarization_coefficient_mp(
+            *polarization_args
+        )
+        cached_polarization = mod._gyroaveraged_polarization_coefficient_mp(
+            *polarization_args,
+            bessel_kernels=bessel_kernels,
+            radial_kernels=radial_kernels,
+        )
+        assert mp.almosteq(cached_polarization, direct_polarization)
+
+        assert (
+            mod._gyroaveraged_spherical_moment_coefficient_mp(
+                2, 0, 1, 0, 0, bessel_argument, truncation, mp
+            )
+            == 0
+        )
+        assert (
+            mod._gyroaveraged_polarization_coefficient_mp(
+                2, 0, 1, bessel_argument, truncation, mp
+            )
+            == 0
+        )
+
+
 def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
     """Frei et al. Eqs. (3.48)--(3.49) must recover the published DK block."""
     mod = load_artifact_tool("build_linear_validation_artifacts")

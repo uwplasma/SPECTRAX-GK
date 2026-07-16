@@ -377,6 +377,22 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Factored the exact finite-wavelength collision generator again
+  before attempting the published endpoint. The Hermite normalization in the
+  inverse equation-(3.33) projection now cancels analytically, structural
+  Hermite/Laguerre zeros follow directly from polynomial support, and the
+  Poisson/Bessel--Laguerre kernels in equations (3.35) and (3.41) are generated
+  once per wavelength and angular order. The associated transform's exact
+  reduced-degree bound also replaces its previous loose auxiliary-Laguerre
+  loop. Cached and direct 70-digit kernels, direct velocity projections,
+  parity blocks, finite-wavelength pair tables, and the P7 checksum
+  ``-84.28216105079215`` all agree. On one pinned office CPU under the same
+  load, P7 falls from 66.71 to 51.33 seconds (1.30x). A proposed prefilter that
+  reduced the inverse cache from 127,168 to 49,026 entries instead slowed the
+  same build from 51.90 to 62.97 seconds; it was removed. The optimized exact
+  P12 rebuild is the current bounded campaign; no P18 or speedup claim is made
+  until that artifact completes and its arrays match the archived hierarchy.
+
 - 2026-07-16: Profiled the exact finite-wavelength generator before attempting
   the :math:`(18,6)` table. At :math:`(5,2)`, 11.5 of 19.4 matrix seconds are
   shared multiprecision transforms and spherical-moment projections, so
