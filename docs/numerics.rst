@@ -860,9 +860,12 @@ bound at :math:`k_x=0.1` and :math:`0.2`. The P7/J3 to P12/J5 changes are
 The four-point P18/J7 extension costs 189.06 seconds and changes the P15/J6
 traces by 3.86% at :math:`k_x=0.1` and 7.16% at :math:`k_x=0.2`; the first
 wavelength passes both criteria while the second still fails relative
-:math:`L_2`. Consequently the tracked hierarchy correctly remains open: it is
-useful convergence evidence, not a substitute for the paper-required P24/J10
-traces.
+:math:`L_2`. A four-wavelength P21/J8 table then completes in 584.73 seconds
+with the decomposition described below. Its change from P18/J7 is 2.37% at
+:math:`k_x=0.1` and 5.60% at :math:`k_x=0.2`; both maximum-deviation tests pass,
+but the second relative-:math:`L_2` test narrowly remains open. Consequently
+the tracked hierarchy shows monotone convergence but is not a substitute for
+the paper-required P24/J10 traces.
 Reproduce the report with::
 
    python tools/artifacts/build_zonal_flow_artifacts.py \
@@ -871,6 +874,7 @@ Reproduce the report with::
      --level 12 5 p12_kx010.csv p12_kx020.csv \
      --level 15 6 p15_kx010.csv p15_kx020.csv \
      --level 18 7 p18_kx010.csv p18_kx020.csv \
+     --level 21 8 p21_kx010.csv p21_kx020.csv \
      --out-json collision_finite_wavelength_zonal_moment_hierarchy.json
 
 The bounded archive generator uses a separate, prospectively gated

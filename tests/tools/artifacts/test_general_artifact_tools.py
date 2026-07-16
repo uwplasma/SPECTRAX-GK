@@ -4625,12 +4625,18 @@ def test_tracked_finite_wavelength_zonal_moment_hierarchy_remains_open() -> None
         ).read_text()
     )
     assert payload["gate_passed"] is False
-    assert payload["resolutions"] == [[7, 3], [12, 5], [15, 6], [18, 7]]
+    assert payload["resolutions"] == [
+        [7, 3],
+        [12, 5],
+        [15, 6],
+        [18, 7],
+        [21, 8],
+    ]
     latest = payload["comparisons"][-1]
     assert latest["passed"] is False
     assert latest["traces"]["0.1"]["passed"] is True
     assert latest["traces"]["0.2"]["passed"] is False
-    assert latest["traces"]["0.2"]["relative_l2"] > 0.07
+    assert 0.05 < latest["traces"]["0.2"]["relative_l2"] < 0.06
 
 
 def test_plot_zonal_flow_response_output_subcommand(

@@ -14,20 +14,20 @@
       "traces": {
         "0.1": {
           "higher_final": -0.09290184545512394,
-          "lower_final": 0.040798648844817986,
-          "maximum_absolute_error": 0.13925523181409954,
+          "lower_final": 0.040800676191274254,
+          "maximum_absolute_error": 0.13924515900715695,
           "maximum_normalized_time": 2.004682857570937,
           "passed": false,
-          "relative_l2": 0.19244773020636394,
+          "relative_l2": 0.19242260733856717,
           "samples": 402
         },
         "0.2": {
           "higher_final": 0.011845179343964585,
-          "lower_final": -0.00032496587926048054,
-          "maximum_absolute_error": 0.08149896982562536,
+          "lower_final": -0.00033793455525968623,
+          "maximum_absolute_error": 0.08148302631656164,
           "maximum_normalized_time": 2.004682857570937,
           "passed": false,
-          "relative_l2": 0.11972709670230595,
+          "relative_l2": 0.11960179564039694,
           "samples": 402
         }
       }
@@ -93,6 +93,37 @@
           "samples": 402
         }
       }
+    },
+    {
+      "higher_resolution": [
+        21,
+        8
+      ],
+      "lower_resolution": [
+        18,
+        7
+      ],
+      "passed": false,
+      "traces": {
+        "0.1": {
+          "higher_final": -0.0539486641214849,
+          "lower_final": -0.04021776842414104,
+          "maximum_absolute_error": 0.01576872495715939,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": true,
+          "relative_l2": 0.023672364310956893,
+          "samples": 402
+        },
+        "0.2": {
+          "higher_final": 0.045866480857384706,
+          "lower_final": 0.06368366857236504,
+          "maximum_absolute_error": 0.030868898097199386,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": false,
+          "relative_l2": 0.05598942106398677,
+          "samples": 402
+        }
+      }
     }
   ],
   "gate_passed": false,
@@ -113,6 +144,10 @@
     [
       18,
       7
+    ],
+    [
+      21,
+      8
     ]
   ],
   "schema_version": 1,
