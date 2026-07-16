@@ -2560,7 +2560,7 @@ def test_gyroaveraged_spherical_moment_matches_direct_velocity_projection() -> N
         mod.gyroaveraged_spherical_moment_coefficient(-1, 0, 0, 0, 0, 1.0)
     with pytest.raises(ValueError, match="bessel_order"):
         mod.gyroaveraged_spherical_moment_coefficient(1, 0, 2, 0, 0, 1.0)
-    with pytest.raises(ValueError, match="kperp_rho"):
+    with pytest.raises(ValueError, match="bessel_argument"):
         mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, -1.0)
     with pytest.raises(ValueError, match="digits"):
         mod.gyroaveraged_spherical_moment_coefficient(1, 0, 1, 0, 0, 1.0, digits=10)
@@ -2624,7 +2624,7 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
         0.4,
         2.0,
         0.8,
-        source_kperp_rho=0.4,
+        source_bessel_argument=0.4,
         maximum_spherical_order=2,
         maximum_spherical_radial_order=1,
         maximum_bessel_laguerre_order=3,
@@ -2636,7 +2636,7 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
         0.4,
         2.0,
         0.8,
-        source_kperp_rho=0.9,
+        source_bessel_argument=0.9,
         maximum_spherical_order=2,
         maximum_spherical_radial_order=1,
         maximum_bessel_laguerre_order=3,
@@ -2915,7 +2915,7 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
     for args, message in (
         ((-1, 1, 0.0, 1.0, 1.0), "maximum_hermite_order"),
         ((1, -1, 0.0, 1.0, 1.0), "maximum_laguerre_order"),
-        ((1, 1, -1.0, 1.0, 1.0), "kperp_rho"),
+        ((1, 1, -1.0, 1.0, 1.0), "bessel_argument"),
         ((1, 1, 0.0, 0.0, 1.0), "mass_ratio"),
         ((1, 1, 0.0, 1.0, 0.0), "temperature_ratio"),
     ):
@@ -2933,9 +2933,9 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
         mod.coulomb_nonpolarized_moment_matrices(
             1, 1, 0.0, 1.0, 1.0, maximum_spherical_radial_order=-1
         )
-    with pytest.raises(ValueError, match="source_kperp_rho"):
+    with pytest.raises(ValueError, match="source_bessel_argument"):
         mod.coulomb_nonpolarized_moment_matrices(
-            1, 1, 0.0, 1.0, 1.0, source_kperp_rho=-1.0
+            1, 1, 0.0, 1.0, 1.0, source_bessel_argument=-1.0
         )
     with pytest.raises(ValueError, match="digits"):
         mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)
@@ -2992,7 +2992,7 @@ def test_finite_wavelength_pair_table_matches_equation_generators(
         grid[1],
         1.0,
         1.0,
-        source_kperp_rho=grid[0],
+        source_bessel_argument=grid[0],
         maximum_spherical_order=2,
         maximum_spherical_radial_order=1,
         maximum_bessel_laguerre_order=2,
@@ -3115,7 +3115,7 @@ def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None
         0.7,
         1.0,
         1.0,
-        source_kperp_rho=0.7,
+        source_bessel_argument=0.7,
         maximum_spherical_order=1,
         maximum_spherical_radial_order=0,
         maximum_bessel_laguerre_order=5,
@@ -3139,15 +3139,15 @@ def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None
         mod.gyroaveraged_polarization_coefficient(-1, 0, 0, 1.0)
     with pytest.raises(ValueError, match="bessel_order"):
         mod.gyroaveraged_polarization_coefficient(1, 0, 2, 1.0)
-    with pytest.raises(ValueError, match="kperp_rho"):
+    with pytest.raises(ValueError, match="bessel_argument"):
         mod.gyroaveraged_polarization_coefficient(1, 0, 1, -1.0)
     with pytest.raises(ValueError, match="digits"):
         mod.gyroaveraged_polarization_coefficient(1, 0, 1, 1.0, digits=10)
     for args, message in (
         ((-1, 0, 0.0, 0.0, 1.0, 1.0), "maximum_hermite_order"),
         ((0, -1, 0.0, 0.0, 1.0, 1.0), "maximum_laguerre_order"),
-        ((0, 0, -1.0, 0.0, 1.0, 1.0), "target_kperp_rho"),
-        ((0, 0, 0.0, -1.0, 1.0, 1.0), "source_kperp_rho"),
+        ((0, 0, -1.0, 0.0, 1.0, 1.0), "target_bessel_argument"),
+        ((0, 0, 0.0, -1.0, 1.0, 1.0), "source_bessel_argument"),
         ((0, 0, 0.0, 0.0, 0.0, 1.0), "mass_ratio"),
         ((0, 0, 0.0, 0.0, 1.0, 0.0), "temperature_ratio"),
     ):

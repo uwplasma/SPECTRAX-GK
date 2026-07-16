@@ -63,7 +63,7 @@
     ],
     "field_small_b_observed_order": 1.9783402280143347,
     "interpretation": "equation-(3.5) finite-b classical gyro-diffusion in the test, field, and combined gyrocenter moments; particle-space local conservation cannot be reconstructed from the gyrophase-averaged matrix alone",
-    "kperp_rho": [
+    "bessel_argument": [
       0.0,
       0.1,
       0.2,
@@ -170,7 +170,7 @@
       "maximum_hermite_order": 1,
       "maximum_laguerre_order": 1
     },
-    "kperp_rho": 0.8,
+    "bessel_argument": 0.8,
     "orders": [
       2,
       4,
@@ -232,7 +232,7 @@
       "maximum_laguerre_order": 1
     },
     "bessel_laguerre_order": 6,
-    "kperp_rho": 0.8,
+    "bessel_argument": 0.8,
     "maximum_spherical_orders": [
       3,
       8,

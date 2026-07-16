@@ -1231,7 +1231,7 @@ def gyroaveraged_spherical_moment_coefficient(
     bessel_order: int,
     hermite_order: int,
     laguerre_order: int,
-    kperp_rho: float,
+    bessel_argument: float,
     *,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
@@ -1256,8 +1256,8 @@ def gyroaveraged_spherical_moment_coefficient(
         raise ValueError("basis and truncation orders must be >= 0")
     if bessel_order > spherical_order:
         raise ValueError("bessel_order must be <= spherical_order")
-    if not math.isfinite(kperp_rho) or kperp_rho < 0.0:
-        raise ValueError("kperp_rho must be finite and >= 0")
+    if not math.isfinite(bessel_argument) or bessel_argument < 0.0:
+        raise ValueError("bessel_argument must be finite and >= 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
 
@@ -1270,7 +1270,7 @@ def gyroaveraged_spherical_moment_coefficient(
             bessel_order,
             hermite_order,
             laguerre_order,
-            kperp_rho,
+            bessel_argument,
             maximum_bessel_laguerre_order,
             mp,
         )
@@ -1283,14 +1283,14 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
     bessel_order: int,
     hermite_order: int,
     laguerre_order: int,
-    kperp_rho: Any,
+    bessel_argument: Any,
     maximum_bessel_laguerre_order: int,
     mp: Any,
     *,
     associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
 ) -> Any:
-    b = mp.mpf(kperp_rho)
+    b = mp.mpf(bessel_argument)
     half_b = b / 2
     argument = half_b * half_b
     coefficient = mp.mpf(0)
@@ -1350,14 +1350,14 @@ def _gyroaveraged_polarization_coefficient_mp(
     spherical_order: int,
     spherical_radial_order: int,
     bessel_order: int,
-    kperp_rho: Any,
+    bessel_argument: Any,
     maximum_bessel_laguerre_order: int,
     mp: Any,
     *,
     associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
 ) -> Any:
-    b = mp.mpf(kperp_rho)
+    b = mp.mpf(bessel_argument)
     half_b = b / 2
     argument = half_b * half_b
     total = mp.mpf(0)
@@ -1423,7 +1423,7 @@ def gyroaveraged_polarization_coefficient(
     spherical_order: int,
     spherical_radial_order: int,
     bessel_order: int,
-    kperp_rho: float,
+    bessel_argument: float,
     *,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
@@ -1442,8 +1442,8 @@ def gyroaveraged_polarization_coefficient(
         raise ValueError("basis and truncation orders must be >= 0")
     if bessel_order > spherical_order:
         raise ValueError("bessel_order must be <= spherical_order")
-    if not math.isfinite(kperp_rho) or kperp_rho < 0.0:
-        raise ValueError("kperp_rho must be finite and >= 0")
+    if not math.isfinite(bessel_argument) or bessel_argument < 0.0:
+        raise ValueError("bessel_argument must be finite and >= 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
 
@@ -1454,7 +1454,7 @@ def gyroaveraged_polarization_coefficient(
             spherical_order,
             spherical_radial_order,
             bessel_order,
-            kperp_rho,
+            bessel_argument,
             maximum_bessel_laguerre_order,
             mp,
         )
@@ -1615,11 +1615,11 @@ def _coulomb_coefficient_functions(
 def coulomb_nonpolarized_moment_matrices(
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
-    target_kperp_rho: float,
+    target_bessel_argument: float,
     mass_ratio: float,
     temperature_ratio: float,
     *,
-    source_kperp_rho: float | None = None,
+    source_bessel_argument: float | None = None,
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
@@ -1632,9 +1632,10 @@ def coulomb_nonpolarized_moment_matrices(
     This contracts equations (3.48)--(3.49) of Frei et al. (2021), excluding
     the electrostatic polarization terms in equation (3.50).  Rows and columns
     use Hermite-major ``p * Nl + j`` ordering and the paper's Laguerre
-    convention. ``target_kperp_rho`` enters the outer gyroaverage and the test
-    moments; ``source_kperp_rho`` enters the field-particle source moments and
-    defaults to the target value for like species. Every finite truncation is
+    convention. ``target_bessel_argument`` enters the outer gyroaverage and
+    the test moments; ``source_bessel_argument`` enters the field-particle
+    source moments and defaults to the target value for like species. Both are
+    :math:`B=k_\perp v_{\mathrm{th}}/\Omega`. Every finite truncation is
     explicit so convergence can be assessed before a table is promoted.
     """
 
@@ -1642,13 +1643,15 @@ def coulomb_nonpolarized_moment_matrices(
         raise ValueError("maximum_hermite_order must be >= 0")
     if maximum_laguerre_order < 0:
         raise ValueError("maximum_laguerre_order must be >= 0")
-    if not math.isfinite(target_kperp_rho) or target_kperp_rho < 0.0:
-        raise ValueError("target_kperp_rho must be finite and >= 0")
-    source_kperp_rho = (
-        target_kperp_rho if source_kperp_rho is None else source_kperp_rho
+    if not math.isfinite(target_bessel_argument) or target_bessel_argument < 0.0:
+        raise ValueError("target_bessel_argument must be finite and >= 0")
+    source_bessel_argument = (
+        target_bessel_argument
+        if source_bessel_argument is None
+        else source_bessel_argument
     )
-    if not math.isfinite(source_kperp_rho) or source_kperp_rho < 0.0:
-        raise ValueError("source_kperp_rho must be finite and >= 0")
+    if not math.isfinite(source_bessel_argument) or source_bessel_argument < 0.0:
+        raise ValueError("source_bessel_argument must be finite and >= 0")
     if mass_ratio <= 0.0 or not math.isfinite(mass_ratio):
         raise ValueError("mass_ratio must be finite and > 0")
     if temperature_ratio <= 0.0 or not math.isfinite(temperature_ratio):
@@ -1677,12 +1680,12 @@ def coulomb_nonpolarized_moment_matrices(
     n_laguerre = maximum_laguerre_order + 1
     n_modes = (maximum_hermite_order + 1) * n_laguerre
     with mp.workdps(digits):
-        target_b = mp.mpf(target_kperp_rho)
-        source_b = mp.mpf(source_kperp_rho)
+        target_b = mp.mpf(target_bessel_argument)
+        source_b = mp.mpf(source_bessel_argument)
         sigma = mp.mpf(mass_ratio)
         tau = mp.mpf(temperature_ratio)
         half_b = target_b / 2
-        bessel_argument = half_b * half_b
+        quarter_b_squared = half_b * half_b
         drift_kinetic = target_b == 0
         bessel_orders = (
             (0,)
@@ -1848,11 +1851,11 @@ def coulomb_nonpolarized_moment_matrices(
                 * mp.factorial(p) ** 2
                 / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
             )
-        exponential = mp.exp(-bessel_argument)
+        exponential = mp.exp(-quarter_b_squared)
         bessel_factors = {
             m: tuple(
                 exponential
-                * bessel_argument**n
+                * quarter_b_squared**n
                 * half_b**m
                 / mp.factorial(n + m)
                 for n in bessel_orders
@@ -2362,8 +2365,8 @@ def improved_sugama_equal_temperature_moment_matrices(
 def coulomb_polarization_vectors(
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
-    target_kperp_rho: float,
-    source_kperp_rho: float,
+    target_bessel_argument: float,
+    source_bessel_argument: float,
     mass_ratio: float,
     temperature_ratio: float,
     *,
@@ -2387,8 +2390,8 @@ def coulomb_polarization_vectors(
     if maximum_laguerre_order < 0:
         raise ValueError("maximum_laguerre_order must be >= 0")
     for value, name in (
-        (target_kperp_rho, "target_kperp_rho"),
-        (source_kperp_rho, "source_kperp_rho"),
+        (target_bessel_argument, "target_bessel_argument"),
+        (source_bessel_argument, "source_bessel_argument"),
     ):
         if not math.isfinite(value) or value < 0.0:
             raise ValueError(f"{name} must be finite and >= 0")
@@ -2420,8 +2423,8 @@ def coulomb_polarization_vectors(
     n_laguerre = maximum_laguerre_order + 1
     n_modes = (maximum_hermite_order + 1) * n_laguerre
     with mp.workdps(digits):
-        target_b = mp.mpf(target_kperp_rho)
-        source_b = mp.mpf(source_kperp_rho)
+        target_b = mp.mpf(target_bessel_argument)
+        source_b = mp.mpf(source_bessel_argument)
         sigma = mp.mpf(mass_ratio)
         tau = mp.mpf(temperature_ratio)
         half_target_b = target_b / 2
@@ -2684,7 +2687,7 @@ def coulomb_polarization_vectors(
 
 
 def build_finite_wavelength_coulomb_pair_tables(
-    kperp_rho: tuple[float, ...],
+    bessel_arguments: tuple[float, ...],
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
     mass_ratio: float,
@@ -2698,20 +2701,21 @@ def build_finite_wavelength_coulomb_pair_tables(
     r"""Build one ordered-pair table for the JAX finite-wavelength operator.
 
     The returned test/field matrices and four polarization vectors have
-    independent target/source ``kperp*rho`` axes.  All kperp-independent
-    multiprecision basis algebra is shared across the scan.  Unlike the two
+    independent target/source :math:`B=k_\perp v_{\mathrm{th}}/\Omega` axes.
+    All wavelength-independent multiprecision basis algebra is shared across
+    the scan. Unlike the two
     equation-level generators, these tables use the runtime's signed Laguerre
     convention and can therefore be inserted directly below target/source
     species axes in :class:`FiniteWavelengthCoulombOperator`.
     """
 
-    grid = np.asarray(kperp_rho, dtype=float)
+    grid = np.asarray(bessel_arguments, dtype=float)
     if grid.ndim != 1 or grid.size < 2:
-        raise ValueError("kperp_rho must contain at least two points")
+        raise ValueError("bessel_arguments must contain at least two points")
     if not np.all(np.isfinite(grid)) or np.any(grid < 0.0):
-        raise ValueError("kperp_rho values must be finite and >= 0")
+        raise ValueError("bessel_arguments must be finite and >= 0")
     if np.any(np.diff(grid) <= 0.0):
-        raise ValueError("kperp_rho must be strictly increasing")
+        raise ValueError("bessel_arguments must be strictly increasing")
 
     import mpmath as mp
 
@@ -2734,15 +2738,15 @@ def build_finite_wavelength_coulomb_pair_tables(
             mp.mpf(temperature_ratio),
         )
         assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
-        for target_index, target_kperp in enumerate(grid):
-            for source_index, source_kperp in enumerate(grid):
+        for target_index, target_argument in enumerate(grid):
+            for source_index, source_argument in enumerate(grid):
                 pair_matrices = coulomb_nonpolarized_moment_matrices(
                     maximum_hermite_order,
                     maximum_laguerre_order,
-                    float(target_kperp),
+                    float(target_argument),
                     mass_ratio,
                     temperature_ratio,
-                    source_kperp_rho=float(source_kperp),
+                    source_bessel_argument=float(source_argument),
                     maximum_spherical_order=maximum_spherical_order,
                     maximum_spherical_radial_order=maximum_spherical_radial_order,
                     maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
@@ -2753,8 +2757,8 @@ def build_finite_wavelength_coulomb_pair_tables(
                 pair_vectors = coulomb_polarization_vectors(
                     maximum_hermite_order,
                     maximum_laguerre_order,
-                    float(target_kperp),
-                    float(source_kperp),
+                    float(target_argument),
+                    float(source_argument),
                     mass_ratio,
                     temperature_ratio,
                     maximum_spherical_order=maximum_spherical_order,
@@ -3071,7 +3075,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             },
             "matrix_truncation": {
                 "basis": {"maximum_hermite_order": 1, "maximum_laguerre_order": 1},
-                "kperp_rho": 0.8,
+                "bessel_argument": 0.8,
                 "spherical_cutoff": {
                     "maximum_order": 8,
                     "maximum_radial_order": 4,
@@ -3082,7 +3086,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             },
             "spherical_truncation": {
                 "basis": {"maximum_hermite_order": 1, "maximum_laguerre_order": 1},
-                "kperp_rho": 0.8,
+                "bessel_argument": 0.8,
                 "bessel_laguerre_order": 6,
                 "maximum_spherical_orders": [
                     cutoff[0] for cutoff in spherical_truncation_cutoffs
@@ -3097,7 +3101,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             "eigenvalues": eigenvalues,
             "invariant_residuals": invariant_residuals,
             "gyrocenter_diffusion": {
-                "kperp_rho": gyrocenter_b,
+                "bessel_argument": gyrocenter_b,
                 "test_density_row_infinity_norm": gyrocenter_test_density_rows_array,
                 "field_density_row_infinity_norm": gyrocenter_field_density_rows_array,
                 "density_row_infinity_norm": gyrocenter_density_rows_array,
@@ -3240,7 +3244,7 @@ def write_coulomb_operator_verification_figure(
         color=colors["ink"],
     )
     gyrocenter = summary["gyrocenter_diffusion"]
-    gyrocenter_b = np.asarray(gyrocenter["kperp_rho"], dtype=float)[1:]
+    gyrocenter_b = np.asarray(gyrocenter["bessel_argument"], dtype=float)[1:]
     test_density_row = np.asarray(
         gyrocenter["test_density_row_infinity_norm"], dtype=float
     )[1:]
