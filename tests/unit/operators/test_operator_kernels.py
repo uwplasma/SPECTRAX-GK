@@ -46,6 +46,8 @@ from spectraxgk.operators.linear import (
     interpolate_collision_moment_matrix,
     interpolate_collision_pair_table,
     load_collision_moment_matrix,
+    parallel_electric_field_source,
+    solve_driven_collision_response,
 )
 from spectraxgk.operators.linear.dissipation import (
     collision_quadratic_rate,
@@ -96,6 +98,104 @@ def test_streaming_invalid_shape() -> None:
     """Hermite axis length must be positive."""
     with pytest.raises(ValueError):
         hermite_streaming(jnp.zeros((2, 0)), kpar=1.0, vth=1.0)
+
+
+def test_parallel_electric_field_source_matches_moment_equation() -> None:
+    """Frei et al. (2022), Eq. (81), drives only N10 at linear order."""
+    field = jnp.asarray(1.0e-3)
+
+    source = parallel_electric_field_source(4, 2, field)
+
+    expected = jnp.zeros(15).at[3].set(-jnp.sqrt(2.0) * field)
+    np.testing.assert_allclose(source, expected, rtol=0.0, atol=0.0)
+    with pytest.raises(ValueError, match="hermite"):
+        parallel_electric_field_source(0, 1, field)
+    with pytest.raises(ValueError, match="laguerre"):
+        parallel_electric_field_source(1, -1, field)
+    with pytest.raises(ValueError, match="scalar"):
+        parallel_electric_field_source(1, 0, jnp.ones(2))
+
+
+def test_driven_collision_response_matches_saturation_and_derivative() -> None:
+    """A dissipative moment ladder must reach its exact forced steady state."""
+    damping = jnp.asarray([0.0, 2.0, 3.0, 5.0])
+    collision = -jnp.diag(damping)
+    active = (1, 2, 3)
+
+    def current(field: jnp.ndarray) -> jnp.ndarray:
+        source = parallel_electric_field_source(3, 0, field)
+        return solve_driven_collision_response(
+            collision, source, active_modes=active
+        )[1]
+
+    field = jnp.asarray(1.0e-3)
+    response = jax.jit(
+        lambda value: solve_driven_collision_response(
+            collision,
+            parallel_electric_field_source(3, 0, value),
+            active_modes=active,
+        )
+    )(field)
+    expected_current = -jnp.sqrt(2.0) * field / damping[1]
+    np.testing.assert_allclose(response[1], expected_current, rtol=2.0e-6)
+    np.testing.assert_allclose(np.asarray(response)[[0, 2, 3]], 0.0, atol=0.0)
+
+    reduced = np.asarray(collision)[np.ix_(active, active)]
+    steady = np.asarray(response)[list(active)]
+    transient = steady + jax.scipy.linalg.expm(jnp.asarray(reduced) * 20.0) @ (
+        -jnp.asarray(steady)
+    )
+    np.testing.assert_allclose(transient, steady, rtol=1.0e-6, atol=1.0e-12)
+
+    tangent = jax.grad(current)(field)
+    step = 1.0e-5
+    finite_difference = (current(field + step) - current(field - step)) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=2.0e-4)
+
+
+def test_driven_collision_response_rejects_invalid_subspaces() -> None:
+    matrix = jnp.eye(3)
+    source = jnp.ones(3)
+    with pytest.raises(ValueError, match="square"):
+        solve_driven_collision_response(jnp.ones((2, 3)), source, active_modes=(1,))
+    with pytest.raises(ValueError, match="dimension"):
+        solve_driven_collision_response(matrix, jnp.ones(2), active_modes=(1,))
+    with pytest.raises(ValueError, match="at least one"):
+        solve_driven_collision_response(matrix, source, active_modes=())
+    with pytest.raises(ValueError, match="unique"):
+        solve_driven_collision_response(matrix, source, active_modes=(1, 1))
+    with pytest.raises(ValueError, match="out-of-range"):
+        solve_driven_collision_response(matrix, source, active_modes=(3,))
+
+
+def test_reduced_sugama_current_recovers_high_charge_limit() -> None:
+    """The Appendix-C current ordering must approach the common Lorentz limit."""
+    source = parallel_electric_field_source(3, 1, jnp.asarray(1.0e-3))
+    active_flow_modes = (2, 3, 6)
+
+    def current(
+        pair_model,
+        ion_charge: float,
+    ) -> float:
+        electron_test, electron_field = pair_model(1.0, 1.0)
+        electron_ion_test, _ = pair_model(1.0 / 1836.0, 1.0)
+        collision = electron_test + electron_field + ion_charge * electron_ion_test
+        response = solve_driven_collision_response(
+            collision,
+            source,
+            active_modes=active_flow_modes,
+        )
+        return float(jnp.abs(response[2] / jnp.sqrt(2.0)))
+
+    original_low_charge = current(drift_kinetic_sugama_pair_matrices, 1.0)
+    improved_low_charge = current(drift_kinetic_improved_sugama_pair_matrices, 1.0)
+    original_high_charge = current(drift_kinetic_sugama_pair_matrices, 100.0)
+    improved_high_charge = current(
+        drift_kinetic_improved_sugama_pair_matrices, 100.0
+    )
+
+    assert improved_low_charge / original_low_charge > 1.10
+    assert abs(improved_high_charge / original_high_charge - 1.0) < 0.01
 
 
 def test_linear_operator_package_reexports_streaming_kernel() -> None:

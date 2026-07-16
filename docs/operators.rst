@@ -652,6 +652,39 @@ operator approaches Coulomb within 1%; SPECTRAX-GK therefore keeps
 conductivity promotion blocked until the arbitrary-moment correction hierarchy
 and its driven steady-state gate are implemented.
 
+Driven parallel-current response
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The response algorithm needed by that promotion is now an explicit JAX
+contract. For a Maxwellian electron background, equation (81) of Frei, Ernst
+& Ricci (2022) linearizes to
+
+.. math::
+
+   \frac{dN_e^{pj}}{dt}
+   = \sum_{p'j'} C_{pj,p'j'}N_e^{p'j'} + s_E^{pj},
+   \qquad
+   s_E^{pj}=-\sqrt{2}\,\widehat E\,\delta_{p1}\delta_{j0},
+
+where :math:`\widehat E=eE/(v_{Te}m_e)` and the electron current follows from
+:math:`u_e=N_e^{10}v_{Te}/\sqrt{2}`. ``parallel_electric_field_source``
+constructs this source in Hermite-major ordering, and
+``solve_driven_collision_response`` solves
+:math:`C N_e+s_E=0` after explicitly removing invariant or intentionally
+truncated modes. The solve uses ``jax.numpy.linalg.solve`` and passes JIT,
+steady-time-limit, and AD/finite-difference gates.
+
+The lowest-order Appendix-C original and improved Sugama blocks provide a
+useful equation-level boundary: at :math:`Z=1` the improved block carries over
+10% more current than the original, while their difference is below 1% by
+:math:`Z=100`, where pitch-angle scattering dominates. This reproduces the
+published qualitative ordering, but it is not a Spitzer-conductivity result.
+The publication gate still requires independently generated Coulomb, original,
+and improved matrices at :math:`(P,J)=(20,5)`, a truncation scan, saturation in
+time under :math:`eE/(\sqrt{m_eT_e}\nu_{ee})=10^{-3}`, and the Figure-16 scan
+over ion charge. No input-file collision selector is enabled by this response
+utility.
+
 A deterministic Cyclone ITG probe also records the finite-wavelength failure
 boundary rather than hiding it. At :math:`k_y\rho\simeq0.63`, increasing the
 normalized collision weight from zero to three damps the fitted growth rate;

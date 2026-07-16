@@ -698,6 +698,15 @@ classical gyro-diffusion discussed after equation (3.5) of Frei et al. (2021).
 Particle-space conservation would require evaluating the pre-gyroaverage
 operator at fixed particle position; it cannot be reconstructed from the
 gyrophase-independent runtime matrix.
+
+The strongly collisional stage now has a differentiable constrained-response
+solver rather than a matrix-distance surrogate. It removes stated invariant
+modes, solves the remaining dense moment system on device, and differentiates
+the resulting current through the same JAX solve. Analytic damping, long-time
+matrix-exponential, JIT, and centered finite-difference checks close this
+algorithmic layer. Physical conductivity remains open until the full
+:math:`(P,J)=(20,5)` collision hierarchy is generated and its current is
+converged in both velocity resolution and saturation time.
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
 
