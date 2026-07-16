@@ -387,9 +387,15 @@ That topology is the reference design for the production parallel lane.
   evolved variable as gyrocenter ``g``; the renamed
   ``DriftKineticMomentCollisionOperator`` now encodes that convention while
   finite-wavelength tabulated operators retain their explicit Hamiltonian
-  convention. Unit, artifact-protocol, geometry-ratio, invariant, lint, and
-  type-facing import gates pass. Corrected paper-resolution traces are running
-  before any physics promotion.
+  convention. Corrected P24/J10 traces reach ``t nu=30`` with late-window
+  responses 0.00565 (original Sugama), 0.00572 (Coulomb), and 0.00585
+  (improved Sugama K=5), all within the predeclared 0.0015 absolute gate around
+  the Xiao value 0.00508. Original Sugama damps most strongly and improved
+  Sugama's early-window RMS error versus Coulomb is 0.00371, below the original
+  model's 0.00631. The scoped Figure-12 gate and publication panel pass; the
+  finite-wavelength Figure-13/14 traces and velocity sections remain open.
+  Unit, artifact-protocol, geometry-ratio, invariant, lint, and documentation
+  gates pass.
 
 - 2026-07-16: Removed the next collisional-zonal generator bottleneck before
   launching the paper hierarchy. The drift-kinetic Coulomb owner now

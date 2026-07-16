@@ -933,6 +933,19 @@ and keeps the generated dense archive outside the repository. Coulomb,
 original-Sugama, and improved-Sugama runs use the same initial state, grid, and
 time discretization.
 
+.. figure:: _static/collision_drift_kinetic_zonal_response.png
+   :alt: Paper-resolution drift-kinetic collisional zonal-response traces
+   :width: 100%
+
+   Drift-kinetic Figure-12 validation at :math:`(P,J)=(24,10)`. The late-window
+   medians are 0.00565 (original Sugama), 0.00572 (Coulomb), and 0.00585
+   (improved Sugama, :math:`K=5`) against the Xiao estimate 0.00508. Original
+   Sugama damps most strongly, while improved Sugama has the smaller RMS error
+   relative to Coulomb over :math:`t\nu\leq10`. The passing JSON gate and
+   replayable traces are :download:`available here
+   <_static/collision_drift_kinetic_zonal_response.json>` and
+   :download:`here <_static/collision_drift_kinetic_zonal_response.csv>`.
+
 The acceptance contract is implemented by the existing zonal-artifact owner::
 
    python tools/artifacts/build_zonal_flow_artifacts.py collisional-zonal \

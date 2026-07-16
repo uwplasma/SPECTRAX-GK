@@ -1,0 +1,45 @@
+{
+  "claim_scope": "drift_kinetic_collisional_zonal_response_figure_12",
+  "early_window_rms_error_vs_coulomb": {
+    "improved_sugama": 0.0037115255996629172,
+    "original_sugama": 0.00631360740568076
+  },
+  "gate_passed": true,
+  "gates": {
+    "all_drift_kinetic_models_present": true,
+    "finite_values": true,
+    "improved_sugama_closer_to_coulomb_before_tnu10": true,
+    "normalized_time_window_reaches_30": true,
+    "original_sugama_damps_most_strongly": true,
+    "paper_resolution_reached": true,
+    "residual_matches_xiao": true
+  },
+  "protocol": {
+    "epsilon": 0.1,
+    "figures": [
+      12,
+      13,
+      14
+    ],
+    "maximum_hermite_order": 24,
+    "maximum_laguerre_order": 10,
+    "normalized_collisionality": 3.13,
+    "paper": "Frei, Ernst & Ricci, Phys. Plasmas 29, 093902 (2022)",
+    "q": 1.4,
+    "wavenumbers": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "xiao_residual": 0.005076142131979697
+  },
+  "schema_version": 1,
+  "tail_response": {
+    "coulomb": 0.005720524835652089,
+    "improved_sugama": 0.005854334762681554,
+    "original_sugama": 0.005650742911988207
+  },
+  "thresholds": {
+    "xiao_residual_absolute_tolerance": 0.0015
+  }
+}

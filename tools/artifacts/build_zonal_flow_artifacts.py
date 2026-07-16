@@ -715,6 +715,178 @@ def write_collisional_zonal_artifacts(
     return summary
 
 
+def summarize_drift_kinetic_collisional_zonal_campaign(
+    trace_records: list[dict[str, object]],
+    *,
+    residual_atol: float = 1.5e-3,
+) -> dict[str, object]:
+    """Evaluate the drift-kinetic Figure-12 subset of the paper protocol."""
+
+    required_models = ("coulomb", "original_sugama", "improved_sugama")
+    normalized: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+    finite = True
+    resolution = True
+    coverage = True
+    tails: dict[str, float] = {}
+    for model in required_models:
+        rows = sorted(
+            (
+                row
+                for row in trace_records
+                if str(row["model"]).strip().lower() == model
+                and np.isclose(float(row["kx"]), 0.05)
+            ),
+            key=lambda row: float(row["t_nu"]),
+        )
+        if not rows:
+            coverage = False
+            continue
+        time = np.asarray([float(row["t_nu"]) for row in rows])
+        response = np.asarray([float(row["response"]) for row in rows])
+        finite &= bool(np.all(np.isfinite(time)) and np.all(np.isfinite(response)))
+        resolution &= all(
+            int(row["p_max"]) >= 24 and int(row["j_max"]) >= 10 for row in rows
+        )
+        coverage &= bool(time.size >= 50 and time[0] <= 0.05 and time[-1] >= 30.0)
+        if abs(response[0]) < 1.0e-14:
+            finite = False
+            continue
+        response = response / response[0]
+        normalized[model] = time, response
+        tail = response[time >= 25.0]
+        if tail.size < 5:
+            coverage = False
+        else:
+            tails[model] = float(np.median(tail))
+
+    complete = len(normalized) == len(required_models)
+    xiao = float(COLLISIONAL_ZONAL_PROTOCOL["xiao_residual"])
+    residual = complete and all(
+        abs(tails.get(model, np.inf) - xiao) <= residual_atol
+        for model in required_models
+    )
+    ordering = complete and tails.get("original_sugama", np.inf) < min(
+        tails.get("coulomb", -np.inf), tails.get("improved_sugama", -np.inf)
+    )
+    early_errors: dict[str, float] = {}
+    improved_closer = False
+    if complete:
+        base_time, base = normalized["coulomb"]
+        mask = base_time <= 10.0
+        for model in ("original_sugama", "improved_sugama"):
+            time, response = normalized[model]
+            compared = np.interp(base_time[mask], time, response)
+            early_errors[model] = float(np.sqrt(np.mean((compared - base[mask]) ** 2)))
+        improved_closer = (
+            early_errors["improved_sugama"] < early_errors["original_sugama"]
+        )
+    gates = {
+        "finite_values": finite,
+        "paper_resolution_reached": resolution,
+        "all_drift_kinetic_models_present": complete,
+        "normalized_time_window_reaches_30": coverage,
+        "residual_matches_xiao": residual,
+        "original_sugama_damps_most_strongly": ordering,
+        "improved_sugama_closer_to_coulomb_before_tnu10": improved_closer,
+    }
+    return {
+        "schema_version": 1,
+        "claim_scope": "drift_kinetic_collisional_zonal_response_figure_12",
+        "protocol": dict(COLLISIONAL_ZONAL_PROTOCOL),
+        "thresholds": {"xiao_residual_absolute_tolerance": residual_atol},
+        "tail_response": tails,
+        "early_window_rms_error_vs_coulomb": early_errors,
+        "gates": gates,
+        "gate_passed": all(gates.values()),
+    }
+
+
+def write_drift_kinetic_collisional_zonal_artifacts(
+    trace_records: list[dict[str, object]],
+    *,
+    out_json: Path,
+    out_png: Path,
+) -> dict[str, object]:
+    """Write the scoped Figure-12 gate and publication panel."""
+
+    summary = summarize_drift_kinetic_collisional_zonal_campaign(trace_records)
+    colors = {
+        "coulomb": "#246A8D",
+        "original_sugama": "#C43D3D",
+        "improved_sugama": "#22A884",
+    }
+    labels = {
+        "coulomb": "Coulomb",
+        "original_sugama": "original Sugama",
+        "improved_sugama": "improved Sugama (K=5)",
+    }
+    set_plot_style()
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.7), constrained_layout=True)
+    for model, color in colors.items():
+        rows = sorted(
+            (
+                row
+                for row in trace_records
+                if str(row["model"]).strip().lower() == model
+                and np.isclose(float(row["kx"]), 0.05)
+            ),
+            key=lambda row: float(row["t_nu"]),
+        )
+        if not rows:
+            continue
+        time = np.asarray([float(row["t_nu"]) for row in rows])
+        response = np.asarray([float(row["response"]) for row in rows])
+        response /= response[0]
+        axes[0].plot(time, np.abs(response), color=color, lw=1.45, label=labels[model])
+        axes[1].plot(time, 1.0e3 * response, color=color, lw=1.7, label=labels[model])
+    xiao = float(COLLISIONAL_ZONAL_PROTOCOL["xiao_residual"])
+    collisionless = 1.0 / (1.0 + 1.6 * 1.4 / np.sqrt(0.1))
+    axes[0].axhline(
+        collisionless, color="#252A30", ls="--", lw=1.0, label="collisionless"
+    )
+    axes[0].axhline(xiao, color="#4666B0", ls=":", lw=1.2, label="Xiao residual")
+    axes[1].axhline(1.0e3 * xiao, color="#4666B0", ls=":", lw=1.2)
+    axes[0].set(yscale="log", xlim=(0.0, 30.0), ylim=(2.5e-3, 1.1))
+    axes[1].set(xlim=(15.0, 30.0), ylim=(4.8, 6.8))
+    axes[0].set_xlabel(r"$t\nu_{ii}$")
+    axes[1].set_xlabel(r"$t\nu_{ii}$")
+    axes[0].set_ylabel(r"$|R_z(t)|$")
+    axes[1].set_ylabel(r"$10^3 R_z(t)$")
+    axes[0].set_title("Damping history")
+    axes[1].set_title("Late-time response")
+    axes[0].legend(frameon=False, fontsize=7.5, ncol=2)
+    for axis in axes:
+        axis.grid(alpha=0.22, lw=0.6)
+        axis.spines[["top", "right"]].set_visible(False)
+    status = "PASS" if summary["gate_passed"] else "OPEN"
+    fig.suptitle(
+        rf"Drift-kinetic zonal response: $k_x\rho_i=0.05$, $\nu_i^*=3.13$ ({status})",
+        fontsize=12.5,
+    )
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=220, facecolor="white")
+    plt.close(fig)
+    _write_json(out_json, summary)
+    return summary
+
+
+def _main_collisional_zonal_dk(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Gate the paper's drift-kinetic Figure 12."
+    )
+    parser.add_argument("--traces", type=Path, required=True)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--out-png", type=Path, required=True)
+    args = parser.parse_args(argv)
+    summary = write_drift_kinetic_collisional_zonal_artifacts(
+        _read_campaign_csv(args.traces), out_json=args.out_json, out_png=args.out_png
+    )
+    print(
+        f"drift-kinetic zonal literature gate: {'PASS' if summary['gate_passed'] else 'OPEN'}"
+    )
+    return 0 if summary["gate_passed"] else 1
+
+
 def _main_collisional_zonal(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Gate Frei--Ernst--Ricci collisional zonal-response traces."
@@ -1423,7 +1595,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "usage: build_zonal_flow_artifacts.py "
             "{response-csv,response-output,objective-gate,miller-panel,"
-            "collisional-zonal,simulate-collisional-zonal-dk} ..."
+            "collisional-zonal-dk,collisional-zonal,simulate-collisional-zonal-dk} ..."
         )
         return 2
     command, rest = tokens[0], tokens[1:]
@@ -1435,6 +1607,8 @@ def main(argv: list[str] | None = None) -> int:
         return _main_objective_gate(rest)
     if command == "miller-panel":
         return _main_miller_panel(rest)
+    if command == "collisional-zonal-dk":
+        return _main_collisional_zonal_dk(rest)
     if command == "collisional-zonal":
         return _main_collisional_zonal(rest)
     if command == "simulate-collisional-zonal-dk":

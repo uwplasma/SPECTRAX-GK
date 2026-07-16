@@ -4035,6 +4035,61 @@ def test_collisional_zonal_campaign_requires_complete_paper_protocol(
         image.verify()
 
 
+def test_drift_kinetic_collisional_zonal_subset_writes_paper_panel(
+    tmp_path: Path,
+) -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    traces, _sections = _complete_collisional_zonal_records()
+
+    summary = mod.write_drift_kinetic_collisional_zonal_artifacts(
+        traces,
+        out_json=tmp_path / "drift_kinetic_zonal.json",
+        out_png=tmp_path / "drift_kinetic_zonal.png",
+    )
+
+    assert summary["gate_passed"] is True
+    assert summary["gates"]["original_sugama_damps_most_strongly"] is True
+    assert (
+        summary["early_window_rms_error_vs_coulomb"]["improved_sugama"]
+        < summary["early_window_rms_error_vs_coulomb"]["original_sugama"]
+    )
+    with Image.open(tmp_path / "drift_kinetic_zonal.png") as image:
+        image.verify()
+
+
+def test_drift_kinetic_collisional_zonal_subset_fails_closed() -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    traces, _sections = _complete_collisional_zonal_records()
+    incomplete = [row for row in traces if row["model"] != "improved_sugama"]
+
+    summary = mod.summarize_drift_kinetic_collisional_zonal_campaign(incomplete)
+
+    assert summary["gate_passed"] is False
+    assert summary["gates"]["all_drift_kinetic_models_present"] is False
+
+
+def test_tracked_drift_kinetic_zonal_artifact_is_replayable_and_passed() -> None:
+    static = ROOT / "docs" / "_static"
+    payload = json.loads(
+        (static / "collision_drift_kinetic_zonal_response.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    with (static / "collision_drift_kinetic_zonal_response.csv").open(
+        newline="", encoding="utf-8"
+    ) as stream:
+        rows = list(csv.DictReader(stream))
+
+    assert payload["gate_passed"] is True
+    assert all(payload["gates"].values())
+    assert {row["model"] for row in rows} == {
+        "coulomb",
+        "original_sugama",
+        "improved_sugama",
+    }
+    assert max(float(row["t_nu"]) for row in rows) >= 30.0
+
+
 def test_collisional_zonal_campaign_fails_when_a_velocity_section_is_missing() -> None:
     mod = load_artifact_tool("build_zonal_flow_artifacts")
     traces, sections = _complete_collisional_zonal_records()
