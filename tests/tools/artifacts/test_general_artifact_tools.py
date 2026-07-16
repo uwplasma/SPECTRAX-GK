@@ -3321,7 +3321,7 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     path = ROOT / "docs/_static/collision_finite_wavelength_generation_hierarchy.json"
     summary = json.loads(path.read_text(encoding="utf-8"))
 
-    assert summary["schema_version"] == 3
+    assert summary["schema_version"] == 4
     assert summary["claim_scope"] == (
         "offline_generator_hierarchy_not_transport_acceptance"
     )
@@ -3333,10 +3333,20 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
         "b_0p5_p9_p12_common_block_converged": True,
         "literature_resolution_reached": False,
         "paper_required_wavelength_generated": True,
+        "paper_wavelength_factorized_arrays_bitwise_identical": True,
         "paper_wavelength_p12_completed_within_600_seconds": True,
         "paper_wavelength_p7_p9_common_block_converged": False,
         "paper_wavelength_p9_p12_common_block_converged": True,
     }
+    factorized = summary["factorized_generator"]
+    assert factorized["source_commit"] == "84a96912"
+    assert factorized["array_identity"].startswith("bitwise_all_six_arrays")
+    assert [row["maximum_hermite_order"] for row in factorized["resolutions"]] == [
+        7,
+        9,
+        12,
+    ]
+    assert factorized["resolutions"][-1]["total_seconds"] < 150.0
     assert summary["normalization"] == {
         "generator_coordinate": "B=k_perp*v_thermal/Omega=sqrt(2*tau)*k_perp",
         "paper_kperp_for_B_0p5_at_tau_1": pytest.approx(0.5 / np.sqrt(2.0)),

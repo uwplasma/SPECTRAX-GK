@@ -730,6 +730,18 @@ acceptance claim: the paper-facing growth scan remains blocked until the
 published :math:`(18,6)` endpoint or a demonstrably equivalent converged
 resolution is available.
 
+The exact generator subsequently contracts the Bessel expansion with each
+Laguerre product before applying the inverse Hermite--Laguerre transform. It
+also caches the shared Poisson/Bessel kernels and uses the associated basis's
+exact reduced-degree support. On the local CPU, the same archived
+:math:`(7,3)`, :math:`(9,4)`, and :math:`(12,5)` tables rebuild in 11.35,
+37.27, and 139.42 seconds. Every one of the six generated arrays is bitwise
+identical to its archived GMP result. These timings establish generator
+efficiency and identity only; a bounded :math:`(15,6)` probe still required
+350.84 seconds for its matrix before polarization, so the paper endpoint
+requires the planned shared-precompute Hermite decomposition rather than an
+unbounded serial run.
+
 The runtime-level scan below applies those exact tables through the complete
 solved-field RHS at the paper's homogeneous-slab parameters. It confirms
 collisional stabilization and shows why the gate remains open: the

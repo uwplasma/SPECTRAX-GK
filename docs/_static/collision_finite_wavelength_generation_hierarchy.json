@@ -7,6 +7,7 @@
     "b_0p5_p9_p12_common_block_converged": true,
     "literature_resolution_reached": false,
     "paper_required_wavelength_generated": true,
+    "paper_wavelength_factorized_arrays_bitwise_identical": true,
     "paper_wavelength_p12_completed_within_600_seconds": true,
     "paper_wavelength_p7_p9_common_block_converged": false,
     "paper_wavelength_p9_p12_common_block_converged": true
@@ -116,6 +117,31 @@
       }
     ]
   },
-  "schema_version": 3,
+  "factorized_generator": {
+    "array_identity": "bitwise_all_six_arrays_against_archived_gmp_outputs",
+    "execution_host": "local_cpu_2026-07-16",
+    "resolutions": [
+      {
+        "matrix_seconds": 9.519282708875835,
+        "maximum_hermite_order": 7,
+        "maximum_laguerre_order": 3,
+        "total_seconds": 11.348103291820735
+      },
+      {
+        "matrix_seconds": 32.339289207942784,
+        "maximum_hermite_order": 9,
+        "maximum_laguerre_order": 4,
+        "total_seconds": 37.2728788331151
+      },
+      {
+        "matrix_seconds": 124.11783470772207,
+        "maximum_hermite_order": 12,
+        "maximum_laguerre_order": 5,
+        "total_seconds": 139.42263141600415
+      }
+    ],
+    "source_commit": "84a96912"
+  },
+  "schema_version": 4,
   "source_commit": "b8035b09"
 }

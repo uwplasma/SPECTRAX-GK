@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Rebuilt the exact paper-wavelength P7, P9, and P12 hierarchy with
+  the Bessel-factored generator. All six arrays at every resolution are bitwise
+  identical to the archived GMP outputs. Local total times are 11.35, 37.27,
+  and 139.42 seconds versus the archived office totals 43.48, 145.71, and
+  557.87 seconds; the P12 gain is 4.00x without a precision change. A bounded
+  P15/J6 probe reached matrix completion in 350.84 seconds but was stopped
+  before polarization at the local five-minute boundary, so no partial table
+  was retained. The serial P18 endpoint is therefore not admissible. The next
+  generator tranche must partition output Hermite rows after shared moment and
+  Laguerre-product precomputation, keeping inverse-transform keys disjoint by
+  worker, and prove serial/decomposed bitwise identity before the endpoint run.
+
 - 2026-07-16: Factored the remaining Bessel-index repetition out of the exact
   finite-wavelength matrix and polarization rows. Profiling showed 5.8 million
   cached inverse-transform calls because every Laguerre product reapplied the
