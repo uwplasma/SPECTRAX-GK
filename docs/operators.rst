@@ -559,6 +559,16 @@ nonzero finite-:math:`b` row, and measures the expected leading
 particle-space momentum and energy balances instead of incorrectly imposing
 local gyrocenter nulls.
 
+The multiprecision generator uses exact integer combinatorics for polynomial
+binomial factors and arbitrary precision only where gamma functions and
+non-integer coefficients require it. This preserves coefficients bit for bit
+while making higher truncation audits practical. A preliminary signed-
+:math:`J_0` pullback contraction does not yet converge to particle conservation
+through :math:`N_\ell=4`; it is retained as diagnostic negative evidence, not
+as an acceptance gate. The remaining derivation must include the complete
+particle/gyrocenter pullback and finite projection before a conservation claim
+is made.
+
 The lowest-order multispecies drift-kinetic boundary is also implemented
 without assuming equal species. For an ordered pair :math:`(a,b)`,
 ``drift_kinetic_sugama_pair_matrices`` evaluates Appendix C, equations

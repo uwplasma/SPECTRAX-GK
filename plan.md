@@ -203,8 +203,8 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 100% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. Flow shear is explicitly unpromoted after its fixed-step response gate failed. |
-| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. The existing linear-validation owner now includes the factorized multiprecision Coulomb generator, finite-wavelength gyro-diffusion and assembled-block convergence gates, and paper-facing verification artifact; no tool was added. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted, and the enforced 95-tool target is met at 91,026 lines. |
-| Test consolidation | 100% | The enforced 95-file topology target and 95% package-wide coverage gate are met; the suite has 93,726 lines after adding ordered-pair interpolation, full-RHS tabulated-collision, and independent finite-Larmor kernel/projection/reconstruction, Coulomb speed-integral/moment, generalized-Laguerre, velocity-projection, finite-m parity-block/analytic-inverse, Laguerre-product, gyroaveraged-spherical-moment, inverse-shell, high-condition, runtime pair-loop, full-RHS, JIT/JVP, matrix-truncation, gyro-diffusion, and publication-artifact gates. Current-API campaign contracts replaced compatibility tests, status-dashboard metrics moved to mapping-subset assertions, installed-wheel/nonlinear-gate/Miller-cache regressions were added, and repeated runtime, geometry, objective, diagnostic, and artifact setup moved to shared fixtures. Large objective, parallel, artifact, and comparison owners retain domain-local scientific cases and one import boundary. An AST/fan-in audit found that the remaining repeated two-line tool loaders intentionally reload monkeypatch-heavy scripts per test; centralizing them would leak state or add indirection without reducing setup. The planned test-normalization lane is closed: future reductions must remove a demonstrated duplicate contract, never a physics, convergence, failure-mode, or coverage gate. |
+| Tool consolidation | 100% | Runtime comparisons, imported-linear fields/growth/windows, term-resolved RHS and nonlinear comparison workflows, VMEC state mapping and admission, holdout selection, nonlinear-gradient evidence, transport admission and window statistics, geometry generation, validation artifacts, repository hygiene, validation traceability, architecture/refactor policy, quasilinear calibration/promotion policy, and performance/scaling release checks have one current owner per domain. The existing linear-validation owner now includes the factorized multiprecision Coulomb generator, finite-wavelength gyro-diffusion and assembled-block convergence gates, and paper-facing verification artifact; no tool was added. Four tools tied to VMEC-JAX's removed private optimizer generation were deleted, and the enforced 95-tool target is met at 91,029 lines. |
+| Test consolidation | 100% | The enforced 95-file topology target and 95% package-wide coverage gate are met; the suite has 93,772 lines after adding ordered-pair interpolation, full-RHS tabulated-collision, and independent finite-Larmor kernel/projection/reconstruction, Coulomb speed-integral/moment, generalized-Laguerre, velocity-projection, finite-m parity-block/analytic-inverse, Laguerre-product, gyroaveraged-spherical-moment, inverse-shell, high-condition, runtime pair-loop, full-RHS, JIT/JVP, matrix-truncation, gyro-diffusion, exact-integer combinatorics, fast tracked-artifact, and nightly regeneration gates. Current-API campaign contracts replaced compatibility tests, status-dashboard metrics moved to mapping-subset assertions, installed-wheel/nonlinear-gate/Miller-cache regressions were added, and repeated runtime, geometry, objective, diagnostic, and artifact setup moved to shared fixtures. Large objective, parallel, artifact, and comparison owners retain domain-local scientific cases and one import boundary. An AST/fan-in audit found that the remaining repeated two-line tool loaders intentionally reload monkeypatch-heavy scripts per test; centralizing them would leak state or add indirection without reducing setup. The planned test-normalization lane is closed: future reductions must remove a demonstrated duplicate contract, never a physics, convergence, failure-mode, or coverage gate. |
 | Source consolidation | 100% | The zero-exception architecture gate passes at 219 installable modules after deleting redundant facades, merging nonlinear Laguerre transforms into their velocity-basis owner, reducing duplicated solver/cache/workflow/gradient/nonlinear-report policy, and removing private compatibility exports and obsolete optimizer adapters. The package has 87,493 lines after adding the differentiable finite-wavelength Coulomb runtime. One deliberate domain owner, ``operators/linear/collisions.py``, separates 923 lines of collision equations, interpolation, and application from the 218-line generic cache-array module; no compatibility facade or duplicate implementation was retained, and no module reaches the 1,000-line ceiling. Single-consumer QA, stellarator residual, growth-series, and VMEC boundary-chain policy splits remain consolidated. Reusable contracts, fit/window algorithms, tables, tensor mappings, collision equations, and solved-state sensitivity retain separate owners because they have independent consumers or numerical responsibilities. Future merges require fan-in evidence and must not trade domain clarity for file-count reduction. |
 | Structured solver ownership | 97% | Dtype-aware Arnoldi breakdown and true shifted-system residual retries close false convergence. Retained-Ritz, one- and two-sided Jacobi--Davidson, ordered-Schur thick restart, alternative seeds, nested field solves, and explicit field blocks with diagonal/Hermite complements were physically rejected. KBM remains on validated time integration; future acceleration requires a different branch-preserving interior spectral transformation. |
 | Differentiable API clarity | 100% | Fixed-step pmap reverse mode, adaptive forward/checkpointed-reverse derivatives, and a physical IMEX endpoint heat-flux implicit VJP pass finite-difference gates; converged noisy transport optimization remains a separate science claim. |
@@ -283,17 +283,21 @@ for a higher-level physical result.
    moment states, published low-order coefficients, Maxwellian/density nulls,
    total momentum and energy invariants, adjointness, and non-positive entropy
    production. The tracked JSON/PNG artifact passes all six numerical gates.
-2. **Finite-truncation convergence (operator closed; runtime pending).** Track
+2. **Finite-truncation convergence (low-order block closed; full hierarchy open).** Track
    Bessel--Laguerre convergence at finite :math:`k_\perp\rho`, then repeat the
    assembled operator over increasing Hermite, Laguerre, spherical, and Bessel
-   cutoffs. Require stable low-order matrix entries, invariant residuals, and
-   entropy spectrum. Runtime tables are admitted only where interpolation and
-   truncation errors are separately below the stated tolerance.
+   cutoffs. Require stable low-order matrix entries, drift-kinetic invariant
+   residuals, finite-wavelength particle-space balances, and entropy spectrum.
+   Runtime tables are admitted only where interpolation and truncation errors
+   are separately below the stated tolerance.
 3. **Multispecies runtime assembly.** Couple the four polarization vectors
    through quasineutrality without collapsing target/source
-   :math:`q_s\phi/T_s` factors. Require ordered-pair particle conservation,
-   total momentum/energy conservation, equal-species cancellation, JIT/JVP/VJP,
-   CPU/GPU identity, and direct agreement between generated and runtime blocks.
+   :math:`q_s\phi/T_s` factors. Reconstruct conservation at fixed particle
+   position; do not impose local density, momentum, or energy nulls on finite-
+   :math:`b` gyrocenter moments, which include classical gyro-diffusion. Require
+   ordered-pair particle conservation, total particle-space momentum/energy
+   conservation, equal-species cancellation, JIT/JVP/VJP, CPU/GPU identity,
+   and direct agreement between generated and runtime blocks.
 4. **Strongly collisional transport.** Reproduce Spitzer--Härm parallel
    conductivity and the Braginskii/Chapman--Enskog friction, heat-flow, and
    viscosity coefficients as resolution scans. Use the Coulomb value as the
@@ -340,6 +344,17 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-15: Profiled the finite-wavelength coefficient generator before the
+  particle-space conservation sweep. Integer polynomial indices were taking
+  mpmath's generalized gamma-based binomial path 562,228 times. Replacing that
+  path with exact ``math.comb`` reduced a representative :math:`N_\ell=3`
+  matrix from 34.1 to 5.43 seconds (6.3x) with bitwise-identical test and field
+  blocks; the formerly timed-out :math:`N_\ell=4` point now finishes locally in
+  29.3 seconds. Its candidate signed-:math:`J_0` particle-density residual stays
+  near :math:`4.79\times10^{-3}` across :math:`N_\ell=2..4`, so conservation is
+  not promoted: the pullback/normalization and finite projection must be derived
+  and checked independently before setting a threshold.
 
 - 2026-07-15: Kept the five-minute CI policy after the expanded multiprecision
   collision artifact exceeded the wide-coverage shard timeout. Every push now

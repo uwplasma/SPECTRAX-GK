@@ -389,7 +389,10 @@ def _legendre_monomial_coefficient_mp(order: int, power: int, mp: Any) -> Any:
 def _nonnegative_binomial(n: int, k: int, mp: Any) -> Any:
     if k < 0 or k > n:
         return mp.mpf(0)
-    return mp.binomial(n, k)
+    # Every caller supplies integer polynomial indices. ``math.comb`` is exact
+    # and avoids mpmath's gamma-based generalized-binomial path in the deepest
+    # basis-transform loop.
+    return math.comb(n, k)
 
 
 def _legendre_to_hermite_laguerre_mp(

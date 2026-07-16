@@ -2015,6 +2015,24 @@ def test_associated_laguerre_monomial_coefficients_reconstruct_polynomials() -> 
         mod.associated_laguerre_monomial_coefficients(1, 1, digits=10)
 
 
+def test_collision_transform_uses_exact_integer_binomial_path() -> None:
+    """Polynomial binomials must not use the generalized gamma implementation."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+
+    class IntegerOnlyMP:
+        @staticmethod
+        def mpf(value):
+            return float(value)
+
+        @staticmethod
+        def binomial(_n, _k):
+            raise AssertionError("generalized mpmath binomial path was used")
+
+    mp = IntegerOnlyMP()
+    assert mod._nonnegative_binomial(100, 50, mp) == math.comb(100, 50)
+    assert mod._nonnegative_binomial(3, 4, mp) == 0.0
+
+
 def test_legendre_hermite_laguerre_transform_matches_velocity_projection() -> None:
     """Jorge et al. Eqs. (A3)--(A4) must match quadrature and invert."""
     from scipy.special import (
