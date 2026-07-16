@@ -711,8 +711,9 @@ below :math:`1.2\times10^{-8}`. The GMP-backed :math:`(12,5)` point then
 completes in 556.21 seconds; its common :math:`(9,4)` test/field blocks change
 by 2.87% and 1.07%, and polarization changes remain below
 :math:`10^{-11}`. ``collision_finite_wavelength_generation_hierarchy.json``
-records the prospective 5% intermediate-resolution pass while failing closed
-on the still-unreached :math:`(18,6)` endpoint.
+records the prospective 5% intermediate-resolution coefficient pass. The
+transport gate below applies the stricter growth-rate protocol rather than
+promoting coefficient convergence by itself.
 This distinction matters: Frei, Hoffmann & Ricci normalize the Bessel argument
 as :math:`B=k_\perp\sqrt{2\tau}`. At :math:`\tau=1`, the existing
 :math:`B=0.5` hierarchy corresponds to paper :math:`k_\perp=0.5/\sqrt{2}`;
@@ -726,9 +727,8 @@ office CPU. The common test/field matrix changes are 5.87%/2.35% from
 :math:`(12,5)`; the latter passes the prospective 5% intermediate gate.
 Polarization-vector changes are below :math:`2.2\times10^{-9}` at the latter
 step. These are coefficient-hierarchy results, not a collisional-ITG
-acceptance claim: the paper-facing growth scan remains blocked until the
-published :math:`(18,6)` endpoint or a demonstrably equivalent converged
-resolution is available.
+acceptance claim. The paper-facing growth scan below now supplies the required
+demonstrably equivalent converged resolution.
 
 The exact generator subsequently contracts the Bessel expansion with each
 Laguerre product before applying the inverse Hermite--Laguerre transform. It
@@ -748,19 +748,23 @@ At :math:`(12,5)`, four local CPU workers reduce the exact total from 139.42
 to 110.13 seconds; all six arrays remain bitwise identical. The matrix tail
 takes 46.26 seconds after 63.88 seconds of shared polarization precomputation.
 This is a scoped offline-generator improvement, not linear strong scaling:
-the measured serial fraction is retained explicitly, polarization is not
-forked, and no P18 endpoint claim is made yet.
+the measured serial fraction is retained explicitly and polarization is not
+forked. Eight matrix workers subsequently completed the exact
+:math:`(15,6)` table in 261.39 seconds, including 142.93 seconds of serial
+polarization work; its checksum is -423.2127750524206.
 
 The runtime-level scan below applies those exact tables through the complete
 solved-field RHS at the paper's homogeneous-slab parameters. It confirms
-collisional stabilization and shows why the gate remains open: the
-:math:`(9,4)` to :math:`(12,5)` growth change is only 0.12% over the unstable
-:math:`\nu\geq0.03` interval, but rises to 7.44% as :math:`\nu\rightarrow0`.
-An independent collisionless hierarchy resolves this non-monotone endpoint:
-the :math:`(15,6)` to :math:`(18,6)` change is 0.59%, and :math:`(12,5)` is
-within 2.57% of :math:`(18,6)`. The shaded finite-collision interval is still
-unresolved rather than silently omitted because exact collisional tables are
-currently available only through :math:`(12,5)`.
+collisional stabilization and closes the equivalent growth-convergence gate.
+From :math:`(12,5)` to :math:`(15,6)`, the maximum growth-rate change is 1.99%
+over all collision frequencies and 0.037% over the unstable
+:math:`\nu\geq0.03` interval, both below the fixed 5% gate. An independent
+collisionless hierarchy checks the remaining high-order endpoint: the
+:math:`(15,6)` to :math:`(18,6)` change is 0.59%. Thus the expensive finite-
+collision :math:`(18,6)` table is not required to establish equivalent growth
+convergence. This closes the scoped homogeneous-slab ITG gate; it does not
+promote the finite-wavelength operator to input files because the independent
+collisional zonal-response gate remains open.
 Machine-readable values and every gate are retained in
 :download:`collision_finite_wavelength_itg_convergence.json
 <_static/collision_finite_wavelength_itg_convergence.json>`.
@@ -770,16 +774,16 @@ Machine-readable values and every gate are retained in
    :width: 86%
    :align: center
 
-   Exact paper-wavelength slab-ITG hierarchy. The intermediate collisional
-   interval and collisionless :math:`(18,6)` endpoint pass their gates. The
-   finite-collision :math:`(18,6)` hierarchy remains explicitly open.
+   Exact paper-wavelength slab-ITG hierarchy. The :math:`(15,6)` finite-
+   collision scan and independent :math:`(18,6)` collisionless endpoint pass
+   the fixed equivalent-convergence gates.
 
 The panel is regenerated with the existing artifact owner after exact table
 archives are built with ``build_finite_wavelength_coulomb_pair_tables``::
 
    python tools/artifacts/build_linear_validation_artifacts.py collision-itg \
      --table finite_b_P7_J3.npz --table finite_b_P9_J4.npz \
-     --table finite_b_P12_J5.npz
+     --table finite_b_P12_J5.npz --table finite_b_P15_J6.npz
 
 An independent homogeneous-slab matrix reconstruction now evaluates equations
 (2.14)--(2.18) directly at :math:`k_\perp=0.5`,
@@ -792,9 +796,9 @@ to roundoff in x64 and within :math:`2\times10^{-6}` in default precision.
 The drift-kinetic generator still evaluates
 collapsed equations
 (3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport
-path, whereas finite-:math:`b` must still reach the independent ITG and zonal
-resolution gates. These are local algorithm timings, not portable
-runtime-performance claims.
+path, whereas finite-:math:`b` still requires the independent zonal-response
+gate. These are local algorithm timings, not portable runtime-performance
+claims.
 
 That contraction is now implemented offline. Equations (3.48)--(3.49) produce
 test and field matrices in Hermite-major order, while equations (3.41) and
@@ -802,9 +806,8 @@ test and field matrices in Hermite-major order, while equations (3.41) and
 species. The :math:`b=0` endpoint recovers the independent drift-kinetic
 Coulomb coefficients and passes symmetry, negative-semidefinite, density,
 momentum, and energy gates. Direct :math:`J_0J_m` quadrature verifies the
-polarization coefficient. Runtime promotion still requires multispecies
-quasineutrality assembly, finite-:math:`b` truncation scans, and transport
-benchmarks.
+polarization coefficient. Runtime promotion still requires the independent
+collisional zonal-response benchmark.
 
 The tracked ``collision_operator_verification.json`` and matching panel in
 :doc:`operators` turn this into a numerical gate rather than a visual claim.
@@ -815,10 +818,10 @@ coupled spherical/radial scan rejects the former low-order cutoff at 29%
 relative error and admits :math:`(p_{\max},j_{\max})=(8,4)` at
 :math:`8.68\times10^{-7}` against a converged :math:`(9,4)` reference. The
 drift-kinetic driven response now has its separate paper-scale
-Hermite/Laguerre scan; the remaining levels are intentionally sequential:
-finite-:math:`b` runtime-table convergence; Spitzer--Härm and Braginskii
-transport; collision-frequency convergence; finite-:math:`b` ITG; and
-collisionless versus collisional zonal response. Finite-:math:`b`
+Hermite/Laguerre scan. Finite-:math:`b` runtime-table convergence,
+Spitzer--Härm and Braginskii transport, collision-frequency convergence, and
+finite-:math:`b` slab ITG have separate closed gates; collisionless versus
+collisional zonal response is the remaining promotion gate. Finite-:math:`b`
 gyrocenter density is deliberately not treated as a local invariant: the
 tracked test, field, and combined :math:`O(b^2)` density-row gates resolve the
 classical gyro-diffusion discussed after equation (3.5) of Frei et al. (2021).

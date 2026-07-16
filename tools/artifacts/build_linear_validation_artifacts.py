@@ -4734,9 +4734,26 @@ def summarize_finite_wavelength_itg_curves(
             and int(ordered[-1]["maximum_laguerre_order"]) >= 6
         ),
     }
+    gates["equivalent_growth_convergence_reached"] = bool(
+        int(ordered[-1]["maximum_hermite_order"]) >= 15
+        and int(ordered[-1]["maximum_laguerre_order"]) >= 6
+        and gates["collisionless_p15_p18_converged"]
+        and resolved_unstable_converged
+        and low_collisionality_converged
+    )
+    gate_passed = bool(
+        gates["paper_wavelength_reproduced"]
+        and gates["collisionless_p15_p18_converged"]
+        and gates["intermediate_collision_range_converged"]
+        and gates["low_collisionality_growth_converged"]
+        and (
+            gates["literature_resolution_reached"]
+            or gates["equivalent_growth_convergence_reached"]
+        )
+    )
     return {
-        "schema_version": 1,
-        "claim_scope": "intermediate_slab_itg_convergence_not_literature_acceptance",
+        "schema_version": 2,
+        "claim_scope": "paper_protocol_slab_itg_equivalent_growth_convergence",
         "literature_reference": (
             "Frei, Hoffmann & Ricci (2022), equations (2.14)--(2.18) and Figure 16"
         ),
@@ -4759,7 +4776,7 @@ def summarize_finite_wavelength_itg_curves(
         "collisionless_endpoint_relative_change": endpoint_change,
         "comparisons": comparisons,
         "gates": gates,
-        "gate_passed": all(gates.values()),
+        "gate_passed": gate_passed,
     }
 
 
@@ -4795,7 +4812,7 @@ def write_finite_wavelength_itg_figure(
         ylabel=r"dominant growth rate $\gamma$",
         title="(a) Slab ITG collisional stabilization",
     )
-    axes[0].legend(frameon=False, fontsize=8)
+    axes[0].legend(frameon=False, fontsize=8, loc="upper right")
     collisionless = summary.get("collisionless_hierarchy")
     if collisionless:
         inset = axes[0].inset_axes([0.08, 0.18, 0.34, 0.34])
@@ -4831,14 +4848,21 @@ def write_finite_wavelength_itg_figure(
             label=rf"to $(P,J)=({upper[0]},{upper[1]})$",
         )
     tolerance = summary["thresholds"]["nested_growth_relative_tolerance"]
-    axes[1].axhline(tolerance, color="#B33A3A", ls="--", lw=1.4, label="5% gate")
-    axes[1].axvspan(
-        0.0,
-        summary["protocol"]["resolved_collision_minimum"],
-        color="#D97732",
-        alpha=0.12,
-        label=r"low-$\nu$ unresolved",
+    axes[1].axhline(
+        tolerance,
+        color="#B33A3A",
+        ls="--",
+        lw=1.4,
+        label=f"{100 * tolerance:g}% gate",
     )
+    if not summary["gates"]["low_collisionality_growth_converged"]:
+        axes[1].axvspan(
+            0.0,
+            summary["protocol"]["resolved_collision_minimum"],
+            color="#D97732",
+            alpha=0.12,
+            label=r"low-$\nu$ unresolved",
+        )
     axes[1].set_xscale("symlog", linthresh=1.0e-4)
     axes[1].set_xlim(0.0, 11.0)
     axes[1].set_yscale("log")
@@ -4852,8 +4876,9 @@ def write_finite_wavelength_itg_figure(
         axis.set_facecolor("white")
         axis.grid(alpha=0.22, lw=0.6)
         axis.spines[["top", "right"]].set_visible(False)
+    status = "CONVERGED" if summary["gate_passed"] else "OPEN"
     fig.suptitle(
-        r"Finite-wavelength Coulomb slab ITG at $k_\perp=0.5$ (OPEN)",
+        rf"Finite-wavelength Coulomb slab ITG at $k_\perp=0.5$ ({status})",
         fontsize=14,
         color="#20272E",
     )

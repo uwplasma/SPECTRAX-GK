@@ -3484,6 +3484,7 @@ def test_finite_wavelength_itg_summary_separates_resolved_collision_range(
     assert summary["gate_passed"] is False
     assert summary["gates"] == {
         "collisionless_p15_p18_converged": True,
+        "equivalent_growth_convergence_reached": False,
         "intermediate_collision_range_converged": True,
         "literature_resolution_reached": False,
         "low_collisionality_growth_converged": False,
@@ -3503,28 +3504,34 @@ def test_finite_wavelength_itg_summary_separates_resolved_collision_range(
     assert output.stat().st_size > 20_000
 
 
-def test_tracked_finite_wavelength_itg_convergence_stays_fail_closed() -> None:
-    """The paper-facing panel must retain its unresolved low-collisionality gate."""
+def test_tracked_finite_wavelength_itg_convergence_closes_equivalent_gate() -> None:
+    """The paper panel must retain both finite- and zero-collision checks."""
 
     path = ROOT / "docs/_static/collision_finite_wavelength_itg_convergence.json"
     summary = json.loads(path.read_text(encoding="utf-8"))
+    assert summary["schema_version"] == 2
     assert summary["claim_scope"] == (
-        "intermediate_slab_itg_convergence_not_literature_acceptance"
+        "paper_protocol_slab_itg_equivalent_growth_convergence"
     )
     assert summary["literature_required_resolution"] == [18, 6]
-    assert summary["gate_passed"] is False
+    assert summary["gate_passed"] is True
     assert summary["gates"] == {
         "collisionless_p15_p18_converged": True,
+        "equivalent_growth_convergence_reached": True,
         "intermediate_collision_range_converged": True,
         "literature_resolution_reached": False,
-        "low_collisionality_growth_converged": False,
+        "low_collisionality_growth_converged": True,
         "paper_wavelength_reproduced": True,
     }
+    assert [
+        (curve["maximum_hermite_order"], curve["maximum_laguerre_order"])
+        for curve in summary["curves"]
+    ] == [(7, 3), (9, 4), (12, 5), (15, 6)]
     comparison = summary["comparisons"][-1]
     assert comparison["maximum_all_frequency_relative_change"] == pytest.approx(
-        0.07439802232985072
+        0.019864931248835725
     )
-    assert comparison["maximum_resolved_unstable_relative_change"] < 0.002
+    assert comparison["maximum_resolved_unstable_relative_change"] < 4.0e-4
     assert summary["collisionless_endpoint_relative_change"] < 0.006
 
 
