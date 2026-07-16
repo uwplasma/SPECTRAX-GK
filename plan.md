@@ -320,15 +320,23 @@ for a higher-level physical result.
    branch in sections 5--6 of Frei, Hoffmann & Ricci (2022), followed by the
    independent :math:`(P,J)` scans in its convergence section. Figures 4--5
    are analytical peak estimates and are not acceptance references. Require
-   at least the paper's converged :math:`(P,J)=(18,6)` endpoint, and compare
-   drift-kinetic and finite-:math:`b` Coulomb under identical geometry,
+   the paper's :math:`k_\perp=0.5`, :math:`k_\parallel=0.1`,
+   :math:`\eta=3`, :math:`R_B=0.1` collisionality scan and at least its
+   converged :math:`(P,J)=(18,6)` endpoint. Then reproduce the fixed
+   :math:`P=18` perpendicular-wavenumber/J scan, the weak-collision
+   :math:`J=10` P-scan and :math:`P=32` J-scan, and the magnetic-gradient scan.
+   Compare drift-kinetic and finite-:math:`b` Coulomb under identical geometry,
    normalization, and branch tracking. Add original/improved Sugama only when
    their finite-:math:`b` arbitrary-order tables have independently converged.
 7. **Zonal-response gates.** Keep the collisionless Rosenbluth--Hinton residual
    separate from Hinton--Rosenbluth collisional damping. Reproduce the
-   drift-kinetic damping trace, late-time Hermite--Laguerre spectrum, and
-   finite-b radial-wavenumber comparison in Frei et al., Figures 6--8. Admit a
-   claim only after damping-window and velocity-resolution convergence.
+   ion--ion Pfirsch--Schluter campaign of Frei, Ernst & Ricci (2022), Figures
+   12--14: :math:`q=1.4`, :math:`\epsilon=0.1`, :math:`\nu_i^*=3.13`, and the
+   converged :math:`(P,J)=(24,10)` hierarchy. Gate the drift-kinetic
+   :math:`k_x=0.05` trace, gyrokinetic :math:`k_x=0.1,0.2` traces, Coulomb / OS
+   / IS ordering, the Xiao long-time estimate, and the :math:`t\nu=5`
+   parallel/perpendicular velocity-space sections. Admit a claim only after
+   damping-window and velocity-resolution convergence.
 8. **Publication and release.** Put the algebra/convergence panel in README and
    all operator, transport, ITG, and zonal panels in the collision docs. Promote
    the full operator to input files only after steps 3--7 pass; until then it
@@ -364,6 +372,25 @@ That topology is the reference design for the production parallel lane.
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-16: Rejected process-level row decomposition for the offline
+  finite-wavelength Coulomb table generator. Serial and decomposed low-order
+  tables were bitwise identical, but worker-private multiprecision caches made
+  the low-order case slower, and a 32-worker :math:`(P,J)=(7,3)` build on the
+  36-core office host produced no artifact within the fixed 600 s campaign
+  bound. The experimental API and its added maintenance surface were removed;
+  no speedup claim is made. The next performance step must reduce the exact
+  transform/contraction complexity before the published :math:`(18,6)` ITG
+  endpoint is attempted.
+
+- 2026-07-16: Re-audited the collisional zonal-flow acceptance target against
+  the complete source of Frei, Ernst & Ricci (2022), arXiv:2202.06293. The
+  relevant references are Figures 12--14, not Figures 6--8. The prospective
+  gate now fixes ion--ion :math:`\nu_i^*=3.13`, :math:`q=1.4`,
+  :math:`\epsilon=0.1`, :math:`(P,J)=(24,10)`, drift-kinetic
+  :math:`k_x=0.05`, gyrokinetic :math:`k_x=0.1,0.2`, the Xiao long-time
+  residual, Coulomb/OS/IS ordering, and the :math:`t\nu=5` velocity-space
+  sections. No lower-resolution zonal trace is promoted in its place.
 
 - 2026-07-16: Audited the finite-:math:`b` collisional-ITG plan against the
   complete source of Frei, Hoffmann & Ricci (2022), arXiv:2201.02860. Corrected

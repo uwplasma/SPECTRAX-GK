@@ -721,6 +721,16 @@ Particle-space conservation would require evaluating the pre-gyroaverage
 operator at fixed particle position; it cannot be reconstructed from the
 gyrophase-independent runtime matrix.
 
+The finite-wavelength ITG promotion target follows the convergence section of
+`the 2022 finite-wavelength ITG study by Frei, Hoffmann & Ricci
+<https://arxiv.org/abs/2201.02860>`_. Its first
+gate is the :math:`k_\perp=0.5`, :math:`k_\parallel=0.1`, :math:`\eta=3`,
+:math:`R_B=0.1` collisionality scan through :math:`(P,J)=(18,6)`. The
+independent follow-ups hold :math:`P=18` for the perpendicular-wavenumber/J
+scan, use :math:`J=10` for the weak-collision P-scan and :math:`P=32` for the
+J-scan, and vary magnetic-gradient strength separately. Analytical peak
+estimates are context, not numerical acceptance data.
+
 The strongly collisional stage now has a differentiable constrained-response
 solver rather than a matrix-distance surrogate. It removes stated invariant
 modes, solves the remaining dense moment system on device, and differentiates
@@ -756,6 +766,25 @@ change is 0.0237%.
 
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
+The collisional gate follows Figures 12--14 of `Frei, Ernst & Ricci (2022)
+<https://arxiv.org/abs/2202.06293>`_ rather than an unrelated collisionless
+zonal benchmark. It uses ion--ion collisions at :math:`q=1.4`,
+:math:`\epsilon=0.1`, and :math:`\nu_i^*=3.13`, with the paper's converged
+:math:`(P,J)=(24,10)` hierarchy. Required outputs are the drift-kinetic
+:math:`k_x=0.05` response, finite-Larmor :math:`k_x=0.1` and 0.2 responses,
+Coulomb/original-Sugama/improved-Sugama ordering, the Xiao long-time estimate
+
+.. math::
+
+   R_z(\infty) =
+   \frac{\epsilon^2/q^2}{1 + \epsilon^2/q^2},
+
+and parallel/perpendicular sections of the perturbed distribution at
+:math:`t\nu=5`. The stated :math:`q` and :math:`\epsilon` give
+:math:`R_z(\infty)=0.00508`; this is deliberately distinct from the
+collisionless Rosenbluth--Hinton estimate. Lower moment counts or collisionless
+residual agreement are
+development evidence, not substitutes for that converged gate.
 
 Nonlinear full-distribution Landau collisions are a separate future model, not
 an extension flag on this linearized matrix. A dense precomputed collision
