@@ -341,6 +341,13 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-15: Kept the five-minute CI policy after the expanded multiprecision
+  collision artifact exceeded the wide-coverage shard timeout. Every push now
+  validates the tracked JSON gates, matrix/null-space shapes, finite-:math:`b`
+  convergence, gyro-diffusion order, and PNG integrity in a fast test; complete
+  arbitrary-precision regeneration is marked as a nightly slow physics test.
+  This changes scheduling, not the scientific acceptance criteria.
+
 - 2026-07-15: Corrected the finite-wavelength conservation policy against Frei
   et al. (2021). Local invariant nulls apply at particle position and in the
   drift-kinetic limit, not to finite-:math:`b` gyrocenter density. The tracked

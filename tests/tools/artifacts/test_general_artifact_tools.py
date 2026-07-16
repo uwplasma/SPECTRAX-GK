@@ -2685,10 +2685,38 @@ def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None
         mod.coulomb_polarization_vectors(0, 0, 0.0, 0.0, 1.0, 1.0, digits=10)
 
 
+def test_tracked_coulomb_operator_verification_closes_release_gates() -> None:
+    """The committed collision artifact must remain complete and admissible."""
+    json_path = ROOT / "docs/_static/collision_operator_verification.json"
+    png_path = json_path.with_suffix(".png")
+    summary = json.loads(json_path.read_text(encoding="utf-8"))
+
+    assert summary["gate_passed"] is True
+    assert all(summary["gates"].values())
+    assert summary["claim_scope"] == "offline_operator_algebra_not_runtime_transport"
+    assert np.asarray(summary["matrix"]).shape == (8, 8)
+    assert len(summary["eigenvalues"]) == 8
+    assert sum(abs(value) < 5.0e-13 for value in summary["eigenvalues"]) == 3
+    assert summary["metrics"]["maximum_projection_relative_error"] < 5.0e-10
+    assert summary["metrics"]["maximum_invariant_residual"] < 5.0e-13
+    assert summary["metrics"]["maximum_eigenvalue"] < 1.0e-12
+    diffusion = summary["gyrocenter_diffusion"]
+    assert diffusion["density_row_infinity_norm"][0] < 5.0e-12
+    assert diffusion["density_row_infinity_norm"][-1] > 1.0e-4
+    assert 1.7 < diffusion["small_b_observed_order"] < 2.3
+    matrix_errors = summary["matrix_truncation"]["relative_errors"]
+    assert matrix_errors[0] > 1.0e-4
+    assert matrix_errors[1] < 5.0e-6
+    with Image.open(png_path) as image:
+        image.verify()
+    assert png_path.stat().st_size > 100_000
+
+
+@pytest.mark.slow
 def test_coulomb_operator_verification_artifact_closes_physical_gates(
     tmp_path: Path,
 ) -> None:
-    """The paper-facing Coulomb panel must remain gated and reproducible."""
+    """Nightly multiprecision regeneration must reproduce every tracked gate."""
     mod = load_artifact_tool("build_linear_validation_artifacts")
     out_json = tmp_path / "collision_verification.json"
     out_png = tmp_path / "collision_verification.png"
