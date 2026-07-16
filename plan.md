@@ -392,6 +392,19 @@ That topology is the reference design for the production parallel lane.
   the next bounded action is the P24/J10 ``m=4,n=6`` endpoint followed by an
   independent ``m=6`` common-block or trace-level convergence check.
 
+- 2026-07-16: The first P24/J10 ``B=sqrt(2)*0.2``, ``m=4,n=6`` endpoint was
+  stopped by the prospective 600-second bound while still preparing shared
+  coefficients; no archive or endpoint claim was retained. Profiling isolated
+  independent Coulomb speed moments as about half the lower-resolution
+  polarization cost. The fixed-wavelength archive command now precomputes
+  those wavelength-independent coefficients with the same ordered POSIX-fork
+  decomposition already validated by the drift-kinetic generator, then shares
+  them across polarization and matrix assembly. Four-worker P7/J3 output is
+  bitwise identical to serial and falls from 4.00 to 2.54 wall seconds. The
+  archive stores its precompute, polarization, matrix, checksum, resolution,
+  precision, and both Bessel truncations; the next endpoint attempt remains
+  hard-bounded at 600 seconds.
+
 - 2026-07-16: Diagnosed the first full P24/J10 Coulomb zonal trace rather than
   tuning its failed residual. The measured tail, ``0.01679``, matched the Xiao
   residual for the surface's actual ``rhoc/R0=0.18`` (``0.01626``), not the

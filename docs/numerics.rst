@@ -795,6 +795,27 @@ archives are built with ``build_finite_wavelength_coulomb_pair_tables``::
      --table finite_b_P7_J3.npz --table finite_b_P9_J4.npz \
      --table finite_b_P12_J5.npz --table finite_b_P15_J6.npz
 
+For a fixed-wavelength zonal-response audit, generate a compact endpoint
+archive instead of a full two-dimensional interpolation table::
+
+   python tools/artifacts/build_linear_validation_artifacts.py collision-endpoint \
+     --out finite_b_zonal_P24_J10_kx020.npz \
+     --bessel-argument 0.282842712474619 --maximum-hermite-order 24 \
+     --maximum-laguerre-order 10 --maximum-angular-bessel-order 4 \
+     --maximum-bessel-laguerre-order 6 --digits 32 --worker-count 16
+
+This command records every truncation, timing, and checksum in the archive.
+The radial order six follows the convergence statement in
+`Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
+angular cutoff must pass a nested endpoint or observable-level convergence
+check before use. The current P12/J5 check at
+:math:`B=\sqrt{2}\,0.2` changes the most sensitive matrix norm by
+:math:`1.24\times10^{-7}` between angular orders four and six. The command
+generates exact Coulomb coefficients only; the full finite-wavelength Sugama
+terms in the `2021 gyro-moment collision derivation
+<https://arxiv.org/abs/2104.11480>`_ remain an
+independent implementation and validation requirement.
+
 An independent homogeneous-slab matrix reconstruction now evaluates equations
 (2.14)--(2.18) directly at :math:`k_\perp=0.5`,
 :math:`k_\parallel=0.1`, :math:`\eta=3`, and :math:`\tau=1`. It exposed and

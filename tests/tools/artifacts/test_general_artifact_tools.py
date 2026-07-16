@@ -3257,6 +3257,23 @@ def test_finite_wavelength_endpoint_archive_is_replayable(tmp_path: Path) -> Non
             (6,),
             (6,),
         ]
+    parallel_out = tmp_path / "endpoint_parallel.npz"
+    parallel_metadata = mod.write_finite_wavelength_coulomb_endpoint(
+        parallel_out,
+        bessel_argument=0.2,
+        maximum_hermite_order=2,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=2,
+        maximum_bessel_laguerre_order=2,
+        digits=32,
+        worker_count=2,
+    )
+    assert parallel_metadata["speed_precompute_seconds"] >= 0.0
+    with np.load(out) as serial, np.load(parallel_out) as parallel:
+        for index in range(6):
+            np.testing.assert_array_equal(
+                parallel[f"array_{index}"], serial[f"array_{index}"]
+            )
 
 
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:

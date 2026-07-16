@@ -1747,6 +1747,36 @@ def _coulomb_coefficient_functions(
     )
 
 
+def _precompute_coulomb_speed_coefficients(
+    coefficient_functions: tuple[Callable[..., Any], ...],
+    *,
+    maximum_spherical_order: int,
+    maximum_spherical_radial_order: int,
+    maximum_speed_power: int,
+    worker_count: int,
+) -> tuple[Callable[..., Any], ...]:
+    """Populate wavelength-independent speed moments before row assembly."""
+
+    if worker_count <= 1:
+        return coefficient_functions
+    direct_speed = coefficient_functions[5]
+    keys = tuple(
+        (p, j, speed_power)
+        for p in range(maximum_spherical_order + 1)
+        for j in range(maximum_spherical_radial_order + 1)
+        for speed_power in range(maximum_speed_power + 1)
+    )
+
+    def build(index: int) -> tuple[tuple[int, int, int], tuple[Any, Any]]:
+        key = keys[index]
+        return key, direct_speed(*key)
+
+    values = dict(_forked_ordered_map(build, len(keys), min(worker_count, len(keys))))
+    functions = list(coefficient_functions)
+    functions[5] = lambda p, j, speed_power: values[(p, j, speed_power)]
+    return tuple(functions)
+
+
 def coulomb_nonpolarized_moment_matrices(
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
@@ -3080,7 +3110,20 @@ def write_finite_wavelength_coulomb_endpoint(
 
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
     with mp.workdps(digits):
+        started = time.perf_counter()
         coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
+        coefficient_functions = _precompute_coulomb_speed_coefficients(
+            coefficient_functions,
+            maximum_spherical_order=maximum_degree,
+            maximum_spherical_radial_order=maximum_degree // 2,
+            maximum_speed_power=(
+                maximum_laguerre_order
+                + maximum_bessel_laguerre_order
+                + (maximum_hermite_order + maximum_angular_bessel_order) // 2
+            ),
+            worker_count=worker_count,
+        )
+        speed_precompute_seconds = time.perf_counter() - started
         assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
         kwargs = {
             "maximum_spherical_order": maximum_degree,
@@ -3128,9 +3171,12 @@ def write_finite_wavelength_coulomb_endpoint(
         "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
         "precision_decimal_digits": digits,
         "worker_count": worker_count,
+        "speed_precompute_seconds": speed_precompute_seconds,
         "polarization_seconds": polarization_seconds,
         "matrix_seconds": matrix_seconds,
-        "total_seconds": polarization_seconds + matrix_seconds,
+        "total_seconds": (
+            speed_precompute_seconds + polarization_seconds + matrix_seconds
+        ),
         "checksum": checksum,
         "laguerre_convention": "paper_unsigned",
         "source": "Frei et al. (2021), equations (3.48)--(3.50)",
