@@ -9,7 +9,7 @@ pytestmark = pytest.mark.integration
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
 from spectraxgk.diagnostics.analysis import estimate_observed_order
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from spectraxgk.geometry import SAlphaGeometry, SlabGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
     LinearCache,
@@ -207,6 +207,106 @@ def test_compute_b_shape_and_value():
     theta0 = grid.z[0]
     kx_eff = kx0 + geom.s_hat * ky0 * theta0
     assert jnp.isclose(b[0, 0, 0], kx_eff * kx_eff + ky0 * ky0)
+
+
+def test_slab_itg_matrix_matches_published_gyro_moment_hierarchy() -> None:
+    r"""The runtime must reproduce Frei et al. (2022), equations (2.14)--(2.18)."""
+
+    maximum_hermite, maximum_laguerre = 3, 2
+    nm, nl = maximum_hermite + 1, maximum_laguerre + 1
+    grid = build_spectral_grid(
+        GridConfig(Nx=1, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=4.0 * np.pi)
+    )
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0]),
+        density=jnp.asarray([1.0]),
+        mass=jnp.asarray([1.0]),
+        temp=jnp.asarray([1.0]),
+        tau_e=1.0,
+        vth=jnp.asarray([1.0]),
+        rho=jnp.asarray([1.0]),
+        tz=jnp.asarray([1.0]),
+        kpar_scale=0.1,
+        R_over_Ln=jnp.asarray([1.0]),
+        R_over_LTi=jnp.asarray([3.0]),
+    )
+    cache = build_linear_cache(
+        grid, SlabGeometry(s_hat=0.0, z0=10.0), params, Nl=nl, Nm=nm
+    )
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    phase = np.exp(1j * np.asarray(grid.z))
+    mode_count = nl * nm
+    observed = np.empty((mode_count, mode_count), dtype=complex)
+    for column in range(mode_count):
+        laguerre_order, hermite_order = divmod(column, nm)
+        state = np.zeros((1, nl, nm, 4, 1, 8), dtype=complex)
+        state[0, laguerre_order, hermite_order, 1, 0] = phase
+        rhs, _ = linear_rhs_cached(
+            jnp.asarray(state), cache, params, terms=terms, use_jit=False
+        )
+        observed[:, column] = (
+            np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
+        )
+
+    kperp, kpar, tau, eta = 0.5, 0.1, 1.0, 3.0
+    bessel_argument = np.sqrt(2.0 * tau) * kperp
+    argument = 0.25 * bessel_argument**2
+    kernels = [np.exp(-argument)]
+    for order in range(1, maximum_laguerre + 2):
+        kernels.append(kernels[-1] * argument / order)
+    kernels = np.asarray(kernels)
+    denominator = 1.0 + (1.0 - np.sum(kernels[:nl] ** 2)) / tau
+
+    # Assemble the paper's N_(p,j) ordering before converting to the runtime's
+    # signed-Laguerre G_(j,p) convention.
+    published = np.zeros_like(observed)
+    for p in range(nm):
+        for j in range(nl):
+            row = p * nl + j
+            if p + 1 < nm:
+                published[row, (p + 1) * nl + j] -= (
+                    1j * kpar * np.sqrt(tau * (p + 1))
+                )
+            if p > 0:
+                published[row, (p - 1) * nl + j] -= (
+                    1j * kpar * np.sqrt(tau * p)
+                )
+            perpendicular_drive = (
+                2 * j * kernels[j]
+                - (j * kernels[j - 1] if j else 0.0)
+                - (j + 1) * kernels[j + 1]
+            )
+            field_drive = 1j * kperp * (
+                (kernels[j] if p == 0 else 0.0)
+                + eta
+                * (
+                    (kernels[j] / np.sqrt(2.0) if p == 2 else 0.0)
+                    + (perpendicular_drive if p == 0 else 0.0)
+                )
+            ) - (1j * kpar * np.sqrt(tau) * kernels[j] if p == 1 else 0.0)
+            for source_j in range(nl):
+                published[row, source_j] += (
+                    field_drive * kernels[source_j] / denominator
+                )
+
+    convention = np.zeros_like(observed.real)
+    for p in range(nm):
+        for j in range(nl):
+            convention[j * nm + p, p * nl + j] = (-1.0) ** j
+    expected = convention @ published @ convention.T
+    np.testing.assert_allclose(observed, expected, rtol=5.0e-6, atol=2.0e-6)
 
 
 def test_quasineutrality_simple():

@@ -719,6 +719,14 @@ as :math:`B=k_\perp\sqrt{2\tau}`. At :math:`\tau=1`, the existing
 their :math:`k_\perp=0.5` convergence point requires :math:`B=1/\sqrt{2}`.
 The runtime interpolation uses the same convention explicitly through
 :math:`B=\sqrt{2b_\mathrm{cache}}`.
+An independent homogeneous-slab matrix reconstruction now evaluates equations
+(2.14)--(2.18) directly at :math:`k_\perp=0.5`,
+:math:`k_\parallel=0.1`, :math:`\eta=3`, and :math:`\tau=1`. It exposed and
+fixed a separate truncation-boundary error: the distribution moment
+:math:`N_{p,J+1}` is zero, but the analytically known Bessel coefficient
+:math:`K_{J+1}` in equation (2.16a) is not. Retaining that coefficient makes
+every collisionless runtime matrix entry agree with the published hierarchy
+to roundoff in x64 and within :math:`2\times10^{-6}` in default precision.
 The drift-kinetic generator still evaluates
 collapsed equations
 (3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport

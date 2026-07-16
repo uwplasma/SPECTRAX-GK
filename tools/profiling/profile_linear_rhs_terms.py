@@ -449,6 +449,7 @@ def main() -> None:
                 apar=h_apar,
                 bpar=h_bpar,
                 Jl=cache.Jl,
+                b=cache.b,
                 JlB=cache.JlB,
                 l4=cache.l4,
                 tprim=tprim,

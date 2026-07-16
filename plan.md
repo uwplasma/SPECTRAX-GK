@@ -377,6 +377,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Added an independent equation-level slab ITG gate for equations
+  (2.14)--(2.18) of Frei, Hoffmann & Ricci (2022). It found that the
+  diamagnetic drive incorrectly zero-padded the known Bessel coefficient
+  :math:`K_{J+1}` at the retained Laguerre boundary. The serial and
+  Hermite-sharded paths now evaluate that coefficient analytically while still
+  truncating the distribution moment :math:`N_{p,J+1}`. The complete
+  collisionless matrix at :math:`k_\perp=0.5`, :math:`k_\parallel=0.1`,
+  :math:`\eta=3`, and :math:`\tau=1` agrees with the independently assembled
+  published hierarchy to roundoff in x64 and :math:`2\times10^{-6}` in default
+  precision. The collisional scan remains fail-closed pending the exact table.
+
 - 2026-07-16: Corrected the finite-wavelength runtime and evidence convention
   against equations (2.4)--(2.5) of Frei, Hoffmann & Ricci (2022). The table
   coordinate is the Bessel argument :math:`B=k_\perp v_T/\Omega`, so the

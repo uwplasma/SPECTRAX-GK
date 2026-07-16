@@ -20,6 +20,7 @@ from spectraxgk.core.velocity import (
     associated_bessel_laguerre_coefficients,
     bessel_laguerre_kernels,
     gamma0,
+    laguerre_gyroaverage_neighbors,
     sum_Jl2,
 )
 from spectraxgk.diagnostics.analysis import fit_growth_rate
@@ -1380,6 +1381,19 @@ def test_jl_first_order_coeff() -> None:
     expected = -0.5 * b * jnp.exp(-0.5 * b)
 
     assert jnp.isclose(values[1], expected)
+
+
+def test_laguerre_gyroaverage_neighbors_keep_known_upper_coefficient() -> None:
+    """Moment truncation must not zero the analytic gyroaverage coefficient."""
+
+    b = jnp.asarray([0.6, 1.2])
+    coefficients = J_l_all(b, l_max=3)
+    lower, upper = laguerre_gyroaverage_neighbors(coefficients, b, axis=0)
+    reference = J_l_all(b, l_max=4)
+
+    np.testing.assert_allclose(lower[1:], reference[:3], rtol=1.0e-6)
+    np.testing.assert_allclose(upper, reference[1:], rtol=1.0e-6)
+    np.testing.assert_allclose(lower[0], 0.0, atol=0.0)
 
 
 def test_sum_jl2_monotone_in_lmax() -> None:

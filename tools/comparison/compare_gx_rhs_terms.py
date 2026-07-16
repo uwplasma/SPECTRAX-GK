@@ -298,6 +298,7 @@ def _manual_linear_contributions_from_fields(
         apar=apar_j,
         bpar=bpar_j,
         Jl=Jl,
+        b=cache.b,
         JlB=JlB,
         l4=cache.l4,
         tprim=tprim,

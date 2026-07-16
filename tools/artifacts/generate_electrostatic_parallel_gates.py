@@ -285,6 +285,7 @@ def build_electrostatic_diamagnetic_gate(
         plan,
         phi=phi_sharded,
         Jl=cache.Jl,
+        b=cache.b,
         l4=cache.l4,
         tprim=params.R_over_LTi,
         fprim=params.R_over_Ln,

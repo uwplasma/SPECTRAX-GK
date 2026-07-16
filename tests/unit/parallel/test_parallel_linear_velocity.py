@@ -935,6 +935,7 @@ def test_mocked_shard_map_exercises_multi_device_velocity_paths(
         plan,
         phi=phi,
         Jl=Jl,
+        b=jnp.zeros((state.shape[2], state.shape[3], state.shape[4])),
         l4=jnp.arange(state.shape[0], dtype=jnp.float32).reshape(
             (state.shape[0], 1, 1, 1)
         ),
@@ -2364,6 +2365,7 @@ def test_diamagnetic_drive_shard_map_matches_production_term() -> None:
         plan,
         phi=phi,
         Jl=cache.Jl,
+        b=cache.b,
         l4=cache.l4,
         tprim=params.R_over_LTi,
         fprim=params.R_over_Ln,
@@ -2423,6 +2425,7 @@ def test_diamagnetic_drive_shard_map_matches_reference_when_logical_devices_avai
         plan,
         phi=phi,
         Jl=cache.Jl,
+        b=cache.b,
         l4=cache.l4,
         tprim=params.R_over_LTi,
         fprim=params.R_over_Ln,
@@ -2434,6 +2437,7 @@ def test_diamagnetic_drive_shard_map_matches_reference_when_logical_devices_avai
         state,
         phi=phi,
         Jl=cache.Jl,
+        b=cache.b,
         l4=cache.l4,
         tprim=params.R_over_LTi,
         fprim=params.R_over_Ln,
@@ -2466,6 +2470,7 @@ def test_diamagnetic_drive_rejects_invalid_shapes_and_plans() -> None:
     kwargs = dict(
         phi=phi,
         Jl=cache.Jl,
+        b=cache.b,
         l4=cache.l4,
         tprim=params.R_over_LTi,
         fprim=params.R_over_Ln,
