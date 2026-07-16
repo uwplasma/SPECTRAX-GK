@@ -347,6 +347,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-15: Bounded the next conductivity-resolution attempt on office CPUs.
+  Independent electron--electron and electron--ion Coulomb blocks at
+  :math:`(P,J)=(7,3)` and spherical/radial cutoff :math:`(13,6)` each used one
+  CPU core and about 0.5 GB but reached the fixed 600-second limit without an
+  output table. The lower :math:`(3,1)` to :math:`(5,2)` pilot changes the
+  normalized :math:`Z=1` current by 1.0%, with the largest sampled change 3.6%
+  at :math:`Z=100`; this is encouraging but not a convergence gate. Repeating
+  the generic finite-:math:`b` contraction for longer is rejected. The next
+  generator must implement the direct drift-kinetic Coulomb equations
+  (3.53)--(3.56) of Frei et al. (2021), validate them bitwise on the low-order
+  overlap, and only then target the paper's :math:`(20,5)` conductivity scan.
+
 - 2026-07-15: Removed eager runtime imports from the shared linear-validation
   artifact owner. Importing the multiprecision collision generator now loads no
   SPECTRAX-GK or JAX modules and performs no CPU/GPU device discovery; linear

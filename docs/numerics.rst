@@ -681,6 +681,11 @@ The collision-table subcommands also avoid importing the runtime, JAX, or any
 device backend; benchmark and solver dependencies are loaded only by the
 subcommands that use them. This keeps offline arbitrary-precision generation
 CPU-only even on GPU hosts.
+The general finite-:math:`b` contraction remains too expensive for the
+conductivity resolution: two independent :math:`(P,J)=(7,3)` blocks reached a
+600-second CPU bound. Paper-scale drift-kinetic tables must therefore use the
+specialized equations (3.53)--(3.56), with overlap against the general formula
+as a regression, rather than extending this timeout.
 
 That contraction is now implemented offline. Equations (3.48)--(3.49) produce
 test and field matrices in Hermite-major order, while equations (3.41) and
