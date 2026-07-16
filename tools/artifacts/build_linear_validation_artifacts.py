@@ -1735,6 +1735,210 @@ def coulomb_drift_kinetic_moment_matrices(
     return test, field
 
 
+def original_sugama_like_species_moment_matrices(
+    coulomb_test_matrix: np.ndarray,
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Build the equal-temperature like-species original-Sugama matrices.
+
+    At equal temperature the original-Sugama test component is the Coulomb
+    test component. Its field component is the self-adjoint, rank-one
+    restoration of parallel momentum and thermal energy described by Sugama,
+    Watanabe & Nunami (2009). In an orthonormal Hermite--Laguerre basis each
+    invariant ``u`` contributes ``-(T u)(T u)^T / (u^T T u)``. The input and
+    output use the paper's Laguerre convention, matching the offline Coulomb
+    generator.
+    """
+
+    if maximum_hermite_order < 2:
+        raise ValueError("maximum_hermite_order must be >= 2")
+    if maximum_laguerre_order < 1:
+        raise ValueError("maximum_laguerre_order must be >= 1")
+    n_laguerre = maximum_laguerre_order + 1
+    mode_count = (maximum_hermite_order + 1) * n_laguerre
+    test_paper = np.asarray(coulomb_test_matrix, dtype=float)
+    if test_paper.shape != (mode_count, mode_count):
+        raise ValueError("coulomb_test_matrix shape does not match the resolution")
+    if not np.all(np.isfinite(test_paper)):
+        raise ValueError("coulomb_test_matrix must contain only finite values")
+
+    convention_sign = np.asarray(
+        [
+            (-1.0) ** laguerre
+            for _hermite in range(maximum_hermite_order + 1)
+            for laguerre in range(n_laguerre)
+        ]
+    )
+    convention = convention_sign[:, None] * convention_sign[None, :]
+    test = convention * test_paper
+    momentum = np.zeros(mode_count)
+    momentum[n_laguerre] = 1.0
+    energy = np.zeros(mode_count)
+    energy[1] = 1.0
+    energy[2 * n_laguerre] = 1 / np.sqrt(2.0)
+    field = np.zeros_like(test)
+    for invariant in (momentum, energy):
+        image = test @ invariant
+        denominator = float(invariant @ image)
+        if denominator >= 0.0 or not math.isfinite(denominator):
+            raise ValueError(
+                "coulomb_test_matrix must dissipate momentum and thermal energy"
+            )
+        field -= np.outer(image, image) / denominator
+    return test_paper.copy(), convention * field
+
+
+def improved_sugama_equal_temperature_moment_matrices(
+    coulomb_test_matrix: np.ndarray,
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    *,
+    correction_order: int = 3,
+    digits: int = 80,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Build the equal-species improved-Sugama matrices through order ``K``.
+
+    The original-Sugama matrices are augmented by the drift-kinetic field
+    correction in Frei, Ernst & Ricci (2022), equation (79).  At equal mass
+    and temperature the test correction vanishes.  The field correction uses
+    the exact Coulomb and original-Sugama Braginskii ``N`` matrices from their
+    equations (45), (60), and (80), followed by the basis transform in
+    equations (79) and (81).  Rows and columns retain the paper's Laguerre
+    convention.
+
+    ``correction_order`` must fit completely inside the retained basis:
+    ``P >= 2 K + 1`` and ``J >= K``.  This prevents a nominal high-order
+    correction from silently using an incomplete total-degree shell.
+    """
+
+    if correction_order < 0:
+        raise ValueError("correction_order must be >= 0")
+    if maximum_hermite_order < 2 * correction_order + 1:
+        raise ValueError("maximum_hermite_order must be >= 2 * correction_order + 1")
+    if maximum_laguerre_order < correction_order:
+        raise ValueError("maximum_laguerre_order must be >= correction_order")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    original_test, original_field = original_sugama_like_species_moment_matrices(
+        coulomb_test_matrix,
+        maximum_hermite_order,
+        maximum_laguerre_order,
+    )
+    import mpmath as mp
+
+    n_laguerre = maximum_laguerre_order + 1
+    mode_count = (maximum_hermite_order + 1) * n_laguerre
+    with mp.workdps(digits):
+        root_pi = mp.sqrt(mp.pi)
+        collision_time = 3 * root_pi / 4
+        coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(mp.mpf(1), mp)
+
+        @cache
+        def field_speed_moment(k: int, speed_power: int) -> Any:
+            return _coulomb_speed_moments_mp(
+                1,
+                k,
+                speed_power,
+                mp.mpf(1),
+                mp.mpf(1),
+                mp.mpf(1),
+                mp,
+                coulomb_e=coulomb_e,
+                coulomb_E=coulomb_E,
+            )[1]
+
+        @cache
+        def laguerre(order: int, monomial: int) -> Any:
+            return _associated_laguerre_monomial_coefficient_mp(
+                order, 1, monomial, mp
+            )
+
+        def flow_weight(order: int) -> Any:
+            double_factorial = mp.fac2(2 * order + 3)
+            return 3 * mp.power(2, order) * mp.factorial(order) / double_factorial
+
+        coulomb_n = mp.matrix(correction_order + 1, correction_order + 1)
+        for ell in range(correction_order + 1):
+            for k in range(correction_order + 1):
+                coulomb_n[ell, k] = sum(
+                    mp.mpf(2)
+                    / 3
+                    * collision_time
+                    * laguerre(ell, power)
+                    * field_speed_moment(k, power)
+                    for power in range(ell + 1)
+                )
+        delta_n = mp.matrix(correction_order + 1, correction_order + 1)
+        for ell in range(correction_order + 1):
+            for k in range(correction_order + 1):
+                delta_n[ell, k] = (
+                    coulomb_n[ell, k]
+                    - coulomb_n[ell, 0]
+                    * coulomb_n[0, k]
+                    / coulomb_n[0, 0]
+                )
+        for order in range(correction_order + 1):
+            delta_n[0, order] = mp.mpf(0)
+            delta_n[order, 0] = mp.mpf(0)
+
+        correction = mp.matrix(mode_count, mode_count)
+        for ell in range(correction_order + 1):
+            output = mp.matrix(mode_count, 1)
+            shell_degree = 1 + 2 * ell
+            for p in range(maximum_hermite_order + 1):
+                remainder = shell_degree - p
+                if remainder < 0 or remainder % 2:
+                    continue
+                j = remainder // 2
+                if j > maximum_laguerre_order:
+                    continue
+                forward = _legendre_to_hermite_laguerre_mp(1, ell, p, j, mp)
+                inverse_factor = (
+                    root_pi
+                    * mp.power(2, p)
+                    * mp.factorial(p)
+                    * mp.mpf("1.5")
+                    * mp.factorial(ell)
+                    / mp.gamma(ell + mp.mpf("2.5"))
+                )
+                inverse = inverse_factor * forward
+                output[p * n_laguerre + j] = (
+                    inverse
+                    / mp.sqrt(mp.power(2, p) * mp.factorial(p))
+                    * mp.gamma(ell + mp.mpf("2.5"))
+                    / mp.factorial(ell)
+                )
+
+            for k in range(correction_order + 1):
+                source = mp.matrix(mode_count, 1)
+                source_degree = 1 + 2 * k
+                for g in range(maximum_hermite_order + 1):
+                    remainder = source_degree - g
+                    if remainder < 0 or remainder % 2:
+                        continue
+                    h = remainder // 2
+                    if h > maximum_laguerre_order:
+                        continue
+                    source[g * n_laguerre + h] = (
+                        _legendre_to_hermite_laguerre_mp(1, k, g, h, mp)
+                        * mp.sqrt(mp.power(2, g) * mp.factorial(g))
+                    )
+                prefactor = (
+                    4
+                    * flow_weight(ell)
+                    * flow_weight(k)
+                    / (3 * root_pi * collision_time)
+                    * delta_n[ell, k]
+                )
+                correction += prefactor * output * source.T
+
+    return original_test, original_field + np.asarray(
+        correction.tolist(), dtype=np.float64
+    )
+
+
 def coulomb_polarization_vectors(
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
@@ -2589,6 +2793,10 @@ def build_drift_kinetic_response_convergence_summary(
     required_resolution: tuple[int, int] = (20, 5),
     nested_current_rtol: float = 5.0e-3,
     algebra_atol: float = 2.0e-12,
+    original_sugama_low_charge_gap_min: float = 8.0e-2,
+    original_sugama_high_charge_gap_max: float = 2.0e-2,
+    improved_sugama_coulomb_gap_max: float = 1.0e-2,
+    improved_sugama_correction_order: int = 5,
     digits: int = 50,
 ) -> dict[str, Any]:
     r"""Build the converged driven Coulomb-response hierarchy.
@@ -2614,10 +2822,19 @@ def build_drift_kinetic_response_convergence_summary(
         raise ValueError("nested_current_rtol must be finite and > 0")
     if algebra_atol <= 0.0 or not math.isfinite(algebra_atol):
         raise ValueError("algebra_atol must be finite and > 0")
+    if not 0.0 < original_sugama_low_charge_gap_min < 1.0:
+        raise ValueError("original_sugama_low_charge_gap_min must lie in (0, 1)")
+    if not 0.0 < original_sugama_high_charge_gap_max < 1.0:
+        raise ValueError("original_sugama_high_charge_gap_max must lie in (0, 1)")
+    if not 0.0 < improved_sugama_coulomb_gap_max < 1.0:
+        raise ValueError("improved_sugama_coulomb_gap_max must lie in (0, 1)")
+    if improved_sugama_correction_order < 1:
+        raise ValueError("improved_sugama_correction_order must be >= 1")
 
     charge_values = np.asarray(ion_charges, dtype=float)
     rows: list[dict[str, Any]] = []
     previous_current: np.ndarray | None = None
+    previous_improved_current: np.ndarray | None = None
     resolution_reports: list[dict[str, Any]] = []
     for maximum_hermite, maximum_laguerre in resolutions:
         maximum_degree = maximum_hermite + 2 * maximum_laguerre
@@ -2649,16 +2866,51 @@ def build_drift_kinetic_response_convergence_summary(
 
         electron_test, electron_field = pair_blocks["electron_electron"]
         ion_test, _ion_field = pair_blocks["electron_ion"]
+        _original_test, original_field = (
+            original_sugama_like_species_moment_matrices(
+                electron_test,
+                maximum_hermite,
+                maximum_laguerre,
+            )
+        )
+        effective_correction_order = min(
+            improved_sugama_correction_order,
+            maximum_laguerre,
+            (maximum_hermite - 1) // 2,
+        )
+        _improved_test, improved_field = (
+            improved_sugama_equal_temperature_moment_matrices(
+                electron_test,
+                maximum_hermite,
+                maximum_laguerre,
+                correction_order=effective_correction_order,
+                digits=digits,
+            )
+        )
+        convention = convention_sign[:, None] * convention_sign[None, :]
         electron_collision = (
-            convention_sign[:, None]
-            * convention_sign[None, :]
-            * (electron_test + electron_field)
+            convention * (electron_test + electron_field)
         )
-        ion_collision = (
-            convention_sign[:, None]
-            * convention_sign[None, :]
-            * ion_test
-        )
+        original_electron_collision = convention * (electron_test + original_field)
+        improved_electron_collision = convention * (electron_test + improved_field)
+        previous_order_improved_collision: np.ndarray | None = None
+        if (
+            (maximum_hermite, maximum_laguerre) == resolutions[-1]
+            and effective_correction_order >= 2
+        ):
+            _previous_test, previous_field = (
+                improved_sugama_equal_temperature_moment_matrices(
+                    electron_test,
+                    maximum_hermite,
+                    maximum_laguerre,
+                    correction_order=effective_correction_order - 1,
+                    digits=digits,
+                )
+            )
+            previous_order_improved_collision = convention * (
+                electron_test + previous_field
+            )
+        ion_collision = convention * ion_test
         active_modes = np.asarray(
             [
                 hermite * n_laguerre + laguerre
@@ -2670,20 +2922,89 @@ def build_drift_kinetic_response_convergence_summary(
         source = np.zeros(mode_count)
         source[n_laguerre] = -np.sqrt(2.0) * 1.0e-3
         currents: list[float] = []
+        original_currents: list[float] = []
+        improved_currents: list[float] = []
+        previous_order_improved_currents: list[float] = []
         solve_residuals: list[float] = []
+        original_solve_residuals: list[float] = []
+        improved_solve_residuals: list[float] = []
         for charge in charge_values:
             collision = electron_collision + charge * ion_collision
+            original_collision = original_electron_collision + charge * ion_collision
+            improved_collision = improved_electron_collision + charge * ion_collision
+            previous_order_collision = (
+                None
+                if previous_order_improved_collision is None
+                else previous_order_improved_collision + charge * ion_collision
+            )
             response = np.zeros(mode_count)
+            original_response = np.zeros(mode_count)
+            improved_response = np.zeros(mode_count)
             response[active_modes] = np.linalg.solve(
                 collision[np.ix_(active_modes, active_modes)],
                 -source[active_modes],
             )
+            original_response[active_modes] = np.linalg.solve(
+                original_collision[np.ix_(active_modes, active_modes)],
+                -source[active_modes],
+            )
+            improved_response[active_modes] = np.linalg.solve(
+                improved_collision[np.ix_(active_modes, active_modes)],
+                -source[active_modes],
+            )
             currents.append(float(abs(response[n_laguerre] / np.sqrt(2.0))))
+            original_currents.append(
+                float(abs(original_response[n_laguerre] / np.sqrt(2.0)))
+            )
+            improved_currents.append(
+                float(abs(improved_response[n_laguerre] / np.sqrt(2.0)))
+            )
+            if previous_order_collision is not None:
+                previous_order_response = np.zeros(mode_count)
+                previous_order_response[active_modes] = np.linalg.solve(
+                    previous_order_collision[np.ix_(active_modes, active_modes)],
+                    -source[active_modes],
+                )
+                previous_order_improved_currents.append(
+                    float(abs(previous_order_response[n_laguerre] / np.sqrt(2.0)))
+                )
             solve_residuals.append(
                 float(np.max(np.abs((collision @ response + source)[active_modes])))
             )
+            original_solve_residuals.append(
+                float(
+                    np.max(
+                        np.abs(
+                            (original_collision @ original_response + source)[
+                                active_modes
+                            ]
+                        )
+                    )
+                )
+            )
+            improved_solve_residuals.append(
+                float(
+                    np.max(
+                        np.abs(
+                            (improved_collision @ improved_response + source)[
+                                active_modes
+                            ]
+                        )
+                    )
+                )
+            )
 
         current_array = np.asarray(currents)
+        original_current_array = np.asarray(original_currents)
+        improved_current_array = np.asarray(improved_currents)
+        correction_order_relative_change = (
+            None
+            if not previous_order_improved_currents
+            else np.abs(
+                improved_current_array - np.asarray(previous_order_improved_currents)
+            )
+            / np.maximum(np.abs(improved_current_array), np.finfo(float).tiny)
+        )
         relative_change = (
             None
             if previous_current is None
@@ -2691,6 +3012,13 @@ def build_drift_kinetic_response_convergence_summary(
             / np.maximum(np.abs(current_array), np.finfo(float).tiny)
         )
         previous_current = current_array
+        improved_relative_change = (
+            None
+            if previous_improved_current is None
+            else np.abs(improved_current_array - previous_improved_current)
+            / np.maximum(np.abs(improved_current_array), np.finfo(float).tiny)
+        )
+        previous_improved_current = improved_current_array
 
         density = np.zeros(mode_count)
         density[0] = 1.0
@@ -2708,11 +3036,34 @@ def build_drift_kinetic_response_convergence_summary(
                 ("thermal_energy", energy),
             )
         }
-        symmetry_error = float(
-            np.max(np.abs(electron_collision - electron_collision.T))
+        original_invariant_residuals = {
+            name: float(np.max(np.abs(original_electron_collision @ vector)))
+            for name, vector in (
+                ("density", density),
+                ("parallel_momentum", momentum),
+                ("thermal_energy", energy),
+            )
+        }
+        improved_invariant_residuals = {
+            name: float(np.max(np.abs(improved_electron_collision @ vector)))
+            for name, vector in (
+                ("density", density),
+                ("parallel_momentum", momentum),
+                ("thermal_energy", energy),
+            )
+        }
+        collision_models = (
+            electron_collision,
+            original_electron_collision,
+            improved_electron_collision,
         )
-        maximum_eigenvalue = float(
-            np.linalg.eigvalsh(0.5 * (electron_collision + electron_collision.T)).max()
+        symmetry_error = max(
+            float(np.max(np.abs(matrix - matrix.T)))
+            for matrix in collision_models
+        )
+        maximum_eigenvalue = max(
+            float(np.linalg.eigvalsh(0.5 * (matrix + matrix.T)).max())
+            for matrix in collision_models
         )
         maximum_change = (
             None if relative_change is None else float(np.max(relative_change))
@@ -2723,15 +3074,56 @@ def build_drift_kinetic_response_convergence_summary(
             "mode_count": mode_count,
             "maximum_spherical_order": maximum_degree,
             "maximum_spherical_radial_order": radial_limit,
+            "improved_sugama_correction_order": effective_correction_order,
             "current": current_array.tolist(),
+            "original_sugama_current": original_current_array.tolist(),
+            "original_sugama_relative_gap": (
+                (current_array - original_current_array)
+                / np.maximum(np.abs(current_array), np.finfo(float).tiny)
+            ).tolist(),
+            "improved_sugama_current": improved_current_array.tolist(),
+            "improved_sugama_relative_gap": (
+                (improved_current_array - current_array)
+                / np.maximum(np.abs(current_array), np.finfo(float).tiny)
+            ).tolist(),
             "relative_change_from_previous": (
                 None if relative_change is None else relative_change.tolist()
             ),
             "maximum_relative_change": maximum_change,
+            "improved_relative_change_from_previous": (
+                None
+                if improved_relative_change is None
+                else improved_relative_change.tolist()
+            ),
+            "improved_maximum_relative_change": (
+                None
+                if improved_relative_change is None
+                else float(np.max(improved_relative_change))
+            ),
+            "improved_correction_order_relative_change": (
+                None
+                if correction_order_relative_change is None
+                else correction_order_relative_change.tolist()
+            ),
+            "improved_correction_order_maximum_change": (
+                None
+                if correction_order_relative_change is None
+                else float(np.max(correction_order_relative_change))
+            ),
             "invariant_residuals": invariant_residuals,
+            "original_sugama_invariant_residuals": original_invariant_residuals,
+            "improved_sugama_invariant_residuals": improved_invariant_residuals,
             "symmetry_max_abs": symmetry_error,
             "maximum_eigenvalue": maximum_eigenvalue,
-            "solve_residual_max": float(max(solve_residuals)),
+            "solve_residual_max": float(
+                max(
+                    (
+                        *solve_residuals,
+                        *original_solve_residuals,
+                        *improved_solve_residuals,
+                    )
+                )
+            ),
             "generation_seconds": pair_times,
         }
         resolution_reports.append(report)
@@ -2743,6 +3135,12 @@ def build_drift_kinetic_response_convergence_summary(
                     "mode_count": mode_count,
                     "ion_charge": float(charge),
                     "normalized_current": float(current_array[charge_index]),
+                    "original_sugama_normalized_current": float(
+                        original_current_array[charge_index]
+                    ),
+                    "improved_sugama_normalized_current": float(
+                        improved_current_array[charge_index]
+                    ),
                     "current_per_unit_field": float(current_array[charge_index] / 1.0e-3),
                     "relative_change_from_previous": (
                         None
@@ -2765,20 +3163,60 @@ def build_drift_kinetic_response_convergence_summary(
         ),
         "collision_invariants": max(final["invariant_residuals"].values())
         <= algebra_atol,
+        "original_sugama_invariants": max(
+            final["original_sugama_invariant_residuals"].values()
+        )
+        <= algebra_atol,
+        "improved_sugama_invariants": max(
+            final["improved_sugama_invariant_residuals"].values()
+        )
+        <= algebra_atol,
         "self_adjoint_symmetry": final["symmetry_max_abs"] <= algebra_atol,
         "nonpositive_spectrum": final["maximum_eigenvalue"] <= algebra_atol,
         "driven_solve_residual": final["solve_residual_max"] <= algebra_atol,
+        "original_sugama_low_charge_underprediction": final[
+            "original_sugama_relative_gap"
+        ][0]
+        >= original_sugama_low_charge_gap_min,
+        "original_sugama_high_charge_convergence": final[
+            "original_sugama_relative_gap"
+        ][-1]
+        <= original_sugama_high_charge_gap_max,
+        "improved_sugama_order_reached": final[
+            "improved_sugama_correction_order"
+        ]
+        >= improved_sugama_correction_order,
+        "improved_sugama_nested_current_converged": final[
+            "improved_maximum_relative_change"
+        ]
+        is not None
+        and final["improved_maximum_relative_change"] <= nested_current_rtol,
+        "improved_sugama_correction_hierarchy_converged": final[
+            "improved_correction_order_maximum_change"
+        ]
+        is not None
+        and final["improved_correction_order_maximum_change"]
+        <= nested_current_rtol,
+        "improved_sugama_matches_coulomb": max(
+            abs(value) for value in final["improved_sugama_relative_gap"]
+        )
+        <= improved_sugama_coulomb_gap_max,
     }
     return {
-        "schema_version": 1,
-        "title": "Drift-kinetic Coulomb driven-response convergence",
+        "schema_version": 3,
+        "title": "Drift-kinetic Coulomb and Sugama response convergence",
         "literature_equations": {
             "collision": "Frei et al. (2021), equations (3.53)--(3.56)",
+            "original_sugama": "Sugama, Watanabe & Nunami (2009)",
+            "improved_sugama": (
+                "Frei, Ernst & Ricci (2022), equations (45), (60), (79)--(81)"
+            ),
             "drive": "Frei, Ernst & Ricci (2022), equation (81)",
         },
         "scope": (
-            "Converged normalized Coulomb current response. Absolute Spitzer--Harm "
-            "conductivity and original/improved Sugama comparison remain separate gates."
+            "Converged normalized Coulomb response and arbitrary-order, equal-temperature "
+            "original- and improved-Sugama boundaries. Absolute Spitzer--Harm "
+            "conductivity normalization remains a separate gate."
         ),
         "ion_charge": charge_values.tolist(),
         "normalized_field": 1.0e-3,
@@ -2786,6 +3224,14 @@ def build_drift_kinetic_response_convergence_summary(
         "thresholds": {
             "nested_current_rtol": nested_current_rtol,
             "algebra_atol": algebra_atol,
+            "original_sugama_low_charge_gap_min": (
+                original_sugama_low_charge_gap_min
+            ),
+            "original_sugama_high_charge_gap_max": (
+                original_sugama_high_charge_gap_max
+            ),
+            "improved_sugama_coulomb_gap_max": improved_sugama_coulomb_gap_max,
+            "improved_sugama_correction_order": improved_sugama_correction_order,
         },
         "resolutions": resolution_reports,
         "rows": rows,
@@ -2808,6 +3254,7 @@ def write_drift_kinetic_response_convergence_figure(
         "ink": "#20272E",
     }
     reports = summary["resolutions"]
+    final_report = reports[-1]
     charges = np.asarray(summary["ion_charge"], dtype=float)
     mode_counts = np.asarray([row["mode_count"] for row in reports], dtype=float)
     labels = [
@@ -2827,13 +3274,44 @@ def write_drift_kinetic_response_convergence_figure(
             ms=4.2,
             label=label,
         )
+    axes[0, 0].semilogx(
+        charges,
+        np.asarray(final_report["original_sugama_current"], dtype=float)
+        / summary["normalized_field"],
+        "^--",
+        color=colors["ink"],
+        markerfacecolor="white",
+        lw=1.8,
+        ms=5.0,
+        label=(
+            "original Sugama "
+            f"({final_report['maximum_hermite_order']}, "
+            f"{final_report['maximum_laguerre_order']})"
+        ),
+    )
+    axes[0, 0].semilogx(
+        charges,
+        np.asarray(final_report["improved_sugama_current"], dtype=float)
+        / summary["normalized_field"],
+        "x-.",
+        color=colors["red"],
+        lw=1.8,
+        ms=5.0,
+        markeredgewidth=1.5,
+        label=(
+            "improved Sugama "
+            f"({final_report['maximum_hermite_order']}, "
+            f"{final_report['maximum_laguerre_order']}; "
+            f"K={final_report['improved_sugama_correction_order']})"
+        ),
+    )
     axes[0, 0].set(
         xlabel="ion charge $Z$",
         ylabel=r"normalized response $|u_e|/E$",
         title="(a) Driven-current hierarchy",
     )
     axes[0, 0].legend(
-        title=r"$(P,J)$", frameon=False, fontsize=7, title_fontsize=8, ncol=2
+        title=r"$(P,J)$", frameon=False, fontsize=6.8, title_fontsize=8, ncol=3
     )
 
     for charge_index, charge in enumerate(charges):
@@ -2867,7 +3345,14 @@ def write_drift_kinetic_response_convergence_figure(
     axes[0, 1].legend(frameon=False, fontsize=7, ncol=2)
 
     invariant = np.asarray(
-        [max(row["invariant_residuals"].values()) for row in reports]
+        [
+            max(
+                *row["invariant_residuals"].values(),
+                *row["original_sugama_invariant_residuals"].values(),
+                *row["improved_sugama_invariant_residuals"].values(),
+            )
+            for row in reports
+        ]
     )
     symmetry = np.asarray([row["symmetry_max_abs"] for row in reports])
     positive_eigenvalue = np.maximum(
@@ -2937,7 +3422,7 @@ def write_drift_kinetic_response_convergence_figure(
         axis.spines[["top", "right"]].set_visible(False)
     status = "PASS" if summary["gate_passed"] else "OPEN"
     fig.suptitle(
-        f"Drift-kinetic Coulomb response: resolved hierarchy ({status})",
+        f"Drift-kinetic Coulomb/Sugama response: resolved hierarchies ({status})",
         fontsize=15,
         color=colors["ink"],
     )

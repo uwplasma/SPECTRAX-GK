@@ -698,15 +698,32 @@ self-adjointness, non-positive-spectrum, and driven-solve residuals all pass a
    :alt: Nested Hermite--Laguerre convergence of the Coulomb driven response
    :width: 96%
 
-   Drift-kinetic Coulomb response hierarchy. Panel (a) shows the ion-charge
-   scan, panel (b) is the nested velocity-space error, panel (c) records the
-   conservation/dissipation gates, and panel (d) reports local coefficient-
-   generation cost. The panel validates the normalized Coulomb response; it
-   does not substitute for an absolute Spitzer--Härm conductivity comparison.
+   Drift-kinetic Coulomb and Sugama response hierarchies. Panel (a) compares
+   Coulomb with the arbitrary-order original and improved models, panel (b) is
+   the nested velocity-space error, panel (c) records the conservation and
+   dissipation gates, and panel (d) reports local coefficient-generation cost.
+   The panel validates normalized response, not absolute Spitzer--Härm
+   conductivity.
 
 The machine-readable JSON and CSV use the same prospectively fixed 0.5%
-current and :math:`2\times10^{-12}` algebra thresholds. Regenerate all three
-formats with
+current and :math:`2\times10^{-12}` algebra thresholds. At equal temperature,
+the arbitrary-order original-Sugama test matrix equals the Coulomb test matrix;
+its field matrix is the self-adjoint low-rank restoration of momentum and
+thermal energy. This construction reproduces every published C6 coefficient
+at low order and, at :math:`(P,J)=(20,5)`, yields 11.29% less current than
+Coulomb at :math:`Z=1` and only 0.61% less at :math:`Z=100`. Prospectively
+fixed gates require at least an 8% low-charge deficit and no more than a 2%
+high-charge difference, reflecting the Figure-16 ordering without claiming its
+absolute conductivity normalization. The improved field correction is formed
+from the Coulomb Braginskii :math:`N` matrix Schur complement and the exact
+drift-kinetic transforms in equations (79)--(81) of Frei, Ernst & Ricci (2022).
+It reproduces every C103 coefficient at :math:`K=1`; the shipped hierarchy
+retains complete total-degree shells through :math:`K=5`, checks the final
+:math:`K=4\rightarrow5` response change, and requires agreement with Coulomb
+within 1% at every scanned charge. The measured maximum changes are 0.439% in
+the final correction-order step and 0.0237% from :math:`(P,J)=(15,5)` to
+:math:`(20,5)`; the largest improved-to-Coulomb difference is 0.307%.
+Regenerate all three formats with
 
 .. code-block:: bash
 

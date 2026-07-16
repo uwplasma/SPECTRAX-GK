@@ -731,8 +731,17 @@ algorithmic layer. The direct Coulomb hierarchy is resolved through
 :math:`1.66\times10^{-4}` over :math:`Z=1,2,5,10,100`, below the fixed 0.5%
 gate. Physical Spitzer--Härm conductivity remains open because it additionally
 requires the paper's dimensional collision-frequency normalization, saturation
-and field-amplitude checks, and arbitrary-order original/improved-Sugama
-hierarchies under the same convention.
+and field-amplitude checks. The original-Sugama hierarchy is generated at equal
+temperature from the Coulomb test matrix plus the unique self-adjoint low-rank
+momentum/energy restoration. The improved hierarchy evaluates the Coulomb
+Braginskii :math:`N` matrix, removes its momentum-restoring Schur complement,
+and applies the exact drift-kinetic basis transforms through :math:`K=5` in
+multiprecision. The two constructions recover the independently tabulated C6
+and C103 coefficients and reproduce the published low- and high-charge current
+ordering without fitting response data. At the converged endpoint, the largest
+improved-to-Coulomb current difference is 0.307%, the
+:math:`K=4\rightarrow5` change is 0.439%, and the final velocity-hierarchy
+change is 0.0237%.
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
 

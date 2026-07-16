@@ -2624,6 +2624,116 @@ def test_direct_drift_kinetic_coulomb_matches_finite_wavelength_endpoint(
         )
 
 
+def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
+    """Equal-temperature rank restoration must reproduce published C6 entries."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    test, _field = mod.coulomb_drift_kinetic_moment_matrices(
+        3,
+        1,
+        1.0,
+        1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        digits=60,
+    )
+    original_test, original_field = (
+        mod.original_sugama_like_species_moment_matrices(test, 3, 1)
+    )
+    convention_sign = np.asarray([1.0, -1.0] * 4)
+    convention = convention_sign[:, None] * convention_sign[None, :]
+    collision = convention * (original_test + original_field)
+    published = np.load(
+        ROOT / "src/spectraxgk/data/advanced_collision_six_moment.npy"
+    )[0]
+    mask = published != 0.0
+    np.testing.assert_allclose(collision[mask], published[mask], rtol=3.0e-15)
+
+    momentum = np.zeros(8)
+    momentum[2] = 1.0
+    energy = np.zeros(8)
+    energy[1] = 1.0
+    energy[4] = 1 / np.sqrt(2.0)
+    np.testing.assert_allclose(collision @ momentum, 0.0, atol=8.0e-16)
+    np.testing.assert_allclose(collision @ energy, 0.0, atol=8.0e-16)
+    np.testing.assert_allclose(collision, collision.T, atol=8.0e-15)
+    assert np.linalg.eigvalsh(collision).max() < 2.0e-15
+
+
+@pytest.mark.parametrize(
+    ("matrix", "maximum_hermite", "maximum_laguerre", "message"),
+    (
+        (np.zeros((4, 4)), 1, 1, "maximum_hermite_order"),
+        (np.zeros((6, 6)), 2, 0, "maximum_laguerre_order"),
+        (np.zeros((3, 3)), 2, 1, "shape"),
+        (np.full((6, 6), np.nan), 2, 1, "finite"),
+        (np.zeros((6, 6)), 2, 1, "dissipate"),
+    ),
+)
+def test_original_sugama_reconstruction_rejects_invalid_input(
+    matrix: np.ndarray,
+    maximum_hermite: int,
+    maximum_laguerre: int,
+    message: str,
+) -> None:
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    with pytest.raises(ValueError, match=message):
+        mod.original_sugama_like_species_moment_matrices(
+            matrix, maximum_hermite, maximum_laguerre
+        )
+
+
+def test_improved_sugama_reconstruction_matches_c103_and_invariants() -> None:
+    """The arbitrary-order field correction must reproduce published C103."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    test, _field = mod.coulomb_drift_kinetic_moment_matrices(
+        3,
+        1,
+        1.0,
+        1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        digits=60,
+    )
+    improved_test, improved_field = (
+        mod.improved_sugama_equal_temperature_moment_matrices(
+            test, 3, 1, correction_order=1, digits=60
+        )
+    )
+    convention_sign = np.asarray([1.0, -1.0] * 4)
+    convention = convention_sign[:, None] * convention_sign[None, :]
+    collision = convention * (improved_test + improved_field)
+    published = np.load(
+        ROOT / "src/spectraxgk/data/advanced_collision_six_moment.npy"
+    )[1]
+    mask = published != 0.0
+    np.testing.assert_allclose(collision[mask], published[mask], rtol=3.0e-15)
+
+    momentum = np.zeros(8)
+    momentum[2] = 1.0
+    np.testing.assert_allclose(collision @ momentum, 0.0, atol=8.0e-16)
+    np.testing.assert_allclose(collision, collision.T, atol=8.0e-15)
+    assert np.linalg.eigvalsh(collision).max() < 2.0e-15
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"correction_order": -1}, "correction_order"),
+        ({"correction_order": 2}, "maximum_hermite_order"),
+        ({"correction_order": 1, "digits": 10}, "digits"),
+    ),
+)
+def test_improved_sugama_reconstruction_rejects_incomplete_shells(
+    kwargs: dict[str, object], message: str
+) -> None:
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    matrix = np.eye(8)
+    with pytest.raises(ValueError, match=message):
+        mod.improved_sugama_equal_temperature_moment_matrices(
+            matrix, 3, 1, **kwargs
+        )
+
+
 @pytest.mark.parametrize(
     ("kwargs", "message"),
     (
@@ -2666,6 +2776,7 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
         resolutions=((3, 1), (5, 2)),
         required_resolution=(5, 2),
         nested_current_rtol=5.0e-2,
+        improved_sugama_correction_order=2,
         digits=32,
     )
 
@@ -2675,6 +2786,13 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
     final = summary["resolutions"][-1]
     assert final["maximum_relative_change"] < 5.0e-2
     assert max(final["invariant_residuals"].values()) < 2.0e-12
+    assert max(final["original_sugama_invariant_residuals"].values()) < 2.0e-12
+    assert max(final["improved_sugama_invariant_residuals"].values()) < 2.0e-12
+    assert final["original_sugama_relative_gap"][0] > 8.0e-2
+    assert final["original_sugama_relative_gap"][-1] < 2.0e-2
+    assert final["improved_sugama_correction_order"] == 2
+    assert final["improved_correction_order_maximum_change"] < 5.0e-2
+    assert max(abs(value) for value in final["improved_sugama_relative_gap"]) < 1.0e-2
     assert final["maximum_eigenvalue"] < 2.0e-12
     assert json.loads(out_json.read_text(encoding="utf-8"))["gate_passed"] is True
     assert len(pd.read_csv(out_csv)) == 10
@@ -2693,6 +2811,16 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
         ({"ion_charges": (0.0,)}, "ion_charges"),
         ({"nested_current_rtol": 0.0}, "nested_current_rtol"),
         ({"algebra_atol": float("inf")}, "algebra_atol"),
+        (
+            {"original_sugama_low_charge_gap_min": 1.0},
+            "low_charge_gap_min",
+        ),
+        (
+            {"original_sugama_high_charge_gap_max": 0.0},
+            "high_charge_gap_max",
+        ),
+        ({"improved_sugama_coulomb_gap_max": 1.0}, "coulomb_gap_max"),
+        ({"improved_sugama_correction_order": 0}, "correction_order"),
     ),
 )
 def test_drift_kinetic_response_artifact_rejects_invalid_policy(
@@ -2921,6 +3049,13 @@ def test_tracked_drift_kinetic_response_closes_convergence_gates() -> None:
     assert final["maximum_laguerre_order"] == 5
     assert final["maximum_relative_change"] < 5.0e-3
     assert max(final["invariant_residuals"].values()) < 2.0e-12
+    assert max(final["original_sugama_invariant_residuals"].values()) < 2.0e-12
+    assert max(final["improved_sugama_invariant_residuals"].values()) < 2.0e-12
+    assert final["original_sugama_relative_gap"][0] > 8.0e-2
+    assert final["original_sugama_relative_gap"][-1] < 2.0e-2
+    assert final["improved_sugama_correction_order"] == 5
+    assert final["improved_correction_order_maximum_change"] < 5.0e-3
+    assert max(abs(value) for value in final["improved_sugama_relative_gap"]) < 1.0e-2
     assert final["symmetry_max_abs"] < 2.0e-12
     assert final["maximum_eigenvalue"] < 2.0e-12
     assert final["solve_residual_max"] < 2.0e-12
