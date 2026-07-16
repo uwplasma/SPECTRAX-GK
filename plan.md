@@ -377,6 +377,20 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Removed the next collisional-zonal generator bottleneck before
+  launching the paper hierarchy. The drift-kinetic Coulomb owner now
+  determines the exact polynomial/parity support of all required speed moments
+  and optionally evaluates those independent multiprecision coefficients with
+  POSIX-fork workers. A separate opt-in BLAS contraction acts only after the
+  coefficients have reached the requested precision. At :math:`(12,5)`, four
+  workers reduce 7.15 seconds to 3.49 seconds with bitwise-identical test and
+  field matrices. Eight workers complete :math:`(20,5)` in 11.58 seconds with
+  checksum ``-359.12555102143637``. The float64 final contraction differs from
+  the full multiprecision contraction by only :math:`1.4\times10^{-16}` relative
+  L2 at :math:`(12,5)`. A local eight-worker :math:`(24,10)` run still exceeded
+  the five-minute cap and produced no partial artifact, so the endpoint is
+  assigned once to the 36-core office CPU rather than repeatedly relaunched.
+
 - 2026-07-16: Encoded the complete Frei--Ernst--Ricci collisional-zonal
   acceptance protocol in the existing zonal-artifact owner. The fail-closed
   gate requires Coulomb, original-Sugama, and improved-Sugama traces at

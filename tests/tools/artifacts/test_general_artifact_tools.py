@@ -2765,6 +2765,47 @@ def test_direct_drift_kinetic_coulomb_matches_finite_wavelength_endpoint(
         )
 
 
+def test_drift_kinetic_coulomb_parallel_speed_precompute_preserves_matrices() -> None:
+    """Forked independent speed moments must preserve the serial equations."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    inputs = dict(
+        maximum_hermite_order=4,
+        maximum_laguerre_order=2,
+        mass_ratio=1.0,
+        temperature_ratio=1.0,
+        maximum_spherical_order=8,
+        maximum_spherical_radial_order=4,
+        digits=60,
+        float64_final_contraction=True,
+    )
+    serial = mod.coulomb_drift_kinetic_moment_matrices(**inputs, worker_count=1)
+    parallel = mod.coulomb_drift_kinetic_moment_matrices(**inputs, worker_count=2)
+    for serial_component, parallel_component in zip(serial, parallel, strict=True):
+        np.testing.assert_array_equal(parallel_component, serial_component)
+
+
+def test_drift_kinetic_float_contraction_is_roundoff_equivalent() -> None:
+    """The optional final BLAS contraction must retain multiprecision coefficients."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    inputs = dict(
+        maximum_hermite_order=4,
+        maximum_laguerre_order=2,
+        mass_ratio=1.0,
+        temperature_ratio=1.0,
+        maximum_spherical_order=8,
+        maximum_spherical_radial_order=4,
+        digits=60,
+    )
+    exact = mod.coulomb_drift_kinetic_moment_matrices(**inputs)
+    contracted = mod.coulomb_drift_kinetic_moment_matrices(
+        **inputs, float64_final_contraction=True
+    )
+    for exact_component, contracted_component in zip(exact, contracted, strict=True):
+        np.testing.assert_allclose(
+            contracted_component, exact_component, rtol=3.0e-16, atol=1.0e-15
+        )
+
+
 def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
     """Equal-temperature rank restoration must reproduce published C6 entries."""
     mod = load_artifact_tool("build_linear_validation_artifacts")
@@ -2885,6 +2926,7 @@ def test_improved_sugama_reconstruction_rejects_incomplete_shells(
         ({"maximum_spherical_order": -1}, "maximum_spherical_order"),
         ({"maximum_spherical_radial_order": -1}, "maximum_spherical_radial_order"),
         ({"digits": 10}, "digits"),
+        ({"worker_count": 0}, "worker_count"),
     ),
 )
 def test_direct_drift_kinetic_coulomb_rejects_invalid_domain(

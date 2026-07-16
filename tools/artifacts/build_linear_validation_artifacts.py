@@ -2143,6 +2143,8 @@ def coulomb_drift_kinetic_moment_matrices(
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
     digits: int = 80,
+    float64_final_contraction: bool = False,
+    worker_count: int = 1,
 ) -> tuple[np.ndarray, np.ndarray]:
     r"""Generate drift-kinetic Coulomb test and field moment matrices.
 
@@ -2154,7 +2156,11 @@ def coulomb_drift_kinetic_moment_matrices(
 
     The spherical and radial limits remain explicit because collision-table
     promotion requires a resolved hierarchy, not only a resolved runtime
-    Hermite--Laguerre state.
+    Hermite--Laguerre state. ``worker_count`` partitions independent Coulomb
+    speed moments through POSIX ``fork`` while keeping one worker as the
+    portable default. ``float64_final_contraction`` converts only the final
+    dense product after all coefficients have been evaluated at ``digits``
+    precision; it is intended for bounded high-order artifact generation.
     """
 
     if maximum_hermite_order < 0:
@@ -2167,6 +2173,8 @@ def coulomb_drift_kinetic_moment_matrices(
         raise ValueError("temperature_ratio must be finite and > 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
+    if worker_count < 1:
+        raise ValueError("worker_count must be >= 1")
 
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
     spherical_limit = (
@@ -2229,7 +2237,9 @@ def coulomb_drift_kinetic_moment_matrices(
             )
 
         @cache
-        def speed_moment(p: int, j: int, speed_power: int) -> tuple[Any, Any]:
+        def direct_speed_moment(
+            p: int, j: int, speed_power: int
+        ) -> tuple[Any, Any]:
             return _coulomb_speed_moments_mp(
                 p,
                 j,
@@ -2242,6 +2252,39 @@ def coulomb_drift_kinetic_moment_matrices(
                 coulomb_E=coulomb_E,
             )
 
+        speed_keys: set[tuple[int, int, int]] = set()
+        for output_hermite in range(maximum_hermite_order + 1):
+            for output_laguerre in range(n_laguerre):
+                output_degree = output_hermite + 2 * output_laguerre
+                maximum_speed_order = output_laguerre + output_hermite // 2
+                for p, j in moment_orders:
+                    if p > output_degree:
+                        continue
+                    for speed_order in range(maximum_speed_order + 1):
+                        if output_laguerre > speed_order + p // 2:
+                            continue
+                        if output_degree > p + 2 * speed_order:
+                            continue
+                        if (p + 2 * speed_order - output_degree) % 2:
+                            continue
+                        speed_keys.update(
+                            (p, j, speed_power)
+                            for speed_power in range(speed_order + 1)
+                        )
+        ordered_speed_keys = tuple(sorted(speed_keys))
+
+        def build_speed_moment(index: int):
+            key = ordered_speed_keys[index]
+            return key, direct_speed_moment(*key)
+
+        speed_moments = dict(
+            _forked_ordered_map(
+                build_speed_moment,
+                len(ordered_speed_keys),
+                min(worker_count, len(ordered_speed_keys)),
+            )
+        )
+
         @cache
         def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
             test_speed = mp.mpf(0)
@@ -2250,7 +2293,7 @@ def coulomb_drift_kinetic_moment_matrices(
                 laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
                     t, p, speed_power, mp
                 )
-                test_term, field_term = speed_moment(p, j, speed_power)
+                test_term, field_term = speed_moments[(p, j, speed_power)]
                 test_speed += laguerre_coefficient * test_term
                 field_speed += laguerre_coefficient * field_term
             return test_speed, field_speed
@@ -2320,8 +2363,23 @@ def coulomb_drift_kinetic_moment_matrices(
                     test_projection[row, moment_index] = test_coefficient
                     field_projection[row, moment_index] = field_coefficient
 
-        test = np.asarray((test_projection * moment_map).tolist(), dtype=np.float64)
-        field = np.asarray((field_projection * moment_map).tolist(), dtype=np.float64)
+        if float64_final_contraction:
+            moment_map_float = np.asarray(moment_map.tolist(), dtype=np.float64)
+            test = (
+                np.asarray(test_projection.tolist(), dtype=np.float64)
+                @ moment_map_float
+            )
+            field = (
+                np.asarray(field_projection.tolist(), dtype=np.float64)
+                @ moment_map_float
+            )
+        else:
+            test = np.asarray(
+                (test_projection * moment_map).tolist(), dtype=np.float64
+            )
+            field = np.asarray(
+                (field_projection * moment_map).tolist(), dtype=np.float64
+            )
     return test, field
 
 
