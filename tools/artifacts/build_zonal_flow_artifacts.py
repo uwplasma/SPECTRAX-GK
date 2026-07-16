@@ -361,7 +361,7 @@ def run_drift_kinetic_collisional_zonal_trace(
     model_archive: Path,
     model: str,
     out_csv: Path,
-    dt: float = 0.1,
+    dt: float = 0.005,
     maximum_normalized_time: float = 30.0,
     sample_stride: int = 10,
     nz: int = 32,
@@ -747,7 +747,7 @@ def _main_simulate_collisional_zonal_dk(argv: list[str]) -> int:
         required=True,
     )
     parser.add_argument("--out-csv", type=Path, required=True)
-    parser.add_argument("--dt", type=float, default=0.1)
+    parser.add_argument("--dt", type=float, default=0.005)
     parser.add_argument("--maximum-normalized-time", type=float, default=30.0)
     parser.add_argument("--sample-stride", type=int, default=10)
     parser.add_argument("--nz", type=int, default=32)
