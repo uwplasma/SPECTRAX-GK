@@ -705,11 +705,15 @@ caches, the exact :math:`(9,4)`, :math:`k_\perp\rho=0.5` build falls from
 vectors 26.91 seconds. These transformations reorder exact multiprecision
 algebra; they do not truncate the collision model.
 
-The common low-order :math:`(7,3)` and :math:`(9,4)` blocks are not converged:
-their nonzero matrix and polarization relative differences remain greater than
-one. ``collision_finite_wavelength_generation_hierarchy.json`` records that
-negative result alongside the timings and fails closed on both the literature
-resolution and transport gate. The drift-kinetic generator still evaluates
+Correct full-block indexing gives 3.74% and 1.28% test/field matrix changes
+between :math:`(7,3)` and :math:`(9,4)`, with nonzero polarization changes
+below :math:`1.2\times10^{-8}`. The GMP-backed :math:`(12,5)` point then
+completes in 556.21 seconds; its common :math:`(9,4)` test/field blocks change
+by 2.87% and 1.07%, and polarization changes remain below
+:math:`10^{-11}`. ``collision_finite_wavelength_generation_hierarchy.json``
+records the prospective 5% intermediate-resolution pass while failing closed
+on the still-unreached :math:`(18,6)` literature endpoint and transport gate.
+The drift-kinetic generator still evaluates
 collapsed equations
 (3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport
 path, whereas finite-:math:`b` must still reach the independent ITG and zonal

@@ -3287,7 +3287,9 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert summary["gates"] == {
         "all_generated_coefficients_finite": True,
         "literature_resolution_reached": False,
-        "p7_p9_common_block_converged": False,
+        "p12_completed_within_600_seconds": True,
+        "p7_p9_common_block_converged": True,
+        "p9_p12_common_block_converged": True,
         "p9_completed_within_600_seconds": True,
     }
     p9 = summary["p9_j4_kperp_0p5"]
@@ -3299,7 +3301,16 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert p9["optimized"]["total_seconds"] < 0.5 * p9[
         "pre_radial_factorization"
     ]["total_seconds"]
-    assert max(summary["p7_p9_common_low_order_relative_l2"].values()) > 1.0
+    assert max(summary["p7_p9_common_low_order_relative_l2"].values()) < 0.05
+    p12 = summary["p12_j5_kperp_0p5"]
+    assert p12["resolution"] == [12, 5]
+    assert p12["spherical_order"] == 22
+    assert p12["radial_order"] == 11
+    assert p12["backend"] == "gmpy2"
+    assert p12["checksum"] == pytest.approx(-266.19961889691695, abs=1.0e-13)
+    assert p12["total_seconds"] < 600.0
+    assert p12["pure_python_total_completed"] is False
+    assert max(p12["p9_p12_common_low_order_relative_l2"].values()) < 0.03
 
 
 @pytest.mark.slow
