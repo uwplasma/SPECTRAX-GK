@@ -31,6 +31,7 @@ def _cache_for_richer_state(**overrides):
         use_twist_shift=False,
         kz=jnp.asarray([0.0, 1.0, -1.0, 2.0], dtype=jnp.float32),
         Jl=jnp.ones((2, 2, 1, 4), dtype=jnp.float32),
+        b=jnp.ones((2, 1, 4), dtype=jnp.float32),
         mask0=None,
         bgrad=jnp.ones((4,), dtype=jnp.float32),
         l=jnp.arange(2, dtype=jnp.float32),
@@ -341,6 +342,8 @@ def test_electrostatic_slices_velocity_sharded_fail_closed_and_weighted_routes(
     def fake_diamag(local_arr, *_args, **kwargs):
         calls.append("diamag")
         assert float(kwargs["weight"]) == pytest.approx(0.125)
+        assert kwargs["b"] is cache.b
+        assert kwargs["l4"] is cache.l4
         return jnp.ones_like(local_arr) * (4.0 * kwargs["weight"] + 0.0j)
 
     monkeypatch.setattr(velocity_sharding, "electrostatic_phi_shard_map", fake_phi)
