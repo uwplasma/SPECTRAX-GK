@@ -3208,7 +3208,7 @@ def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
         **inputs, float64_final_contraction=True
     )
     parallel = mod.coulomb_nonpolarized_moment_matrices(
-        **inputs, float64_final_contraction=True, worker_count=2
+        **inputs, float64_final_contraction=True, worker_count=4
     )
     for exact_component, contracted_component, parallel_component in zip(
         exact, contracted, parallel, strict=True
