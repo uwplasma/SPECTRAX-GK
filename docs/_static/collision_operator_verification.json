@@ -34,12 +34,31 @@
   ],
   "gate_passed": true,
   "gates": {
+    "drift_kinetic_gyrocenter_density_row": true,
     "final_bessel_relative_error": true,
+    "finite_b_gyrocenter_diffusion_nonzero": true,
     "maximum_eigenvalue": true,
     "maximum_invariant_residual": true,
     "maximum_projection_relative_error": true,
     "published_coefficient_maximum_absolute_error": true,
+    "small_b_gyrocenter_diffusion_quadratic": true,
     "symmetry_maximum_absolute_error": true
+  },
+  "gyrocenter_diffusion": {
+    "density_row_infinity_norm": [
+      2.952766034654239e-17,
+      0.0010585065837858737,
+      0.004169002815804829,
+      0.015584022776236536
+    ],
+    "interpretation": "finite-b classical gyro-diffusion; local invariant nulls apply in particle coordinates and in the drift-kinetic limit",
+    "kperp_rho": [
+      0.0,
+      0.1,
+      0.2,
+      0.4
+    ],
+    "small_b_observed_order": 1.939982771585923
   },
   "invariant_residuals": {
     "density": 1.5272099054645245e-81,
@@ -129,11 +148,14 @@
     ]
   ],
   "metrics": {
+    "drift_kinetic_gyrocenter_density_row": 2.952766034654239e-17,
     "final_bessel_relative_error": 0.0,
+    "finite_b_gyrocenter_density_row": 0.015584022776236536,
     "maximum_eigenvalue": 9.00846363925679e-18,
     "maximum_invariant_residual": 5.551115123125783e-17,
     "maximum_projection_relative_error": 3.1316539653265556e-13,
     "published_coefficient_maximum_absolute_error": 1.1102230246251565e-16,
+    "small_b_gyrocenter_diffusion_observed_order": 1.939982771585923,
     "symmetry_maximum_absolute_error": 8.326672684688674e-17
   },
   "precision_decimal_digits": 80,
@@ -159,11 +181,15 @@
     }
   ],
   "thresholds": {
+    "drift_kinetic_gyrocenter_density_row": 5e-12,
     "final_bessel_relative_error": 5e-09,
+    "finite_b_gyrocenter_density_row_minimum": 0.0001,
     "maximum_eigenvalue": 1e-12,
     "maximum_invariant_residual": 5e-12,
     "maximum_projection_relative_error": 5e-09,
     "published_coefficient_maximum_absolute_error": 5e-12,
+    "small_b_gyrocenter_diffusion_order_maximum": 2.3,
+    "small_b_gyrocenter_diffusion_order_minimum": 1.7,
     "symmetry_maximum_absolute_error": 5e-12
   },
   "truncation": {

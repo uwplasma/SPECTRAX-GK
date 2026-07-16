@@ -2707,6 +2707,10 @@ def test_coulomb_operator_verification_artifact_closes_physical_gates(
     assert summary["metrics"]["maximum_projection_relative_error"] < 5.0e-10
     assert summary["metrics"]["maximum_invariant_residual"] < 5.0e-13
     assert summary["metrics"]["maximum_eigenvalue"] < 1.0e-12
+    diffusion = summary["gyrocenter_diffusion"]
+    assert diffusion["density_row_infinity_norm"][0] < 5.0e-12
+    assert diffusion["density_row_infinity_norm"][-1] > 1.0e-4
+    assert 1.7 < diffusion["small_b_observed_order"] < 2.3
 
     assert json.loads(out_json.read_text())["gate_passed"] is True
     assert out_png.stat().st_size > 100_000

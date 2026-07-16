@@ -686,9 +686,13 @@ The present level covers arbitrary-precision coefficient generation, direct
 manufactured velocity-space projection, Bessel-sum convergence, the three
 collision-invariant null modes, and non-positive entropy production. The next
 levels are intentionally sequential: Hermite/Laguerre/spherical truncation of
-the assembled runtime table; multispecies field coupling; Spitzer--Härm and
-Braginskii transport; collision-frequency and velocity-resolution convergence;
-finite-:math:`b` ITG; and collisionless versus collisional zonal response.
+the assembled runtime table; reconstructed particle-space conservation;
+Spitzer--Härm and Braginskii transport; collision-frequency and velocity-
+resolution convergence; finite-:math:`b` ITG; and collisionless versus
+collisional zonal response. Finite-:math:`b` gyrocenter density is deliberately
+not treated as a local invariant: the tracked :math:`O(b^2)` density-row gate
+resolves the classical gyro-diffusion discussed after equation (3.5) of Frei
+et al. (2021).
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
 

@@ -501,9 +501,10 @@ The reproducible algebra/convergence artifact is generated with
    panel (b) compares five generated coefficients with independent
    80-by-80 Gauss--Hermite/Laguerre velocity projection; panel (c) shows five
    dissipative modes and the three density, parallel-momentum, and thermal-
-   energy null modes; panel (d) exposes the complete retained drift-kinetic
-   moment block. The machine-readable gate is stored beside the figure in
-   ``collision_operator_verification.json``.
+   energy null modes, while its inset verifies leading :math:`O(b^2)` classical
+   gyro-diffusion away from the drift-kinetic limit; panel (d) exposes the
+   complete retained drift-kinetic moment block. The machine-readable gate is
+   stored beside the figure in ``collision_operator_verification.json``.
 
 The largest direct-projection relative error is :math:`3.2\times10^{-13}`;
 the published-coefficient, symmetry, and invariant residuals are at or below
@@ -541,9 +542,19 @@ Independent Python pair loops, JIT execution, JVP/finite-difference checks,
 like-species polarization cancellation, generated-coefficient application,
 and the complete cached linear-RHS seam pass. This closes runtime algebra and
 differentiable interpolation. It does not yet close table-generation cost,
-Hermite/Laguerre truncation, multispecies physical invariants at finite
-:math:`b`, or any transport benchmark; therefore this class remains a Python
-research API and has no input-file selector.
+Hermite/Laguerre truncation, reconstructed particle-space conservation at
+finite :math:`b`, or any transport benchmark; therefore this class remains a
+Python research API and has no input-file selector.
+
+Finite-:math:`b` conservation must be stated carefully. Collisions are local at
+the particle position, whereas the evolved moments are defined at the
+gyrocenter. Consequently, the gyrocenter density row is not a null row at
+finite :math:`k_\perp\rho`; it represents classical gyro-diffusion. The tracked
+verification artifact recovers the density null at :math:`b=0`, obtains a
+nonzero finite-:math:`b` row, and measures the expected leading
+:math:`O(b^2)` scaling. Future multispecies gates will reconstruct the
+particle-space momentum and energy balances instead of incorrectly imposing
+local gyrocenter nulls.
 
 The lowest-order multispecies drift-kinetic boundary is also implemented
 without assuming equal species. For an ordered pair :math:`(a,b)`,

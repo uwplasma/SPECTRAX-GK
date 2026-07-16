@@ -1200,6 +1200,8 @@ def coulomb_nonpolarized_moment_matrices(
         field_matrix = mp.matrix(n_modes, n_modes)
         moment_cache: dict[tuple[bool, int, int, int, int, int], Any] = {}
         speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
+        product_cache: dict[tuple[int, int, int, int], Any] = {}
+        inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
 
         def spherical_moment(
             p: int,
@@ -1250,6 +1252,75 @@ def coulomb_nonpolarized_moment_matrices(
                 speed_cache[key] = (test_speed, field_speed)
             return speed_cache[key]
 
+        def laguerre_product(
+            m: int,
+            n: int,
+            output_laguerre: int,
+            product_order: int,
+        ) -> Any:
+            key = (m, n, output_laguerre, product_order)
+            if key not in product_cache:
+                product_cache[key] = _laguerre_product_expansion_coefficient_mp(
+                    m,
+                    n,
+                    output_laguerre,
+                    product_order,
+                    0,
+                    mp,
+                )
+            return product_cache[key]
+
+        def inverse_transform(
+            output_hermite: int,
+            product_order: int,
+            p: int,
+            speed_order: int,
+            m: int,
+        ) -> Any:
+            key = (output_hermite, product_order, p, speed_order, m)
+            if key not in inverse_cache:
+                inverse_cache[key] = _hermite_laguerre_to_associated_legendre_mp(
+                    output_hermite,
+                    product_order,
+                    p,
+                    speed_order,
+                    m,
+                    mp,
+                )
+            return inverse_cache[key]
+
+        moment_vectors = {
+            (p, j, m): (
+                tuple(
+                    spherical_moment(
+                        p,
+                        j,
+                        m,
+                        input_hermite,
+                        input_laguerre,
+                        source=False,
+                    )
+                    for input_hermite in range(maximum_hermite_order + 1)
+                    for input_laguerre in range(n_laguerre)
+                ),
+                tuple(
+                    spherical_moment(
+                        p,
+                        j,
+                        m,
+                        input_hermite,
+                        input_laguerre,
+                        source=True,
+                    )
+                    for input_hermite in range(maximum_hermite_order + 1)
+                    for input_laguerre in range(n_laguerre)
+                ),
+            )
+            for p in range(spherical_limit + 1)
+            for j in range(radial_limit + 1)
+            for m in range(p + 1)
+        }
+
         for output_hermite in range(maximum_hermite_order + 1):
             output_normalization = mp.sqrt(
                 mp.power(2, output_hermite) * mp.factorial(output_hermite)
@@ -1273,29 +1344,8 @@ def coulomb_nonpolarized_moment_matrices(
                             / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
                         )
                         for m in range(p + 1):
-                            test_moment_vector = [
-                                spherical_moment(
-                                    p,
-                                    j,
-                                    m,
-                                    input_hermite,
-                                    input_laguerre,
-                                    source=False,
-                                )
-                                for input_hermite in range(maximum_hermite_order + 1)
-                                for input_laguerre in range(n_laguerre)
-                            ]
-                            field_moment_vector = [
-                                spherical_moment(
-                                    p,
-                                    j,
-                                    m,
-                                    input_hermite,
-                                    input_laguerre,
-                                    source=True,
-                                )
-                                for input_hermite in range(maximum_hermite_order + 1)
-                                for input_laguerre in range(n_laguerre)
+                            test_moment_vector, field_moment_vector = moment_vectors[
+                                (p, j, m)
                             ]
                             if not any(
                                 value != 0
@@ -1303,6 +1353,8 @@ def coulomb_nonpolarized_moment_matrices(
                             ):
                                 continue
                             angular = (1 if m == 0 else 2) * angular_base
+                            test_output_coefficient = mp.mpf(0)
+                            field_output_coefficient = mp.mpf(0)
                             for n in range(maximum_bessel_laguerre_order + 1):
                                 kernel = (
                                     mp.exp(-bessel_argument)
@@ -1318,15 +1370,11 @@ def coulomb_nonpolarized_moment_matrices(
                                 if bessel_factor == 0:
                                     continue
                                 for product_order in range(output_laguerre + n + 1):
-                                    product = (
-                                        _laguerre_product_expansion_coefficient_mp(
-                                            m,
-                                            n,
-                                            output_laguerre,
-                                            product_order,
-                                            0,
-                                            mp,
-                                        )
+                                    product = laguerre_product(
+                                        m,
+                                        n,
+                                        output_laguerre,
+                                        product_order,
                                     )
                                     if product == 0:
                                         continue
@@ -1336,15 +1384,12 @@ def coulomb_nonpolarized_moment_matrices(
                                         product_order + (output_hermite + m) // 2
                                     )
                                     for speed_order in range(maximum_speed_order + 1):
-                                        inverse = (
-                                            _hermite_laguerre_to_associated_legendre_mp(
-                                                output_hermite,
-                                                product_order,
-                                                p,
-                                                speed_order,
-                                                m,
-                                                mp,
-                                            )
+                                        inverse = inverse_transform(
+                                            output_hermite,
+                                            product_order,
+                                            p,
+                                            speed_order,
+                                            m,
                                         )
                                         if inverse == 0:
                                             continue
@@ -1360,20 +1405,18 @@ def coulomb_nonpolarized_moment_matrices(
                                             * bessel_factor
                                             / output_normalization
                                         )
-                                        for column, moment in enumerate(
-                                            test_moment_vector
-                                        ):
-                                            if moment != 0 and test_speed != 0:
-                                                test_matrix[row, column] += (
-                                                    common * moment * test_speed
-                                                )
-                                        for column, moment in enumerate(
-                                            field_moment_vector
-                                        ):
-                                            if moment != 0 and field_speed != 0:
-                                                field_matrix[row, column] += (
-                                                    common * moment * field_speed
-                                                )
+                                        test_output_coefficient += common * test_speed
+                                        field_output_coefficient += common * field_speed
+                            if test_output_coefficient != 0:
+                                for column, moment in enumerate(test_moment_vector):
+                                    test_matrix[row, column] += (
+                                        test_output_coefficient * moment
+                                    )
+                            if field_output_coefficient != 0:
+                                for column, moment in enumerate(field_moment_vector):
+                                    field_matrix[row, column] += (
+                                        field_output_coefficient * moment
+                                    )
 
         test = np.asarray(test_matrix.tolist(), dtype=np.float64)
         field = np.asarray(field_matrix.tolist(), dtype=np.float64)
@@ -1452,6 +1495,8 @@ def coulomb_polarization_vectors(
         speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
         target_polarization_cache: dict[tuple[int, int, int], Any] = {}
         source_polarization_cache: dict[tuple[int, int, int], Any] = {}
+        product_cache: dict[tuple[int, int, int, int], Any] = {}
+        inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
 
         def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
             key = (p, j, t)
@@ -1493,6 +1538,38 @@ def coulomb_polarization_vectors(
                 )
             return cache[key]
 
+        def laguerre_product(
+            m: int,
+            n: int,
+            output_laguerre: int,
+            product_order: int,
+        ) -> Any:
+            key = (m, n, output_laguerre, product_order)
+            if key not in product_cache:
+                product_cache[key] = _laguerre_product_expansion_coefficient_mp(
+                    m, n, output_laguerre, product_order, 0, mp
+                )
+            return product_cache[key]
+
+        def inverse_transform(
+            output_hermite: int,
+            product_order: int,
+            p: int,
+            speed_order: int,
+            m: int,
+        ) -> Any:
+            key = (output_hermite, product_order, p, speed_order, m)
+            if key not in inverse_cache:
+                inverse_cache[key] = _hermite_laguerre_to_associated_legendre_mp(
+                    output_hermite,
+                    product_order,
+                    p,
+                    speed_order,
+                    m,
+                    mp,
+                )
+            return inverse_cache[key]
+
         for output_hermite in range(maximum_hermite_order + 1):
             output_normalization = mp.sqrt(
                 mp.power(2, output_hermite) * mp.factorial(output_hermite)
@@ -1506,24 +1583,16 @@ def coulomb_polarization_vectors(
                     if kernel == 0:
                         continue
                     for product_order in range(output_laguerre + n + 1):
-                        product = _laguerre_product_expansion_coefficient_mp(
-                            0,
-                            n,
-                            output_laguerre,
-                            product_order,
-                            0,
-                            mp,
-                        )
+                        product = laguerre_product(0, n, output_laguerre, product_order)
                         for speed_order in range(
                             product_order + output_hermite // 2 + 1
                         ):
-                            inverse = _hermite_laguerre_to_associated_legendre_mp(
+                            inverse = inverse_transform(
                                 output_hermite,
                                 product_order,
                                 0,
                                 speed_order,
                                 0,
-                                mp,
                             )
                             if product == 0 or inverse == 0:
                                 continue
@@ -1573,15 +1642,11 @@ def coulomb_polarization_vectors(
                                 if bessel_factor == 0:
                                     continue
                                 for product_order in range(output_laguerre + n + 1):
-                                    product = (
-                                        _laguerre_product_expansion_coefficient_mp(
-                                            m,
-                                            n,
-                                            output_laguerre,
-                                            product_order,
-                                            0,
-                                            mp,
-                                        )
+                                    product = laguerre_product(
+                                        m,
+                                        n,
+                                        output_laguerre,
+                                        product_order,
                                     )
                                     if (
                                         product == 0
@@ -1592,15 +1657,12 @@ def coulomb_polarization_vectors(
                                         product_order + (output_hermite + m) // 2
                                     )
                                     for speed_order in range(maximum_speed_order + 1):
-                                        inverse = (
-                                            _hermite_laguerre_to_associated_legendre_mp(
-                                                output_hermite,
-                                                product_order,
-                                                p,
-                                                speed_order,
-                                                m,
-                                                mp,
-                                            )
+                                        inverse = inverse_transform(
+                                            output_hermite,
+                                            product_order,
+                                            p,
+                                            speed_order,
+                                            m,
                                         )
                                         if inverse == 0:
                                             continue
@@ -1730,9 +1792,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         [(-1.0) ** laguerre for _hermite in range(4) for laguerre in range(2)]
     )
     collision_matrix = (
-        laguerre_sign[:, None]
-        * laguerre_sign[None, :]
-        * (test_matrix + field_matrix)
+        laguerre_sign[:, None] * laguerre_sign[None, :] * (test_matrix + field_matrix)
     )
     symmetric_matrix = 0.5 * (collision_matrix + collision_matrix.T)
     eigenvalues = np.linalg.eigvalsh(symmetric_matrix)
@@ -1750,6 +1810,36 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         name: float(np.linalg.norm(collision_matrix @ vector, ord=np.inf))
         for name, vector in invariants.items()
     }
+
+    # Finite wavelength mixes particle position and gyrocenter velocity. The
+    # resulting gyrocenter-density row is classical gyro-diffusion, not a
+    # violation of the particle-space conservation law (Frei et al. 2021,
+    # discussion following Eq. 3.5).
+    gyrocenter_b = np.asarray((0.0, 0.1, 0.2, 0.4), dtype=float)
+    gyrocenter_density_rows = []
+    for b_value in gyrocenter_b:
+        gyro_test, gyro_field = coulomb_nonpolarized_moment_matrices(
+            1,
+            1,
+            float(b_value),
+            1.0,
+            1.0,
+            maximum_spherical_order=3,
+            maximum_spherical_radial_order=1,
+            maximum_bessel_laguerre_order=4,
+            digits=max(32, min(digits, 48)),
+        )
+        gyrocenter_density_rows.append(
+            float(np.linalg.norm((gyro_test + gyro_field)[0], ord=np.inf))
+        )
+    gyrocenter_density_rows_array = np.asarray(gyrocenter_density_rows)
+    observed_order = float(
+        np.polyfit(
+            np.log(gyrocenter_b[1:]),
+            np.log(gyrocenter_density_rows_array[1:]),
+            1,
+        )[0]
+    )
     metrics = {
         "final_bessel_relative_error": float(truncation_errors[-1]),
         "maximum_projection_relative_error": float(max(projection_errors)),
@@ -1761,6 +1851,9 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         ),
         "maximum_eigenvalue": float(np.max(eigenvalues)),
         "maximum_invariant_residual": float(max(invariant_residuals.values())),
+        "drift_kinetic_gyrocenter_density_row": float(gyrocenter_density_rows_array[0]),
+        "finite_b_gyrocenter_density_row": float(gyrocenter_density_rows_array[-1]),
+        "small_b_gyrocenter_diffusion_observed_order": observed_order,
     }
     thresholds = {
         "final_bessel_relative_error": 5.0e-9,
@@ -1769,10 +1862,32 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         "symmetry_maximum_absolute_error": 5.0e-12,
         "maximum_eigenvalue": 1.0e-12,
         "maximum_invariant_residual": 5.0e-12,
+        "drift_kinetic_gyrocenter_density_row": 5.0e-12,
+        "finite_b_gyrocenter_density_row_minimum": 1.0e-4,
+        "small_b_gyrocenter_diffusion_order_minimum": 1.7,
+        "small_b_gyrocenter_diffusion_order_maximum": 2.3,
     }
     gates = {
-        name: bool(value <= thresholds[name]) for name, value in metrics.items()
+        name: bool(metrics[name] <= thresholds[name])
+        for name in (
+            "final_bessel_relative_error",
+            "maximum_projection_relative_error",
+            "published_coefficient_maximum_absolute_error",
+            "symmetry_maximum_absolute_error",
+            "maximum_eigenvalue",
+            "maximum_invariant_residual",
+            "drift_kinetic_gyrocenter_density_row",
+        )
     }
+    gates["finite_b_gyrocenter_diffusion_nonzero"] = bool(
+        metrics["finite_b_gyrocenter_density_row"]
+        >= thresholds["finite_b_gyrocenter_density_row_minimum"]
+    )
+    gates["small_b_gyrocenter_diffusion_quadratic"] = bool(
+        thresholds["small_b_gyrocenter_diffusion_order_minimum"]
+        <= observed_order
+        <= thresholds["small_b_gyrocenter_diffusion_order_maximum"]
+    )
     return _json_clean(
         {
             "case": "finite_b_coulomb_operator_algebra",
@@ -1795,6 +1910,15 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             "matrix": collision_matrix,
             "eigenvalues": eigenvalues,
             "invariant_residuals": invariant_residuals,
+            "gyrocenter_diffusion": {
+                "kperp_rho": gyrocenter_b,
+                "density_row_infinity_norm": gyrocenter_density_rows_array,
+                "small_b_observed_order": observed_order,
+                "interpretation": (
+                    "finite-b classical gyro-diffusion; local invariant nulls "
+                    "apply in particle coordinates and in the drift-kinetic limit"
+                ),
+            },
             "metrics": metrics,
             "thresholds": thresholds,
             "gates": gates,
@@ -1830,9 +1954,7 @@ def write_coulomb_operator_verification_figure(
     }
     fig, axes = plt.subplots(2, 2, figsize=(10.8, 7.6), constrained_layout=True)
     truncation = summary["truncation"]
-    errors = np.maximum(
-        np.asarray(truncation["relative_errors"], dtype=float), 1.0e-16
-    )
+    errors = np.maximum(np.asarray(truncation["relative_errors"], dtype=float), 1.0e-16)
     axes[0, 0].semilogy(
         truncation["orders"], errors, "o-", color=colors["blue"], lw=2.2, ms=5.5
     )
@@ -1900,6 +2022,33 @@ def write_coulomb_operator_verification_figure(
         fontsize=8,
         color=colors["ink"],
     )
+    gyrocenter = summary["gyrocenter_diffusion"]
+    gyrocenter_b = np.asarray(gyrocenter["kperp_rho"], dtype=float)[1:]
+    density_row = np.asarray(gyrocenter["density_row_infinity_norm"], dtype=float)[1:]
+    inset = axes[1, 0].inset_axes([0.54, 0.52, 0.42, 0.40])
+    inset.semilogy(
+        gyrocenter_b,
+        density_row,
+        "o-",
+        color=colors["orange"],
+        lw=1.4,
+        ms=3.8,
+    )
+    inset.semilogy(
+        gyrocenter_b,
+        density_row[0] * (gyrocenter_b / gyrocenter_b[0]) ** 2,
+        "--",
+        color=colors["ink"],
+        lw=1.0,
+        label=r"$b^2$",
+    )
+    inset.set_title("finite-$b$ gyro-diffusion", fontsize=7)
+    inset.set_xticks(gyrocenter_b, ["0.1", "0.2", "0.4"])
+    inset.set_xlabel(r"$b=k_\perp\rho$", fontsize=7)
+    inset.set_ylabel(r"$\|C_{0,:}\|_\infty$", fontsize=7)
+    inset.tick_params(labelsize=6)
+    inset.legend(frameon=False, fontsize=6, loc="lower right")
+    inset.grid(alpha=0.2, lw=0.4)
 
     matrix = np.asarray(summary["matrix"], dtype=float)
     matrix_limit = float(np.max(np.abs(matrix)))
@@ -2551,7 +2700,9 @@ def main_collision_verification(argv: list[str] | None = None) -> int:
     )
     print(f"Wrote {args.out_json}")
     print(f"Wrote {args.out_png}")
-    print(f"Collision verification gate: {'PASS' if summary['gate_passed'] else 'FAIL'}")
+    print(
+        f"Collision verification gate: {'PASS' if summary['gate_passed'] else 'FAIL'}"
+    )
     return 0 if summary["gate_passed"] else 1
 
 

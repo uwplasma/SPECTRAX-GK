@@ -365,7 +365,7 @@ reference_anchors = [
 physics_contracts = [
   "ordered target/source finite-wavelength blocks use distinct target and source gyroaverages",
   "test and field blocks act on gyrocenter moments while four polarization vectors couple to the solved potential without double counting the pullback",
-  "like-species polarization cancellation and multispecies invariant boundaries hold at their derived limits",
+  "like-species polarization cancellation, finite-b classical gyro-diffusion, and drift-kinetic invariant boundaries hold at their derived limits",
 ]
 numerics_contracts = [
   "shared, per-species, and ordered-pair tables interpolate and differentiate on device with explicit spatial semantics",
@@ -381,7 +381,7 @@ artifact_paths = [
   "docs/_static/collision_operator_verification.png",
 ]
 next_tests = [
-  "add finite-wavelength multispecies invariant and moment-resolution sweeps",
+  "add reconstructed particle-space multispecies conservation and moment-resolution sweeps",
   "require conductivity, finite-b ITG, and collisional zonal-response gates before input-file promotion",
 ]
 
