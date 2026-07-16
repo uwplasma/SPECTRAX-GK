@@ -549,6 +549,10 @@ def _associated_legendre_to_hermite_laguerre_mp(
     hermite_order: int,
     laguerre_order: int,
     mp: Any,
+    *,
+    base_transform: Callable[[int, int, int, int], Any] | None = None,
+    associated_laguerre: Callable[[int, Any, int], Any] | None = None,
+    legendre_monomial: Callable[[int, int], Any] | None = None,
 ) -> Any:
     left_degree = legendre_order + 2 * radial_order - bessel_order
     right_degree = hermite_order + 2 * laguerre_order
@@ -557,17 +561,31 @@ def _associated_legendre_to_hermite_laguerre_mp(
 
     half = mp.mpf("0.5")
     total = mp.mpf(0)
+    if base_transform is None:
+
+        def base_transform(p: int, j: int, g: int, s: int) -> Any:
+            return _legendre_to_hermite_laguerre_mp(p, j, g, s, mp)
+
+    if associated_laguerre is None:
+
+        def associated_laguerre(n: int, alpha: Any, power: int) -> Any:
+            return _associated_laguerre_monomial_coefficient_mp(n, alpha, power, mp)
+
+    if legendre_monomial is None:
+
+        def legendre_monomial(n: int, power: int) -> Any:
+            return _legendre_monomial_coefficient_mp(n, power, mp)
+
     for auxiliary_radial_order in range(right_degree // 2 + 1):
         auxiliary_legendre_order = right_degree - 2 * auxiliary_radial_order
-        base_transform = _legendre_to_hermite_laguerre_mp(
+        transform = base_transform(
             auxiliary_legendre_order,
             auxiliary_radial_order,
             hermite_order,
             laguerre_order,
-            mp,
         )
         prefactor = (
-            base_transform
+            transform
             * (auxiliary_legendre_order + half)
             * mp.factorial(auxiliary_radial_order)
             / mp.gamma(
@@ -576,24 +594,21 @@ def _associated_legendre_to_hermite_laguerre_mp(
         )
         inner = mp.mpf(0)
         for left_monomial in range(radial_order + 1):
-            left_laguerre = _associated_laguerre_monomial_coefficient_mp(
+            left_laguerre = associated_laguerre(
                 radial_order,
                 legendre_order,
                 left_monomial,
-                mp,
             )
             for auxiliary_monomial in range(auxiliary_radial_order + 1):
-                auxiliary_laguerre = _associated_laguerre_monomial_coefficient_mp(
+                auxiliary_laguerre = associated_laguerre(
                     auxiliary_radial_order,
                     auxiliary_legendre_order,
                     auxiliary_monomial,
-                    mp,
                 )
                 for left_power in range(bessel_order, legendre_order + 1):
-                    left_legendre = _legendre_monomial_coefficient_mp(
+                    left_legendre = legendre_monomial(
                         legendre_order,
                         left_power,
-                        mp,
                     )
                     if left_legendre == 0:
                         continue
@@ -601,10 +616,9 @@ def _associated_legendre_to_hermite_laguerre_mp(
                         left_power - bessel_order
                     )
                     for auxiliary_power in range(auxiliary_legendre_order + 1):
-                        auxiliary_legendre = _legendre_monomial_coefficient_mp(
+                        auxiliary_legendre = legendre_monomial(
                             auxiliary_legendre_order,
                             auxiliary_power,
-                            mp,
                         )
                         parity_factor = 1 + (-1) ** (
                             left_power + auxiliary_power - bessel_order
@@ -1002,6 +1016,9 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
     kperp_rho: Any,
     maximum_bessel_laguerre_order: int,
     mp: Any,
+    *,
+    associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
+    laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
 ) -> Any:
     b = mp.mpf(kperp_rho)
     half_b = b / 2
@@ -1010,25 +1027,35 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
     maximum_auxiliary_laguerre = (
         spherical_radial_order + (spherical_order + bessel_order) // 2
     )
+    if associated_transform is None:
+
+        def associated_transform(p: int, j: int, m: int, g: int, s: int) -> Any:
+            return _associated_legendre_to_hermite_laguerre_mp(p, j, m, g, s, mp)
+
+    if laguerre_product is None:
+
+        def laguerre_product(m: int, n: int, k: int, output: int, radial: int) -> Any:
+            return _laguerre_product_expansion_coefficient_mp(
+                m, n, k, output, radial, mp
+            )
+
     for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
-        transform = _associated_legendre_to_hermite_laguerre_mp(
+        transform = associated_transform(
             spherical_order,
             spherical_radial_order,
             bessel_order,
             hermite_order,
             auxiliary_laguerre_order,
-            mp,
         )
         if transform == 0:
             continue
         for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
-            product = _laguerre_product_expansion_coefficient_mp(
+            product = laguerre_product(
                 bessel_order,
                 bessel_laguerre_order,
                 auxiliary_laguerre_order,
                 laguerre_order,
                 bessel_order,
-                mp,
             )
             if product == 0:
                 continue
@@ -1151,6 +1178,108 @@ def gyroaveraged_polarization_coefficient(
     return float(coefficient)
 
 
+def _coulomb_coefficient_functions(
+    mp: Any,
+    sigma: Any,
+    tau: Any,
+) -> tuple[Callable[..., Any], ...]:
+    """Cache the kperp-independent basis algebra for one species pair."""
+
+    coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(mp.sqrt(tau / sigma), mp)
+
+    @cache
+    def base_transform(
+        legendre_order: int,
+        radial_order: int,
+        hermite_order: int,
+        laguerre_order: int,
+    ) -> Any:
+        return _legendre_to_hermite_laguerre_mp(
+            legendre_order,
+            radial_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+        )
+
+    @cache
+    def associated_laguerre(
+        polynomial_order: int,
+        tensor_order: Any,
+        monomial_order: int,
+    ) -> Any:
+        return _associated_laguerre_monomial_coefficient_mp(
+            polynomial_order,
+            tensor_order,
+            monomial_order,
+            mp,
+        )
+
+    @cache
+    def legendre_monomial(order: int, power: int) -> Any:
+        return _legendre_monomial_coefficient_mp(order, power, mp)
+
+    @cache
+    def inverse_associated(
+        spherical_order: int,
+        spherical_radial_order: int,
+        bessel_order: int,
+        hermite_order: int,
+        laguerre_order: int,
+    ) -> Any:
+        return _associated_legendre_to_hermite_laguerre_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+            base_transform=base_transform,
+            associated_laguerre=associated_laguerre,
+            legendre_monomial=legendre_monomial,
+        )
+
+    @cache
+    def inverse_product(
+        associated_order: int,
+        associated_polynomial_order: int,
+        laguerre_order: int,
+        output_order: int,
+        radial_power: int,
+    ) -> Any:
+        return _laguerre_product_expansion_coefficient_mp(
+            associated_order,
+            associated_polynomial_order,
+            laguerre_order,
+            output_order,
+            radial_power,
+            mp,
+        )
+
+    @cache
+    def speed_moment(p: int, j: int, speed_power: int) -> tuple[Any, Any]:
+        return _coulomb_speed_moments_mp(
+            p,
+            j,
+            speed_power,
+            sigma,
+            tau,
+            1,
+            mp,
+            coulomb_e=coulomb_e,
+            coulomb_E=coulomb_E,
+        )
+
+    return (
+        base_transform,
+        associated_laguerre,
+        legendre_monomial,
+        inverse_associated,
+        inverse_product,
+        speed_moment,
+    )
+
+
 def coulomb_nonpolarized_moment_matrices(
     maximum_hermite_order: int,
     maximum_laguerre_order: int,
@@ -1163,6 +1292,7 @@ def coulomb_nonpolarized_moment_matrices(
     maximum_spherical_radial_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
+    _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     r"""Generate finite-``b`` Coulomb test and field moment matrices.
 
@@ -1218,7 +1348,6 @@ def coulomb_nonpolarized_moment_matrices(
         source_b = mp.mpf(source_kperp_rho)
         sigma = mp.mpf(mass_ratio)
         tau = mp.mpf(temperature_ratio)
-        chi = mp.sqrt(tau / sigma)
         half_b = target_b / 2
         bessel_argument = half_b * half_b
         drift_kinetic = target_b == 0
@@ -1230,55 +1359,19 @@ def coulomb_nonpolarized_moment_matrices(
         product_cache: dict[tuple[int, int, int, int], Any] = {}
         inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
 
-        coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(chi, mp)
-
-        @cache
-        def speed_moment(p: int, j: int, speed_power: int) -> tuple[Any, Any]:
-            return _coulomb_speed_moments_mp(
-                p,
-                j,
-                speed_power,
-                sigma,
-                tau,
-                1,
-                mp,
-                coulomb_e=coulomb_e,
-                coulomb_E=coulomb_E,
-            )
-
-        @cache
-        def inverse_associated(
-            spherical_order: int,
-            spherical_radial_order: int,
-            bessel_order: int,
-            hermite_order: int,
-            laguerre_order: int,
-        ) -> Any:
-            return _associated_legendre_to_hermite_laguerre_mp(
-                spherical_order,
-                spherical_radial_order,
-                bessel_order,
-                hermite_order,
-                laguerre_order,
-                mp,
-            )
-
-        @cache
-        def inverse_product(
-            associated_order: int,
-            associated_polynomial_order: int,
-            laguerre_order: int,
-            output_order: int,
-            radial_power: int,
-        ) -> Any:
-            return _laguerre_product_expansion_coefficient_mp(
-                associated_order,
-                associated_polynomial_order,
-                laguerre_order,
-                output_order,
-                radial_power,
-                mp,
-            )
+        coefficient_functions = (
+            _coulomb_coefficient_functions(mp, sigma, tau)
+            if _coefficient_functions is None
+            else _coefficient_functions
+        )
+        (
+            _base_transform,
+            associated_laguerre,
+            _legendre_monomial,
+            inverse_associated,
+            inverse_product,
+            speed_moment,
+        ) = coefficient_functions
 
         def spherical_moment(
             p: int,
@@ -1300,6 +1393,8 @@ def coulomb_nonpolarized_moment_matrices(
                     source_b if source else target_b,
                     maximum_bessel_laguerre_order,
                     mp,
+                    associated_transform=inverse_associated,
+                    laguerre_product=inverse_product,
                 )
             return moment_cache[key]
 
@@ -1309,11 +1404,10 @@ def coulomb_nonpolarized_moment_matrices(
                 test_speed = mp.mpf(0)
                 field_speed = mp.mpf(0)
                 for speed_power in range(t + 1):
-                    laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
+                    laguerre_coefficient = associated_laguerre(
                         t,
                         p,
                         speed_power,
-                        mp,
                     )
                     test_term, field_term = speed_moment(p, j, speed_power)
                     test_speed += laguerre_coefficient * test_term
@@ -1951,6 +2045,7 @@ def coulomb_polarization_vectors(
     maximum_spherical_radial_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
+    _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     r"""Generate the four Coulomb polarization vectors in equation (3.50).
 
@@ -2013,6 +2108,19 @@ def coulomb_polarization_vectors(
         source_polarization_cache: dict[tuple[int, int, int], Any] = {}
         product_cache: dict[tuple[int, int, int, int], Any] = {}
         inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
+        coefficient_functions = (
+            _coulomb_coefficient_functions(mp, sigma, tau)
+            if _coefficient_functions is None
+            else _coefficient_functions
+        )
+        (
+            _base_transform,
+            associated_laguerre,
+            _legendre_monomial,
+            inverse_associated,
+            inverse_product,
+            speed_moment,
+        ) = coefficient_functions
 
         def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
             key = (p, j, t)
@@ -2020,21 +2128,12 @@ def coulomb_polarization_vectors(
                 test_speed = mp.mpf(0)
                 field_speed = mp.mpf(0)
                 for speed_power in range(t + 1):
-                    coefficient = _associated_laguerre_monomial_coefficient_mp(
+                    coefficient = associated_laguerre(
                         t,
                         p,
                         speed_power,
-                        mp,
                     )
-                    test_term, field_term = _coulomb_speed_moments_mp(
-                        p,
-                        j,
-                        speed_power,
-                        sigma,
-                        tau,
-                        1,
-                        mp,
-                    )
+                    test_term, field_term = speed_moment(p, j, speed_power)
                     test_speed += coefficient * test_term
                     field_speed += coefficient * field_term
                 speed_cache[key] = (test_speed, field_speed)
@@ -2083,6 +2182,8 @@ def coulomb_polarization_vectors(
                     speed_order,
                     m,
                     mp,
+                    associated_transform=inverse_associated,
+                    laguerre_product=inverse_product,
                 )
             return inverse_cache[key]
 
@@ -2206,6 +2307,91 @@ def coulomb_polarization_vectors(
             for vector in (test_phi1, field_phi1, test_phi2, field_phi2)
         )
     return vectors
+
+
+def build_finite_wavelength_coulomb_pair_tables(
+    kperp_rho: tuple[float, ...],
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    mass_ratio: float,
+    temperature_ratio: float,
+    *,
+    maximum_spherical_order: int | None = None,
+    maximum_spherical_radial_order: int | None = None,
+    maximum_bessel_laguerre_order: int = 24,
+    digits: int = 80,
+) -> tuple[np.ndarray, ...]:
+    r"""Build one ordered-pair table for the JAX finite-wavelength operator.
+
+    The returned test/field matrices and four polarization vectors have
+    independent target/source ``kperp*rho`` axes.  All kperp-independent
+    multiprecision basis algebra is shared across the scan.  Unlike the two
+    equation-level generators, these tables use the runtime's signed Laguerre
+    convention and can therefore be inserted directly below target/source
+    species axes in :class:`FiniteWavelengthCoulombOperator`.
+    """
+
+    grid = np.asarray(kperp_rho, dtype=float)
+    if grid.ndim != 1 or grid.size < 2:
+        raise ValueError("kperp_rho must contain at least two points")
+    if not np.all(np.isfinite(grid)) or np.any(grid < 0.0):
+        raise ValueError("kperp_rho values must be finite and >= 0")
+    if np.any(np.diff(grid) <= 0.0):
+        raise ValueError("kperp_rho must be strictly increasing")
+
+    import mpmath as mp
+
+    mode_count = (maximum_hermite_order + 1) * (maximum_laguerre_order + 1)
+    matrices = [np.empty((grid.size, grid.size, mode_count, mode_count)) for _ in range(2)]
+    vectors = [np.empty((grid.size, grid.size, mode_count)) for _ in range(4)]
+    laguerre_sign = np.asarray(
+        [
+            (-1.0) ** laguerre_order
+            for _hermite_order in range(maximum_hermite_order + 1)
+            for laguerre_order in range(maximum_laguerre_order + 1)
+        ]
+    )
+    matrix_convention = laguerre_sign[:, None] * laguerre_sign[None, :]
+
+    with mp.workdps(digits):
+        coefficient_functions = _coulomb_coefficient_functions(
+            mp,
+            mp.mpf(mass_ratio),
+            mp.mpf(temperature_ratio),
+        )
+        for target_index, target_kperp in enumerate(grid):
+            for source_index, source_kperp in enumerate(grid):
+                pair_matrices = coulomb_nonpolarized_moment_matrices(
+                    maximum_hermite_order,
+                    maximum_laguerre_order,
+                    float(target_kperp),
+                    mass_ratio,
+                    temperature_ratio,
+                    source_kperp_rho=float(source_kperp),
+                    maximum_spherical_order=maximum_spherical_order,
+                    maximum_spherical_radial_order=maximum_spherical_radial_order,
+                    maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
+                    digits=digits,
+                    _coefficient_functions=coefficient_functions,
+                )
+                pair_vectors = coulomb_polarization_vectors(
+                    maximum_hermite_order,
+                    maximum_laguerre_order,
+                    float(target_kperp),
+                    float(source_kperp),
+                    mass_ratio,
+                    temperature_ratio,
+                    maximum_spherical_order=maximum_spherical_order,
+                    maximum_spherical_radial_order=maximum_spherical_radial_order,
+                    maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
+                    digits=digits,
+                    _coefficient_functions=coefficient_functions,
+                )
+                for table, values in zip(matrices, pair_matrices, strict=True):
+                    table[target_index, source_index] = matrix_convention * values
+                for table, values in zip(vectors, pair_vectors, strict=True):
+                    table[target_index, source_index] = laguerre_sign * values
+    return (*matrices, *vectors)
 
 
 def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str, Any]:

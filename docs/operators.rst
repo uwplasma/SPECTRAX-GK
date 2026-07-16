@@ -750,6 +750,16 @@ are omitted in the local collisional-ITG study. The regression test therefore
 requires both observations and keeps configuration-file selection fail-closed.
 Only a finite-:math:`b` operator may promote the short-wavelength lane.
 
+The finite-:math:`b` runtime path now has a shared multiprecision pair-table
+builder that amortizes wavelength-independent basis algebra and converts the
+paper's Laguerre signs to the runtime convention. This is an implementation
+prerequisite, not the integrated ITG gate. A low-order :math:`(P,J)=(3,1)`
+development probe still excites the short-wave branch even with the complete
+finite-:math:`b` contribution. Consistent with the paper's convergence study,
+the result is rejected as velocity-space under-resolution. Promotion requires
+the independently converged :math:`(18,6)` endpoint and matching
+:math:`k_\perp`/collisionality scans; no reduced probe substitutes for it.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments

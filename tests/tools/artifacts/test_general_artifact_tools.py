@@ -2880,6 +2880,71 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
         mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)
 
 
+def test_finite_wavelength_pair_table_matches_equation_generators() -> None:
+    """Shared table generation must preserve equations and runtime signs."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    grid = (0.0, 0.3)
+    tables = mod.build_finite_wavelength_coulomb_pair_tables(
+        grid,
+        1,
+        1,
+        1.0,
+        1.0,
+        maximum_spherical_order=2,
+        maximum_spherical_radial_order=1,
+        maximum_bessel_laguerre_order=2,
+        digits=32,
+    )
+    assert [table.shape for table in tables] == [
+        (2, 2, 4, 4),
+        (2, 2, 4, 4),
+        (2, 2, 4),
+        (2, 2, 4),
+        (2, 2, 4),
+        (2, 2, 4),
+    ]
+    raw_matrices = mod.coulomb_nonpolarized_moment_matrices(
+        1,
+        1,
+        grid[1],
+        1.0,
+        1.0,
+        source_kperp_rho=grid[0],
+        maximum_spherical_order=2,
+        maximum_spherical_radial_order=1,
+        maximum_bessel_laguerre_order=2,
+        digits=32,
+    )
+    raw_vectors = mod.coulomb_polarization_vectors(
+        1,
+        1,
+        grid[1],
+        grid[0],
+        1.0,
+        1.0,
+        maximum_spherical_order=2,
+        maximum_spherical_radial_order=1,
+        maximum_bessel_laguerre_order=2,
+        digits=32,
+    )
+    sign = np.asarray([1.0, -1.0, 1.0, -1.0])
+    for table, raw in zip(tables[:2], raw_matrices, strict=True):
+        np.testing.assert_allclose(table[1, 0], sign[:, None] * sign[None, :] * raw)
+    for table, raw in zip(tables[2:], raw_vectors, strict=True):
+        np.testing.assert_allclose(table[1, 0], sign * raw)
+
+    for invalid, message in (
+        ((0.0,), "at least two"),
+        ((0.0, -0.1), "finite and >= 0"),
+        ((0.0, 0.0), "strictly increasing"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            mod.build_finite_wavelength_coulomb_pair_tables(
+                invalid, 0, 0, 1.0, 1.0
+            )
+
+
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
     """Frei et al. Eqs. (3.41) and (3.50) must satisfy direct and null gates."""
     from scipy.special import eval_genlaguerre, jv, lpmv
