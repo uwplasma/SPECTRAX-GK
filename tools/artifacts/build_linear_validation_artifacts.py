@@ -715,7 +715,66 @@ def _associated_legendre_overlap_mp(
     return radial * angular
 
 
-def _associated_legendre_to_hermite_laguerre_mp(
+def _associated_spherical_polynomial_mp(
+    legendre_order: int,
+    radial_order: int,
+    bessel_order: int,
+    mp: Any,
+    *,
+    associated_laguerre: Callable[[int, Any, int], Any] | None = None,
+    legendre_monomial: Callable[[int, int], Any] | None = None,
+) -> tuple[tuple[int, int, Any], ...]:
+    """Expand the finite-m spherical basis after factoring ``s_perp**m``."""
+
+    if associated_laguerre is None:
+        associated_laguerre = lambda n, alpha, power: (  # noqa: E731
+            _associated_laguerre_monomial_coefficient_mp(n, alpha, power, mp)
+        )
+    if legendre_monomial is None:
+        legendre_monomial = lambda n, power: _legendre_monomial_coefficient_mp(  # noqa: E731
+            n, power, mp
+        )
+    coefficients: dict[tuple[int, int], Any] = {}
+    for legendre_power in range(bessel_order, legendre_order + 1):
+        legendre = legendre_monomial(legendre_order, legendre_power)
+        if legendre == 0:
+            continue
+        derivative = (
+            (-1) ** bessel_order
+            * legendre
+            * mp.factorial(legendre_power)
+            / mp.factorial(legendre_power - bessel_order)
+        )
+        for radial_power in range(radial_order + 1):
+            total_radial_power = (
+                (legendre_order - legendre_power) // 2 + radial_power
+            )
+            common = derivative * associated_laguerre(
+                radial_order,
+                legendre_order,
+                radial_power,
+            )
+            for parallel_radial_power in range(total_radial_power + 1):
+                key = (
+                    legendre_power
+                    - bessel_order
+                    + 2 * parallel_radial_power,
+                    total_radial_power - parallel_radial_power,
+                )
+                coefficients[key] = coefficients.get(key, mp.mpf(0)) + (
+                    common
+                    * math.comb(total_radial_power, parallel_radial_power)
+                )
+    return tuple(
+        (parallel_power, perpendicular_power, coefficient)
+        for (parallel_power, perpendicular_power), coefficient in sorted(
+            coefficients.items()
+        )
+        if coefficient != 0
+    )
+
+
+def _associated_legendre_to_hermite_laguerre_overlap_mp(
     legendre_order: int,
     radial_order: int,
     bessel_order: int,
@@ -799,6 +858,54 @@ def _associated_legendre_to_hermite_laguerre_mp(
     # phase under scipy's associated-Legendre convention.  This factor is
     # fixed by the m=0 endpoint and independent velocity-space projection.
     return 2 * (-1) ** bessel_order * total
+
+
+def _associated_legendre_to_hermite_laguerre_mp(
+    legendre_order: int,
+    radial_order: int,
+    bessel_order: int,
+    hermite_order: int,
+    laguerre_order: int,
+    mp: Any,
+    *,
+    associated_spherical_polynomial: Callable[
+        [int, int, int], tuple[tuple[int, int, Any], ...]
+    ]
+    | None = None,
+    hermite_gaussian_moment: Callable[[int, int], Any] | None = None,
+    laguerre_exponential_moment: Callable[[int, int], Any] | None = None,
+) -> Any:
+    """Transform the factored finite-m basis by exact polynomial projection."""
+
+    left_degree = legendre_order + 2 * radial_order - bessel_order
+    right_degree = hermite_order + 2 * laguerre_order
+    if right_degree > left_degree or (left_degree - right_degree) % 2:
+        return mp.mpf(0)
+    if associated_spherical_polynomial is None:
+        associated_spherical_polynomial = lambda p, j, m: (  # noqa: E731
+            _associated_spherical_polynomial_mp(p, j, m, mp)
+        )
+    if hermite_gaussian_moment is None:
+        hermite_gaussian_moment = lambda g, power: (  # noqa: E731
+            _hermite_gaussian_moment_mp(g, power, mp)
+        )
+    if laguerre_exponential_moment is None:
+        laguerre_exponential_moment = lambda h, power: (  # noqa: E731
+            _laguerre_exponential_moment_mp(h, power, mp)
+        )
+    projection = sum(
+        coefficient
+        * hermite_gaussian_moment(hermite_order, parallel_power)
+        * laguerre_exponential_moment(laguerre_order, perpendicular_power)
+        for parallel_power, perpendicular_power, coefficient in associated_spherical_polynomial(
+            legendre_order,
+            radial_order,
+            bessel_order,
+        )
+    )
+    return projection / (
+        mp.sqrt(mp.pi) * mp.power(2, hermite_order) * mp.factorial(hermite_order)
+    )
 
 
 def associated_legendre_to_hermite_laguerre_coefficient(
@@ -1418,55 +1525,18 @@ def _coulomb_coefficient_functions(
         )
 
     @cache
-    def associated_radial_overlap(
+    def associated_spherical_polynomial(
         spherical_order: int,
         spherical_radial_order: int,
         bessel_order: int,
-        auxiliary_spherical_order: int,
-        auxiliary_radial_order: int,
-    ) -> Any:
-        return _associated_legendre_radial_overlap_mp(
+    ) -> tuple[tuple[int, int, Any], ...]:
+        return _associated_spherical_polynomial_mp(
             spherical_order,
             spherical_radial_order,
             bessel_order,
-            auxiliary_spherical_order,
-            auxiliary_radial_order,
             mp,
             associated_laguerre=associated_laguerre,
-        )
-
-    @cache
-    def associated_angular_overlap(
-        spherical_order: int,
-        bessel_order: int,
-        auxiliary_spherical_order: int,
-    ) -> Any:
-        return _associated_legendre_angular_overlap_mp(
-            spherical_order,
-            bessel_order,
-            auxiliary_spherical_order,
-            mp,
             legendre_monomial=legendre_monomial,
-        )
-
-    @cache
-    def associated_overlap(
-        spherical_order: int,
-        spherical_radial_order: int,
-        bessel_order: int,
-        auxiliary_spherical_order: int,
-        auxiliary_radial_order: int,
-    ) -> Any:
-        return associated_radial_overlap(
-            spherical_order,
-            spherical_radial_order,
-            bessel_order,
-            auxiliary_spherical_order,
-            auxiliary_radial_order,
-        ) * associated_angular_overlap(
-            spherical_order,
-            bessel_order,
-            auxiliary_spherical_order,
         )
 
     @cache
@@ -1484,10 +1554,9 @@ def _coulomb_coefficient_functions(
             hermite_order,
             laguerre_order,
             mp,
-            base_transform=base_transform,
-            associated_laguerre=associated_laguerre,
-            legendre_monomial=legendre_monomial,
-            associated_overlap=associated_overlap,
+            associated_spherical_polynomial=associated_spherical_polynomial,
+            hermite_gaussian_moment=hermite_gaussian_moment,
+            laguerre_exponential_moment=laguerre_exponential_moment,
         )
 
     @cache

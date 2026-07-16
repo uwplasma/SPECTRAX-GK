@@ -2285,6 +2285,34 @@ def test_associated_basis_overlap_factorization_matches_direct_sum() -> None:
         assert mp.almosteq(factorized, direct)
 
 
+def test_direct_associated_transform_matches_overlap_oracle() -> None:
+    """Polynomial projection and equation-(B5) overlap must remain identical."""
+    import mpmath as mp
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    cases = (
+        (1, 0, 1, 0, 0),
+        (3, 0, 1, 0, 1),
+        (4, 2, 2, 2, 2),
+        (7, 3, 3, 4, 3),
+        (9, 4, 4, 3, 6),
+    )
+    with mp.workdps(60):
+        for indices in cases:
+            projected = mod._associated_legendre_to_hermite_laguerre_mp(
+                *indices,
+                mp,
+            )
+            overlap = mod._associated_legendre_to_hermite_laguerre_overlap_mp(
+                *indices,
+                mp,
+            )
+            assert abs(projected - overlap) <= mp.mpf("1e-50") * max(
+                mp.mpf(1),
+                abs(overlap),
+            )
+
+
 def test_associated_basis_transform_reconstructs_and_inverts_parity_blocks() -> None:
     """Finite-m lower-triangular blocks must reconstruct the physical basis."""
     from scipy.special import eval_genlaguerre, eval_hermite, eval_laguerre, lpmv
