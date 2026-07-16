@@ -377,6 +377,20 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Factored the remaining Bessel-index repetition out of the exact
+  finite-wavelength matrix and polarization rows. Profiling showed 5.8 million
+  cached inverse-transform calls because every Laguerre product reapplied the
+  same inverse coefficient for each Bessel expansion index. The generator now
+  contracts Bessel weights with Laguerre products first and applies each
+  inverse transform once per product order. A direct 70-digit sum and the full
+  equation/projection suite pass; all six representative P5 array sums are
+  unchanged. At the full local cutoff, the exact build falls from 38.79 to
+  30.95 seconds (1.25x beyond the preceding kernel factorization). A P12 office
+  run of the superseded implementation was stopped after 642 seconds when host
+  load reached 40 and its pinned process lost CPU time; no result or regression
+  is inferred from that contention. The next endpoint run must use the new
+  factorization on an available office CPU and retain the 600-second bound.
+
 - 2026-07-16: Factored the exact finite-wavelength collision generator again
   before attempting the published endpoint. The Hermite normalization in the
   inverse equation-(3.33) projection now cancels analytically, structural

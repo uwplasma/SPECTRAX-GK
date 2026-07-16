@@ -1320,6 +1320,33 @@ def _radial_poisson_kernels_mp(
     )
 
 
+def _bessel_weighted_laguerre_products_mp(
+    bessel_order: int,
+    output_laguerre: int,
+    expansion_orders: tuple[int, ...],
+    bessel_weights: tuple[Any, ...],
+    laguerre_product: Callable[[int, int, int, int], Any],
+    mp: Any,
+) -> tuple[Any, ...]:
+    """Contract the Bessel index before applying inverse basis transforms."""
+
+    maximum_product = output_laguerre + max(expansion_orders)
+    weights = [mp.mpf(0)] * (maximum_product + 1)
+    for expansion_order, bessel_weight in zip(
+        expansion_orders, bessel_weights, strict=True
+    ):
+        if bessel_weight == 0:
+            continue
+        for product_order in range(output_laguerre + expansion_order + 1):
+            weights[product_order] += bessel_weight * laguerre_product(
+                bessel_order,
+                expansion_order,
+                output_laguerre,
+                product_order,
+            )
+    return tuple(weights)
+
+
 def _gyroaveraged_spherical_moment_coefficient_mp(
     spherical_order: int,
     spherical_radial_order: int,
@@ -1930,6 +1957,18 @@ def coulomb_nonpolarized_moment_matrices(
             )
             for m in range(spherical_limit + 1)
         }
+        weighted_products = {
+            (m, output_laguerre): _bessel_weighted_laguerre_products_mp(
+                m,
+                output_laguerre,
+                bessel_orders,
+                bessel_factors[m],
+                laguerre_product,
+                mp,
+            )
+            for m in range(spherical_limit + 1)
+            for output_laguerre in range(n_laguerre)
+        }
         grouped_moments: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
         for p, j, m in moment_orders:
             test_vector, field_vector = moment_vectors[(p, j, m)]
@@ -1960,47 +1999,33 @@ def coulomb_nonpolarized_moment_matrices(
                 row = output_hermite * n_laguerre + output_laguerre
                 for p, m, radial_moments in active_moment_groups:
                     speed_weights: dict[int, Any] = {}
-                    for n, bessel_factor in zip(
-                        bessel_orders,
-                        bessel_factors[m],
-                        strict=True,
+                    for product_order, weighted_product in enumerate(
+                        weighted_products[(m, output_laguerre)]
                     ):
-                        if bessel_factor == 0:
+                        if weighted_product == 0:
                             continue
-                        for product_order in range(output_laguerre + n + 1):
-                            product = laguerre_product(
-                                m,
-                                n,
-                                output_laguerre,
+                        if p > output_hermite + m + 2 * product_order:
+                            continue
+                        maximum_speed_order = (
+                            product_order + (output_hermite + m) // 2
+                        )
+                        for speed_order in range(maximum_speed_order + 1):
+                            inverse = inverse_transform(
+                                output_hermite,
                                 product_order,
+                                p,
+                                speed_order,
+                                m,
                             )
-                            if product == 0:
+                            if inverse == 0:
                                 continue
-                            if p > output_hermite + m + 2 * product_order:
-                                continue
-                            maximum_speed_order = (
-                                product_order + (output_hermite + m) // 2
+                            common = (
+                                weighted_product * inverse / output_normalization
                             )
-                            for speed_order in range(maximum_speed_order + 1):
-                                inverse = inverse_transform(
-                                    output_hermite,
-                                    product_order,
-                                    p,
-                                    speed_order,
-                                    m,
-                                )
-                                if inverse == 0:
-                                    continue
-                                common = (
-                                    product
-                                    * inverse
-                                    * bessel_factor
-                                    / output_normalization
-                                )
-                                speed_weights[speed_order] = speed_weights.get(
-                                    speed_order,
-                                    mp.mpf(0),
-                                ) + common
+                            speed_weights[speed_order] = speed_weights.get(
+                                speed_order,
+                                mp.mpf(0),
+                            ) + common
                     for (
                         j,
                         test_moment_vector,
@@ -2644,6 +2669,18 @@ def coulomb_polarization_vectors(
             )
             for m in range(spherical_limit + 1)
         }
+        weighted_products = {
+            (m, output_laguerre): _bessel_weighted_laguerre_products_mp(
+                m,
+                output_laguerre,
+                bessel_orders,
+                bessel_factors[m],
+                laguerre_product,
+                mp,
+            )
+            for m in range(spherical_limit + 1)
+            for output_laguerre in range(n_laguerre)
+        }
         grouped_polarization: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
         for p in range(spherical_limit + 1):
             for j in range(radial_limit + 1):
@@ -2685,82 +2722,62 @@ def coulomb_polarization_vectors(
             )
             for output_laguerre in range(n_laguerre):
                 row = output_hermite * n_laguerre + output_laguerre
-                for n, kernel in zip(
-                    bessel_orders,
-                    bessel_factors[0],
-                    strict=True,
+                for product_order, weighted_product in enumerate(
+                    weighted_products[(0, output_laguerre)]
                 ):
-                    if kernel == 0:
+                    if weighted_product == 0:
                         continue
-                    for product_order in range(output_laguerre + n + 1):
-                        product = laguerre_product(0, n, output_laguerre, product_order)
-                        if product == 0:
+                    for speed_order in range(
+                        product_order + output_hermite // 2 + 1
+                    ):
+                        inverse = inverse_transform(
+                            output_hermite,
+                            product_order,
+                            0,
+                            speed_order,
+                            0,
+                        )
+                        if inverse == 0:
                             continue
-                        for speed_order in range(
-                            product_order + output_hermite // 2 + 1
-                        ):
-                            inverse = inverse_transform(
-                                output_hermite,
-                                product_order,
-                                0,
-                                speed_order,
-                                0,
-                            )
-                            if inverse == 0:
-                                continue
-                            test_speed, field_speed = integrated_speed(
-                                0,
-                                0,
-                                speed_order,
-                            )
-                            common = product * kernel * inverse / output_normalization
-                            test_phi1[row] -= common * test_speed
-                            field_phi1[row] -= common * field_speed
+                        test_speed, field_speed = integrated_speed(
+                            0,
+                            0,
+                            speed_order,
+                        )
+                        common = weighted_product * inverse / output_normalization
+                        test_phi1[row] -= common * test_speed
+                        field_phi1[row] -= common * field_speed
 
                 for p, m, radial_moments in active_polarization_groups:
                     speed_weights: dict[int, Any] = {}
-                    for n, bessel_factor in zip(
-                        bessel_orders,
-                        bessel_factors[m],
-                        strict=True,
+                    for product_order, weighted_product in enumerate(
+                        weighted_products[(m, output_laguerre)]
                     ):
-                        if bessel_factor == 0:
+                        if (
+                            weighted_product == 0
+                            or p > output_hermite + m + 2 * product_order
+                        ):
                             continue
-                        for product_order in range(output_laguerre + n + 1):
-                            product = laguerre_product(
-                                m,
-                                n,
-                                output_laguerre,
+                        maximum_speed_order = (
+                            product_order + (output_hermite + m) // 2
+                        )
+                        for speed_order in range(maximum_speed_order + 1):
+                            inverse = inverse_transform(
+                                output_hermite,
                                 product_order,
+                                p,
+                                speed_order,
+                                m,
                             )
-                            if (
-                                product == 0
-                                or p > output_hermite + m + 2 * product_order
-                            ):
+                            if inverse == 0:
                                 continue
-                            maximum_speed_order = (
-                                product_order + (output_hermite + m) // 2
+                            common = (
+                                weighted_product * inverse / output_normalization
                             )
-                            for speed_order in range(maximum_speed_order + 1):
-                                inverse = inverse_transform(
-                                    output_hermite,
-                                    product_order,
-                                    p,
-                                    speed_order,
-                                    m,
-                                )
-                                if inverse == 0:
-                                    continue
-                                common = (
-                                    product
-                                    * inverse
-                                    * bessel_factor
-                                    / output_normalization
-                                )
-                                speed_weights[speed_order] = speed_weights.get(
-                                    speed_order,
-                                    mp.mpf(0),
-                                ) + common
+                            speed_weights[speed_order] = speed_weights.get(
+                                speed_order,
+                                mp.mpf(0),
+                            ) + common
                     for (
                         j,
                         target_polarization,

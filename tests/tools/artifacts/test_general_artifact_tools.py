@@ -2585,6 +2585,27 @@ def test_finite_wavelength_kernel_factorization_preserves_multiprecision() -> No
             / mp.factorial(order + bessel_order)
             for order in range(truncation + 1)
         )
+        weighted_products = mod._bessel_weighted_laguerre_products_mp(
+            bessel_order,
+            2,
+            tuple(range(truncation + 1)),
+            bessel_kernels,
+            lambda m, n, k, output: (
+                mod._laguerre_product_expansion_coefficient_mp(
+                    m, n, k, output, 0, mp
+                )
+            ),
+            mp,
+        )
+        for product_order, weighted_product in enumerate(weighted_products):
+            direct_product = sum(
+                bessel_kernel
+                * mod._laguerre_product_expansion_coefficient_mp(
+                    bessel_order, order, 2, product_order, 0, mp
+                )
+                for order, bessel_kernel in enumerate(bessel_kernels)
+            )
+            assert mp.almosteq(weighted_product, direct_product)
         radial_kernels = tuple(
             exponential * radial_argument**order / mp.factorial(order)
             for order in range(16)
