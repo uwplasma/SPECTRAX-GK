@@ -1,0 +1,42 @@
+{
+  "claim_scope": "offline_generator_hierarchy_not_transport_acceptance",
+  "gates": {
+    "all_generated_coefficients_finite": true,
+    "literature_resolution_reached": false,
+    "p7_p9_common_block_converged": false,
+    "p9_completed_within_600_seconds": true
+  },
+  "literature_required_resolution": [18, 6],
+  "p9_j4_kperp_0p5": {
+    "bessel_laguerre_order": 10,
+    "checksum": -152.93360627939981,
+    "digits": 32,
+    "optimized": {
+      "matrix_seconds": 156.6796420699684,
+      "polarization_seconds": 26.90680485405028,
+      "total_seconds": 183.58644692401867
+    },
+    "pre_radial_factorization": {
+      "matrix_seconds": 202.829435393,
+      "total_seconds": 464.054563
+    },
+    "radial_factorization_only": {
+      "matrix_seconds": 202.84235544805415,
+      "polarization_seconds": 26.857126608956605,
+      "total_seconds": 229.69948205701075
+    },
+    "radial_order": 8,
+    "resolution": [9, 4],
+    "spherical_order": 17
+  },
+  "p7_p9_common_low_order_relative_l2": {
+    "field_matrix": 6.42844041455096,
+    "field_phi1": 0.0,
+    "field_phi2": 6.536825080351014,
+    "test_matrix": 12.270559246578902,
+    "test_phi1": 0.0,
+    "test_phi2": 5.995349189537736
+  },
+  "schema_version": 1,
+  "source_commit": "4f27f6ce"
+}

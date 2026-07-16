@@ -690,8 +690,22 @@ quadrature and inverse-shell gates are unchanged. After factoring
 direct polynomial projection; the separately factorized equation-(B5) overlap
 is retained as an independent oracle. A representative :math:`(5,2)`
 two-wavelength build falls from 26.41 to 12.44 seconds with the same checksum;
-:math:`(7,3)` falls from 411.22 to 247.04 seconds on the office CPU. The
-drift-kinetic generator still evaluates
+:math:`(7,3)` falls from 411.22 to 247.04 seconds on the office CPU. Remaining
+contractions now evaluate Laguerre products through cached analytic moments,
+hoist wavelength/angular factors, group all radial indices sharing one speed
+contraction, and collapse equation (3.33)'s auxiliary Laguerre sum by
+orthogonality into one weighted polynomial projection. With shared pair
+caches, the exact :math:`(9,4)`, :math:`k_\perp\rho=0.5` build falls from
+464.05 to 183.59 seconds while preserving all six arrays and checksum
+-152.93360627939981. Matrices take 156.68 seconds and the four polarization
+vectors 26.91 seconds. These transformations reorder exact multiprecision
+algebra; they do not truncate the collision model.
+
+The common low-order :math:`(7,3)` and :math:`(9,4)` blocks are not converged:
+their nonzero matrix and polarization relative differences remain greater than
+one. ``collision_finite_wavelength_generation_hierarchy.json`` records that
+negative result alongside the timings and fails closed on both the literature
+resolution and transport gate. The drift-kinetic generator still evaluates
 collapsed equations
 (3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport
 path, whereas finite-:math:`b` must still reach the independent ITG and zonal

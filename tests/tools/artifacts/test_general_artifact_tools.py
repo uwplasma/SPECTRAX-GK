@@ -3274,6 +3274,34 @@ def test_tracked_finite_wavelength_itg_probe_stays_fail_closed() -> None:
     }
 
 
+def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> None:
+    """A faster intermediate table must not masquerade as ITG acceptance."""
+    path = ROOT / "docs/_static/collision_finite_wavelength_generation_hierarchy.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+
+    assert summary["schema_version"] == 1
+    assert summary["claim_scope"] == (
+        "offline_generator_hierarchy_not_transport_acceptance"
+    )
+    assert summary["literature_required_resolution"] == [18, 6]
+    assert summary["gates"] == {
+        "all_generated_coefficients_finite": True,
+        "literature_resolution_reached": False,
+        "p7_p9_common_block_converged": False,
+        "p9_completed_within_600_seconds": True,
+    }
+    p9 = summary["p9_j4_kperp_0p5"]
+    assert p9["resolution"] == [9, 4]
+    assert p9["spherical_order"] == 17
+    assert p9["radial_order"] == 8
+    assert p9["bessel_laguerre_order"] == 10
+    assert p9["checksum"] == pytest.approx(-152.93360627939981, abs=1.0e-13)
+    assert p9["optimized"]["total_seconds"] < 0.5 * p9[
+        "pre_radial_factorization"
+    ]["total_seconds"]
+    assert max(summary["p7_p9_common_low_order_relative_l2"].values()) > 1.0
+
+
 @pytest.mark.slow
 def test_coulomb_operator_verification_artifact_closes_physical_gates(
     tmp_path: Path,
