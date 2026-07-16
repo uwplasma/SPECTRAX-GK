@@ -542,6 +542,76 @@ def hermite_laguerre_to_legendre_coefficient(
     return float(inverse)
 
 
+def _associated_legendre_overlap_mp(
+    legendre_order: int,
+    radial_order: int,
+    bessel_order: int,
+    auxiliary_legendre_order: int,
+    auxiliary_radial_order: int,
+    mp: Any,
+    *,
+    associated_laguerre: Callable[[int, Any, int], Any],
+    legendre_monomial: Callable[[int, int], Any],
+) -> Any:
+    """Contract one associated-basis overlap shared by a parity shell."""
+
+    left_radial = tuple(
+        associated_laguerre(radial_order, legendre_order, power)
+        for power in range(radial_order + 1)
+    )
+    auxiliary_radial = tuple(
+        associated_laguerre(
+            auxiliary_radial_order,
+            auxiliary_legendre_order,
+            power,
+        )
+        for power in range(auxiliary_radial_order + 1)
+    )
+    radial_convolution = [mp.mpf(0)] * (
+        len(left_radial) + len(auxiliary_radial) - 1
+    )
+    for left_power, left_value in enumerate(left_radial):
+        for auxiliary_power, auxiliary_value in enumerate(auxiliary_radial):
+            radial_convolution[left_power + auxiliary_power] += (
+                left_value * auxiliary_value
+            )
+    radial_offset = mp.mpf(
+        legendre_order + auxiliary_legendre_order - bessel_order + 3
+    ) / 2
+    radial = sum(
+        value * mp.gamma(power + radial_offset)
+        for power, value in enumerate(radial_convolution)
+    )
+
+    left_angular = []
+    for left_power in range(bessel_order, legendre_order + 1):
+        left_legendre = legendre_monomial(legendre_order, left_power)
+        left_angular.append(
+            left_legendre
+            * mp.factorial(left_power)
+            / mp.factorial(left_power - bessel_order)
+        )
+    auxiliary_angular = tuple(
+        legendre_monomial(auxiliary_legendre_order, power)
+        for power in range(auxiliary_legendre_order + 1)
+    )
+    angular_convolution = [mp.mpf(0)] * (
+        len(left_angular) + len(auxiliary_angular) - 1
+    )
+    for left_power, left_value in enumerate(left_angular):
+        for auxiliary_power, auxiliary_value in enumerate(auxiliary_angular):
+            angular_convolution[left_power + auxiliary_power] += (
+                left_value * auxiliary_value
+            )
+    angular = sum(
+        value
+        * (1 + (-1) ** power)
+        / (2 * (power + 1))
+        for power, value in enumerate(angular_convolution)
+    )
+    return radial * angular
+
+
 def _associated_legendre_to_hermite_laguerre_mp(
     legendre_order: int,
     radial_order: int,
@@ -553,6 +623,7 @@ def _associated_legendre_to_hermite_laguerre_mp(
     base_transform: Callable[[int, int, int, int], Any] | None = None,
     associated_laguerre: Callable[[int, Any, int], Any] | None = None,
     legendre_monomial: Callable[[int, int], Any] | None = None,
+    associated_overlap: Callable[[int, int, int, int, int], Any] | None = None,
 ) -> Any:
     left_degree = legendre_order + 2 * radial_order - bessel_order
     right_degree = hermite_order + 2 * laguerre_order
@@ -576,6 +647,26 @@ def _associated_legendre_to_hermite_laguerre_mp(
         def legendre_monomial(n: int, power: int) -> Any:
             return _legendre_monomial_coefficient_mp(n, power, mp)
 
+    if associated_overlap is None:
+
+        def associated_overlap(
+            p: int,
+            j: int,
+            m: int,
+            auxiliary_p: int,
+            auxiliary_j: int,
+        ) -> Any:
+            return _associated_legendre_overlap_mp(
+                p,
+                j,
+                m,
+                auxiliary_p,
+                auxiliary_j,
+                mp,
+                associated_laguerre=associated_laguerre,
+                legendre_monomial=legendre_monomial,
+            )
+
     for auxiliary_radial_order in range(right_degree // 2 + 1):
         auxiliary_legendre_order = right_degree - 2 * auxiliary_radial_order
         transform = base_transform(
@@ -592,60 +683,13 @@ def _associated_legendre_to_hermite_laguerre_mp(
                 auxiliary_legendre_order + auxiliary_radial_order + mp.mpf("1.5")
             )
         )
-        inner = mp.mpf(0)
-        for left_monomial in range(radial_order + 1):
-            left_laguerre = associated_laguerre(
-                radial_order,
-                legendre_order,
-                left_monomial,
-            )
-            for auxiliary_monomial in range(auxiliary_radial_order + 1):
-                auxiliary_laguerre = associated_laguerre(
-                    auxiliary_radial_order,
-                    auxiliary_legendre_order,
-                    auxiliary_monomial,
-                )
-                for left_power in range(bessel_order, legendre_order + 1):
-                    left_legendre = legendre_monomial(
-                        legendre_order,
-                        left_power,
-                    )
-                    if left_legendre == 0:
-                        continue
-                    derivative_factor = mp.factorial(left_power) / mp.factorial(
-                        left_power - bessel_order
-                    )
-                    for auxiliary_power in range(auxiliary_legendre_order + 1):
-                        auxiliary_legendre = legendre_monomial(
-                            auxiliary_legendre_order,
-                            auxiliary_power,
-                        )
-                        parity_factor = 1 + (-1) ** (
-                            left_power + auxiliary_power - bessel_order
-                        )
-                        if auxiliary_legendre == 0 or parity_factor == 0:
-                            continue
-                        velocity_power_integral = mp.gamma(
-                            left_monomial
-                            + auxiliary_monomial
-                            + mp.mpf(
-                                legendre_order
-                                + auxiliary_legendre_order
-                                - bessel_order
-                                + 3
-                            )
-                            / 2
-                        )
-                        inner += (
-                            left_laguerre
-                            * auxiliary_laguerre
-                            * left_legendre
-                            * auxiliary_legendre
-                            * derivative_factor
-                            * parity_factor
-                            * velocity_power_integral
-                            / (2 * (left_power + auxiliary_power + 1 - bessel_order))
-                        )
+        inner = associated_overlap(
+            legendre_order,
+            radial_order,
+            bessel_order,
+            auxiliary_legendre_order,
+            auxiliary_radial_order,
+        )
         total += prefactor * inner
 
     # Equation (B5) is half-normalized at m=0 and has the opposite odd-m
@@ -771,42 +815,49 @@ def _laguerre_product_expansion_coefficient_mp(
     output_order: int,
     radial_power: int,
     mp: Any,
+    *,
+    monomial_coefficient: Callable[[int, Any, int], Any] | None = None,
 ) -> Any:
     if output_order > associated_polynomial_order + laguerre_order + radial_power:
         return mp.mpf(0)
 
     half = mp.mpf("0.5")
-    total = mp.mpf(0)
-    for associated_power in range(associated_polynomial_order + 1):
-        associated_coefficient = _associated_laguerre_monomial_coefficient_mp(
+    if monomial_coefficient is None:
+
+        def monomial_coefficient(order: int, alpha: Any, power: int) -> Any:
+            return _associated_laguerre_monomial_coefficient_mp(
+                order, alpha, power, mp
+            )
+
+    associated = tuple(
+        monomial_coefficient(
             associated_polynomial_order,
             associated_order - half,
-            associated_power,
-            mp,
+            power,
         )
-        for laguerre_power in range(laguerre_order + 1):
-            laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
-                laguerre_order,
-                -half,
-                laguerre_power,
-                mp,
+        for power in range(associated_polynomial_order + 1)
+    )
+    ordinary = tuple(
+        monomial_coefficient(laguerre_order, -half, power)
+        for power in range(laguerre_order + 1)
+    )
+    convolution = [mp.mpf(0)] * (len(associated) + len(ordinary) - 1)
+    for associated_power, associated_value in enumerate(associated):
+        for laguerre_power, laguerre_value in enumerate(ordinary):
+            convolution[associated_power + laguerre_power] += (
+                associated_value * laguerre_value
             )
-            for output_power in range(output_order + 1):
-                output_coefficient = _associated_laguerre_monomial_coefficient_mp(
-                    output_order,
-                    -half,
-                    output_power,
-                    mp,
-                )
-                total += (
-                    associated_coefficient
-                    * laguerre_coefficient
-                    * output_coefficient
-                    * mp.factorial(
-                        associated_power + laguerre_power + output_power + radial_power
-                    )
-                )
-    return total
+    output = tuple(
+        monomial_coefficient(output_order, -half, power)
+        for power in range(output_order + 1)
+    )
+    return sum(
+        product_value
+        * output_value
+        * mp.factorial(product_power + output_power + radial_power)
+        for product_power, product_value in enumerate(convolution)
+        for output_power, output_value in enumerate(output)
+    )
 
 
 def laguerre_product_expansion_coefficient(
@@ -1235,6 +1286,25 @@ def _coulomb_coefficient_functions(
         return _legendre_monomial_coefficient_mp(order, power, mp)
 
     @cache
+    def associated_overlap(
+        spherical_order: int,
+        spherical_radial_order: int,
+        bessel_order: int,
+        auxiliary_spherical_order: int,
+        auxiliary_radial_order: int,
+    ) -> Any:
+        return _associated_legendre_overlap_mp(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            auxiliary_spherical_order,
+            auxiliary_radial_order,
+            mp,
+            associated_laguerre=associated_laguerre,
+            legendre_monomial=legendre_monomial,
+        )
+
+    @cache
     def inverse_associated(
         spherical_order: int,
         spherical_radial_order: int,
@@ -1252,6 +1322,7 @@ def _coulomb_coefficient_functions(
             base_transform=base_transform,
             associated_laguerre=associated_laguerre,
             legendre_monomial=legendre_monomial,
+            associated_overlap=associated_overlap,
         )
 
     @cache
@@ -1269,6 +1340,7 @@ def _coulomb_coefficient_functions(
             output_order,
             radial_power,
             mp,
+            monomial_coefficient=associated_laguerre,
         )
 
     @cache
@@ -1448,6 +1520,7 @@ def coulomb_nonpolarized_moment_matrices(
                     product_order,
                     0,
                     mp,
+                    monomial_coefficient=associated_laguerre,
                 )
             return product_cache[key]
 
@@ -2183,7 +2256,13 @@ def coulomb_polarization_vectors(
             key = (m, n, output_laguerre, product_order)
             if key not in product_cache:
                 product_cache[key] = _laguerre_product_expansion_coefficient_mp(
-                    m, n, output_laguerre, product_order, 0, mp
+                    m,
+                    n,
+                    output_laguerre,
+                    product_order,
+                    0,
+                    mp,
+                    monomial_coefficient=associated_laguerre,
                 )
             return product_cache[key]
 

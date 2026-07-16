@@ -762,6 +762,20 @@ to 0.520, but does not suppress it. Promotion requires the independently
 converged :math:`(18,6)` endpoint and matching :math:`k_\perp`/collisionality
 scans; no reduced probe or favorable trend substitutes for it.
 
+Offline generation also factors the equation-(B5) associated-basis overlap
+exactly into a Gamma-weighted radial Laguerre contraction and a differentiated
+angular Legendre contraction, then reuses that overlap across each parity
+shell. At :math:`(P,J)=(5,2)`, with two wavelengths, spherical/radial cutoffs
+9/4, Bessel--Laguerre cutoff 6, and 32 decimal digits, this reduced wall time
+from 184.01 s to 26.41 s (7.0x) without changing the table checksum. This is a
+table-generation result, not a simulation or transport speedup claim.
+A higher :math:`(P,J)=(7,3)` two-wavelength table now completes serially in
+411.22 s inside the external campaign bound. Its zero-wavelength test/field
+blocks agree with the independently generated drift-kinetic equations to
+relative errors :math:`1.08\times10^{-31}` and :math:`1.92\times10^{-32}`.
+This is validated hierarchy evidence, but remains below the required
+:math:`(18,6)` ITG endpoint.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments

@@ -2253,6 +2253,56 @@ def test_associated_basis_transform_matches_velocity_projection() -> None:
         np.testing.assert_allclose(finite_order, isotropic, rtol=2.0e-14, atol=2.0e-14)
 
 
+def test_associated_basis_overlap_factorization_matches_direct_sum() -> None:
+    """Separated radial/angular contractions must preserve equation (B5)."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    import mpmath as mp
+
+    with mp.workdps(60):
+
+        def associated_laguerre(order: int, alpha: object, power: int) -> object:
+            return mod._associated_laguerre_monomial_coefficient_mp(
+                order, alpha, power, mp
+            )
+
+        def legendre_monomial(order: int, power: int) -> object:
+            return mod._legendre_monomial_coefficient_mp(order, power, mp)
+
+        indices = (4, 2, 2, 3, 1)
+        factorized = mod._associated_legendre_overlap_mp(
+            *indices,
+            mp,
+            associated_laguerre=associated_laguerre,
+            legendre_monomial=legendre_monomial,
+        )
+        direct = mp.mpf(0)
+        p, j, m, auxiliary_p, auxiliary_j = indices
+        for left_monomial in range(j + 1):
+            for auxiliary_monomial in range(auxiliary_j + 1):
+                for left_power in range(m, p + 1):
+                    for auxiliary_power in range(auxiliary_p + 1):
+                        parity = 1 + (-1) ** (left_power + auxiliary_power - m)
+                        direct += (
+                            associated_laguerre(j, p, left_monomial)
+                            * associated_laguerre(
+                                auxiliary_j, auxiliary_p, auxiliary_monomial
+                            )
+                            * legendre_monomial(p, left_power)
+                            * legendre_monomial(auxiliary_p, auxiliary_power)
+                            * mp.factorial(left_power)
+                            / mp.factorial(left_power - m)
+                            * parity
+                            * mp.gamma(
+                                left_monomial
+                                + auxiliary_monomial
+                                + mp.mpf(p + auxiliary_p - m + 3) / 2
+                            )
+                            / (2 * (left_power + auxiliary_power + 1 - m))
+                        )
+        assert mp.almosteq(factorized, direct)
+
+
 def test_associated_basis_transform_reconstructs_and_inverts_parity_blocks() -> None:
     """Finite-m lower-triangular blocks must reconstruct the physical basis."""
     from scipy.special import eval_genlaguerre, eval_hermite, eval_laguerre, lpmv
