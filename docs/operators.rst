@@ -544,10 +544,9 @@ polarization.
 Independent Python pair loops, JIT execution, JVP/finite-difference checks,
 like-species polarization cancellation, generated-coefficient application,
 and the complete cached linear-RHS seam pass. This closes runtime algebra and
-differentiable interpolation. It does not yet close table-generation cost,
-Hermite/Laguerre truncation, reconstructed particle-space conservation at
-finite :math:`b`, or any transport benchmark; therefore this class remains a
-Python research API and has no input-file selector.
+differentiable interpolation. It does not yet close Hermite/Laguerre
+truncation or any transport benchmark; therefore this class remains a Python
+research API and has no input-file selector.
 
 Finite-:math:`b` conservation must be stated carefully. Collisions are local at
 the particle position, whereas the evolved moments are defined at the
@@ -555,23 +554,22 @@ gyrocenter. Consequently, the gyrocenter density row is not a null row at
 finite :math:`k_\perp\rho`; it represents classical gyro-diffusion. The tracked
 verification artifact recovers the density null at :math:`b=0`, obtains a
 nonzero finite-:math:`b` row, and measures the expected leading
-:math:`O(b^2)` scaling. Future multispecies gates will reconstruct the
-particle-space momentum and energy balances instead of incorrectly imposing
-local gyrocenter nulls.
+:math:`O(b^2)` scaling separately for the test, field, and combined rows.
+Equation (3.35) maps a gyrocenter distribution to particle moments; it is not
+an inverse of the gyrophase average in equation (3.5). Local particle-space
+conservation therefore cannot be inferred by applying that moment map to the
+already gyroaveraged collision matrix. A future direct particle-coordinate
+implementation must test equations (3.2)--(3.4) before gyroaveraging instead.
 
 The multiprecision generator uses exact integer combinatorics for polynomial
 binomial factors, memoizes repeated inverse-basis contractions within one
 assembly, and retains arbitrary precision where gamma functions and
 non-integer coefficients require it. These changes preserve the generated
 blocks bit for bit while reducing a representative assembly from 34.1 to 3.46
-seconds. The exact equation-(3.35) :math:`M^{000}` adjoint-gyroaverage
-contraction uses positive coefficients in the paper's convention. Its
-particle-density residual remains :math:`3.5309\times10^{-2}` across
-:math:`N_\ell=3,4,5`, despite the five-state point now completing in 8.19
-seconds. This resolution-independent residual is diagnostic negative evidence,
-not an acceptance gate. The remaining derivation must include the complete
-particle/gyrocenter pullback and finite projection before a conservation claim
-is made.
+seconds. Applying equation (3.35)'s :math:`M^{000}` map to the gyroaveraged
+collision matrix leaves a nonzero residual, as equation (3.5) predicts; that
+quantity is retained only as a rejected diagnostic, not a conservation or
+resolution gate.
 
 The lowest-order multispecies drift-kinetic boundary is also implemented
 without assuming equal species. For an ordered pair :math:`(a,b)`,

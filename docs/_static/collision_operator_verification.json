@@ -42,7 +42,9 @@
     "maximum_invariant_residual": true,
     "maximum_projection_relative_error": true,
     "published_coefficient_maximum_absolute_error": true,
+    "small_b_field_gyrocenter_diffusion_quadratic": true,
     "small_b_gyrocenter_diffusion_quadratic": true,
+    "small_b_test_gyrocenter_diffusion_quadratic": true,
     "symmetry_maximum_absolute_error": true
   },
   "gyrocenter_diffusion": {
@@ -52,14 +54,28 @@
       0.004169002815804829,
       0.015584022776236536
     ],
-    "interpretation": "finite-b classical gyro-diffusion; local invariant nulls apply in particle coordinates and in the drift-kinetic limit",
+    "field_density_row_infinity_norm": [
+      2.952766034654239e-17,
+      0.005308602029999754,
+      0.021107350409682223,
+      0.08242513541783619
+    ],
+    "field_small_b_observed_order": 1.9783402280143347,
+    "interpretation": "equation-(3.5) finite-b classical gyro-diffusion in the test, field, and combined gyrocenter moments; particle-space local conservation cannot be reconstructed from the gyrophase-averaged matrix alone",
     "kperp_rho": [
       0.0,
       0.1,
       0.2,
       0.4
     ],
-    "small_b_observed_order": 1.939982771585923
+    "small_b_observed_order": 1.939982771585923,
+    "test_density_row_infinity_norm": [
+      0.0,
+      0.005319225284028959,
+      0.021276590866070106,
+      0.0850857947777497
+    ],
+    "test_small_b_observed_order": 1.9998151230154746
   },
   "invariant_residuals": {
     "density": 1.5272099054645245e-81,
@@ -175,13 +191,17 @@
     "maximum_invariant_residual": 5.551115123125783e-17,
     "maximum_projection_relative_error": 3.1316539653265556e-13,
     "published_coefficient_maximum_absolute_error": 1.1102230246251565e-16,
+    "small_b_field_gyrocenter_diffusion_observed_order": 1.9783402280143347,
     "small_b_gyrocenter_diffusion_observed_order": 1.939982771585923,
+    "small_b_test_gyrocenter_diffusion_observed_order": 1.9998151230154746,
     "symmetry_maximum_absolute_error": 8.326672684688674e-17
   },
   "precision_decimal_digits": 80,
   "references": [
     {
       "equations": [
+        "3.2",
+        "3.5",
         "3.41",
         "3.48",
         "3.49",

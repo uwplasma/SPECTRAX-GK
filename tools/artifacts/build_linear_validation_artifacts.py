@@ -1894,6 +1894,8 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
     # violation of the particle-space conservation law (Frei et al. 2021,
     # discussion following Eq. 3.5).
     gyrocenter_b = np.asarray((0.0, 0.1, 0.2, 0.4), dtype=float)
+    gyrocenter_test_density_rows = []
+    gyrocenter_field_density_rows = []
     gyrocenter_density_rows = []
     for b_value in gyrocenter_b:
         gyro_test, gyro_field = coulomb_nonpolarized_moment_matrices(
@@ -1907,17 +1909,25 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             maximum_bessel_laguerre_order=4,
             digits=max(32, min(digits, 48)),
         )
+        gyrocenter_test_density_rows.append(
+            float(np.linalg.norm(gyro_test[0], ord=np.inf))
+        )
+        gyrocenter_field_density_rows.append(
+            float(np.linalg.norm(gyro_field[0], ord=np.inf))
+        )
         gyrocenter_density_rows.append(
             float(np.linalg.norm((gyro_test + gyro_field)[0], ord=np.inf))
         )
+    gyrocenter_test_density_rows_array = np.asarray(gyrocenter_test_density_rows)
+    gyrocenter_field_density_rows_array = np.asarray(gyrocenter_field_density_rows)
     gyrocenter_density_rows_array = np.asarray(gyrocenter_density_rows)
-    observed_order = float(
-        np.polyfit(
-            np.log(gyrocenter_b[1:]),
-            np.log(gyrocenter_density_rows_array[1:]),
-            1,
-        )[0]
-    )
+
+    def small_b_observed_order(values: np.ndarray) -> float:
+        return float(np.polyfit(np.log(gyrocenter_b[1:]), np.log(values[1:]), 1)[0])
+
+    test_observed_order = small_b_observed_order(gyrocenter_test_density_rows_array)
+    field_observed_order = small_b_observed_order(gyrocenter_field_density_rows_array)
+    observed_order = small_b_observed_order(gyrocenter_density_rows_array)
     metrics = {
         "final_bessel_relative_error": float(truncation_errors[-1]),
         "maximum_projection_relative_error": float(max(projection_errors)),
@@ -1931,6 +1941,8 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         "maximum_invariant_residual": float(max(invariant_residuals.values())),
         "drift_kinetic_gyrocenter_density_row": float(gyrocenter_density_rows_array[0]),
         "finite_b_gyrocenter_density_row": float(gyrocenter_density_rows_array[-1]),
+        "small_b_test_gyrocenter_diffusion_observed_order": test_observed_order,
+        "small_b_field_gyrocenter_diffusion_observed_order": field_observed_order,
         "small_b_gyrocenter_diffusion_observed_order": observed_order,
         "finite_b_matrix_relative_error_at_order_4": float(
             matrix_truncation_errors[-2]
@@ -1971,6 +1983,16 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         <= observed_order
         <= thresholds["small_b_gyrocenter_diffusion_order_maximum"]
     )
+    gates["small_b_test_gyrocenter_diffusion_quadratic"] = bool(
+        thresholds["small_b_gyrocenter_diffusion_order_minimum"]
+        <= test_observed_order
+        <= thresholds["small_b_gyrocenter_diffusion_order_maximum"]
+    )
+    gates["small_b_field_gyrocenter_diffusion_quadratic"] = bool(
+        thresholds["small_b_gyrocenter_diffusion_order_minimum"]
+        <= field_observed_order
+        <= thresholds["small_b_gyrocenter_diffusion_order_maximum"]
+    )
     return _json_clean(
         {
             "case": "finite_b_coulomb_operator_algebra",
@@ -2002,11 +2024,17 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             "invariant_residuals": invariant_residuals,
             "gyrocenter_diffusion": {
                 "kperp_rho": gyrocenter_b,
+                "test_density_row_infinity_norm": gyrocenter_test_density_rows_array,
+                "field_density_row_infinity_norm": gyrocenter_field_density_rows_array,
                 "density_row_infinity_norm": gyrocenter_density_rows_array,
+                "test_small_b_observed_order": test_observed_order,
+                "field_small_b_observed_order": field_observed_order,
                 "small_b_observed_order": observed_order,
                 "interpretation": (
-                    "finite-b classical gyro-diffusion; local invariant nulls "
-                    "apply in particle coordinates and in the drift-kinetic limit"
+                    "equation-(3.5) finite-b classical gyro-diffusion in the "
+                    "test, field, and combined gyrocenter moments; particle-space "
+                    "local conservation cannot be reconstructed from the "
+                    "gyrophase-averaged matrix alone"
                 ),
             },
             "metrics": metrics,
@@ -2017,7 +2045,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
                 {
                     "title": "Frei et al. (2021), advanced gyrokinetic collision operators",
                     "url": "https://arxiv.org/abs/2104.11480",
-                    "equations": ["3.41", "3.48", "3.49", "3.50"],
+                    "equations": ["3.2", "3.5", "3.41", "3.48", "3.49", "3.50"],
                 },
                 {
                     "title": "Abel et al. (2008), collision-operator physical constraints",
@@ -2133,8 +2161,32 @@ def write_coulomb_operator_verification_figure(
     )
     gyrocenter = summary["gyrocenter_diffusion"]
     gyrocenter_b = np.asarray(gyrocenter["kperp_rho"], dtype=float)[1:]
+    test_density_row = np.asarray(
+        gyrocenter["test_density_row_infinity_norm"], dtype=float
+    )[1:]
+    field_density_row = np.asarray(
+        gyrocenter["field_density_row_infinity_norm"], dtype=float
+    )[1:]
     density_row = np.asarray(gyrocenter["density_row_infinity_norm"], dtype=float)[1:]
     inset = axes[1, 0].inset_axes([0.54, 0.52, 0.42, 0.40])
+    inset.semilogy(
+        gyrocenter_b,
+        test_density_row,
+        "^-.",
+        color=colors["red"],
+        lw=1.0,
+        ms=3.2,
+        label="test",
+    )
+    inset.semilogy(
+        gyrocenter_b,
+        field_density_row,
+        "v:",
+        color=colors["blue"],
+        lw=1.0,
+        ms=3.2,
+        label="field",
+    )
     inset.semilogy(
         gyrocenter_b,
         density_row,
@@ -2142,6 +2194,7 @@ def write_coulomb_operator_verification_figure(
         color=colors["orange"],
         lw=1.4,
         ms=3.8,
+        label="combined",
     )
     inset.semilogy(
         gyrocenter_b,
@@ -2156,7 +2209,7 @@ def write_coulomb_operator_verification_figure(
     inset.set_xlabel(r"$b=k_\perp\rho$", fontsize=7)
     inset.set_ylabel(r"$\|C_{0,:}\|_\infty$", fontsize=7)
     inset.tick_params(labelsize=6)
-    inset.legend(frameon=False, fontsize=6, loc="lower right")
+    inset.legend(frameon=False, fontsize=5.2, loc="lower right", ncol=2)
     inset.grid(alpha=0.2, lw=0.4)
 
     matrix = np.asarray(summary["matrix"], dtype=float)

@@ -381,7 +381,8 @@ artifact_paths = [
   "docs/_static/collision_operator_verification.png",
 ]
 next_tests = [
-  "add reconstructed particle-space multispecies conservation and moment-resolution sweeps",
+  "add coupled Hermite/Laguerre/spherical moment-resolution sweeps",
+  "test fixed-particle-position conservation only if a pre-gyroaverage particle operator is implemented",
   "require conductivity, finite-b ITG, and collisional zonal-response gates before input-file promotion",
 ]
 

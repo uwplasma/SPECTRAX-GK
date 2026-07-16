@@ -2721,6 +2721,8 @@ def test_tracked_coulomb_operator_verification_closes_release_gates() -> None:
     diffusion = summary["gyrocenter_diffusion"]
     assert diffusion["density_row_infinity_norm"][0] < 5.0e-12
     assert diffusion["density_row_infinity_norm"][-1] > 1.0e-4
+    assert 1.7 < diffusion["test_small_b_observed_order"] < 2.3
+    assert 1.7 < diffusion["field_small_b_observed_order"] < 2.3
     assert 1.7 < diffusion["small_b_observed_order"] < 2.3
     matrix_errors = summary["matrix_truncation"]["relative_errors"]
     assert matrix_errors[0] > 1.0e-4
@@ -2756,6 +2758,8 @@ def test_coulomb_operator_verification_artifact_closes_physical_gates(
     diffusion = summary["gyrocenter_diffusion"]
     assert diffusion["density_row_infinity_norm"][0] < 5.0e-12
     assert diffusion["density_row_infinity_norm"][-1] > 1.0e-4
+    assert 1.7 < diffusion["test_small_b_observed_order"] < 2.3
+    assert 1.7 < diffusion["field_small_b_observed_order"] < 2.3
     assert 1.7 < diffusion["small_b_observed_order"] < 2.3
     matrix_errors = summary["matrix_truncation"]["relative_errors"]
     assert matrix_errors[0] > 1.0e-4
