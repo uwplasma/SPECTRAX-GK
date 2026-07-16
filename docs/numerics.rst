@@ -729,19 +729,31 @@ matrix-exponential, JIT, and centered finite-difference checks close this
 algorithmic layer. The direct Coulomb hierarchy is resolved through
 :math:`(P,J)=(20,5)`: its largest current change from :math:`(15,5)` is
 :math:`1.66\times10^{-4}` over :math:`Z=1,2,5,10,100`, below the fixed 0.5%
-gate. Physical Spitzer--Härm conductivity remains open because it additionally
-requires the paper's dimensional collision-frequency normalization, saturation
-and field-amplitude checks. The original-Sugama hierarchy is generated at equal
-temperature from the Coulomb test matrix plus the unique self-adjoint low-rank
-momentum/energy restoration. The improved hierarchy evaluates the Coulomb
-Braginskii :math:`N` matrix, removes its momentum-restoring Schur complement,
-and applies the exact drift-kinetic basis transforms through :math:`K=5` in
+gate. The Spitzer--Härm normalization is closed for this unmagnetized,
+equal-temperature drift-kinetic problem. With
+:math:`\widehat E=eE/(m_ev_{Te}\nu_{ee})`, the computed ratio
+:math:`(u_e/v_{Te})/\widehat E` is
+:math:`\sigma_\parallel/[n_e e^2/(m_e\nu_{ee})]`. Substituting the collision
+frequency and Spitzer conductivity gives the high-charge limit
+:math:`64/[3\,2^{3/2}\pi Z]`. The :math:`Z=100` Coulomb result is 7.453% below
+this limit, inside the prospectively fixed 8% gate. The source is also converted
+to the paper's :math:`eE/(\sqrt{m_eT_e}\nu_{ee})=10^{-3}` convention; Coulomb,
+original Sugama, and improved Sugama all reach their matrix steady state by
+:math:`t\nu_{ee}=50` and remain linear over fields from :math:`10^{-4}` to
+:math:`10^{-2}`.
+
+The original-Sugama hierarchy is generated at equal temperature from the
+Coulomb test matrix plus the unique self-adjoint low-rank momentum/energy
+restoration. The improved hierarchy evaluates the Coulomb Braginskii
+:math:`N` matrix, removes its momentum-restoring Schur complement, and applies
+the exact drift-kinetic basis transforms through :math:`K=5` in
 multiprecision. The two constructions recover the independently tabulated C6
 and C103 coefficients and reproduce the published low- and high-charge current
 ordering without fitting response data. At the converged endpoint, the largest
 improved-to-Coulomb current difference is 0.307%, the
 :math:`K=4\rightarrow5` change is 0.439%, and the final velocity-hierarchy
 change is 0.0237%.
+
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
 

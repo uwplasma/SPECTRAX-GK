@@ -2797,6 +2797,13 @@ def build_drift_kinetic_response_convergence_summary(
     original_sugama_high_charge_gap_max: float = 2.0e-2,
     improved_sugama_coulomb_gap_max: float = 1.0e-2,
     improved_sugama_correction_order: int = 5,
+    paper_normalized_field: float = 1.0e-3,
+    saturation_times: tuple[float, ...] = (0.0, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0),
+    saturation_charge: float = 1.0,
+    saturation_rtol: float = 1.0e-3,
+    field_linearity_rtol: float = 2.0e-12,
+    spitzer_high_charge_minimum: float = 100.0,
+    spitzer_high_charge_rtol: float = 8.0e-2,
     digits: int = 50,
 ) -> dict[str, Any]:
     r"""Build the converged driven Coulomb-response hierarchy.
@@ -2818,6 +2825,8 @@ def build_drift_kinetic_response_convergence_summary(
         raise ValueError("required_resolution must satisfy P >= 2 and J >= 1")
     if any(not math.isfinite(z) or z <= 0.0 for z in ion_charges):
         raise ValueError("ion_charges must be finite and > 0")
+    if any(right <= left for left, right in zip(ion_charges, ion_charges[1:])):
+        raise ValueError("ion_charges must increase strictly")
     if nested_current_rtol <= 0.0 or not math.isfinite(nested_current_rtol):
         raise ValueError("nested_current_rtol must be finite and > 0")
     if algebra_atol <= 0.0 or not math.isfinite(algebra_atol):
@@ -2830,12 +2839,45 @@ def build_drift_kinetic_response_convergence_summary(
         raise ValueError("improved_sugama_coulomb_gap_max must lie in (0, 1)")
     if improved_sugama_correction_order < 1:
         raise ValueError("improved_sugama_correction_order must be >= 1")
+    if paper_normalized_field <= 0.0 or not math.isfinite(paper_normalized_field):
+        raise ValueError("paper_normalized_field must be finite and > 0")
+    if (
+        not saturation_times
+        or saturation_times[0] != 0.0
+        or any(
+            not math.isfinite(value) or value < 0.0
+            for value in saturation_times
+        )
+        or any(
+            right <= left
+            for left, right in zip(saturation_times, saturation_times[1:])
+        )
+    ):
+        raise ValueError("saturation_times must increase strictly from zero")
+    if saturation_charge not in ion_charges:
+        raise ValueError("saturation_charge must be present in ion_charges")
+    for name, value in (
+        ("saturation_rtol", saturation_rtol),
+        ("field_linearity_rtol", field_linearity_rtol),
+        ("spitzer_high_charge_rtol", spitzer_high_charge_rtol),
+    ):
+        if value <= 0.0 or not math.isfinite(value):
+            raise ValueError(f"{name} must be finite and > 0")
+    if spitzer_high_charge_minimum <= 0.0 or not math.isfinite(
+        spitzer_high_charge_minimum
+    ):
+        raise ValueError("spitzer_high_charge_minimum must be finite and > 0")
 
     charge_values = np.asarray(ion_charges, dtype=float)
+    solver_normalized_field = paper_normalized_field / np.sqrt(2.0)
+    spitzer_conductivity = 64.0 / (
+        3.0 * 2.0**1.5 * np.pi * charge_values
+    )
     rows: list[dict[str, Any]] = []
     previous_current: np.ndarray | None = None
     previous_improved_current: np.ndarray | None = None
     resolution_reports: list[dict[str, Any]] = []
+    saturation_report: dict[str, Any] = {}
     for maximum_hermite, maximum_laguerre in resolutions:
         maximum_degree = maximum_hermite + 2 * maximum_laguerre
         radial_limit = maximum_degree // 2
@@ -2920,7 +2962,7 @@ def build_drift_kinetic_response_convergence_summary(
             dtype=int,
         )
         source = np.zeros(mode_count)
-        source[n_laguerre] = -np.sqrt(2.0) * 1.0e-3
+        source[n_laguerre] = -np.sqrt(2.0) * solver_normalized_field
         currents: list[float] = []
         original_currents: list[float] = []
         improved_currents: list[float] = []
@@ -3068,6 +3110,83 @@ def build_drift_kinetic_response_convergence_summary(
         maximum_change = (
             None if relative_change is None else float(np.max(relative_change))
         )
+        if (maximum_hermite, maximum_laguerre) == resolutions[-1]:
+            charge = float(saturation_charge)
+            time_values = np.asarray(saturation_times, dtype=float)
+            paper_field_values = paper_normalized_field * np.asarray(
+                (0.1, 1.0, 10.0), dtype=float
+            )
+            current_mode = int(np.flatnonzero(active_modes == n_laguerre)[0])
+            model_matrices = {
+                "coulomb": electron_collision + charge * ion_collision,
+                "original_sugama": (
+                    original_electron_collision + charge * ion_collision
+                ),
+                "improved_sugama": (
+                    improved_electron_collision + charge * ion_collision
+                ),
+            }
+            saturation_models: dict[str, Any] = {}
+            for model, collision_matrix in model_matrices.items():
+                reduced = collision_matrix[np.ix_(active_modes, active_modes)]
+                reduced = 0.5 * (reduced + reduced.T)
+                steady = np.linalg.solve(reduced, -source[active_modes])
+                eigenvalues, eigenvectors = np.linalg.eigh(reduced)
+                transient_coefficients = eigenvectors.T @ steady
+                transient = (
+                    np.exp(time_values[:, None] * eigenvalues[None, :])
+                    * transient_coefficients[None, :]
+                ) @ eigenvectors.T
+                trajectory = steady[None, :] - transient
+                current_trace = trajectory[:, current_mode] / np.sqrt(2.0)
+                stationary_current = float(steady[current_mode] / np.sqrt(2.0))
+
+                conductivity_values = []
+                for paper_field in paper_field_values:
+                    solver_field = paper_field / np.sqrt(2.0)
+                    drive = np.zeros_like(source[active_modes])
+                    drive[current_mode] = -np.sqrt(2.0) * solver_field
+                    field_response = np.linalg.solve(reduced, -drive)
+                    conductivity_values.append(
+                        float(
+                            abs(field_response[current_mode] / np.sqrt(2.0))
+                            / solver_field
+                        )
+                    )
+                conductivity_array = np.asarray(conductivity_values)
+                reference_conductivity = conductivity_array[1]
+                saturation_models[model] = {
+                    "current_over_vte": current_trace.tolist(),
+                    "stationary_current_over_vte": stationary_current,
+                    "saturation_relative_error": float(
+                        abs(current_trace[-1] - stationary_current)
+                        / max(abs(stationary_current), np.finfo(float).tiny)
+                    ),
+                    "conductivity_over_ne2_mnu": conductivity_array.tolist(),
+                    "field_linearity_relative_error": float(
+                        np.max(
+                            np.abs(
+                                conductivity_array / reference_conductivity - 1.0
+                            )
+                        )
+                    ),
+                }
+            saturation_report = {
+                "ion_charge": charge,
+                "time_nu_ee": time_values.tolist(),
+                "paper_normalized_field": paper_normalized_field,
+                "solver_normalized_field": solver_normalized_field,
+                "paper_field_scan": paper_field_values.tolist(),
+                "models": saturation_models,
+                "maximum_saturation_relative_error": max(
+                    row["saturation_relative_error"]
+                    for row in saturation_models.values()
+                ),
+                "maximum_field_linearity_relative_error": max(
+                    row["field_linearity_relative_error"]
+                    for row in saturation_models.values()
+                ),
+            }
         report = {
             "maximum_hermite_order": maximum_hermite,
             "maximum_laguerre_order": maximum_laguerre,
@@ -3085,6 +3204,19 @@ def build_drift_kinetic_response_convergence_summary(
             "improved_sugama_relative_gap": (
                 (improved_current_array - current_array)
                 / np.maximum(np.abs(current_array), np.finfo(float).tiny)
+            ).tolist(),
+            "conductivity_over_ne2_mnu": (
+                current_array / solver_normalized_field
+            ).tolist(),
+            "original_sugama_conductivity_over_ne2_mnu": (
+                original_current_array / solver_normalized_field
+            ).tolist(),
+            "improved_sugama_conductivity_over_ne2_mnu": (
+                improved_current_array / solver_normalized_field
+            ).tolist(),
+            "spitzer_relative_error": (
+                np.abs(current_array / solver_normalized_field - spitzer_conductivity)
+                / spitzer_conductivity
             ).tolist(),
             "relative_change_from_previous": (
                 None if relative_change is None else relative_change.tolist()
@@ -3141,7 +3273,12 @@ def build_drift_kinetic_response_convergence_summary(
                     "improved_sugama_normalized_current": float(
                         improved_current_array[charge_index]
                     ),
-                    "current_per_unit_field": float(current_array[charge_index] / 1.0e-3),
+                    "conductivity_over_ne2_mnu": float(
+                        current_array[charge_index] / solver_normalized_field
+                    ),
+                    "spitzer_conductivity_over_ne2_mnu": float(
+                        spitzer_conductivity[charge_index]
+                    ),
                     "relative_change_from_previous": (
                         None
                         if relative_change is None
@@ -3155,6 +3292,7 @@ def build_drift_kinetic_response_convergence_summary(
         final["maximum_hermite_order"] >= required_resolution[0]
         and final["maximum_laguerre_order"] >= required_resolution[1]
     )
+    high_charge_index = int(np.argmax(charge_values))
     gates = {
         "required_resolution_reached": resolution_reached,
         "nested_current_converged": (
@@ -3201,10 +3339,23 @@ def build_drift_kinetic_response_convergence_summary(
             abs(value) for value in final["improved_sugama_relative_gap"]
         )
         <= improved_sugama_coulomb_gap_max,
+        "spitzer_high_charge_asymptote": (
+            charge_values[high_charge_index] >= spitzer_high_charge_minimum
+            and final["spitzer_relative_error"][high_charge_index]
+            <= spitzer_high_charge_rtol
+        ),
+        "stationary_current_saturated": saturation_report[
+            "maximum_saturation_relative_error"
+        ]
+        <= saturation_rtol,
+        "electric_field_linearity": saturation_report[
+            "maximum_field_linearity_relative_error"
+        ]
+        <= field_linearity_rtol,
     }
     return {
-        "schema_version": 3,
-        "title": "Drift-kinetic Coulomb and Sugama response convergence",
+        "schema_version": 4,
+        "title": "Drift-kinetic Coulomb and Sugama conductivity convergence",
         "literature_equations": {
             "collision": "Frei et al. (2021), equations (3.53)--(3.56)",
             "original_sugama": "Sugama, Watanabe & Nunami (2009)",
@@ -3212,14 +3363,37 @@ def build_drift_kinetic_response_convergence_summary(
                 "Frei, Ernst & Ricci (2022), equations (45), (60), (79)--(81)"
             ),
             "drive": "Frei, Ernst & Ricci (2022), equation (81)",
+            "conductivity": "Frei, Ernst & Ricci (2022), equations (83)--(84) and Figures 15--16",
         },
         "scope": (
-            "Converged normalized Coulomb response and arbitrary-order, equal-temperature "
-            "original- and improved-Sugama boundaries. Absolute Spitzer--Harm "
-            "conductivity normalization remains a separate gate."
+            "Converged Coulomb and arbitrary-order, equal-temperature original- and "
+            "improved-Sugama conductivity, including dimensional normalization, "
+            "electric-field linearity, stationary saturation, and the high-charge "
+            "Spitzer asymptote."
         ),
         "ion_charge": charge_values.tolist(),
-        "normalized_field": 1.0e-3,
+        "normalized_field": solver_normalized_field,
+        "field_normalization": {
+            "paper": "e E / (sqrt(m_e T_e) nu_ee)",
+            "paper_value": paper_normalized_field,
+            "solver": "e E / (m_e v_Te nu_ee)",
+            "solver_value": solver_normalized_field,
+            "thermal_speed": "v_Te = sqrt(2 T_e / m_e)",
+        },
+        "conductivity_normalization": {
+            "computed": "sigma_parallel / (n_e e^2 / (m_e nu_ee))",
+            "computed_value": (
+                np.asarray(final["conductivity_over_ne2_mnu"], dtype=float)
+            ).tolist(),
+            "spitzer_high_charge": (
+                "64 / (3 * 2^(3/2) * pi * Z)"
+            ),
+            "spitzer_value": spitzer_conductivity.tolist(),
+            "high_charge_relative_error": final["spitzer_relative_error"][
+                high_charge_index
+            ],
+        },
+        "saturation": saturation_report,
         "required_resolution": list(required_resolution),
         "thresholds": {
             "nested_current_rtol": nested_current_rtol,
@@ -3232,6 +3406,10 @@ def build_drift_kinetic_response_convergence_summary(
             ),
             "improved_sugama_coulomb_gap_max": improved_sugama_coulomb_gap_max,
             "improved_sugama_correction_order": improved_sugama_correction_order,
+            "saturation_rtol": saturation_rtol,
+            "field_linearity_rtol": field_linearity_rtol,
+            "spitzer_high_charge_minimum": spitzer_high_charge_minimum,
+            "spitzer_high_charge_rtol": spitzer_high_charge_rtol,
         },
         "resolutions": resolution_reports,
         "rows": rows,
@@ -3305,10 +3483,22 @@ def write_drift_kinetic_response_convergence_figure(
             f"K={final_report['improved_sugama_correction_order']})"
         ),
     )
+    axes[0, 0].semilogx(
+        charges,
+        np.asarray(
+            summary["conductivity_normalization"]["spitzer_value"], dtype=float
+        ),
+        "o:",
+        color=colors["ink"],
+        markerfacecolor="white",
+        lw=1.5,
+        ms=4.4,
+        label="Spitzer high-$Z$ asymptote",
+    )
     axes[0, 0].set(
         xlabel="ion charge $Z$",
-        ylabel=r"normalized response $|u_e|/E$",
-        title="(a) Driven-current hierarchy",
+        ylabel=r"$\sigma_\parallel/[n_e e^2/(m_e\nu_{ee})]$",
+        title="(a) Conductivity hierarchy",
     )
     axes[0, 0].legend(
         title=r"$(P,J)$", frameon=False, fontsize=6.8, title_fontsize=8, ncol=3
@@ -3388,32 +3578,26 @@ def write_drift_kinetic_response_convergence_figure(
     )
     axes[1, 0].legend(frameon=False, fontsize=7, ncol=2)
 
-    electron_times = np.asarray(
-        [row["generation_seconds"]["electron_electron"] for row in reports]
-    )
-    ion_times = np.asarray(
-        [row["generation_seconds"]["electron_ion"] for row in reports]
-    )
-    axes[1, 1].loglog(
-        mode_counts,
-        electron_times,
-        "o-",
-        color=colors["blue"],
-        lw=1.8,
-        label="electron--electron",
-    )
-    axes[1, 1].loglog(
-        mode_counts,
-        ion_times,
-        "s-",
-        color=colors["orange"],
-        lw=1.8,
-        label="electron--ion",
-    )
+    saturation = summary["saturation"]
+    time_values = np.asarray(saturation["time_nu_ee"], dtype=float)
+    for model, label, style, color in (
+        ("coulomb", "Coulomb", "-", colors["blue"]),
+        ("original_sugama", "original Sugama", "--", colors["ink"]),
+        ("improved_sugama", "improved Sugama $K=5$", "-.", colors["red"]),
+    ):
+        axes[1, 1].plot(
+            time_values,
+            1.0e3
+            * np.asarray(saturation["models"][model]["current_over_vte"]),
+            style,
+            color=color,
+            lw=1.8,
+            label=label,
+        )
     axes[1, 1].set(
-        xlabel="retained Hermite--Laguerre modes",
-        ylabel="coefficient generation time [s]",
-        title="(d) Direct contraction cost",
+        xlabel=r"$t\nu_{ee}$",
+        ylabel=r"$10^3 u_e/v_{Te}$",
+        title="(d) Stationary-current saturation ($Z=1$)",
     )
     axes[1, 1].legend(frameon=False, fontsize=8)
 
@@ -3422,7 +3606,7 @@ def write_drift_kinetic_response_convergence_figure(
         axis.spines[["top", "right"]].set_visible(False)
     status = "PASS" if summary["gate_passed"] else "OPEN"
     fig.suptitle(
-        f"Drift-kinetic Coulomb/Sugama response: resolved hierarchies ({status})",
+        f"Drift-kinetic Coulomb/Sugama conductivity: resolved hierarchies ({status})",
         fontsize=15,
         color=colors["ink"],
     )

@@ -386,7 +386,6 @@ artifact_paths = [
 ]
 next_tests = [
   "test fixed-particle-position conservation only if a pre-gyroaverage particle operator is implemented",
-  "close dimensional collision-frequency normalization and saturation before absolute conductivity promotion",
   "require finite-b ITG and collisional zonal-response gates before input-file promotion",
 ]
 

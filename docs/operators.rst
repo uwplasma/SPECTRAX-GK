@@ -701,9 +701,8 @@ self-adjointness, non-positive-spectrum, and driven-solve residuals all pass a
    Drift-kinetic Coulomb and Sugama response hierarchies. Panel (a) compares
    Coulomb with the arbitrary-order original and improved models, panel (b) is
    the nested velocity-space error, panel (c) records the conservation and
-   dissipation gates, and panel (d) reports local coefficient-generation cost.
-   The panel validates normalized response, not absolute Spitzer--Härm
-   conductivity.
+   dissipation gates, and panel (d) reproduces stationary-current saturation at
+   the paper's applied-field normalization.
 
 The machine-readable JSON and CSV use the same prospectively fixed 0.5%
 current and :math:`2\times10^{-12}` algebra thresholds. At equal temperature,
@@ -713,8 +712,8 @@ thermal energy. This construction reproduces every published C6 coefficient
 at low order and, at :math:`(P,J)=(20,5)`, yields 11.29% less current than
 Coulomb at :math:`Z=1` and only 0.61% less at :math:`Z=100`. Prospectively
 fixed gates require at least an 8% low-charge deficit and no more than a 2%
-high-charge difference, reflecting the Figure-16 ordering without claiming its
-absolute conductivity normalization. The improved field correction is formed
+high-charge difference, reflecting the Figure-16 ordering. The improved field
+correction is formed
 from the Coulomb Braginskii :math:`N` matrix Schur complement and the exact
 drift-kinetic transforms in equations (79)--(81) of Frei, Ernst & Ricci (2022).
 It reproduces every C103 coefficient at :math:`K=1`; the shipped hierarchy
@@ -728,6 +727,19 @@ Regenerate all three formats with
 .. code-block:: bash
 
    python tools/artifacts/build_linear_validation_artifacts.py collision-response
+
+For the absolute normalization, define
+:math:`\widehat E=eE/(m_ev_{Te}\nu_{ee})`. The plotted response
+:math:`(u_e/v_{Te})/\widehat E` is then
+:math:`\sigma_\parallel/[n_e e^2/(m_e\nu_{ee})]`. The black curve in panel (a)
+is the Spitzer high-charge limit
+:math:`64/[3\,2^{3/2}\pi Z]`; the :math:`Z=100` Coulomb point differs by 7.453%,
+inside the fixed 8% gate. Panel (d) uses the equivalent paper convention
+:math:`eE/(\sqrt{m_eT_e}\nu_{ee})=10^{-3}`. Its three exact matrix-exponential
+traces saturate by :math:`t\nu_{ee}=50`; independent steady solves over a 100x
+field range close the linear-response gate. These results promote the
+unmagnetized equal-temperature conductivity problem, not finite-:math:`b`
+collisional transport.
 
 A deterministic Cyclone ITG probe also records the finite-wavelength failure
 boundary rather than hiding it. At :math:`k_y\rho\simeq0.63`, increasing the

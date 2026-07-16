@@ -2782,6 +2782,7 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
 
     assert summary["gate_passed"] is True
     assert all(summary["gates"].values())
+    assert summary["schema_version"] == 4
     assert len(summary["rows"]) == 10
     final = summary["resolutions"][-1]
     assert final["maximum_relative_change"] < 5.0e-2
@@ -2793,6 +2794,14 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
     assert final["improved_sugama_correction_order"] == 2
     assert final["improved_correction_order_maximum_change"] < 5.0e-2
     assert max(abs(value) for value in final["improved_sugama_relative_gap"]) < 1.0e-2
+    assert final["spitzer_relative_error"][-1] < 8.0e-2
+    saturation = summary["saturation"]
+    assert saturation["paper_normalized_field"] == 1.0e-3
+    assert saturation["maximum_saturation_relative_error"] < 1.0e-3
+    assert saturation["maximum_field_linearity_relative_error"] < 2.0e-12
+    assert -9.5e-4 < saturation["models"]["coulomb"][
+        "stationary_current_over_vte"
+    ] < -8.5e-4
     assert final["maximum_eigenvalue"] < 2.0e-12
     assert json.loads(out_json.read_text(encoding="utf-8"))["gate_passed"] is True
     assert len(pd.read_csv(out_csv)) == 10
@@ -2809,6 +2818,7 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
         ({"resolutions": ((1, 1),)}, "P >= 2"),
         ({"required_resolution": (1, 1)}, "required_resolution"),
         ({"ion_charges": (0.0,)}, "ion_charges"),
+        ({"ion_charges": (2.0, 1.0)}, "increase strictly"),
         ({"nested_current_rtol": 0.0}, "nested_current_rtol"),
         ({"algebra_atol": float("inf")}, "algebra_atol"),
         (
@@ -2821,6 +2831,14 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
         ),
         ({"improved_sugama_coulomb_gap_max": 1.0}, "coulomb_gap_max"),
         ({"improved_sugama_correction_order": 0}, "correction_order"),
+        ({"paper_normalized_field": 0.0}, "paper_normalized_field"),
+        ({"saturation_times": (1.0, 2.0)}, "saturation_times"),
+        ({"saturation_times": (0.0, 2.0, 1.0)}, "saturation_times"),
+        ({"saturation_charge": 3.0}, "saturation_charge"),
+        ({"saturation_rtol": 0.0}, "saturation_rtol"),
+        ({"field_linearity_rtol": float("inf")}, "field_linearity_rtol"),
+        ({"spitzer_high_charge_minimum": 0.0}, "high_charge_minimum"),
+        ({"spitzer_high_charge_rtol": 0.0}, "high_charge_rtol"),
     ),
 )
 def test_drift_kinetic_response_artifact_rejects_invalid_policy(
@@ -3042,6 +3060,7 @@ def test_tracked_drift_kinetic_response_closes_convergence_gates() -> None:
 
     assert summary["gate_passed"] is True
     assert all(summary["gates"].values())
+    assert summary["schema_version"] == 4
     assert summary["required_resolution"] == [20, 5]
     assert len(summary["resolutions"]) == 7
     final = summary["resolutions"][-1]
@@ -3056,6 +3075,10 @@ def test_tracked_drift_kinetic_response_closes_convergence_gates() -> None:
     assert final["improved_sugama_correction_order"] == 5
     assert final["improved_correction_order_maximum_change"] < 5.0e-3
     assert max(abs(value) for value in final["improved_sugama_relative_gap"]) < 1.0e-2
+    assert final["spitzer_relative_error"][-1] < 8.0e-2
+    assert summary["conductivity_normalization"]["high_charge_relative_error"] < 8.0e-2
+    assert summary["saturation"]["maximum_saturation_relative_error"] < 1.0e-3
+    assert summary["saturation"]["maximum_field_linearity_relative_error"] < 2.0e-12
     assert final["symmetry_max_abs"] < 2.0e-12
     assert final["maximum_eigenvalue"] < 2.0e-12
     assert final["solve_residual_max"] < 2.0e-12
