@@ -3230,6 +3230,35 @@ def test_finite_wavelength_angular_cutoff_retains_complete_basis() -> None:
         np.testing.assert_array_equal(bounded, full)
 
 
+def test_finite_wavelength_endpoint_archive_is_replayable(tmp_path: Path) -> None:
+    """The fixed-wavelength generator records all numerical truncations."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    out = tmp_path / "endpoint.npz"
+    metadata = mod.write_finite_wavelength_coulomb_endpoint(
+        out,
+        bessel_argument=0.2,
+        maximum_hermite_order=2,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=2,
+        maximum_bessel_laguerre_order=2,
+        digits=32,
+    )
+    assert metadata["resolution"] == [2, 1]
+    assert metadata["maximum_angular_bessel_order"] == 2
+    with np.load(out) as archive:
+        replayed = json.loads(str(archive["metadata"]))
+        assert replayed["checksum"] == pytest.approx(metadata["checksum"])
+        assert [archive[f"array_{index}"].shape for index in range(6)] == [
+            (6, 6),
+            (6, 6),
+            (6,),
+            (6,),
+            (6,),
+            (6,),
+        ]
+
+
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
     """Frei et al. Eqs. (3.41) and (3.50) must satisfy direct and null gates."""
     from scipy.special import eval_genlaguerre, jv, lpmv

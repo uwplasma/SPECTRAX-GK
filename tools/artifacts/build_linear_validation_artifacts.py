@@ -8,6 +8,8 @@ Subcommands:
   collision-response
                   Build the drift-kinetic driven-response convergence panel.
   collision-itg   Build the finite-wavelength slab-ITG convergence panel.
+  collision-endpoint
+                  Generate one equal-species finite-wavelength Coulomb archive.
   figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
@@ -3056,6 +3058,92 @@ def build_finite_wavelength_coulomb_pair_tables(
     return (*matrices, *vectors)
 
 
+def write_finite_wavelength_coulomb_endpoint(
+    out: Path,
+    *,
+    bessel_argument: float,
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    maximum_angular_bessel_order: int,
+    maximum_bessel_laguerre_order: int,
+    digits: int = 32,
+    worker_count: int = 1,
+) -> dict[str, Any]:
+    """Write one equal-species Coulomb endpoint with shared exact caches.
+
+    The archive stores the two matrices and four polarization vectors in the
+    paper's Laguerre convention. It is intentionally a fixed-wavelength
+    research artifact, not an interpolation table.
+    """
+
+    import mpmath as mp
+
+    maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
+    with mp.workdps(digits):
+        coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
+        assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
+        kwargs = {
+            "maximum_spherical_order": maximum_degree,
+            "maximum_spherical_radial_order": maximum_degree // 2,
+            "maximum_angular_bessel_order": maximum_angular_bessel_order,
+            "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
+            "digits": digits,
+            "_coefficient_functions": coefficient_functions,
+            "_assembly_cache": assembly_cache,
+        }
+        started = time.perf_counter()
+        vectors = coulomb_polarization_vectors(
+            maximum_hermite_order,
+            maximum_laguerre_order,
+            bessel_argument,
+            bessel_argument,
+            1.0,
+            1.0,
+            **kwargs,
+        )
+        polarization_seconds = time.perf_counter() - started
+        started = time.perf_counter()
+        matrices = coulomb_nonpolarized_moment_matrices(
+            maximum_hermite_order,
+            maximum_laguerre_order,
+            bessel_argument,
+            1.0,
+            1.0,
+            **kwargs,
+            worker_count=worker_count,
+        )
+        matrix_seconds = time.perf_counter() - started
+
+    arrays = (*matrices, *vectors)
+    if any(not np.all(np.isfinite(array)) for array in arrays):
+        raise RuntimeError("generated Coulomb endpoint contains non-finite values")
+    checksum = float(sum(float(np.sum(array)) for array in arrays))
+    metadata = {
+        "schema_version": 1,
+        "claim_scope": "fixed_wavelength_equal_species_coulomb_coefficients",
+        "resolution": [maximum_hermite_order, maximum_laguerre_order],
+        "bessel_argument": float(bessel_argument),
+        "paper_kperp_at_tau_one": float(bessel_argument / np.sqrt(2.0)),
+        "maximum_angular_bessel_order": maximum_angular_bessel_order,
+        "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
+        "precision_decimal_digits": digits,
+        "worker_count": worker_count,
+        "polarization_seconds": polarization_seconds,
+        "matrix_seconds": matrix_seconds,
+        "total_seconds": polarization_seconds + matrix_seconds,
+        "checksum": checksum,
+        "laguerre_convention": "paper_unsigned",
+        "source": "Frei et al. (2021), equations (3.48)--(3.50)",
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out,
+        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
+        **{f"array_{index}": array for index, array in enumerate(arrays)},
+    )
+    return metadata
+
+
 def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str, Any]:
     r"""Build equation, convergence, conservation, and entropy gates.
 
@@ -5126,6 +5214,21 @@ def build_collision_itg_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_endpoint_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate one fixed-wavelength equal-species Coulomb archive."
+    )
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--bessel-argument", type=float, required=True)
+    parser.add_argument("--maximum-hermite-order", type=int, required=True)
+    parser.add_argument("--maximum-laguerre-order", type=int, required=True)
+    parser.add_argument("--maximum-angular-bessel-order", type=int, default=4)
+    parser.add_argument("--maximum-bessel-laguerre-order", type=int, default=6)
+    parser.add_argument("--digits", type=int, default=32)
+    parser.add_argument("--worker-count", type=int, default=1)
+    return parser
+
+
 def build_figures_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate linear validation figures.")
     parser.add_argument(
@@ -5690,6 +5793,22 @@ def main_collision_itg(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_endpoint(argv: list[str] | None = None) -> int:
+    args = build_collision_endpoint_parser().parse_args(argv)
+    metadata = write_finite_wavelength_coulomb_endpoint(
+        args.out,
+        bessel_argument=float(args.bessel_argument),
+        maximum_hermite_order=int(args.maximum_hermite_order),
+        maximum_laguerre_order=int(args.maximum_laguerre_order),
+        maximum_angular_bessel_order=int(args.maximum_angular_bessel_order),
+        maximum_bessel_laguerre_order=int(args.maximum_bessel_laguerre_order),
+        digits=int(args.digits),
+        worker_count=int(args.worker_count),
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
@@ -5704,6 +5823,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-verification",
                 "collision-response",
                 "collision-itg",
+                "collision-endpoint",
             ),
         )
         parser.print_help()
@@ -5723,6 +5843,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_response(rest)
     if command == "collision-itg":
         return main_collision_itg(rest)
+    if command == "collision-endpoint":
+        return main_collision_endpoint(rest)
     raise SystemExit(f"unknown command: {command}")
 
 
