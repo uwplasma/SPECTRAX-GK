@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Profiled the exact finite-wavelength generator before attempting
+  the :math:`(18,6)` table. At :math:`(5,2)`, 11.5 of 19.4 matrix seconds are
+  shared multiprecision transforms and spherical-moment projections, so
+  independent process workers would duplicate most of the measured cost.
+  A mixed-precision prototype retained 32-digit coefficient generation and
+  performed only the final contraction in float64. It agreed with all six
+  exact arrays below :math:`9\times10^{-16}` relative L2, but improved the
+  office :math:`(7,3)` build only 1.18x (43.48 to 36.95 seconds). The added
+  branch was rejected and removed. A higher-resolution build now requires
+  shared-precompute row decomposition or further exact transform
+  factorization; neither speedup nor P18 completion is claimed.
+
 - 2026-07-16: Added the first runtime-level finite-wavelength Coulomb slab-ITG
   convergence artifact at the exact paper wavelength and protocol. The
   dominant mode is collisionality-stabilized across :math:`(P,J)=(7,3)`,
