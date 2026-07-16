@@ -382,12 +382,14 @@ That topology is the reference design for the production parallel lane.
   dominant mode is collisionality-stabilized across :math:`(P,J)=(7,3)`,
   :math:`(9,4)`, and :math:`(12,5)`. The final nested growth change is below
   0.12% over the unstable :math:`\nu\geq0.03` interval, but reaches 7.44% in
-  the collisionless limit. The publication panel shades that unresolved
-  interval and reports ``OPEN``; tests require both the intermediate pass and
-  low-collisionality failure, preventing selective promotion. The next
-  collision action is a bounded higher-Hermite endpoint or equivalent
-  low-:math:`\nu` convergence demonstration, followed by the independent
-  collisional-zonal gate.
+  the collisionless limit. A separate runtime hierarchy through the published
+  :math:`(18,6)` endpoint changes by 0.59% from :math:`(15,6)`, showing that
+  the endpoint itself is converged despite the non-monotone P9/P12 sequence.
+  The publication panel shades the still-unresolved finite-collision interval
+  and reports ``OPEN``; tests require the intermediate and collisionless
+  passes alongside the finite-collision failure, preventing selective
+  promotion. The next collision action is a parallelized exact higher-moment
+  table build, followed by the independent collisional-zonal gate.
 
 - 2026-07-16: Generated the exact finite-wavelength Coulomb hierarchy at the
   paper's :math:`k_\perp=0.5`, :math:`\tau=1` point

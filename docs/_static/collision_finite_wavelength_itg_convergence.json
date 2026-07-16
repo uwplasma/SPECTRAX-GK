@@ -1,5 +1,64 @@
 {
   "claim_scope": "intermediate_slab_itg_convergence_not_literature_acceptance",
+  "collisionless_endpoint_relative_change": 0.005901406547628025,
+  "collisionless_hierarchy": [
+    {
+      "frequency": -0.0879775171331797,
+      "growth": 0.09487637153662667,
+      "maximum_hermite_order": 4,
+      "maximum_laguerre_order": 1,
+      "mode_count": 10
+    },
+    {
+      "frequency": -0.09134612010356088,
+      "growth": 0.08144705498558255,
+      "maximum_hermite_order": 6,
+      "maximum_laguerre_order": 2,
+      "mode_count": 21
+    },
+    {
+      "frequency": -0.09975880071936107,
+      "growth": 0.07574578702123627,
+      "maximum_hermite_order": 8,
+      "maximum_laguerre_order": 4,
+      "mode_count": 45
+    },
+    {
+      "frequency": -0.10556228255366304,
+      "growth": 0.07862913856307667,
+      "maximum_hermite_order": 10,
+      "maximum_laguerre_order": 4,
+      "mode_count": 55
+    },
+    {
+      "frequency": -0.10556228255840454,
+      "growth": 0.0786291385663325,
+      "maximum_hermite_order": 10,
+      "maximum_laguerre_order": 6,
+      "mode_count": 77
+    },
+    {
+      "frequency": -0.10629933531552341,
+      "growth": 0.08158300625684581,
+      "maximum_hermite_order": 12,
+      "maximum_laguerre_order": 5,
+      "mode_count": 78
+    },
+    {
+      "frequency": -0.10285203589104763,
+      "growth": 0.08323649347716383,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 6,
+      "mode_count": 112
+    },
+    {
+      "frequency": -0.10464943324890984,
+      "growth": 0.08373062191758524,
+      "maximum_hermite_order": 18,
+      "maximum_laguerre_order": 6,
+      "mode_count": 133
+    }
+  ],
   "comparisons": [
     {
       "lower_resolution": [
@@ -425,6 +484,7 @@
   ],
   "gate_passed": false,
   "gates": {
+    "collisionless_p15_p18_converged": true,
     "intermediate_collision_range_converged": true,
     "literature_resolution_reached": false,
     "low_collisionality_growth_converged": false,
@@ -446,6 +506,7 @@
   },
   "schema_version": 1,
   "thresholds": {
+    "collisionless_endpoint_relative_tolerance": 0.01,
     "nested_growth_relative_tolerance": 0.05
   }
 }

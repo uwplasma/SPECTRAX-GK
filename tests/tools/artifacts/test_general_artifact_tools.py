@@ -3325,9 +3325,28 @@ def test_finite_wavelength_itg_summary_separates_resolved_collision_range(
             }
         )
 
-    summary = mod.summarize_finite_wavelength_itg_curves(curves)
+    collisionless = [
+        {
+            "maximum_hermite_order": 15,
+            "maximum_laguerre_order": 6,
+            "mode_count": 112,
+            "growth": 0.0832,
+            "frequency": -0.103,
+        },
+        {
+            "maximum_hermite_order": 18,
+            "maximum_laguerre_order": 6,
+            "mode_count": 133,
+            "growth": 0.0837,
+            "frequency": -0.105,
+        },
+    ]
+    summary = mod.summarize_finite_wavelength_itg_curves(
+        curves, collisionless_hierarchy=collisionless
+    )
     assert summary["gate_passed"] is False
     assert summary["gates"] == {
+        "collisionless_p15_p18_converged": True,
         "intermediate_collision_range_converged": True,
         "literature_resolution_reached": False,
         "low_collisionality_growth_converged": False,
@@ -3358,6 +3377,7 @@ def test_tracked_finite_wavelength_itg_convergence_stays_fail_closed() -> None:
     assert summary["literature_required_resolution"] == [18, 6]
     assert summary["gate_passed"] is False
     assert summary["gates"] == {
+        "collisionless_p15_p18_converged": True,
         "intermediate_collision_range_converged": True,
         "literature_resolution_reached": False,
         "low_collisionality_growth_converged": False,
@@ -3368,6 +3388,7 @@ def test_tracked_finite_wavelength_itg_convergence_stays_fail_closed() -> None:
         0.07439802232985072
     )
     assert comparison["maximum_resolved_unstable_relative_change"] < 0.002
+    assert summary["collisionless_endpoint_relative_change"] < 0.006
 
 
 @pytest.mark.slow

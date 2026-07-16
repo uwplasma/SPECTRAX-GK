@@ -4361,10 +4361,101 @@ def finite_wavelength_itg_growth_curve(
     }
 
 
+def collisionless_slab_itg_hierarchy(
+    resolutions: tuple[tuple[int, int], ...],
+) -> list[dict[str, float | int]]:
+    """Evaluate the paper-protocol collisionless endpoint versus resolution."""
+
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    import jax.numpy as jnp
+
+    from spectraxgk.config import GridConfig
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.geometry import SlabGeometry
+    from spectraxgk.linear import (
+        LinearParams,
+        LinearTerms,
+        build_linear_cache,
+        linear_rhs_cached,
+    )
+
+    if len(resolutions) < 2 or any(p < 0 or j < 0 for p, j in resolutions):
+        raise ValueError("at least two non-negative resolutions are required")
+    grid = build_spectral_grid(
+        GridConfig(Nx=1, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=4.0 * np.pi)
+    )
+    parameters = LinearParams(
+        charge_sign=jnp.asarray([1.0]),
+        density=jnp.asarray([1.0]),
+        mass=jnp.asarray([1.0]),
+        temp=jnp.asarray([1.0]),
+        tau_e=1.0,
+        vth=jnp.asarray([1.0]),
+        rho=jnp.asarray([1.0]),
+        tz=jnp.asarray([1.0]),
+        kpar_scale=0.1,
+        R_over_Ln=jnp.asarray([1.0]),
+        R_over_LTi=jnp.asarray([3.0]),
+    )
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    phase = np.exp(1j * np.asarray(grid.z))
+    rows: list[dict[str, float | int]] = []
+    for maximum_hermite, maximum_laguerre in resolutions:
+        nm, nl = maximum_hermite + 1, maximum_laguerre + 1
+        mode_count = nm * nl
+        cache = build_linear_cache(
+            grid,
+            SlabGeometry(s_hat=0.0, z0=10.0),
+            parameters,
+            Nl=nl,
+            Nm=nm,
+        )
+        matrix = np.empty((mode_count, mode_count), dtype=complex)
+        for column in range(mode_count):
+            laguerre_order, hermite_order = divmod(column, nm)
+            state = np.zeros((1, nl, nm, 4, 1, 8), dtype=complex)
+            state[0, laguerre_order, hermite_order, 1, 0] = phase
+            rhs, _ = linear_rhs_cached(
+                jnp.asarray(state), cache, parameters, terms=terms, use_jit=False
+            )
+            matrix[:, column] = (
+                np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
+            )
+        eigenvalues = np.linalg.eigvals(matrix)
+        dominant = eigenvalues[int(np.argmax(eigenvalues.real))]
+        rows.append(
+            {
+                "maximum_hermite_order": maximum_hermite,
+                "maximum_laguerre_order": maximum_laguerre,
+                "mode_count": mode_count,
+                "growth": float(dominant.real),
+                "frequency": float(dominant.imag),
+            }
+        )
+    jax.clear_caches()
+    return rows
+
+
 def summarize_finite_wavelength_itg_curves(
     curves: list[dict[str, Any]],
     *,
+    collisionless_hierarchy: list[dict[str, Any]] | None = None,
     convergence_rtol: float = 0.05,
+    collisionless_endpoint_rtol: float = 0.01,
     resolved_collision_minimum: float = 0.03,
 ) -> dict[str, Any]:
     """Build fail-closed growth convergence metrics from ordered resolutions."""
@@ -4421,9 +4512,24 @@ def summarize_finite_wavelength_itg_curves(
         final_change["maximum_resolved_unstable_relative_change"]
         <= convergence_rtol
     )
+    endpoint_change = None
+    if collisionless_hierarchy is not None:
+        if len(collisionless_hierarchy) < 2:
+            raise ValueError("collisionless_hierarchy must contain at least two rows")
+        endpoint_growth = np.asarray(
+            [row["growth"] for row in collisionless_hierarchy[-2:]], dtype=float
+        )
+        endpoint_change = float(
+            abs(endpoint_growth[1] - endpoint_growth[0])
+            / max(abs(endpoint_growth[1]), 1.0e-12)
+        )
     gates = {
         "paper_wavelength_reproduced": bool(
             np.isclose(float(ordered[-1]["bessel_argument"]), 1.0 / np.sqrt(2.0))
+        ),
+        "collisionless_p15_p18_converged": (
+            endpoint_change is not None
+            and endpoint_change <= collisionless_endpoint_rtol
         ),
         "intermediate_collision_range_converged": resolved_unstable_converged,
         "low_collisionality_growth_converged": low_collisionality_converged,
@@ -4447,9 +4553,14 @@ def summarize_finite_wavelength_itg_curves(
             "bessel_argument": 1.0 / np.sqrt(2.0),
             "resolved_collision_minimum": resolved_collision_minimum,
         },
-        "thresholds": {"nested_growth_relative_tolerance": convergence_rtol},
+        "thresholds": {
+            "nested_growth_relative_tolerance": convergence_rtol,
+            "collisionless_endpoint_relative_tolerance": collisionless_endpoint_rtol,
+        },
         "literature_required_resolution": [18, 6],
         "curves": ordered,
+        "collisionless_hierarchy": collisionless_hierarchy,
+        "collisionless_endpoint_relative_change": endpoint_change,
         "comparisons": comparisons,
         "gates": gates,
         "gate_passed": all(gates.values()),
@@ -4489,6 +4600,28 @@ def write_finite_wavelength_itg_figure(
         title="(a) Slab ITG collisional stabilization",
     )
     axes[0].legend(frameon=False, fontsize=8)
+    collisionless = summary.get("collisionless_hierarchy")
+    if collisionless:
+        inset = axes[0].inset_axes([0.08, 0.18, 0.34, 0.34])
+        inset.plot(
+            [row["mode_count"] for row in collisionless],
+            [row["growth"] for row in collisionless],
+            "o-",
+            color="#D97732",
+            lw=1.3,
+            ms=3.2,
+        )
+        inset.set(
+            xlabel="modes",
+            ylabel=r"$\gamma(\nu=0)$",
+            title="collisionless endpoint",
+        )
+        inset.tick_params(labelsize=6.5)
+        inset.xaxis.label.set_size(7)
+        inset.yaxis.label.set_size(7)
+        inset.title.set_size(7.5)
+        inset.grid(alpha=0.2, lw=0.5)
+        inset.spines[["top", "right"]].set_visible(False)
 
     for color, comparison in zip(colors[1:], summary["comparisons"], strict=True):
         upper = comparison["upper_resolution"]
@@ -4548,7 +4681,12 @@ def write_finite_wavelength_itg_artifacts(
         finite_wavelength_itg_growth_curve(path, collision_frequencies)
         for path in table_paths
     ]
-    summary = summarize_finite_wavelength_itg_curves(curves)
+    collisionless = collisionless_slab_itg_hierarchy(
+        ((4, 1), (6, 2), (8, 4), (10, 4), (10, 6), (12, 5), (15, 6), (18, 6))
+    )
+    summary = summarize_finite_wavelength_itg_curves(
+        curves, collisionless_hierarchy=collisionless
+    )
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(
         json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n",

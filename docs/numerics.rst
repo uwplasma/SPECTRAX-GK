@@ -735,7 +735,11 @@ solved-field RHS at the paper's homogeneous-slab parameters. It confirms
 collisional stabilization and shows why the gate remains open: the
 :math:`(9,4)` to :math:`(12,5)` growth change is only 0.12% over the unstable
 :math:`\nu\geq0.03` interval, but rises to 7.44% as :math:`\nu\rightarrow0`.
-The shaded interval is therefore unresolved rather than silently omitted.
+An independent collisionless hierarchy resolves this non-monotone endpoint:
+the :math:`(15,6)` to :math:`(18,6)` change is 0.59%, and :math:`(12,5)` is
+within 2.57% of :math:`(18,6)`. The shaded finite-collision interval is still
+unresolved rather than silently omitted because exact collisional tables are
+currently available only through :math:`(12,5)`.
 Machine-readable values and every gate are retained in
 :download:`collision_finite_wavelength_itg_convergence.json
 <_static/collision_finite_wavelength_itg_convergence.json>`.
@@ -746,8 +750,8 @@ Machine-readable values and every gate are retained in
    :align: center
 
    Exact paper-wavelength slab-ITG hierarchy. The intermediate collisional
-   interval passes the prospective 5% gate, while the low-collisionality limit
-   and published :math:`(18,6)` resolution remain explicitly open.
+   interval and collisionless :math:`(18,6)` endpoint pass their gates. The
+   finite-collision :math:`(18,6)` hierarchy remains explicitly open.
 
 The panel is regenerated with the existing artifact owner after exact table
 archives are built with ``build_finite_wavelength_coulomb_pair_tables``::
