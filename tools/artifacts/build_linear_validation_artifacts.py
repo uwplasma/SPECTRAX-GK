@@ -1027,6 +1027,7 @@ def _laguerre_product_expansion_coefficient_mp(
     mp: Any,
     *,
     monomial_coefficient: Callable[[int, Any, int], Any] | None = None,
+    laguerre_moment: Callable[[int, int], Any] | None = None,
 ) -> Any:
     if output_order > associated_polynomial_order + laguerre_order + radial_power:
         return mp.mpf(0)
@@ -1057,16 +1058,18 @@ def _laguerre_product_expansion_coefficient_mp(
             convolution[associated_power + laguerre_power] += (
                 associated_value * laguerre_value
             )
-    output = tuple(
-        monomial_coefficient(output_order, -half, power)
-        for power in range(output_order + 1)
-    )
+    if laguerre_moment is None:
+
+        def laguerre_moment(order: int, power: int) -> Any:
+            return sum(
+                monomial_coefficient(order, -half, monomial_order)
+                * mp.factorial(power + monomial_order)
+                for monomial_order in range(order + 1)
+            )
+
     return sum(
-        product_value
-        * output_value
-        * mp.factorial(product_power + output_power + radial_power)
+        product_value * laguerre_moment(output_order, product_power + radial_power)
         for product_power, product_value in enumerate(convolution)
-        for output_power, output_value in enumerate(output)
     )
 
 
@@ -1575,6 +1578,7 @@ def _coulomb_coefficient_functions(
             radial_power,
             mp,
             monomial_coefficient=associated_laguerre,
+            laguerre_moment=laguerre_exponential_moment,
         )
 
     @cache
@@ -1673,7 +1677,11 @@ def coulomb_nonpolarized_moment_matrices(
         half_b = target_b / 2
         bessel_argument = half_b * half_b
         drift_kinetic = target_b == 0
-        bessel_orders = (0,) if drift_kinetic else range(maximum_bessel_laguerre_order + 1)
+        bessel_orders = (
+            (0,)
+            if drift_kinetic
+            else tuple(range(maximum_bessel_laguerre_order + 1))
+        )
         test_matrix = mp.matrix(n_modes, n_modes)
         field_matrix = mp.matrix(n_modes, n_modes)
         assembly_cache = {} if _assembly_cache is None else _assembly_cache
@@ -1747,14 +1755,12 @@ def coulomb_nonpolarized_moment_matrices(
         ) -> Any:
             key = (m, n, output_laguerre, product_order)
             if key not in product_cache:
-                product_cache[key] = _laguerre_product_expansion_coefficient_mp(
+                product_cache[key] = inverse_product(
                     m,
                     n,
                     output_laguerre,
                     product_order,
                     0,
-                    mp,
-                    monomial_coefficient=associated_laguerre,
                 )
             return product_cache[key]
 
@@ -1779,6 +1785,12 @@ def coulomb_nonpolarized_moment_matrices(
                 )
             return inverse_cache[key]
 
+        moment_orders = tuple(
+            (p, j, m)
+            for p in range(spherical_limit + 1)
+            for j in range(radial_limit + 1)
+            for m in ((0,) if drift_kinetic else range(p + 1))
+        )
         moment_vectors = {
             (p, j, m): (
                 tuple(
@@ -1806,10 +1818,57 @@ def coulomb_nonpolarized_moment_matrices(
                     for input_laguerre in range(n_laguerre)
                 ),
             )
-            for p in range(spherical_limit + 1)
-            for j in range(radial_limit + 1)
-            for m in ((0,) if drift_kinetic else range(p + 1))
+            for p, j, m in moment_orders
         }
+        angular_weights = {}
+        for p, j, m in moment_orders:
+            sigma_pj = (
+                mp.factorial(p)
+                * mp.gamma(p + j + mp.mpf("1.5"))
+                / (
+                    mp.power(2, p)
+                    * mp.gamma(p + mp.mpf("1.5"))
+                    * mp.factorial(j)
+                )
+            )
+            angular_weights[(p, j, m)] = (
+                (1 if m == 0 else 2)
+                * mp.power(2, p)
+                * mp.factorial(p) ** 2
+                / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
+            )
+        exponential = mp.exp(-bessel_argument)
+        bessel_factors = {
+            m: tuple(
+                exponential
+                * bessel_argument**n
+                * half_b**m
+                / mp.factorial(n + m)
+                for n in bessel_orders
+            )
+            for m in range(spherical_limit + 1)
+        }
+        grouped_moments: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
+        for p, j, m in moment_orders:
+            test_vector, field_vector = moment_vectors[(p, j, m)]
+            if not any(
+                value != 0
+                for vector in (test_vector, field_vector)
+                for value in vector
+            ):
+                continue
+            grouped_moments.setdefault((p, m), []).append(
+                (
+                    j,
+                    test_vector,
+                    field_vector,
+                    angular_weights[(p, j, m)],
+                )
+            )
+        active_moment_groups = tuple(
+            (p, m, tuple(entries))
+            for (p, m), entries in grouped_moments.items()
+        )
 
         for output_hermite in range(maximum_hermite_order + 1):
             output_normalization = mp.sqrt(
@@ -1817,96 +1876,77 @@ def coulomb_nonpolarized_moment_matrices(
             )
             for output_laguerre in range(n_laguerre):
                 row = output_hermite * n_laguerre + output_laguerre
-                for p in range(spherical_limit + 1):
-                    for j in range(radial_limit + 1):
-                        sigma_pj = (
-                            mp.factorial(p)
-                            * mp.gamma(p + j + mp.mpf("1.5"))
-                            / (
-                                mp.power(2, p)
-                                * mp.gamma(p + mp.mpf("1.5"))
-                                * mp.factorial(j)
+                for p, m, radial_moments in active_moment_groups:
+                    speed_weights: dict[int, Any] = {}
+                    for n, bessel_factor in zip(
+                        bessel_orders,
+                        bessel_factors[m],
+                        strict=True,
+                    ):
+                        if bessel_factor == 0:
+                            continue
+                        for product_order in range(output_laguerre + n + 1):
+                            product = laguerre_product(
+                                m,
+                                n,
+                                output_laguerre,
+                                product_order,
                             )
-                        )
-                        angular_base = (
-                            mp.power(2, p)
-                            * mp.factorial(p) ** 2
-                            / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
-                        )
-                        for m in ((0,) if drift_kinetic else range(p + 1)):
-                            test_moment_vector, field_moment_vector = moment_vectors[
-                                (p, j, m)
-                            ]
-                            if not any(
-                                value != 0
-                                for value in test_moment_vector + field_moment_vector
-                            ):
+                            if product == 0:
                                 continue
-                            angular = (1 if m == 0 else 2) * angular_base
-                            test_output_coefficient = mp.mpf(0)
-                            field_output_coefficient = mp.mpf(0)
-                            for n in bessel_orders:
-                                kernel = (
-                                    mp.exp(-bessel_argument)
-                                    * bessel_argument**n
-                                    / mp.factorial(n)
+                            if p > output_hermite + m + 2 * product_order:
+                                continue
+                            maximum_speed_order = (
+                                product_order + (output_hermite + m) // 2
+                            )
+                            for speed_order in range(maximum_speed_order + 1):
+                                inverse = inverse_transform(
+                                    output_hermite,
+                                    product_order,
+                                    p,
+                                    speed_order,
+                                    m,
                                 )
-                                bessel_factor = (
-                                    mp.factorial(n)
-                                    * kernel
-                                    * half_b**m
-                                    / mp.factorial(n + m)
-                                )
-                                if bessel_factor == 0:
+                                if inverse == 0:
                                     continue
-                                for product_order in range(output_laguerre + n + 1):
-                                    product = laguerre_product(
-                                        m,
-                                        n,
-                                        output_laguerre,
-                                        product_order,
-                                    )
-                                    if product == 0:
-                                        continue
-                                    if p > output_hermite + m + 2 * product_order:
-                                        continue
-                                    maximum_speed_order = (
-                                        product_order + (output_hermite + m) // 2
-                                    )
-                                    for speed_order in range(maximum_speed_order + 1):
-                                        inverse = inverse_transform(
-                                            output_hermite,
-                                            product_order,
-                                            p,
-                                            speed_order,
-                                            m,
-                                        )
-                                        if inverse == 0:
-                                            continue
-                                        test_speed, field_speed = integrated_speed(
-                                            p,
-                                            j,
-                                            speed_order,
-                                        )
-                                        common = (
-                                            angular
-                                            * product
-                                            * inverse
-                                            * bessel_factor
-                                            / output_normalization
-                                        )
-                                        test_output_coefficient += common * test_speed
-                                        field_output_coefficient += common * field_speed
-                            if test_output_coefficient != 0:
-                                for column, moment in enumerate(test_moment_vector):
-                                    test_matrix[row, column] += (
-                                        test_output_coefficient * moment
-                                    )
-                            if field_output_coefficient != 0:
-                                for column, moment in enumerate(field_moment_vector):
-                                    field_matrix[row, column] += (
-                                        field_output_coefficient * moment
-                                    )
+                                common = (
+                                    product
+                                    * inverse
+                                    * bessel_factor
+                                    / output_normalization
+                                )
+                                speed_weights[speed_order] = speed_weights.get(
+                                    speed_order,
+                                    mp.mpf(0),
+                                ) + common
+                    for (
+                        j,
+                        test_moment_vector,
+                        field_moment_vector,
+                        angular,
+                    ) in radial_moments:
+                        test_output_coefficient = mp.mpf(0)
+                        field_output_coefficient = mp.mpf(0)
+                        for speed_order, weight in speed_weights.items():
+                            test_speed, field_speed = integrated_speed(
+                                p,
+                                j,
+                                speed_order,
+                            )
+                            test_output_coefficient += weight * test_speed
+                            field_output_coefficient += weight * field_speed
+                        test_output_coefficient *= angular
+                        field_output_coefficient *= angular
+                        if test_output_coefficient != 0:
+                            for column, moment in enumerate(test_moment_vector):
+                                test_matrix[row, column] += (
+                                    test_output_coefficient * moment
+                                )
+                        if field_output_coefficient != 0:
+                            for column, moment in enumerate(field_moment_vector):
+                                field_matrix[row, column] += (
+                                    field_output_coefficient * moment
+                                )
 
         test = np.asarray(test_matrix.tolist(), dtype=np.float64)
         field = np.asarray(field_matrix.tolist(), dtype=np.float64)
@@ -2439,14 +2479,12 @@ def coulomb_polarization_vectors(
         ) -> Any:
             key = (m, n, output_laguerre, product_order)
             if key not in product_cache:
-                product_cache[key] = _laguerre_product_expansion_coefficient_mp(
+                product_cache[key] = inverse_product(
                     m,
                     n,
                     output_laguerre,
                     product_order,
                     0,
-                    mp,
-                    monomial_coefficient=associated_laguerre,
                 )
             return product_cache[key]
 
@@ -2471,16 +2509,64 @@ def coulomb_polarization_vectors(
                 )
             return inverse_cache[key]
 
+        bessel_orders = tuple(range(maximum_bessel_laguerre_order + 1))
+        exponential = mp.exp(-target_argument)
+        bessel_factors = {
+            m: tuple(
+                exponential
+                * target_argument**n
+                * half_target_b**m
+                / mp.factorial(n + m)
+                for n in bessel_orders
+            )
+            for m in range(spherical_limit + 1)
+        }
+        grouped_polarization: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
+        for p in range(spherical_limit + 1):
+            for j in range(radial_limit + 1):
+                sigma_pj = (
+                    mp.factorial(p)
+                    * mp.gamma(p + j + mp.mpf("1.5"))
+                    / (
+                        mp.power(2, p)
+                        * mp.gamma(p + mp.mpf("1.5"))
+                        * mp.factorial(j)
+                    )
+                )
+                angular_base = (
+                    mp.power(2, p)
+                    * mp.factorial(p) ** 2
+                    / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
+                )
+                for m in range(p + 1):
+                    target_polarization = polarization(p, j, m, source=False)
+                    source_polarization = polarization(p, j, m, source=True)
+                    if target_polarization == 0 and source_polarization == 0:
+                        continue
+                    grouped_polarization.setdefault((p, m), []).append(
+                        (
+                            j,
+                            target_polarization,
+                            source_polarization,
+                            (1 if m == 0 else 2) * angular_base,
+                        )
+                    )
+        active_polarization_groups = tuple(
+            (p, m, tuple(entries))
+            for (p, m), entries in grouped_polarization.items()
+        )
+
         for output_hermite in range(maximum_hermite_order + 1):
             output_normalization = mp.sqrt(
                 mp.power(2, output_hermite) * mp.factorial(output_hermite)
             )
             for output_laguerre in range(n_laguerre):
                 row = output_hermite * n_laguerre + output_laguerre
-                for n in range(maximum_bessel_laguerre_order + 1):
-                    kernel = (
-                        mp.exp(-target_argument) * target_argument**n / mp.factorial(n)
-                    )
+                for n, kernel in zip(
+                    bessel_orders,
+                    bessel_factors[0],
+                    strict=True,
+                ):
                     if kernel == 0:
                         continue
                     for product_order in range(output_laguerre + n + 1):
@@ -2508,85 +2594,72 @@ def coulomb_polarization_vectors(
                             test_phi1[row] -= common * test_speed
                             field_phi1[row] -= common * field_speed
 
-                for p in range(spherical_limit + 1):
-                    for j in range(radial_limit + 1):
-                        sigma_pj = (
-                            mp.factorial(p)
-                            * mp.gamma(p + j + mp.mpf("1.5"))
-                            / (
-                                mp.power(2, p)
-                                * mp.gamma(p + mp.mpf("1.5"))
-                                * mp.factorial(j)
+                for p, m, radial_moments in active_polarization_groups:
+                    speed_weights: dict[int, Any] = {}
+                    for n, bessel_factor in zip(
+                        bessel_orders,
+                        bessel_factors[m],
+                        strict=True,
+                    ):
+                        if bessel_factor == 0:
+                            continue
+                        for product_order in range(output_laguerre + n + 1):
+                            product = laguerre_product(
+                                m,
+                                n,
+                                output_laguerre,
+                                product_order,
                             )
-                        )
-                        angular_base = (
-                            mp.power(2, p)
-                            * mp.factorial(p) ** 2
-                            / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
-                        )
-                        for m in range(p + 1):
-                            target_polarization = polarization(p, j, m, source=False)
-                            source_polarization = polarization(p, j, m, source=True)
-                            if target_polarization == 0 and source_polarization == 0:
+                            if (
+                                product == 0
+                                or p > output_hermite + m + 2 * product_order
+                            ):
                                 continue
-                            angular = (1 if m == 0 else 2) * angular_base
-                            for n in range(maximum_bessel_laguerre_order + 1):
-                                kernel = (
-                                    mp.exp(-target_argument)
-                                    * target_argument**n
-                                    / mp.factorial(n)
+                            maximum_speed_order = (
+                                product_order + (output_hermite + m) // 2
+                            )
+                            for speed_order in range(maximum_speed_order + 1):
+                                inverse = inverse_transform(
+                                    output_hermite,
+                                    product_order,
+                                    p,
+                                    speed_order,
+                                    m,
                                 )
-                                bessel_factor = (
-                                    mp.factorial(n)
-                                    * kernel
-                                    * half_target_b**m
-                                    / mp.factorial(n + m)
-                                )
-                                if bessel_factor == 0:
+                                if inverse == 0:
                                     continue
-                                for product_order in range(output_laguerre + n + 1):
-                                    product = laguerre_product(
-                                        m,
-                                        n,
-                                        output_laguerre,
-                                        product_order,
-                                    )
-                                    if (
-                                        product == 0
-                                        or p > output_hermite + m + 2 * product_order
-                                    ):
-                                        continue
-                                    maximum_speed_order = (
-                                        product_order + (output_hermite + m) // 2
-                                    )
-                                    for speed_order in range(maximum_speed_order + 1):
-                                        inverse = inverse_transform(
-                                            output_hermite,
-                                            product_order,
-                                            p,
-                                            speed_order,
-                                            m,
-                                        )
-                                        if inverse == 0:
-                                            continue
-                                        test_speed, field_speed = integrated_speed(
-                                            p,
-                                            j,
-                                            speed_order,
-                                        )
-                                        common = (
-                                            angular
-                                            * product
-                                            * inverse
-                                            * bessel_factor
-                                            / output_normalization
-                                        )
-                                        test_phi2[row] += (
-                                            common * target_polarization * test_speed
-                                        )
-                                        field_phi2[row] += (
-                                            common * source_polarization * field_speed
-                                        )
+                                common = (
+                                    product
+                                    * inverse
+                                    * bessel_factor
+                                    / output_normalization
+                                )
+                                speed_weights[speed_order] = speed_weights.get(
+                                    speed_order,
+                                    mp.mpf(0),
+                                ) + common
+                    for (
+                        j,
+                        target_polarization,
+                        source_polarization,
+                        angular,
+                    ) in radial_moments:
+                        test_coefficient = mp.mpf(0)
+                        field_coefficient = mp.mpf(0)
+                        for speed_order, weight in speed_weights.items():
+                            test_speed, field_speed = integrated_speed(
+                                p,
+                                j,
+                                speed_order,
+                            )
+                            test_coefficient += weight * test_speed
+                            field_coefficient += weight * field_speed
+                        test_phi2[row] += (
+                            angular * target_polarization * test_coefficient
+                        )
+                        field_phi2[row] += (
+                            angular * source_polarization * field_coefficient
+                        )
 
         vectors = tuple(
             np.asarray(vector.tolist(), dtype=np.float64).reshape(n_modes)
