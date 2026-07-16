@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from dataclasses import replace
 import json
 from pathlib import Path
 import sys
@@ -89,6 +90,40 @@ COLLISIONAL_ZONAL_PROTOCOL = {
 }
 
 
+def collisional_zonal_frequency(
+    *, normalized_collisionality: float, q: float, epsilon: float
+) -> float:
+    r"""Convert :math:`\nu_i^*=\sqrt{2}q\nu/\epsilon^{3/2}` to solver units."""
+
+    values = (float(normalized_collisionality), float(q), float(epsilon))
+    if not np.all(np.isfinite(values)) or any(value <= 0.0 for value in values):
+        raise ValueError(
+            "normalized collisionality, q, and epsilon must be finite and > 0"
+        )
+    return float(values[0] * values[2] ** 1.5 / (np.sqrt(2.0) * values[1]))
+
+
+def require_active_zonal_mode(grid: Any, *, kx_index: int) -> None:
+    """Reject a requested zonal mode that the spectral mask would remove."""
+
+    mask = np.asarray(grid.dealias_mask, dtype=bool)
+    if mask.ndim != 2 or not 0 <= int(kx_index) < mask.shape[1]:
+        raise ValueError("kx_index is outside the spectral grid")
+    ky = np.asarray(grid.ky, dtype=float)
+    zonal_rows = np.flatnonzero(np.isclose(ky, 0.0))
+    if zonal_rows.size != 1:
+        raise ValueError("collisional zonal runs require exactly one ky=0 row")
+    # Linear single-ky grids intentionally bypass the nonlinear two-thirds
+    # convolution mask; see ``_apply_dealias_to_kperp_and_drifts``.
+    if ky.size == 1:
+        return
+    if not bool(mask[int(zonal_rows[0]), int(kx_index)]):
+        raise ValueError(
+            "requested zonal mode is outside the active dealiased spectrum; "
+            "increase Nx or use a single-ky linear grid"
+        )
+
+
 def summarize_collisional_zonal_campaign(
     trace_records: list[dict[str, object]],
     section_records: list[dict[str, object]],
@@ -105,7 +140,9 @@ def summarize_collisional_zonal_campaign(
     """
 
     required_models = ("coulomb", "original_sugama", "improved_sugama")
-    required_kx = tuple(float(value) for value in COLLISIONAL_ZONAL_PROTOCOL["wavenumbers"])
+    required_kx = tuple(
+        float(value) for value in COLLISIONAL_ZONAL_PROTOCOL["wavenumbers"]
+    )
     grouped: dict[tuple[str, float], list[dict[str, object]]] = {}
     finite = True
     resolution_passed = True
@@ -301,9 +338,7 @@ def _response_payload(metrics) -> dict[str, object]:
 def _write_response_panel(
     *, t: np.ndarray, response: np.ndarray, out: Path, title: str, metrics
 ) -> None:
-    fig, _axes = zonal_flow_response_figure(
-        t, response, metrics=metrics, title=title
-    )
+    fig, _axes = zonal_flow_response_figure(t, response, metrics=metrics, title=title)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=220, bbox_inches="tight")
     if out.suffix.lower() != ".pdf":
@@ -318,6 +353,242 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
 def _read_campaign_csv(path: Path) -> list[dict[str, object]]:
     with path.open(newline="", encoding="utf-8") as handle:
         return [dict(row) for row in csv.DictReader(handle)]
+
+
+def run_drift_kinetic_collisional_zonal_trace(
+    *,
+    config: Path,
+    model_archive: Path,
+    model: str,
+    out_csv: Path,
+    dt: float = 0.1,
+    maximum_normalized_time: float = 30.0,
+    sample_stride: int = 10,
+    nz: int = 32,
+) -> dict[str, object]:
+    """Run one paper-resolution drift-kinetic collisional-zonal trace.
+
+    The model archive is an offline research artifact with ``coulomb``,
+    ``original_sugama``, and ``improved_sugama`` matrices in runtime
+    Hermite-major convention. It is intentionally supplied by path rather than
+    shipped in the package: exact arbitrary-order matrix generation remains a
+    reproducible research workflow, not a default executable dependency.
+    """
+
+    import time
+
+    import jax
+    import jax.numpy as jnp
+
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
+    from spectraxgk.geometry import apply_geometry_grid_defaults
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.collisions import (
+        TabulatedMultispeciesCollisionOperator,
+    )
+    from spectraxgk.operators.linear.params import LinearTerms
+    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from spectraxgk.terms.assembly import compute_fields_cached
+    from spectraxgk.workflows.runtime.startup import (
+        _build_initial_condition,
+        build_runtime_geometry,
+        build_runtime_linear_params,
+    )
+
+    if model not in {"coulomb", "original_sugama", "improved_sugama"}:
+        raise ValueError("unknown drift-kinetic collision model")
+    if not np.isfinite(dt) or dt <= 0.0:
+        raise ValueError("dt must be finite and > 0")
+    if not np.isfinite(maximum_normalized_time) or maximum_normalized_time <= 0.0:
+        raise ValueError("maximum_normalized_time must be finite and > 0")
+    if sample_stride < 1 or nz < 8:
+        raise ValueError("sample_stride must be >= 1 and nz must be >= 8")
+
+    with np.load(model_archive) as archive:
+        required = {
+            model,
+            "maximum_hermite_order",
+            "maximum_laguerre_order",
+            "correction_order",
+        }
+        if missing := required - set(archive.files):
+            raise ValueError(f"collision model archive is missing {sorted(missing)}")
+        matrix = np.asarray(archive[model], dtype=float)
+        maximum_hermite = int(archive["maximum_hermite_order"])
+        maximum_laguerre = int(archive["maximum_laguerre_order"])
+        correction_order = int(archive["correction_order"])
+    mode_count = (maximum_hermite + 1) * (maximum_laguerre + 1)
+    if matrix.shape != (mode_count, mode_count) or not np.all(np.isfinite(matrix)):
+        raise ValueError(
+            "collision model matrix does not match its declared resolution"
+        )
+
+    q = float(COLLISIONAL_ZONAL_PROTOCOL["q"])
+    epsilon = float(COLLISIONAL_ZONAL_PROTOCOL["epsilon"])
+    normalized_collisionality = float(
+        COLLISIONAL_ZONAL_PROTOCOL["normalized_collisionality"]
+    )
+    collision_frequency = collisional_zonal_frequency(
+        normalized_collisionality=normalized_collisionality,
+        q=q,
+        epsilon=epsilon,
+    )
+    kx = 0.05
+    cfg, _raw = load_runtime_from_toml(config)
+    cfg = replace(
+        cfg,
+        grid=replace(
+            cfg.grid,
+            Nx=3,
+            Ny=1,
+            Nz=int(nz),
+            Lx=float(2.0 * np.pi / kx),
+            Ly=float(2.0 * np.pi),
+            boundary="periodic",
+        ),
+        geometry=replace(
+            cfg.geometry,
+            q=q,
+            s_hat=0.5,
+            epsilon=epsilon,
+            akappa=1.0,
+            akappri=0.0,
+            tri=0.0,
+            tripri=0.0,
+            shift=0.0,
+        ),
+    )
+    geometry = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(apply_geometry_grid_defaults(geometry, cfg.grid))
+    kx_index = int(np.argmin(np.abs(np.asarray(grid.kx, dtype=float) - kx)))
+    if not np.isclose(float(np.asarray(grid.kx)[kx_index]), kx, atol=1.0e-12):
+        raise ValueError("spectral grid does not contain the requested kx")
+    require_active_zonal_mode(grid, kx_index=kx_index)
+
+    n_laguerre = maximum_laguerre + 1
+    n_hermite = maximum_hermite + 1
+    parameters = build_runtime_linear_params(cfg, Nm=n_hermite, geom=geometry)
+    cache = build_linear_cache(grid, geometry, parameters, n_laguerre, n_hermite)
+    initial = _build_initial_condition(
+        grid,
+        geometry,
+        cfg,
+        ky_index=0,
+        kx_index=kx_index,
+        Nl=n_laguerre,
+        Nm=n_hermite,
+        nspecies=1,
+    )
+    table = np.empty((1, 1, 2, mode_count, mode_count), dtype=float)
+    table[0, 0, 0] = collision_frequency * matrix
+    table[0, 0, 1] = collision_frequency * matrix
+    operator = TabulatedMultispeciesCollisionOperator(
+        jnp.asarray([0.0, 1.0]), jnp.asarray(table)
+    )
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=0.0,
+        collisions=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    volume_weight, _flux_weight = fieldline_quadrature_weights(geometry, grid)
+    initial_phi = compute_fields_cached(
+        initial, cache, parameters, terms=terms, use_custom_vjp=False
+    ).phi
+    initial_response = jnp.sum(initial_phi[0, kx_index] * volume_weight)
+    requested_steps = int(np.ceil(maximum_normalized_time / collision_frequency / dt))
+    steps = int(np.ceil(requested_steps / sample_stride) * sample_stride)
+    started = time.perf_counter()
+    _final, field_history = integrate_linear(
+        initial,
+        grid,
+        geometry,
+        parameters,
+        dt=dt,
+        steps=steps,
+        method="rk2",
+        terms=terms,
+        sample_stride=sample_stride,
+        show_progress=True,
+        collision_operator=operator,
+    )
+    jax.block_until_ready(field_history)
+    elapsed_seconds = time.perf_counter() - started
+    history = np.asarray(field_history)
+    response = np.einsum(
+        "tz,z->t", history[:, 0, kx_index, :], np.asarray(volume_weight)
+    )
+    times = (np.arange(response.size) + 1) * dt * sample_stride
+    response = np.concatenate(([complex(np.asarray(initial_response))], response))
+    normalized_time = np.concatenate(([0.0], times)) * collision_frequency
+    if not np.all(np.isfinite(response)):
+        raise RuntimeError("collisional-zonal trace contains non-finite values")
+
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    with out_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=(
+                "model",
+                "kx",
+                "t_nu",
+                "response",
+                "response_imag",
+                "p_max",
+                "j_max",
+            ),
+        )
+        writer.writeheader()
+        for time_value, value in zip(normalized_time, response, strict=True):
+            writer.writerow(
+                {
+                    "model": model,
+                    "kx": kx,
+                    "t_nu": float(time_value),
+                    "response": float(value.real),
+                    "response_imag": float(value.imag),
+                    "p_max": maximum_hermite,
+                    "j_max": maximum_laguerre,
+                }
+            )
+    normalized = response.real / response[0].real
+    tail = normalized[normalized_time >= 25.0]
+    report: dict[str, object] = {
+        "schema_version": 1,
+        "claim_scope": "drift_kinetic_collisional_zonal_trace",
+        "model": model,
+        "config": _repo_relative(config),
+        "model_archive": str(model_archive),
+        "q": q,
+        "epsilon": epsilon,
+        "normalized_collisionality": normalized_collisionality,
+        "collision_frequency": collision_frequency,
+        "kx": kx,
+        "dt": dt,
+        "steps": steps,
+        "sample_stride": sample_stride,
+        "nz": nz,
+        "maximum_hermite_order": maximum_hermite,
+        "maximum_laguerre_order": maximum_laguerre,
+        "correction_order": correction_order,
+        "elapsed_seconds": elapsed_seconds,
+        "tail_normalized_median": (None if tail.size == 0 else float(np.median(tail))),
+        "maximum_imaginary_fraction": float(
+            np.max(np.abs(response.imag)) / max(np.max(np.abs(response.real)), 1.0e-300)
+        ),
+        "finite": True,
+        "devices": [str(device) for device in jax.devices()],
+    }
+    _write_json(out_csv.with_suffix(".json"), report)
+    return report
 
 
 def write_collisional_zonal_artifacts(
@@ -464,6 +735,37 @@ def _main_collisional_zonal(argv: list[str]) -> int:
     return 0
 
 
+def _main_simulate_collisional_zonal_dk(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Run one Frei--Ernst--Ricci drift-kinetic zonal trace."
+    )
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--model-archive", type=Path, required=True)
+    parser.add_argument(
+        "--model",
+        choices=("coulomb", "original_sugama", "improved_sugama"),
+        required=True,
+    )
+    parser.add_argument("--out-csv", type=Path, required=True)
+    parser.add_argument("--dt", type=float, default=0.1)
+    parser.add_argument("--maximum-normalized-time", type=float, default=30.0)
+    parser.add_argument("--sample-stride", type=int, default=10)
+    parser.add_argument("--nz", type=int, default=32)
+    args = parser.parse_args(argv)
+    report = run_drift_kinetic_collisional_zonal_trace(
+        config=args.config,
+        model_archive=args.model_archive,
+        model=args.model,
+        out_csv=args.out_csv,
+        dt=args.dt,
+        maximum_normalized_time=args.maximum_normalized_time,
+        sample_stride=args.sample_stride,
+        nz=args.nz,
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
 def _build_response_csv_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Plot a t,response CSV artifact.")
     parser.add_argument("csv", type=Path)
@@ -522,9 +824,7 @@ def _main_response_output(argv: list[str]) -> int:
         align_phase=bool(args.align_phase),
     )
     if np.iscomplexobj(series.values):
-        raise ValueError(
-            "zonal-response plotting requires a real extracted component"
-        )
+        raise ValueError("zonal-response plotting requires a real extracted component")
     metrics = _response_metrics(args, series.t, series.values)
     _write_response_panel(
         t=series.t,
@@ -1114,12 +1414,14 @@ def _main_miller_panel(argv: list[str]) -> int:
     )
     return 0
 
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
         print(
             "usage: build_zonal_flow_artifacts.py "
-            "{response-csv,response-output,objective-gate,miller-panel,collisional-zonal} ..."
+            "{response-csv,response-output,objective-gate,miller-panel,"
+            "collisional-zonal,simulate-collisional-zonal-dk} ..."
         )
         return 2
     command, rest = tokens[0], tokens[1:]
@@ -1133,6 +1435,8 @@ def main(argv: list[str] | None = None) -> int:
         return _main_miller_panel(rest)
     if command == "collisional-zonal":
         return _main_collisional_zonal(rest)
+    if command == "simulate-collisional-zonal-dk":
+        return _main_simulate_collisional_zonal_dk(rest)
     raise SystemExit(f"unknown command: {command}")
 
 

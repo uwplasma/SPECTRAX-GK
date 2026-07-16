@@ -753,6 +753,16 @@ forked. Eight matrix workers subsequently completed the exact
 :math:`(15,6)` table in 261.39 seconds, including 142.93 seconds of serial
 polarization work; its checksum is -423.2127750524206.
 
+The drift-kinetic generator has a separate polynomial-support decomposition.
+It evaluates independent multiprecision speed moments with fork workers and
+optionally performs only the final dense contraction in float64. The latter
+changes the P12/J5 matrices by :math:`1.4\times10^{-16}` relative L2. On the
+36-core validation host, 28 workers generated the inclusive P24/J10 Coulomb
+endpoint (275 moments) in 181.24 seconds. Its checksum is
+``-1365.8775659269347``; an independently generated P20/J5 common block agrees
+to :math:`7.3\times10^{-17}` relative L2, while density, momentum, energy,
+symmetry, and non-positive-spectrum checks pass to roundoff.
+
 The runtime-level scan below applies those exact tables through the complete
 solved-field RHS at the paper's homogeneous-slab parameters. It confirms
 collisional stabilization and closes the equivalent growth-convergence gate.
@@ -893,6 +903,30 @@ and parallel/perpendicular sections of the perturbed distribution at
 collisionless Rosenbluth--Hinton estimate. Lower moment counts or collisionless
 residual agreement are
 development evidence, not substitutes for that converged gate.
+
+The paper normalization is converted explicitly rather than fitted,
+
+.. math::
+
+   \nu = \frac{\nu_i^*\epsilon^{3/2}}{\sqrt{2}q}
+       = 0.0499921,
+
+so a trace through :math:`t\nu=30` evolves to solver time approximately 600.
+The canonical geometry and time contract is
+``benchmarks/collisional_zonal_response.toml``. One drift-kinetic model trace
+is reproduced from an offline P24/J10 matrix archive with::
+
+   python tools/artifacts/build_zonal_flow_artifacts.py \
+     simulate-collisional-zonal-dk \
+     --config benchmarks/collisional_zonal_response.toml \
+     --model-archive collisional_zonal_dk_p24j10.npz \
+     --model coulomb --out-csv coulomb_zonal_trace.csv
+
+The runner rejects a requested radial mode if it is outside the grid's active
+linear spectrum, records imaginary-response contamination and the tail median,
+and keeps the generated dense archive outside the repository. Coulomb,
+original-Sugama, and improved-Sugama runs use the same initial state, grid, and
+time discretization.
 
 The acceptance contract is implemented by the existing zonal-artifact owner::
 

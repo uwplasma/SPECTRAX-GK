@@ -391,6 +391,20 @@ That topology is the reference design for the production parallel lane.
   the five-minute cap and produced no partial artifact, so the endpoint is
   assigned once to the 36-core office CPU rather than repeatedly relaunched.
 
+- 2026-07-16: Completed that single bounded office endpoint. Twenty-eight
+  workers generated the inclusive P24/J10 drift-kinetic Coulomb matrix
+  (275 moments) in 181.24 seconds with checksum ``-1365.8775659269347`` and
+  finite values throughout. Its P20/J5 common block agrees with an independent
+  local regeneration to :math:`7.24\times10^{-17}` relative L2; symmetry,
+  non-positive spectrum, and density/momentum/energy nulls pass to roundoff.
+  Added a reproducible paper-normalized drift-kinetic zonal runner and
+  ``benchmarks/collisional_zonal_response.toml``. The runner maps
+  :math:`\nu_i^*=3.13` to :math:`\nu=0.0499921`, requires the requested zonal
+  mode to be active, and emits machine-readable P24/J10 traces through
+  :math:`t\nu=30`. Real Coulomb/OS/IS traces are now the active campaign; the
+  finite-wavelength kx=0.1/0.2 traces and velocity sections remain required
+  before promotion.
+
 - 2026-07-16: Encoded the complete Frei--Ernst--Ricci collisional-zonal
   acceptance protocol in the existing zonal-artifact owner. The fail-closed
   gate requires Coulomb, original-Sugama, and improved-Sugama traces at

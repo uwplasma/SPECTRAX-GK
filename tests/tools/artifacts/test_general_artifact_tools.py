@@ -2590,10 +2590,8 @@ def test_finite_wavelength_kernel_factorization_preserves_multiprecision() -> No
             2,
             tuple(range(truncation + 1)),
             bessel_kernels,
-            lambda m, n, k, output: (
-                mod._laguerre_product_expansion_coefficient_mp(
-                    m, n, k, output, 0, mp
-                )
+            lambda m, n, k, output: mod._laguerre_product_expansion_coefficient_mp(
+                m, n, k, output, 0, mp
             ),
             mp,
         )
@@ -2612,9 +2610,7 @@ def test_finite_wavelength_kernel_factorization_preserves_multiprecision() -> No
         )
 
         moment_args = (3, 1, bessel_order, 0, 1, bessel_argument, truncation, mp)
-        direct_moment = mod._gyroaveraged_spherical_moment_coefficient_mp(
-            *moment_args
-        )
+        direct_moment = mod._gyroaveraged_spherical_moment_coefficient_mp(*moment_args)
         cached_moment = mod._gyroaveraged_spherical_moment_coefficient_mp(
             *moment_args,
             bessel_kernels=bessel_kernels,
@@ -2818,15 +2814,15 @@ def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
         maximum_spherical_radial_order=2,
         digits=60,
     )
-    original_test, original_field = (
-        mod.original_sugama_like_species_moment_matrices(test, 3, 1)
+    original_test, original_field = mod.original_sugama_like_species_moment_matrices(
+        test, 3, 1
     )
     convention_sign = np.asarray([1.0, -1.0] * 4)
     convention = convention_sign[:, None] * convention_sign[None, :]
     collision = convention * (original_test + original_field)
-    published = np.load(
-        ROOT / "src/spectraxgk/data/advanced_collision_six_moment.npy"
-    )[0]
+    published = np.load(ROOT / "src/spectraxgk/data/advanced_collision_six_moment.npy")[
+        0
+    ]
     mask = published != 0.0
     np.testing.assert_allclose(collision[mask], published[mask], rtol=3.0e-15)
 
@@ -2884,9 +2880,9 @@ def test_improved_sugama_reconstruction_matches_c103_and_invariants() -> None:
     convention_sign = np.asarray([1.0, -1.0] * 4)
     convention = convention_sign[:, None] * convention_sign[None, :]
     collision = convention * (improved_test + improved_field)
-    published = np.load(
-        ROOT / "src/spectraxgk/data/advanced_collision_six_moment.npy"
-    )[1]
+    published = np.load(ROOT / "src/spectraxgk/data/advanced_collision_six_moment.npy")[
+        1
+    ]
     mask = published != 0.0
     np.testing.assert_allclose(collision[mask], published[mask], rtol=3.0e-15)
 
@@ -2911,9 +2907,7 @@ def test_improved_sugama_reconstruction_rejects_incomplete_shells(
     mod = load_artifact_tool("build_linear_validation_artifacts")
     matrix = np.eye(8)
     with pytest.raises(ValueError, match=message):
-        mod.improved_sugama_equal_temperature_moment_matrices(
-            matrix, 3, 1, **kwargs
-        )
+        mod.improved_sugama_equal_temperature_moment_matrices(matrix, 3, 1, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -2982,9 +2976,11 @@ def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
     assert saturation["paper_normalized_field"] == 1.0e-3
     assert saturation["maximum_saturation_relative_error"] < 1.0e-3
     assert saturation["maximum_field_linearity_relative_error"] < 2.0e-12
-    assert -9.5e-4 < saturation["models"]["coulomb"][
-        "stationary_current_over_vte"
-    ] < -8.5e-4
+    assert (
+        -9.5e-4
+        < saturation["models"]["coulomb"]["stationary_current_over_vte"]
+        < -8.5e-4
+    )
     assert final["maximum_eigenvalue"] < 2.0e-12
     assert json.loads(out_json.read_text(encoding="utf-8"))["gate_passed"] is True
     assert len(pd.read_csv(out_csv)) == 10
@@ -3062,9 +3058,7 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
     with pytest.raises(ValueError, match="digits"):
         mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)
     with pytest.raises(ValueError, match="worker_count"):
-        mod.coulomb_nonpolarized_moment_matrices(
-            1, 1, 0.0, 1.0, 1.0, worker_count=0
-        )
+        mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, worker_count=0)
 
 
 def test_finite_wavelength_pair_table_matches_equation_generators(
@@ -3085,7 +3079,9 @@ def test_finite_wavelength_pair_table_matches_equation_generators(
         calls["polarization"] += 1
         return polarization_coefficient(*args, **kwargs)
 
-    monkeypatch.setattr(mod, "_gyroaveraged_spherical_moment_coefficient_mp", counted_moment)
+    monkeypatch.setattr(
+        mod, "_gyroaveraged_spherical_moment_coefficient_mp", counted_moment
+    )
     monkeypatch.setattr(
         mod,
         "_gyroaveraged_polarization_coefficient_mp",
@@ -3148,9 +3144,7 @@ def test_finite_wavelength_pair_table_matches_equation_generators(
         ((0.0, 0.0), "strictly increasing"),
     ):
         with pytest.raises(ValueError, match=message):
-            mod.build_finite_wavelength_coulomb_pair_tables(
-                invalid, 0, 0, 1.0, 1.0
-            )
+            mod.build_finite_wavelength_coulomb_pair_tables(invalid, 0, 0, 1.0, 1.0)
 
 
 def test_finite_wavelength_hermite_workers_preserve_exact_rows() -> None:
@@ -3163,9 +3157,7 @@ def test_finite_wavelength_hermite_workers_preserve_exact_rows() -> None:
         "maximum_bessel_laguerre_order": 2,
         "digits": 32,
     }
-    serial = mod.coulomb_nonpolarized_moment_matrices(
-        2, 1, 0.4, 1.0, 1.0, **kwargs
-    )
+    serial = mod.coulomb_nonpolarized_moment_matrices(2, 1, 0.4, 1.0, 1.0, **kwargs)
     parallel = mod.coulomb_nonpolarized_moment_matrices(
         2, 1, 0.4, 1.0, 1.0, **kwargs, worker_count=2
     )
@@ -3432,9 +3424,9 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert factorized["resolutions"][-1]["total_seconds"] < 150.0
     parallel_p12 = factorized["four_worker_p12"]
     assert parallel_p12["array_identity"].startswith("bitwise_all_six_arrays")
-    assert parallel_p12["total_seconds"] < factorized["resolutions"][-1][
-        "total_seconds"
-    ]
+    assert (
+        parallel_p12["total_seconds"] < factorized["resolutions"][-1]["total_seconds"]
+    )
     assert parallel_p12["worker_policy"].startswith("polarization_serial")
     assert summary["normalization"] == {
         "generator_coordinate": "B=k_perp*v_thermal/Omega=sqrt(2*tau)*k_perp",
@@ -3449,9 +3441,10 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert p9["radial_order"] == 8
     assert p9["bessel_laguerre_order"] == 10
     assert p9["checksum"] == pytest.approx(-152.93360627939981, abs=1.0e-13)
-    assert p9["optimized"]["total_seconds"] < 0.5 * p9[
-        "pre_radial_factorization"
-    ]["total_seconds"]
+    assert (
+        p9["optimized"]["total_seconds"]
+        < 0.5 * p9["pre_radial_factorization"]["total_seconds"]
+    )
 
     paper = summary["paper_wavelength_hierarchy"]
     assert paper["paper_kperp"] == 0.5
@@ -3532,12 +3525,10 @@ def test_finite_wavelength_itg_summary_separates_resolved_collision_range(
         "low_collisionality_growth_converged": False,
         "paper_wavelength_reproduced": True,
     }
-    assert summary["comparisons"][-1][
-        "maximum_all_frequency_relative_change"
-    ] > 0.05
-    assert summary["comparisons"][-1][
-        "maximum_resolved_unstable_relative_change"
-    ] < 0.05
+    assert summary["comparisons"][-1]["maximum_all_frequency_relative_change"] > 0.05
+    assert (
+        summary["comparisons"][-1]["maximum_resolved_unstable_relative_change"] < 0.05
+    )
 
     output = tmp_path / "finite_wavelength_itg.png"
     mod.write_finite_wavelength_itg_figure(summary, output)
@@ -4001,7 +3992,7 @@ def _complete_collisional_zonal_records():
                 else np.linspace(0.0, 4.0, 51)
             )
             values = (
-                np.exp(-((np.abs(abscissa) - 0.65) / 0.7) ** 2)
+                np.exp(-(((np.abs(abscissa) - 0.65) / 0.7) ** 2))
                 if coordinate == "parallel"
                 else np.exp(-1.2 * abscissa)
             )
@@ -4050,8 +4041,7 @@ def test_collisional_zonal_campaign_fails_when_a_velocity_section_is_missing() -
         row
         for row in sections
         if not (
-            row["model"] == "improved_sugama"
-            and row["coordinate"] == "perpendicular"
+            row["model"] == "improved_sugama" and row["coordinate"] == "perpendicular"
         )
     ]
 
@@ -4059,6 +4049,58 @@ def test_collisional_zonal_campaign_fails_when_a_velocity_section_is_missing() -
 
     assert summary["gate_passed"] is False
     assert summary["gates"]["velocity_sections_present_at_tnu5"] is False
+
+
+def test_collisional_zonal_frequency_matches_paper_normalization() -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+
+    frequency = mod.collisional_zonal_frequency(
+        normalized_collisionality=3.13,
+        q=1.4,
+        epsilon=0.1,
+    )
+
+    assert frequency == pytest.approx(0.04999209121124531)
+    with pytest.raises(ValueError, match="finite and > 0"):
+        mod.collisional_zonal_frequency(
+            normalized_collisionality=3.13,
+            q=0.0,
+            epsilon=0.1,
+        )
+
+
+def test_collisional_zonal_requested_mode_must_survive_dealiasing() -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    grid = type(
+        "Grid",
+        (),
+        {
+            "ky": np.asarray([0.0, 0.1]),
+            "dealias_mask": np.asarray([[True, False, True], [True, True, True]]),
+        },
+    )()
+
+    mod.require_active_zonal_mode(grid, kx_index=0)
+    with pytest.raises(ValueError, match="outside the active dealiased spectrum"):
+        mod.require_active_zonal_mode(grid, kx_index=1)
+    with pytest.raises(ValueError, match="outside the spectral grid"):
+        mod.require_active_zonal_mode(grid, kx_index=5)
+
+
+def test_collisional_zonal_runtime_archive_fails_closed_before_simulation(
+    tmp_path: Path,
+) -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    archive = tmp_path / "incomplete_models.npz"
+    np.savez(archive, coulomb=np.eye(2))
+
+    with pytest.raises(ValueError, match="archive is missing"):
+        mod.run_drift_kinetic_collisional_zonal_trace(
+            config=ROOT / "benchmarks" / "collisional_zonal_response.toml",
+            model_archive=archive,
+            model="coulomb",
+            out_csv=tmp_path / "trace.csv",
+        )
 
 
 def test_plot_zonal_flow_response_output_subcommand(
