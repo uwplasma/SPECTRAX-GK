@@ -864,6 +864,8 @@ def _hermite_laguerre_to_associated_legendre_mp(
 ) -> Any:
     if hermite_order > spherical_order + bessel_order + 2 * spherical_radial_order:
         return mp.mpf(0)
+    if (hermite_order - spherical_order - bessel_order) % 2:
+        return mp.mpf(0)
 
     prefactor = (
         mp.sqrt(mp.pi)

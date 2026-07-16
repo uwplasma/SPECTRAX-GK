@@ -2336,6 +2336,7 @@ def test_associated_basis_transform_precision_and_validation() -> None:
     np.testing.assert_allclose(coefficient_40, coefficient_100, rtol=3.0e-14)
 
     assert mod.associated_legendre_to_hermite_laguerre_coefficient(3, 0, 1, 4, 0) == 0.0
+    assert mod.hermite_laguerre_to_associated_legendre_coefficient(0, 0, 1, 0, 0) == 0.0
     with pytest.raises(ValueError, match="basis orders"):
         mod.associated_legendre_to_hermite_laguerre_coefficient(-1, 0, 0, 0, 0)
     with pytest.raises(ValueError, match="bessel_order"):
