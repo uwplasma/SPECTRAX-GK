@@ -1777,6 +1777,30 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             float(abs(generated - projected) / max(abs(projected), 1.0e-14))
         )
 
+    matrix_truncation_orders = np.asarray((2, 4, 6), dtype=int)
+    matrix_truncations = []
+    for order in matrix_truncation_orders:
+        matrix_test, matrix_field = coulomb_nonpolarized_moment_matrices(
+            1,
+            1,
+            0.8,
+            1.0,
+            1.0,
+            maximum_spherical_order=3,
+            maximum_spherical_radial_order=1,
+            maximum_bessel_laguerre_order=int(order),
+            digits=max(32, min(digits, 48)),
+        )
+        matrix_truncations.append(matrix_test + matrix_field)
+    matrix_truncation_reference = matrix_truncations[-1]
+    matrix_reference_norm = np.linalg.norm(matrix_truncation_reference)
+    matrix_truncation_errors = np.asarray(
+        [
+            np.linalg.norm(matrix - matrix_truncation_reference) / matrix_reference_norm
+            for matrix in matrix_truncations
+        ]
+    )
+
     test_matrix, field_matrix = coulomb_nonpolarized_moment_matrices(
         3,
         1,
@@ -1854,6 +1878,9 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         "drift_kinetic_gyrocenter_density_row": float(gyrocenter_density_rows_array[0]),
         "finite_b_gyrocenter_density_row": float(gyrocenter_density_rows_array[-1]),
         "small_b_gyrocenter_diffusion_observed_order": observed_order,
+        "finite_b_matrix_relative_error_at_order_4": float(
+            matrix_truncation_errors[-2]
+        ),
     }
     thresholds = {
         "final_bessel_relative_error": 5.0e-9,
@@ -1866,6 +1893,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         "finite_b_gyrocenter_density_row_minimum": 1.0e-4,
         "small_b_gyrocenter_diffusion_order_minimum": 1.7,
         "small_b_gyrocenter_diffusion_order_maximum": 2.3,
+        "finite_b_matrix_relative_error_at_order_4": 5.0e-6,
     }
     gates = {
         name: bool(metrics[name] <= thresholds[name])
@@ -1877,6 +1905,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             "maximum_eigenvalue",
             "maximum_invariant_residual",
             "drift_kinetic_gyrocenter_density_row",
+            "finite_b_matrix_relative_error_at_order_4",
         )
     }
     gates["finite_b_gyrocenter_diffusion_nonzero"] = bool(
@@ -1906,6 +1935,13 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
                 "quadrature": "80-point Gauss-Hermite x 80-point Gauss-Laguerre",
                 "labels": projection_labels,
                 "relative_errors": projection_errors,
+            },
+            "matrix_truncation": {
+                "basis": {"maximum_hermite_order": 1, "maximum_laguerre_order": 1},
+                "kperp_rho": 0.8,
+                "orders": matrix_truncation_orders,
+                "relative_errors": matrix_truncation_errors,
+                "reference_order": int(matrix_truncation_orders[-1]),
             },
             "matrix": collision_matrix,
             "eigenvalues": eigenvalues,
@@ -1956,7 +1992,26 @@ def write_coulomb_operator_verification_figure(
     truncation = summary["truncation"]
     errors = np.maximum(np.asarray(truncation["relative_errors"], dtype=float), 1.0e-16)
     axes[0, 0].semilogy(
-        truncation["orders"], errors, "o-", color=colors["blue"], lw=2.2, ms=5.5
+        truncation["orders"],
+        errors,
+        "o-",
+        color=colors["blue"],
+        lw=2.2,
+        ms=5.5,
+        label="polarization coefficient",
+    )
+    matrix_truncation = summary["matrix_truncation"]
+    matrix_errors = np.maximum(
+        np.asarray(matrix_truncation["relative_errors"], dtype=float), 1.0e-16
+    )
+    axes[0, 0].semilogy(
+        matrix_truncation["orders"],
+        matrix_errors,
+        "s--",
+        color=colors["orange"],
+        lw=1.7,
+        ms=4.8,
+        label="assembled 4×4 block",
     )
     axes[0, 0].axhline(
         summary["thresholds"]["final_bessel_relative_error"],
@@ -1967,7 +2022,7 @@ def write_coulomb_operator_verification_figure(
     )
     axes[0, 0].set(
         xlabel="Bessel–Laguerre truncation $N_b$",
-        ylabel="relative coefficient error",
+        ylabel="relative truncation error",
         title="(a) Finite-$b$ spectral convergence",
     )
     axes[0, 0].legend(frameon=False, fontsize=8)

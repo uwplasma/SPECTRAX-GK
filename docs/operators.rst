@@ -497,7 +497,8 @@ The reproducible algebra/convergence artifact is generated with
    :width: 100%
 
    **Offline Coulomb-operator closure.** Panel (a) shows spectral convergence
-   of a finite-:math:`b` polarization coefficient to a 24-term reference;
+   of a finite-:math:`b` polarization coefficient to a 24-term reference and
+   of an assembled 4-by-4 collision block to its order-six reference;
    panel (b) compares five generated coefficients with independent
    80-by-80 Gauss--Hermite/Laguerre velocity projection; panel (c) shows five
    dissipative modes and the three density, parallel-momentum, and thermal-
@@ -508,7 +509,9 @@ The reproducible algebra/convergence artifact is generated with
 
 The largest direct-projection relative error is :math:`3.2\times10^{-13}`;
 the published-coefficient, symmetry, and invariant residuals are at or below
-:math:`1.2\times10^{-16}`. These checks implement the conservation,
+:math:`1.2\times10^{-16}`. At :math:`b=0.8`, the assembled 4-by-4 block changes
+by :math:`1.6\times10^{-7}` between Bessel orders four and six. These checks
+implement the conservation,
 Maxwellian-null, adjointness, and H-theorem requirements emphasized by
 `Abel et al. (2008) <https://arxiv.org/abs/0808.1300>`_ and the
 finite-:math:`b` moment algebra of

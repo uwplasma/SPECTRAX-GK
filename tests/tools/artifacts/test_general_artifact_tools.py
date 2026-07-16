@@ -2711,6 +2711,9 @@ def test_coulomb_operator_verification_artifact_closes_physical_gates(
     assert diffusion["density_row_infinity_norm"][0] < 5.0e-12
     assert diffusion["density_row_infinity_norm"][-1] > 1.0e-4
     assert 1.7 < diffusion["small_b_observed_order"] < 2.3
+    matrix_errors = summary["matrix_truncation"]["relative_errors"]
+    assert matrix_errors[0] > 1.0e-4
+    assert matrix_errors[1] < 5.0e-6
 
     assert json.loads(out_json.read_text())["gate_passed"] is True
     assert out_png.stat().st_size > 100_000
