@@ -3019,6 +3019,10 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
         )
     with pytest.raises(ValueError, match="digits"):
         mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)
+    with pytest.raises(ValueError, match="worker_count"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            1, 1, 0.0, 1.0, 1.0, worker_count=0
+        )
 
 
 def test_finite_wavelength_pair_table_matches_equation_generators(
@@ -3105,6 +3109,43 @@ def test_finite_wavelength_pair_table_matches_equation_generators(
             mod.build_finite_wavelength_coulomb_pair_tables(
                 invalid, 0, 0, 1.0, 1.0
             )
+
+
+def test_finite_wavelength_hermite_workers_preserve_exact_rows() -> None:
+    """Forked Hermite rows must be bitwise identical to serial equations."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    kwargs = {
+        "maximum_spherical_order": 3,
+        "maximum_spherical_radial_order": 1,
+        "maximum_bessel_laguerre_order": 2,
+        "digits": 32,
+    }
+    serial = mod.coulomb_nonpolarized_moment_matrices(
+        2, 1, 0.4, 1.0, 1.0, **kwargs
+    )
+    parallel = mod.coulomb_nonpolarized_moment_matrices(
+        2, 1, 0.4, 1.0, 1.0, **kwargs, worker_count=2
+    )
+    for serial_matrix, parallel_matrix in zip(serial, parallel, strict=True):
+        np.testing.assert_array_equal(parallel_matrix, serial_matrix)
+
+    table_kwargs = {
+        "maximum_spherical_order": 2,
+        "maximum_spherical_radial_order": 1,
+        "maximum_bessel_laguerre_order": 2,
+        "digits": 32,
+    }
+    serial_tables = mod.build_finite_wavelength_coulomb_pair_tables(
+        (0.0, 0.3), 1, 1, 1.0, 1.0, **table_kwargs
+    )
+    parallel_tables = mod.build_finite_wavelength_coulomb_pair_tables(
+        (0.0, 0.3), 1, 1, 1.0, 1.0, **table_kwargs, worker_count=2
+    )
+    for serial_table, parallel_table in zip(
+        serial_tables, parallel_tables, strict=True
+    ):
+        np.testing.assert_array_equal(parallel_table, serial_table)
 
 
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
@@ -3347,6 +3388,12 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
         12,
     ]
     assert factorized["resolutions"][-1]["total_seconds"] < 150.0
+    parallel_p12 = factorized["four_worker_p12"]
+    assert parallel_p12["array_identity"].startswith("bitwise_all_six_arrays")
+    assert parallel_p12["total_seconds"] < factorized["resolutions"][-1][
+        "total_seconds"
+    ]
+    assert parallel_p12["worker_policy"].startswith("polarization_serial")
     assert summary["normalization"] == {
         "generator_coordinate": "B=k_perp*v_thermal/Omega=sqrt(2*tau)*k_perp",
         "paper_kperp_for_B_0p5_at_tau_1": pytest.approx(0.5 / np.sqrt(2.0)),

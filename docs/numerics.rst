@@ -742,6 +742,15 @@ efficiency and identity only; a bounded :math:`(15,6)` probe still required
 requires the planned shared-precompute Hermite decomposition rather than an
 unbounded serial run.
 
+That decomposition now forks only complete output-Hermite matrix rows after
+serial polarization has populated the shared transform and speed caches.
+At :math:`(12,5)`, four local CPU workers reduce the exact total from 139.42
+to 110.13 seconds; all six arrays remain bitwise identical. The matrix tail
+takes 46.26 seconds after 63.88 seconds of shared polarization precomputation.
+This is a scoped offline-generator improvement, not linear strong scaling:
+the measured serial fraction is retained explicitly, polarization is not
+forked, and no P18 endpoint claim is made yet.
+
 The runtime-level scan below applies those exact tables through the complete
 solved-field RHS at the paper's homogeneous-slab parameters. It confirms
 collisional stabilization and shows why the gate remains open: the

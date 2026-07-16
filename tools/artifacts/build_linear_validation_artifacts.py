@@ -1347,6 +1347,58 @@ def _bessel_weighted_laguerre_products_mp(
     return tuple(weights)
 
 
+def _forked_ordered_map(
+    builder: Callable[[int], Any],
+    item_count: int,
+    worker_count: int,
+) -> list[Any]:
+    """Evaluate disjoint offline rows with copy-on-write precomputed state."""
+
+    if worker_count == 1:
+        return [builder(index) for index in range(item_count)]
+
+    import multiprocessing
+
+    if "fork" not in multiprocessing.get_all_start_methods():
+        raise RuntimeError("parallel collision generation requires POSIX fork")
+    context = multiprocessing.get_context("fork")
+    chunks = [tuple(range(worker, item_count, worker_count)) for worker in range(worker_count)]
+    readers = []
+    processes = []
+
+    def run_chunk(indices: tuple[int, ...], writer: Any) -> None:
+        try:
+            writer.send((True, [builder(index) for index in indices]))
+        except Exception as error:  # pragma: no cover - child failure propagation
+            writer.send((False, repr(error)))
+        finally:
+            writer.close()
+
+    for chunk in chunks:
+        reader, writer = context.Pipe(duplex=False)
+        process = context.Process(target=run_chunk, args=(chunk, writer))
+        process.start()
+        writer.close()
+        readers.append(reader)
+        processes.append(process)
+
+    results = []
+    try:
+        for reader in readers:
+            passed, payload = reader.recv()
+            if not passed:
+                raise RuntimeError(f"parallel collision row failed: {payload}")
+            results.extend(payload)
+    finally:
+        for reader in readers:
+            reader.close()
+        for process in processes:
+            process.join()
+            if process.is_alive():
+                process.terminate()
+    return sorted(results, key=lambda result: result[0])
+
+
 def _gyroaveraged_spherical_moment_coefficient_mp(
     spherical_order: int,
     spherical_radial_order: int,
@@ -1705,6 +1757,7 @@ def coulomb_nonpolarized_moment_matrices(
     maximum_spherical_radial_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
+    worker_count: int = 1,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
     _assembly_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -1718,6 +1771,9 @@ def coulomb_nonpolarized_moment_matrices(
     source moments and defaults to the target value for like species. Both are
     :math:`B=k_\perp v_{\mathrm{th}}/\Omega`. Every finite truncation is
     explicit so convergence can be assessed before a table is promoted.
+    ``worker_count`` partitions complete output-Hermite rows after shared
+    moment and Laguerre-product construction; one worker is the portable
+    default and multiple workers require POSIX ``fork``.
     """
 
     if maximum_hermite_order < 0:
@@ -1741,6 +1797,8 @@ def coulomb_nonpolarized_moment_matrices(
         raise ValueError("maximum_bessel_laguerre_order must be >= 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
+    if worker_count < 1:
+        raise ValueError("worker_count must be >= 1")
 
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
     spherical_limit = (
@@ -1773,8 +1831,6 @@ def coulomb_nonpolarized_moment_matrices(
             if drift_kinetic
             else tuple(range(maximum_bessel_laguerre_order + 1))
         )
-        test_matrix = mp.matrix(n_modes, n_modes)
-        field_matrix = mp.matrix(n_modes, n_modes)
         assembly_cache = {} if _assembly_cache is None else _assembly_cache
         moment_cache = assembly_cache.setdefault("spherical_moment", {})
         bessel_kernel_cache = assembly_cache.setdefault("spherical_bessel_kernel", {})
@@ -1991,12 +2047,13 @@ def coulomb_nonpolarized_moment_matrices(
             for (p, m), entries in grouped_moments.items()
         )
 
-        for output_hermite in range(maximum_hermite_order + 1):
+        def build_hermite_rows(output_hermite: int) -> tuple[int, np.ndarray, np.ndarray]:
+            test_rows = mp.matrix(n_laguerre, n_modes)
+            field_rows = mp.matrix(n_laguerre, n_modes)
             output_normalization = mp.sqrt(
                 mp.power(2, output_hermite) * mp.factorial(output_hermite)
             )
             for output_laguerre in range(n_laguerre):
-                row = output_hermite * n_laguerre + output_laguerre
                 for p, m, radial_moments in active_moment_groups:
                     speed_weights: dict[int, Any] = {}
                     for product_order, weighted_product in enumerate(
@@ -2046,17 +2103,34 @@ def coulomb_nonpolarized_moment_matrices(
                         field_output_coefficient *= angular
                         if test_output_coefficient != 0:
                             for column, moment in enumerate(test_moment_vector):
-                                test_matrix[row, column] += (
+                                test_rows[output_laguerre, column] += (
                                     test_output_coefficient * moment
                                 )
                         if field_output_coefficient != 0:
                             for column, moment in enumerate(field_moment_vector):
-                                field_matrix[row, column] += (
+                                field_rows[output_laguerre, column] += (
                                     field_output_coefficient * moment
                                 )
+            return (
+                output_hermite,
+                np.asarray(test_rows.tolist(), dtype=np.float64),
+                np.asarray(field_rows.tolist(), dtype=np.float64),
+            )
 
-        test = np.asarray(test_matrix.tolist(), dtype=np.float64)
-        field = np.asarray(field_matrix.tolist(), dtype=np.float64)
+        row_blocks = _forked_ordered_map(
+            build_hermite_rows,
+            maximum_hermite_order + 1,
+            min(worker_count, maximum_hermite_order + 1),
+        )
+        test = np.empty((n_modes, n_modes))
+        field = np.empty((n_modes, n_modes))
+        for output_hermite, test_rows, field_rows in row_blocks:
+            row_slice = slice(
+                output_hermite * n_laguerre,
+                (output_hermite + 1) * n_laguerre,
+            )
+            test[row_slice] = test_rows
+            field[row_slice] = field_rows
     return test, field
 
 
@@ -2819,6 +2893,7 @@ def build_finite_wavelength_coulomb_pair_tables(
     maximum_spherical_radial_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
+    worker_count: int = 1,
 ) -> tuple[np.ndarray, ...]:
     r"""Build one ordered-pair table for the JAX finite-wavelength operator.
 
@@ -2828,7 +2903,8 @@ def build_finite_wavelength_coulomb_pair_tables(
     the scan. Unlike the two
     equation-level generators, these tables use the runtime's signed Laguerre
     convention and can therefore be inserted directly below target/source
-    species axes in :class:`FiniteWavelengthCoulombOperator`.
+    species axes in :class:`FiniteWavelengthCoulombOperator`. Polarization is
+    assembled first so forked matrix rows inherit its exact transform caches.
     """
 
     grid = np.asarray(bessel_arguments, dtype=float)
@@ -2838,6 +2914,8 @@ def build_finite_wavelength_coulomb_pair_tables(
         raise ValueError("bessel_arguments must be finite and >= 0")
     if np.any(np.diff(grid) <= 0.0):
         raise ValueError("bessel_arguments must be strictly increasing")
+    if worker_count < 1:
+        raise ValueError("worker_count must be >= 1")
 
     import mpmath as mp
 
@@ -2862,20 +2940,6 @@ def build_finite_wavelength_coulomb_pair_tables(
         assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
         for target_index, target_argument in enumerate(grid):
             for source_index, source_argument in enumerate(grid):
-                pair_matrices = coulomb_nonpolarized_moment_matrices(
-                    maximum_hermite_order,
-                    maximum_laguerre_order,
-                    float(target_argument),
-                    mass_ratio,
-                    temperature_ratio,
-                    source_bessel_argument=float(source_argument),
-                    maximum_spherical_order=maximum_spherical_order,
-                    maximum_spherical_radial_order=maximum_spherical_radial_order,
-                    maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
-                    digits=digits,
-                    _coefficient_functions=coefficient_functions,
-                    _assembly_cache=assembly_cache,
-                )
                 pair_vectors = coulomb_polarization_vectors(
                     maximum_hermite_order,
                     maximum_laguerre_order,
@@ -2887,6 +2951,21 @@ def build_finite_wavelength_coulomb_pair_tables(
                     maximum_spherical_radial_order=maximum_spherical_radial_order,
                     maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
                     digits=digits,
+                    _coefficient_functions=coefficient_functions,
+                    _assembly_cache=assembly_cache,
+                )
+                pair_matrices = coulomb_nonpolarized_moment_matrices(
+                    maximum_hermite_order,
+                    maximum_laguerre_order,
+                    float(target_argument),
+                    mass_ratio,
+                    temperature_ratio,
+                    source_bessel_argument=float(source_argument),
+                    maximum_spherical_order=maximum_spherical_order,
+                    maximum_spherical_radial_order=maximum_spherical_radial_order,
+                    maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
+                    digits=digits,
+                    worker_count=worker_count,
                     _coefficient_functions=coefficient_functions,
                     _assembly_cache=assembly_cache,
                 )

@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Added a scoped POSIX-fork decomposition for the dominant exact
+  finite-wavelength matrix rows. Polarization is intentionally serial and runs
+  first, populating copy-on-write transform and speed caches; complete output-
+  Hermite rows then have disjoint inverse-transform keys across workers. P7
+  matrix time falls from 9.58 to 5.25 seconds with four workers, while the
+  cache-correct total falls from 11.46 to 9.25 seconds. At P12 the four-worker
+  total is 110.13 seconds versus 139.42 serial: 63.88 seconds shared
+  polarization precompute plus 46.26 seconds forked matrix tail. All six P7
+  and P12 arrays are bitwise identical to serial and archived GMP outputs, and
+  the complete artifact owner passes. This is a bounded offline generator
+  route, not a general strong-scaling claim; P18 remains the next gate.
+
 - 2026-07-16: Rebuilt the exact paper-wavelength P7, P9, and P12 hierarchy with
   the Bessel-factored generator. All six arrays at every resolution are bitwise
   identical to the archived GMP outputs. Local total times are 11.35, 37.27,

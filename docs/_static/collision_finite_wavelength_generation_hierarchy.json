@@ -120,6 +120,13 @@
   "factorized_generator": {
     "array_identity": "bitwise_all_six_arrays_against_archived_gmp_outputs",
     "execution_host": "local_cpu_2026-07-16",
+    "four_worker_p12": {
+      "array_identity": "bitwise_all_six_arrays_against_archived_gmp_output",
+      "matrix_seconds_after_shared_polarization_precompute": 46.256187833845615,
+      "polarization_precompute_seconds": 63.877185041084886,
+      "total_seconds": 110.1333728749305,
+      "worker_policy": "polarization_serial_then_output_hermite_matrix_rows_forked"
+    },
     "resolutions": [
       {
         "matrix_seconds": 9.519282708875835,
