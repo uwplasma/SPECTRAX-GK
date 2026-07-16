@@ -1755,6 +1755,7 @@ def coulomb_nonpolarized_moment_matrices(
     source_bessel_argument: float | None = None,
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
+    maximum_angular_bessel_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     worker_count: int = 1,
@@ -1771,6 +1772,9 @@ def coulomb_nonpolarized_moment_matrices(
     source moments and defaults to the target value for like species. Both are
     :math:`B=k_\perp v_{\mathrm{th}}/\Omega`. Every finite truncation is
     explicit so convergence can be assessed before a table is promoted.
+    ``maximum_angular_bessel_order`` truncates the angular Bessel harmonic
+    :math:`m` independently from the radial Bessel--Laguerre expansion.  The
+    default retains every harmonic allowed by the spherical basis.
     ``worker_count`` partitions complete output-Hermite rows after shared
     moment and Laguerre-product construction; one worker is the portable
     default and multiple workers require POSIX ``fork``.
@@ -1795,6 +1799,8 @@ def coulomb_nonpolarized_moment_matrices(
         raise ValueError("temperature_ratio must be finite and > 0")
     if maximum_bessel_laguerre_order < 0:
         raise ValueError("maximum_bessel_laguerre_order must be >= 0")
+    if maximum_angular_bessel_order is not None and maximum_angular_bessel_order < 0:
+        raise ValueError("maximum_angular_bessel_order must be >= 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
     if worker_count < 1:
@@ -1813,6 +1819,11 @@ def coulomb_nonpolarized_moment_matrices(
         raise ValueError("maximum_spherical_order must be >= 0")
     if radial_limit < 0:
         raise ValueError("maximum_spherical_radial_order must be >= 0")
+    angular_limit = (
+        spherical_limit
+        if maximum_angular_bessel_order is None
+        else min(spherical_limit, maximum_angular_bessel_order)
+    )
 
     import mpmath as mp
 
@@ -1954,7 +1965,7 @@ def coulomb_nonpolarized_moment_matrices(
             (p, j, m)
             for p in range(spherical_limit + 1)
             for j in range(radial_limit + 1)
-            for m in ((0,) if drift_kinetic else range(p + 1))
+            for m in ((0,) if drift_kinetic else range(min(p, angular_limit) + 1))
         )
         moment_vectors = {
             (p, j, m): (
@@ -2011,7 +2022,7 @@ def coulomb_nonpolarized_moment_matrices(
                 / mp.factorial(n + m)
                 for n in bessel_orders
             )
-            for m in range(spherical_limit + 1)
+            for m in range(angular_limit + 1)
         }
         weighted_products = {
             (m, output_laguerre): _bessel_weighted_laguerre_products_mp(
@@ -2022,7 +2033,7 @@ def coulomb_nonpolarized_moment_matrices(
                 laguerre_product,
                 mp,
             )
-            for m in range(spherical_limit + 1)
+            for m in range(angular_limit + 1)
             for output_laguerre in range(n_laguerre)
         }
         grouped_moments: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
@@ -2597,6 +2608,7 @@ def coulomb_polarization_vectors(
     *,
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
+    maximum_angular_bessel_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
@@ -2626,6 +2638,8 @@ def coulomb_polarization_vectors(
         raise ValueError("temperature_ratio must be finite and > 0")
     if maximum_bessel_laguerre_order < 0:
         raise ValueError("maximum_bessel_laguerre_order must be >= 0")
+    if maximum_angular_bessel_order is not None and maximum_angular_bessel_order < 0:
+        raise ValueError("maximum_angular_bessel_order must be >= 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
 
@@ -2642,6 +2656,11 @@ def coulomb_polarization_vectors(
         raise ValueError("maximum_spherical_order must be >= 0")
     if radial_limit < 0:
         raise ValueError("maximum_spherical_radial_order must be >= 0")
+    angular_limit = (
+        spherical_limit
+        if maximum_angular_bessel_order is None
+        else min(spherical_limit, maximum_angular_bessel_order)
+    )
 
     import mpmath as mp
 
@@ -2799,7 +2818,7 @@ def coulomb_polarization_vectors(
                 / mp.factorial(n + m)
                 for n in bessel_orders
             )
-            for m in range(spherical_limit + 1)
+            for m in range(angular_limit + 1)
         }
         weighted_products = {
             (m, output_laguerre): _bessel_weighted_laguerre_products_mp(
@@ -2810,7 +2829,7 @@ def coulomb_polarization_vectors(
                 laguerre_product,
                 mp,
             )
-            for m in range(spherical_limit + 1)
+            for m in range(angular_limit + 1)
             for output_laguerre in range(n_laguerre)
         }
         grouped_polarization: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
@@ -2830,7 +2849,7 @@ def coulomb_polarization_vectors(
                     * mp.factorial(p) ** 2
                     / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
                 )
-                for m in range(p + 1):
+                for m in range(min(p, angular_limit) + 1):
                     target_polarization = polarization(p, j, m, source=False)
                     source_polarization = polarization(p, j, m, source=True)
                     if target_polarization == 0 and source_polarization == 0:
@@ -2949,6 +2968,7 @@ def build_finite_wavelength_coulomb_pair_tables(
     *,
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
+    maximum_angular_bessel_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     worker_count: int = 1,
@@ -3007,6 +3027,7 @@ def build_finite_wavelength_coulomb_pair_tables(
                     temperature_ratio,
                     maximum_spherical_order=maximum_spherical_order,
                     maximum_spherical_radial_order=maximum_spherical_radial_order,
+                    maximum_angular_bessel_order=maximum_angular_bessel_order,
                     maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
                     digits=digits,
                     _coefficient_functions=coefficient_functions,
@@ -3021,6 +3042,7 @@ def build_finite_wavelength_coulomb_pair_tables(
                     source_bessel_argument=float(source_argument),
                     maximum_spherical_order=maximum_spherical_order,
                     maximum_spherical_radial_order=maximum_spherical_radial_order,
+                    maximum_angular_bessel_order=maximum_angular_bessel_order,
                     maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
                     digits=digits,
                     worker_count=worker_count,

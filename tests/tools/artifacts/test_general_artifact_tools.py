@@ -3044,6 +3044,10 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
         mod.coulomb_nonpolarized_moment_matrices(
             1, 1, 0.0, 1.0, 1.0, maximum_bessel_laguerre_order=-1
         )
+    with pytest.raises(ValueError, match="maximum_angular_bessel_order"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            1, 1, 0.0, 1.0, 1.0, maximum_angular_bessel_order=-1
+        )
     with pytest.raises(ValueError, match="maximum_spherical_order"):
         mod.coulomb_nonpolarized_moment_matrices(
             1, 1, 0.0, 1.0, 1.0, maximum_spherical_order=-1
@@ -3181,6 +3185,49 @@ def test_finite_wavelength_hermite_workers_preserve_exact_rows() -> None:
         serial_tables, parallel_tables, strict=True
     ):
         np.testing.assert_array_equal(parallel_table, serial_table)
+
+
+def test_finite_wavelength_angular_cutoff_retains_complete_basis() -> None:
+    """An angular cutoff at the spherical limit is exactly the full sum."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    kwargs = {
+        "maximum_spherical_order": 3,
+        "maximum_spherical_radial_order": 1,
+        "maximum_bessel_laguerre_order": 3,
+        "digits": 32,
+    }
+    full_matrices = mod.coulomb_nonpolarized_moment_matrices(
+        2, 1, 0.3, 1.0, 1.0, **kwargs
+    )
+    bounded_matrices = mod.coulomb_nonpolarized_moment_matrices(
+        2,
+        1,
+        0.3,
+        1.0,
+        1.0,
+        **kwargs,
+        maximum_angular_bessel_order=3,
+    )
+    full_vectors = mod.coulomb_polarization_vectors(
+        2, 1, 0.3, 0.3, 1.0, 1.0, **kwargs
+    )
+    bounded_vectors = mod.coulomb_polarization_vectors(
+        2,
+        1,
+        0.3,
+        0.3,
+        1.0,
+        1.0,
+        **kwargs,
+        maximum_angular_bessel_order=3,
+    )
+    for bounded, full in zip(
+        (*bounded_matrices, *bounded_vectors),
+        (*full_matrices, *full_vectors),
+        strict=True,
+    ):
+        np.testing.assert_array_equal(bounded, full)
 
 
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:

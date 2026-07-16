@@ -377,6 +377,21 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Resumed the finite-wavelength collisional-zonal blocker with a
+  bounded truncation study rather than another default-order endpoint build.
+  Frei, Ernst & Ricci (2022) state that the radial Bessel expansion is
+  converged at ``n=6`` for their scans and report ``n≈8`` sufficient for
+  ``k_perp rho_i <= 1``. The exact generator now exposes the independent
+  angular Bessel harmonic cutoff ``maximum_angular_bessel_order`` while
+  preserving the complete sum by default. At the largest zonal wavelength,
+  ``B=sqrt(2)*0.2``, the P7/J3 ``(m,n)=(4,6)`` result differs from the complete
+  ``m`` sum with ``n=8`` by ``1.73e-8`` in the test-matrix relative L2 norm and
+  ``1.43e-8`` in the largest polarization-vector norm. At P12/J5, ``m=4`` and
+  ``m=6`` differ by ``1.24e-7`` at worst. The shared-cache four-worker P12/J5
+  build takes 30.35 seconds. Full-basis identity and invalid-domain tests pass;
+  the next bounded action is the P24/J10 ``m=4,n=6`` endpoint followed by an
+  independent ``m=6`` common-block or trace-level convergence check.
+
 - 2026-07-16: Diagnosed the first full P24/J10 Coulomb zonal trace rather than
   tuning its failed residual. The measured tail, ``0.01679``, matched the Xiao
   residual for the surface's actual ``rhoc/R0=0.18`` (``0.01626``), not the
