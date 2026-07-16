@@ -17,6 +17,8 @@ import hashlib
 import json
 import math
 import sys
+from collections.abc import Callable
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -836,6 +838,9 @@ def _hermite_laguerre_to_associated_legendre_mp(
     spherical_radial_order: int,
     bessel_order: int,
     mp: Any,
+    *,
+    associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
+    laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
 ) -> Any:
     if hermite_order > spherical_order + bessel_order + 2 * spherical_radial_order:
         return mp.mpf(0)
@@ -854,22 +859,32 @@ def _hermite_laguerre_to_associated_legendre_mp(
         spherical_radial_order + (spherical_order + bessel_order) // 2,
         bessel_order + laguerre_order,
     )
+    if associated_transform is None:
+
+        def associated_transform(p: int, j: int, m: int, g: int, s: int) -> Any:
+            return _associated_legendre_to_hermite_laguerre_mp(p, j, m, g, s, mp)
+
+    if laguerre_product is None:
+
+        def laguerre_product(m: int, n: int, k: int, output: int, radial: int) -> Any:
+            return _laguerre_product_expansion_coefficient_mp(
+                m, n, k, output, radial, mp
+            )
+
     contraction = sum(
-        _associated_legendre_to_hermite_laguerre_mp(
+        associated_transform(
             spherical_order,
             spherical_radial_order,
             bessel_order,
             hermite_order,
             auxiliary_order,
-            mp,
         )
-        * _laguerre_product_expansion_coefficient_mp(
+        * laguerre_product(
             bessel_order,
             0,
             laguerre_order,
             auxiliary_order,
             bessel_order,
-            mp,
         )
         for auxiliary_order in range(maximum_auxiliary_order + 1)
     )
@@ -1206,6 +1221,40 @@ def coulomb_nonpolarized_moment_matrices(
         product_cache: dict[tuple[int, int, int, int], Any] = {}
         inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
 
+        @cache
+        def inverse_associated(
+            spherical_order: int,
+            spherical_radial_order: int,
+            bessel_order: int,
+            hermite_order: int,
+            laguerre_order: int,
+        ) -> Any:
+            return _associated_legendre_to_hermite_laguerre_mp(
+                spherical_order,
+                spherical_radial_order,
+                bessel_order,
+                hermite_order,
+                laguerre_order,
+                mp,
+            )
+
+        @cache
+        def inverse_product(
+            associated_order: int,
+            associated_polynomial_order: int,
+            laguerre_order: int,
+            output_order: int,
+            radial_power: int,
+        ) -> Any:
+            return _laguerre_product_expansion_coefficient_mp(
+                associated_order,
+                associated_polynomial_order,
+                laguerre_order,
+                output_order,
+                radial_power,
+                mp,
+            )
+
         def spherical_moment(
             p: int,
             j: int,
@@ -1289,6 +1338,8 @@ def coulomb_nonpolarized_moment_matrices(
                     speed_order,
                     m,
                     mp,
+                    associated_transform=inverse_associated,
+                    laguerre_product=inverse_product,
                 )
             return inverse_cache[key]
 

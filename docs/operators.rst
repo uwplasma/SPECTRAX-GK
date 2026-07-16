@@ -560,12 +560,16 @@ particle-space momentum and energy balances instead of incorrectly imposing
 local gyrocenter nulls.
 
 The multiprecision generator uses exact integer combinatorics for polynomial
-binomial factors and arbitrary precision only where gamma functions and
-non-integer coefficients require it. This preserves coefficients bit for bit
-while making higher truncation audits practical. A preliminary signed-
-:math:`J_0` pullback contraction does not yet converge to particle conservation
-through :math:`N_\ell=4`; it is retained as diagnostic negative evidence, not
-as an acceptance gate. The remaining derivation must include the complete
+binomial factors, memoizes repeated inverse-basis contractions within one
+assembly, and retains arbitrary precision where gamma functions and
+non-integer coefficients require it. These changes preserve the generated
+blocks bit for bit while reducing a representative assembly from 34.1 to 3.46
+seconds. The exact equation-(3.35) :math:`M^{000}` adjoint-gyroaverage
+contraction uses positive coefficients in the paper's convention. Its
+particle-density residual remains :math:`3.5309\times10^{-2}` across
+:math:`N_\ell=3,4,5`, despite the five-state point now completing in 8.19
+seconds. This resolution-independent residual is diagnostic negative evidence,
+not an acceptance gate. The remaining derivation must include the complete
 particle/gyrocenter pullback and finite projection before a conservation claim
 is made.
 

@@ -350,11 +350,16 @@ That topology is the reference design for the production parallel lane.
   mpmath's generalized gamma-based binomial path 562,228 times. Replacing that
   path with exact ``math.comb`` reduced a representative :math:`N_\ell=3`
   matrix from 34.1 to 5.43 seconds (6.3x) with bitwise-identical test and field
-  blocks; the formerly timed-out :math:`N_\ell=4` point now finishes locally in
-  29.3 seconds. Its candidate signed-:math:`J_0` particle-density residual stays
-  near :math:`4.79\times10^{-3}` across :math:`N_\ell=2..4`, so conservation is
-  not promoted: the pullback/normalization and finite projection must be derived
-  and checked independently before setting a threshold.
+  blocks. Call-local memoization of the inverse associated-Legendre and
+  Laguerre-product contractions reduces the same point to 3.46 seconds (9.9x
+  total), while :math:`N_\ell=4` and 5 now finish in 5.25 and 8.19 seconds.
+  All optimized blocks are bitwise identical to their saved references. The
+  equation-(3.35) :math:`M^{000}` adjoint-gyroaverage contraction uses positive
+  paper-convention weights and leaves the particle-density residual at
+  :math:`3.5309\times10^{-2}` for :math:`N_\ell=3,4,5`. The flat converged
+  residual rules out Laguerre resolution as the fix, so conservation is not
+  promoted: the complete particle/gyrocenter pullback and finite projection
+  must be derived and checked independently before setting a threshold.
 
 - 2026-07-15: Kept the five-minute CI policy after the expanded multiprecision
   collision artifact exceeded the wide-coverage shard timeout. Every push now
