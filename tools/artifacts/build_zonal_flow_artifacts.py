@@ -76,6 +76,167 @@ MERLO_CASE_III_GATE_TOLERANCES = {
     "gamma_atol_R0_over_vi": 0.03,
 }
 
+COLLISIONAL_ZONAL_PROTOCOL = {
+    "paper": "Frei, Ernst & Ricci, Phys. Plasmas 29, 093902 (2022)",
+    "figures": [12, 13, 14],
+    "q": 1.4,
+    "epsilon": 0.1,
+    "normalized_collisionality": 3.13,
+    "maximum_hermite_order": 24,
+    "maximum_laguerre_order": 10,
+    "wavenumbers": [0.05, 0.1, 0.2],
+    "xiao_residual": (0.1**2 / 1.4**2) / (1.0 + 0.1**2 / 1.4**2),
+}
+
+
+def summarize_collisional_zonal_campaign(
+    trace_records: list[dict[str, object]],
+    section_records: list[dict[str, object]],
+    *,
+    residual_atol: float = 1.5e-3,
+) -> dict[str, object]:
+    """Evaluate the complete Frei--Ernst--Ricci zonal-response protocol.
+
+    Trace rows use ``model``, ``kx``, ``t_nu``, ``response``, ``p_max``, and
+    ``j_max``. Velocity-section rows additionally use ``coordinate``
+    (``parallel`` or ``perpendicular``), ``abscissa``, and
+    ``normalized_distribution``. Missing models, time coverage, resolution,
+    or velocity sections fail closed.
+    """
+
+    required_models = ("coulomb", "original_sugama", "improved_sugama")
+    required_kx = tuple(float(value) for value in COLLISIONAL_ZONAL_PROTOCOL["wavenumbers"])
+    grouped: dict[tuple[str, float], list[dict[str, object]]] = {}
+    finite = True
+    resolution_passed = True
+    for record in trace_records:
+        model = str(record["model"]).strip().lower()
+        kx = float(record["kx"])
+        values = (
+            float(record["t_nu"]),
+            float(record["response"]),
+            float(record["p_max"]),
+            float(record["j_max"]),
+        )
+        finite &= bool(np.all(np.isfinite(values)))
+        resolution_passed &= bool(
+            int(record["p_max"]) >= COLLISIONAL_ZONAL_PROTOCOL["maximum_hermite_order"]
+            and int(record["j_max"])
+            >= COLLISIONAL_ZONAL_PROTOCOL["maximum_laguerre_order"]
+        )
+        grouped.setdefault((model, kx), []).append(record)
+
+    required_pairs = {(model, kx) for model in required_models for kx in required_kx}
+    complete_pairs = required_pairs.issubset(grouped)
+    time_coverage_passed = complete_pairs
+    normalized: dict[tuple[str, float], tuple[np.ndarray, np.ndarray]] = {}
+    tails: dict[str, dict[str, float]] = {model: {} for model in required_models}
+    if complete_pairs:
+        for key in sorted(required_pairs):
+            records = sorted(grouped[key], key=lambda row: float(row["t_nu"]))
+            time = np.asarray([float(row["t_nu"]) for row in records])
+            response = np.asarray([float(row["response"]) for row in records])
+            time_coverage_passed &= bool(
+                time.size >= 50 and time[0] <= 0.05 and time[-1] >= 30.0
+            )
+            finite &= bool(np.all(np.isfinite(response)))
+            initial = response[0]
+            if not np.isfinite(initial) or abs(initial) < 1.0e-14:
+                finite = False
+                normalized[key] = (time, np.full_like(response, np.nan))
+                continue
+            response = response / initial
+            normalized[key] = (time, response)
+            tail = response[time >= 25.0]
+            if tail.size < 5:
+                time_coverage_passed = False
+                continue
+            tails[key[0]][f"{key[1]:.2f}"] = float(np.median(tail))
+
+    xiao = float(COLLISIONAL_ZONAL_PROTOCOL["xiao_residual"])
+    residual_passed = complete_pairs and all(
+        abs(tails.get(model, {}).get("0.05", np.inf) - xiao) <= residual_atol
+        for model in required_models
+    )
+    ordering_passed = complete_pairs and all(
+        tails.get("original_sugama", {}).get(f"{kx:.2f}", np.inf)
+        < tails.get("improved_sugama", {}).get(f"{kx:.2f}", -np.inf)
+        < tails.get("coulomb", {}).get(f"{kx:.2f}", -np.inf)
+        for kx in (0.1, 0.2)
+    )
+    early_errors: dict[str, dict[str, float]] = {}
+    improved_closer = complete_pairs
+    if complete_pairs:
+        for kx in (0.1, 0.2):
+            base_time, base = normalized[("coulomb", kx)]
+            mask = (base_time >= 0.0) & (base_time <= 10.0)
+            model_errors: dict[str, float] = {}
+            for model in ("original_sugama", "improved_sugama"):
+                time, response = normalized[(model, kx)]
+                compared = np.interp(base_time[mask], time, response)
+                model_errors[model] = float(
+                    np.sqrt(np.mean((compared - base[mask]) ** 2))
+                )
+            early_errors[f"{kx:.2f}"] = model_errors
+            improved_closer &= bool(
+                model_errors["improved_sugama"] < model_errors["original_sugama"]
+            )
+
+    sections: dict[tuple[str, str], list[dict[str, object]]] = {}
+    section_finite = True
+    section_resolution = True
+    for record in section_records:
+        model = str(record["model"]).strip().lower()
+        coordinate = str(record["coordinate"]).strip().lower()
+        values = (
+            float(record["kx"]),
+            float(record["t_nu"]),
+            float(record["abscissa"]),
+            float(record["normalized_distribution"]),
+        )
+        section_finite &= bool(np.all(np.isfinite(values)))
+        section_resolution &= bool(
+            int(record["p_max"]) >= COLLISIONAL_ZONAL_PROTOCOL["maximum_hermite_order"]
+            and int(record["j_max"])
+            >= COLLISIONAL_ZONAL_PROTOCOL["maximum_laguerre_order"]
+        )
+        if np.isclose(values[0], 0.2) and np.isclose(values[1], 5.0, atol=0.05):
+            sections.setdefault((model, coordinate), []).append(record)
+    required_sections = {
+        (model, coordinate)
+        for model in required_models
+        for coordinate in ("parallel", "perpendicular")
+    }
+    velocity_sections_passed = required_sections.issubset(sections) and all(
+        len(sections[key]) >= 21
+        and np.isclose(
+            max(float(row["normalized_distribution"]) for row in sections[key]),
+            1.0,
+            atol=0.03,
+        )
+        for key in required_sections
+    )
+    gates = {
+        "finite_values": bool(finite and section_finite),
+        "paper_resolution_reached": bool(resolution_passed and section_resolution),
+        "required_model_wavenumber_traces_present": bool(complete_pairs),
+        "normalized_time_window_reaches_30": bool(time_coverage_passed),
+        "drift_kinetic_residual_matches_xiao": bool(residual_passed),
+        "gyrokinetic_tail_ordering_os_is_coulomb": bool(ordering_passed),
+        "improved_sugama_closer_to_coulomb_before_tnu10": bool(improved_closer),
+        "velocity_sections_present_at_tnu5": bool(velocity_sections_passed),
+    }
+    return {
+        "schema_version": 1,
+        "claim_scope": "collisional_zonal_response_figures_12_14",
+        "protocol": dict(COLLISIONAL_ZONAL_PROTOCOL),
+        "thresholds": {"xiao_residual_absolute_tolerance": residual_atol},
+        "tail_response": tails,
+        "early_window_rms_error_vs_coulomb": early_errors,
+        "gates": gates,
+        "gate_passed": all(gates.values()),
+    }
+
 
 def _add_response_metric_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--tail-fraction", type=float, default=0.3)
@@ -152,6 +313,155 @@ def _write_response_panel(
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _read_campaign_csv(path: Path) -> list[dict[str, object]]:
+    with path.open(newline="", encoding="utf-8") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def write_collisional_zonal_artifacts(
+    trace_records: list[dict[str, object]],
+    section_records: list[dict[str, object]],
+    *,
+    out_json: Path,
+    out_png: Path,
+) -> dict[str, object]:
+    """Write the complete collisional-zonal gate and paper-protocol panel."""
+
+    summary = summarize_collisional_zonal_campaign(trace_records, section_records)
+    colors = {
+        "coulomb": "#246A8D",
+        "original_sugama": "#C43D3D",
+        "improved_sugama": "#22A884",
+    }
+    labels = {
+        "coulomb": "Coulomb",
+        "original_sugama": "original Sugama",
+        "improved_sugama": "improved Sugama",
+    }
+    fig, axes = plt.subplots(2, 3, figsize=(12.0, 7.0), constrained_layout=True)
+    for column, kx in enumerate((0.05, 0.1, 0.2)):
+        axis = axes[0, column]
+        for model in colors:
+            records = sorted(
+                (
+                    row
+                    for row in trace_records
+                    if str(row["model"]).strip().lower() == model
+                    and np.isclose(float(row["kx"]), kx)
+                ),
+                key=lambda row: float(row["t_nu"]),
+            )
+            if not records:
+                continue
+            time = np.asarray([float(row["t_nu"]) for row in records])
+            response = np.asarray([float(row["response"]) for row in records])
+            response = response / response[0]
+            axis.plot(time, response, color=colors[model], lw=1.5, label=labels[model])
+        axis.axhline(
+            float(COLLISIONAL_ZONAL_PROTOCOL["xiao_residual"]),
+            color="#20272E",
+            lw=1.0,
+            ls="--",
+            label="Xiao residual" if column == 0 else None,
+        )
+        axis.set_yscale("log")
+        axis.set_title(rf"$k_x\rho_i={kx:g}$")
+        axis.set_xlabel(r"$t\nu_{ii}$")
+        if column == 0:
+            axis.set_ylabel(r"$R_z(t)=\phi_z(t)/\phi_z(0)$")
+            axis.legend(frameon=False, fontsize=7.5)
+
+    for column, coordinate in enumerate(("parallel", "perpendicular")):
+        axis = axes[1, column]
+        for model in colors:
+            records = sorted(
+                (
+                    row
+                    for row in section_records
+                    if str(row["model"]).strip().lower() == model
+                    and str(row["coordinate"]).strip().lower() == coordinate
+                    and np.isclose(float(row["kx"]), 0.2)
+                    and np.isclose(float(row["t_nu"]), 5.0, atol=0.05)
+                ),
+                key=lambda row: float(row["abscissa"]),
+            )
+            if records:
+                axis.plot(
+                    [float(row["abscissa"]) for row in records],
+                    [float(row["normalized_distribution"]) for row in records],
+                    color=colors[model],
+                    lw=1.6,
+                    label=labels[model],
+                )
+        axis.set_title(rf"$t\nu=5$: {coordinate} section")
+        axis.set_xlabel(r"$s_\parallel$" if coordinate == "parallel" else r"$x$")
+        if column == 0:
+            axis.set_ylabel(r"$|g_i|/\max |g_i|$")
+        axis.legend(frameon=False, fontsize=7.5)
+
+    metric_axis = axes[1, 2]
+    metric_axis.axis("off")
+    status = "PASS" if summary["gate_passed"] else "OPEN"
+    gate_labels = {
+        "finite_values": "finite values",
+        "paper_resolution_reached": r"$(P,J)\geq(24,10)$",
+        "required_model_wavenumber_traces_present": "all model/kx traces",
+        "normalized_time_window_reaches_30": r"time coverage to $t\nu=30$",
+        "drift_kinetic_residual_matches_xiao": "Xiao residual",
+        "gyrokinetic_tail_ordering_os_is_coulomb": "tail ordering: OS < IS < Coulomb",
+        "improved_sugama_closer_to_coulomb_before_tnu10": r"IS closer to Coulomb for $t\nu\leq10$",
+        "velocity_sections_present_at_tnu5": r"velocity sections at $t\nu=5$",
+    }
+    gate_lines = [
+        f"{gate_labels[name]}: {'PASS' if passed else 'OPEN'}"
+        for name, passed in summary["gates"].items()
+    ]
+    metric_axis.text(
+        0.0,
+        1.0,
+        f"Protocol status: {status}\n\n" + "\n".join(gate_lines),
+        va="top",
+        fontsize=8.3,
+        linespacing=1.35,
+    )
+    for axis in axes.flat[:5]:
+        axis.grid(alpha=0.22, lw=0.6)
+        axis.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(
+        "Pfirsch-Schlueter collisional zonal response",
+        fontsize=14,
+        color="#20272E",
+    )
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=220, facecolor="white")
+    plt.close(fig)
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    _write_json(out_json, summary)
+    return summary
+
+
+def _main_collisional_zonal(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Gate Frei--Ernst--Ricci collisional zonal-response traces."
+    )
+    parser.add_argument("--traces", type=Path, required=True)
+    parser.add_argument("--sections", type=Path, required=True)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--out-png", type=Path, required=True)
+    args = parser.parse_args(argv)
+    summary = write_collisional_zonal_artifacts(
+        _read_campaign_csv(args.traces),
+        _read_campaign_csv(args.sections),
+        out_json=args.out_json,
+        out_png=args.out_png,
+    )
+    print(
+        "collisional zonal literature gate: "
+        f"{'PASS' if summary['gate_passed'] else 'OPEN'}"
+    )
+    return 0
 
 
 def _build_response_csv_parser() -> argparse.ArgumentParser:
@@ -809,7 +1119,7 @@ def main(argv: list[str] | None = None) -> int:
     if not tokens:
         print(
             "usage: build_zonal_flow_artifacts.py "
-            "{response-csv,response-output,objective-gate,miller-panel} ..."
+            "{response-csv,response-output,objective-gate,miller-panel,collisional-zonal} ..."
         )
         return 2
     command, rest = tokens[0], tokens[1:]
@@ -821,6 +1131,8 @@ def main(argv: list[str] | None = None) -> int:
         return _main_objective_gate(rest)
     if command == "miller-panel":
         return _main_miller_panel(rest)
+    if command == "collisional-zonal":
+        return _main_collisional_zonal(rest)
     raise SystemExit(f"unknown command: {command}")
 
 

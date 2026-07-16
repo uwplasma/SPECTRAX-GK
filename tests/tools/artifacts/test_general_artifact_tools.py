@@ -3928,6 +3928,97 @@ def test_transport_audit_redesign_can_fail_on_required_redesign(
     )
 
 
+def _complete_collisional_zonal_records():
+    trace_records = []
+    tail = {
+        "coulomb": {0.05: 0.0053, 0.1: 0.0022, 0.2: 1.4e-4},
+        "original_sugama": {0.05: 0.0048, 0.1: 0.0015, 0.2: 8.0e-5},
+        "improved_sugama": {0.05: 0.0051, 0.1: 0.0018, 0.2: 1.0e-4},
+    }
+    rate = {"coulomb": 0.35, "original_sugama": 0.44, "improved_sugama": 0.38}
+    for model, model_tail in tail.items():
+        for kx, asymptote in model_tail.items():
+            for time in np.linspace(0.0, 30.0, 61):
+                trace_records.append(
+                    {
+                        "model": model,
+                        "kx": kx,
+                        "t_nu": time,
+                        "response": asymptote
+                        + (1.0 - asymptote) * np.exp(-rate[model] * time),
+                        "p_max": 24,
+                        "j_max": 10,
+                    }
+                )
+    section_records = []
+    for model in tail:
+        for coordinate in ("parallel", "perpendicular"):
+            abscissa = (
+                np.linspace(-3.0, 3.0, 51)
+                if coordinate == "parallel"
+                else np.linspace(0.0, 4.0, 51)
+            )
+            values = (
+                np.exp(-((np.abs(abscissa) - 0.65) / 0.7) ** 2)
+                if coordinate == "parallel"
+                else np.exp(-1.2 * abscissa)
+            )
+            values /= np.max(values)
+            for location, value in zip(abscissa, values, strict=True):
+                section_records.append(
+                    {
+                        "model": model,
+                        "coordinate": coordinate,
+                        "kx": 0.2,
+                        "t_nu": 5.0,
+                        "abscissa": location,
+                        "normalized_distribution": value,
+                        "p_max": 24,
+                        "j_max": 10,
+                    }
+                )
+    return trace_records, section_records
+
+
+def test_collisional_zonal_campaign_requires_complete_paper_protocol(
+    tmp_path: Path,
+) -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    traces, sections = _complete_collisional_zonal_records()
+
+    summary = mod.write_collisional_zonal_artifacts(
+        traces,
+        sections,
+        out_json=tmp_path / "collisional_zonal.json",
+        out_png=tmp_path / "collisional_zonal.png",
+    )
+
+    assert summary["gate_passed"] is True
+    assert all(summary["gates"].values())
+    assert summary["protocol"]["maximum_hermite_order"] == 24
+    assert summary["protocol"]["maximum_laguerre_order"] == 10
+    with Image.open(tmp_path / "collisional_zonal.png") as image:
+        image.verify()
+
+
+def test_collisional_zonal_campaign_fails_when_a_velocity_section_is_missing() -> None:
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    traces, sections = _complete_collisional_zonal_records()
+    sections = [
+        row
+        for row in sections
+        if not (
+            row["model"] == "improved_sugama"
+            and row["coordinate"] == "perpendicular"
+        )
+    ]
+
+    summary = mod.summarize_collisional_zonal_campaign(traces, sections)
+
+    assert summary["gate_passed"] is False
+    assert summary["gates"]["velocity_sections_present_at_tnu5"] is False
+
+
 def test_plot_zonal_flow_response_output_subcommand(
     tmp_path: Path, monkeypatch
 ) -> None:

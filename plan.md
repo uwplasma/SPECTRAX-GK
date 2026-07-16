@@ -377,6 +377,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Encoded the complete Frei--Ernst--Ricci collisional-zonal
+  acceptance protocol in the existing zonal-artifact owner. The fail-closed
+  gate requires Coulomb, original-Sugama, and improved-Sugama traces at
+  :math:`k_x=0.05,0.1,0.2`; normalized time through :math:`t\nu=30`;
+  :math:`(P,J)\geq(24,10)`; the Xiao residual; OS/IS/Coulomb tail ordering;
+  improved-Sugama proximity to Coulomb over :math:`t\nu\leq10`; and parallel
+  and perpendicular velocity sections at :math:`k_x=0.2,t\nu=5`. Complete and
+  deliberately incomplete campaign tests pass. This closes the acceptance-
+  contract layer only; no synthetic trace is tracked as physics evidence, and
+  the real runtime campaign remains the final collision-promotion action.
+
 - 2026-07-16: Added a scoped POSIX-fork decomposition for the dominant exact
   finite-wavelength matrix rows. Polarization is intentionally serial and runs
   first, populating copy-on-write transform and speed caches; complete output-

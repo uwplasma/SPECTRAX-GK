@@ -894,6 +894,23 @@ collisionless Rosenbluth--Hinton estimate. Lower moment counts or collisionless
 residual agreement are
 development evidence, not substitutes for that converged gate.
 
+The acceptance contract is implemented by the existing zonal-artifact owner::
+
+   python tools/artifacts/build_zonal_flow_artifacts.py collisional-zonal \
+     --traces collisional_zonal_traces.csv \
+     --sections collisional_zonal_velocity_sections.csv \
+     --out-json collisional_zonal_gate.json \
+     --out-png collisional_zonal_gate.png
+
+Trace rows contain ``model,kx,t_nu,response,p_max,j_max``. Velocity-section
+rows add ``coordinate,abscissa,normalized_distribution`` and are evaluated at
+:math:`k_x=0.2`, :math:`t\nu=5`. The gate requires all three collision models,
+all three radial wavenumbers, normalized-time coverage through 30, the
+:math:`(24,10)` hierarchy, the Xiao residual at :math:`k_x=0.05`, OS/IS/Coulomb
+late-time ordering at finite wavelength, improved-Sugama proximity to Coulomb
+over :math:`t\nu\leq10`, and both velocity sections. Missing data fail closed;
+the tool does not infer a pass from a lower-resolution or collisionless trace.
+
 Nonlinear full-distribution Landau collisions are a separate future model, not
 an extension flag on this linearized matrix. A dense precomputed collision
 tensor would have prohibitive basis scaling. The planned route follows the
