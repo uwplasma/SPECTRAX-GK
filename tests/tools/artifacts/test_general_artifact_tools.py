@@ -3241,7 +3241,7 @@ def test_tracked_finite_wavelength_itg_probe_stays_fail_closed() -> None:
     path = ROOT / "docs/_static/collision_itg_development_resolution.json"
     summary = json.loads(path.read_text(encoding="utf-8"))
 
-    assert summary["schema_version"] == 1
+    assert summary["schema_version"] == 2
     assert summary["claim_scope"] == "development_probe_not_literature_itg_acceptance"
     assert summary["literature_acceptance_passed"] is False
     assert summary["literature_required_resolution"] == [18, 6]
@@ -3279,7 +3279,7 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     path = ROOT / "docs/_static/collision_finite_wavelength_generation_hierarchy.json"
     summary = json.loads(path.read_text(encoding="utf-8"))
 
-    assert summary["schema_version"] == 1
+    assert summary["schema_version"] == 2
     assert summary["claim_scope"] == (
         "offline_generator_hierarchy_not_transport_acceptance"
     )
@@ -3287,12 +3287,20 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert summary["gates"] == {
         "all_generated_coefficients_finite": True,
         "literature_resolution_reached": False,
+        "paper_required_wavelength_generated": False,
         "p12_completed_within_600_seconds": True,
         "p7_p9_common_block_converged": True,
         "p9_p12_common_block_converged": True,
         "p9_completed_within_600_seconds": True,
     }
-    p9 = summary["p9_j4_kperp_0p5"]
+    assert summary["normalization"] == {
+        "generator_coordinate": "B=k_perp*v_thermal/Omega=sqrt(2*tau)*k_perp",
+        "paper_kperp_for_B_0p5_at_tau_1": pytest.approx(0.5 / np.sqrt(2.0)),
+        "paper_required_B_at_tau_1": pytest.approx(1.0 / np.sqrt(2.0)),
+        "paper_required_kperp": 0.5,
+        "runtime_coordinate": "B=sqrt(2*cache.b)",
+    }
+    p9 = summary["p9_j4_B_0p5"]
     assert p9["resolution"] == [9, 4]
     assert p9["spherical_order"] == 17
     assert p9["radial_order"] == 8
@@ -3302,7 +3310,7 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
         "pre_radial_factorization"
     ]["total_seconds"]
     assert max(summary["p7_p9_common_low_order_relative_l2"].values()) < 0.05
-    p12 = summary["p12_j5_kperp_0p5"]
+    p12 = summary["p12_j5_B_0p5"]
     assert p12["resolution"] == [12, 5]
     assert p12["spherical_order"] == 22
     assert p12["radial_order"] == 11

@@ -538,8 +538,10 @@ not a production Landau-transport claim.
 
 The runtime research boundary now mirrors the same decomposition.
 ``FiniteWavelengthCoulombOperator`` stores test, field, and four polarization
-tables with independent target/source :math:`k_\perp\rho` axes. A bilinear JAX
-interpolator evaluates those axes at :math:`b_a` and :math:`b_b`; the resolved
+tables with independent target/source Bessel-argument axes
+:math:`B_a=k_\perp v_{Ta}/\Omega_a`. The gyrokinetic cache stores
+:math:`b_a=k_\perp^2T_am_a/(q_aB)^2`, so a bilinear JAX interpolator evaluates
+the table at :math:`B_a=\sqrt{2b_a}` and :math:`B_b=\sqrt{2b_b}`; the resolved
 kernel applies equations (3.48)--(3.49) to gyrocenter moments :math:`G_a` and
 :math:`G_b`, then adds equation (3.50) using the solved potential and distinct
 :math:`q_a/T_a` and :math:`q_b/T_b` factors. It intentionally does not apply

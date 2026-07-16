@@ -702,6 +702,37 @@ def test_finite_wavelength_coulomb_runtime_assembly_matches_pair_equations() -> 
         )
 
 
+def test_finite_wavelength_coulomb_uses_thermal_bessel_argument() -> None:
+    """Collision tables use B=kperp*v_thermal/Omega=sqrt(2*cache.b)."""
+
+    grid = jnp.asarray([0.0, 2.0], dtype=jnp.float32)
+    coordinate_sum = grid[:, None] + grid[None, :]
+    matrix = coordinate_sum[None, None, :, :, None, None]
+    zero_matrix = jnp.zeros_like(matrix)
+    zero_vector = jnp.zeros(matrix.shape[:-1], dtype=jnp.float32)
+    operator = FiniteWavelengthCoulombOperator(
+        grid,
+        jnp.ones((1, 1), dtype=jnp.float32),
+        matrix,
+        zero_matrix,
+        zero_vector,
+        zero_vector,
+        zero_vector,
+        zero_vector,
+    )
+    state = jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.complex64)
+    context = CollisionContext(
+        distribution=state,
+        hamiltonian=state,
+        fields=FieldState(phi=jnp.zeros((1, 1, 1)), apar=None, bpar=None),
+        cache=SimpleNamespace(b=jnp.asarray([[[[0.5]]]], dtype=jnp.float32)),
+        parameters=SimpleNamespace(tz=jnp.ones(1)),
+    )
+
+    # cache.b=1/2 gives B=1, so bilinear interpolation of Bt+Bs returns 2.
+    np.testing.assert_allclose(operator.apply(context), 2.0 * state, atol=1.0e-6)
+
+
 def test_finite_wavelength_coulomb_operator_runs_through_linear_rhs() -> None:
     """The post-field collision protocol must add the complete Coulomb RHS."""
 

@@ -699,7 +699,7 @@ contractions now evaluate Laguerre products through cached analytic moments,
 hoist wavelength/angular factors, group all radial indices sharing one speed
 contraction, and collapse equation (3.33)'s auxiliary Laguerre sum by
 orthogonality into one weighted polynomial projection. With shared pair
-caches, the exact :math:`(9,4)`, :math:`k_\perp\rho=0.5` build falls from
+caches, the exact :math:`(9,4)`, Bessel-argument :math:`B=0.5` build falls from
 464.05 to 183.59 seconds while preserving all six arrays and checksum
 -152.93360627939981. Matrices take 156.68 seconds and the four polarization
 vectors 26.91 seconds. These transformations reorder exact multiprecision
@@ -712,7 +712,13 @@ completes in 556.21 seconds; its common :math:`(9,4)` test/field blocks change
 by 2.87% and 1.07%, and polarization changes remain below
 :math:`10^{-11}`. ``collision_finite_wavelength_generation_hierarchy.json``
 records the prospective 5% intermediate-resolution pass while failing closed
-on the still-unreached :math:`(18,6)` literature endpoint and transport gate.
+on both the paper wavelength and the still-unreached :math:`(18,6)` endpoint.
+This distinction matters: Frei, Hoffmann & Ricci normalize the Bessel argument
+as :math:`B=k_\perp\sqrt{2\tau}`. At :math:`\tau=1`, the existing
+:math:`B=0.5` hierarchy corresponds to paper :math:`k_\perp=0.5/\sqrt{2}`;
+their :math:`k_\perp=0.5` convergence point requires :math:`B=1/\sqrt{2}`.
+The runtime interpolation uses the same convention explicitly through
+:math:`B=\sqrt{2b_\mathrm{cache}}`.
 The drift-kinetic generator still evaluates
 collapsed equations
 (3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport
