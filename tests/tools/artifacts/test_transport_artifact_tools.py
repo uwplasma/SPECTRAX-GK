@@ -2232,6 +2232,7 @@ def test_electrostatic_diamagnetic_gate_builds_identity_summary(monkeypatch) -> 
 
         class Cache:
             Jl = jnp.ones((1, 1, 2, 1, 4), dtype=jnp.float32)
+            b = jnp.zeros((1, 2, 1, 4), dtype=jnp.float32)
             mask0 = jnp.zeros((2, 1, 4), dtype=bool)
             l4 = jnp.ones((1, 1, 1, 1), dtype=jnp.float32)
             ky = jnp.asarray([0.0, 0.3], dtype=jnp.float32)
