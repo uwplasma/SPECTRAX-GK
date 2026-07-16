@@ -1083,6 +1083,9 @@ def _gyroaveraged_polarization_coefficient_mp(
     kperp_rho: Any,
     maximum_bessel_laguerre_order: int,
     mp: Any,
+    *,
+    associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
+    laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
 ) -> Any:
     b = mp.mpf(kperp_rho)
     half_b = b / 2
@@ -1100,14 +1103,25 @@ def _gyroaveraged_polarization_coefficient_mp(
             + 1
         )
     ]
+    if associated_transform is None:
+
+        def associated_transform(p: int, j: int, m: int, g: int, s: int) -> Any:
+            return _associated_legendre_to_hermite_laguerre_mp(p, j, m, g, s, mp)
+
+    if laguerre_product is None:
+
+        def laguerre_product(m: int, n: int, k: int, output: int, radial: int) -> Any:
+            return _laguerre_product_expansion_coefficient_mp(
+                m, n, k, output, radial, mp
+            )
+
     for auxiliary_laguerre_order in range(maximum_auxiliary_laguerre + 1):
-        transform = _associated_legendre_to_hermite_laguerre_mp(
+        transform = associated_transform(
             spherical_order,
             spherical_radial_order,
             bessel_order,
             0,
             auxiliary_laguerre_order,
-            mp,
         )
         if transform == 0:
             continue
@@ -1124,13 +1138,12 @@ def _gyroaveraged_polarization_coefficient_mp(
             for output_order in range(
                 bessel_laguerre_order + bessel_order + auxiliary_laguerre_order + 1
             ):
-                product = _laguerre_product_expansion_coefficient_mp(
+                product = laguerre_product(
                     bessel_order,
                     bessel_laguerre_order,
                     auxiliary_laguerre_order,
                     output_order,
                     bessel_order,
-                    mp,
                 )
                 total += leading * kernels[output_order] * product
     return total
@@ -2154,6 +2167,8 @@ def coulomb_polarization_vectors(
                     wavelength,
                     maximum_bessel_laguerre_order,
                     mp,
+                    associated_transform=inverse_associated,
+                    laguerre_product=inverse_product,
                 )
             return polarization_cache[key]
 
@@ -2205,6 +2220,8 @@ def coulomb_polarization_vectors(
                         continue
                     for product_order in range(output_laguerre + n + 1):
                         product = laguerre_product(0, n, output_laguerre, product_order)
+                        if product == 0:
+                            continue
                         for speed_order in range(
                             product_order + output_hermite // 2 + 1
                         ):
@@ -2215,7 +2232,7 @@ def coulomb_polarization_vectors(
                                 speed_order,
                                 0,
                             )
-                            if product == 0 or inverse == 0:
+                            if inverse == 0:
                                 continue
                             test_speed, field_speed = integrated_speed(
                                 0,
