@@ -1944,7 +1944,7 @@ facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linearized collision matrices, finite-wavelength coefficient interpolation, and differentiable runtime application"
 moved_exports = [
-  "DriftKineticSugamaOperator",
+  "DriftKineticMomentCollisionOperator",
   "FiniteWavelengthCoulombOperator",
   "TabulatedMultispeciesCollisionOperator",
   "apply_collision_moment_matrix",

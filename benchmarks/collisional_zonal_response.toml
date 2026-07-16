@@ -34,6 +34,9 @@ progress_bar = true
 
 [geometry]
 model = "miller"
+# The Miller backend constructs the surface from rhoc/R0; this ratio, rather
+# than the metadata-only epsilon field, fixes the paper's inverse aspect ratio.
+rhoc = 0.277778
 q = 1.4
 s_hat = 0.5
 epsilon = 0.1

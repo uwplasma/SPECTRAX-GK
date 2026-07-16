@@ -913,7 +913,12 @@ The paper normalization is converted explicitly rather than fitted,
 
 so a trace through :math:`t\nu=30` evolves to solver time approximately 600.
 The canonical geometry and time contract is
-``benchmarks/collisional_zonal_response.toml``. One drift-kinetic model trace
+``benchmarks/collisional_zonal_response.toml``. Its Miller surface sets
+``rhoc/R0=0.1`` explicitly; changing only the analytic ``epsilon`` metadata
+would leave the generated surface at the wrong aspect ratio. The dense
+drift-kinetic matrix acts on evolved gyrocenter :math:`g` moments, following
+Frei, Ernst & Ricci (2022), Eq. (73), rather than on the post-field
+Hamiltonian. One drift-kinetic model trace
 is reproduced from an offline P24/J10 matrix archive with::
 
    python tools/artifacts/build_zonal_flow_artifacts.py \

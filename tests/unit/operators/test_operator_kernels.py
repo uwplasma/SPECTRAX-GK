@@ -39,7 +39,7 @@ from spectraxgk.operators.linear import (
     apply_multispecies_collision_moment_matrix,
     assemble_drift_kinetic_improved_sugama_matrix,
     assemble_drift_kinetic_sugama_matrix,
-    DriftKineticSugamaOperator,
+    DriftKineticMomentCollisionOperator,
     FiniteWavelengthCoulombOperator,
     TabulatedMultispeciesCollisionOperator,
     drift_kinetic_improved_sugama_pair_matrices,
@@ -125,9 +125,9 @@ def test_driven_collision_response_matches_saturation_and_derivative() -> None:
 
     def current(field: jnp.ndarray) -> jnp.ndarray:
         source = parallel_electric_field_source(3, 0, field)
-        return solve_driven_collision_response(
-            collision, source, active_modes=active
-        )[1]
+        return solve_driven_collision_response(collision, source, active_modes=active)[
+            1
+        ]
 
     field = jnp.asarray(1.0e-3)
     response = jax.jit(
@@ -191,9 +191,7 @@ def test_reduced_sugama_current_recovers_high_charge_limit() -> None:
     original_low_charge = current(drift_kinetic_sugama_pair_matrices, 1.0)
     improved_low_charge = current(drift_kinetic_improved_sugama_pair_matrices, 1.0)
     original_high_charge = current(drift_kinetic_sugama_pair_matrices, 100.0)
-    improved_high_charge = current(
-        drift_kinetic_improved_sugama_pair_matrices, 100.0
-    )
+    improved_high_charge = current(drift_kinetic_improved_sugama_pair_matrices, 100.0)
 
     assert improved_low_charge / original_low_charge > 1.10
     assert abs(improved_high_charge / original_high_charge - 1.0) < 0.01
@@ -819,8 +817,8 @@ def test_finite_wavelength_coulomb_operator_runs_through_linear_rhs() -> None:
     np.testing.assert_allclose(rhs, expected, rtol=3.0e-6, atol=3.0e-6)
 
 
-def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> None:
-    """A constant pair table is identical to the reduced Sugama protocol path."""
+def test_drift_kinetic_and_tabulated_operators_use_declared_state_conventions() -> None:
+    """Drift-kinetic matrices act on G while finite-b tables act on H."""
 
     density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
     mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
@@ -846,7 +844,7 @@ def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> 
     tabulated = TabulatedMultispeciesCollisionOperator(
         jnp.asarray([0.0, 2.0], dtype=jnp.float32), table
     )
-    reduced = DriftKineticSugamaOperator(matrix)
+    drift_kinetic = DriftKineticMomentCollisionOperator(matrix)
     terms = LinearTerms(
         streaming=0.0,
         mirror=0.0,
@@ -870,14 +868,30 @@ def test_tabulated_multispecies_collision_operator_runs_through_linear_rhs() -> 
             collision_operator=operator,
         )[0]
     )(state, tabulated)
-    reduced_rhs, _ = linear_rhs_cached(
+    assert np.all(np.isfinite(tabulated_rhs))
+    drift_kinetic_rhs, _ = linear_rhs_cached(
         state,
         cache,
         params,
         terms=terms,
-        collision_operator=reduced,
+        collision_operator=drift_kinetic,
     )
-    np.testing.assert_allclose(tabulated_rhs, reduced_rhs, rtol=3.0e-6, atol=3.0e-6)
+    expected = 0.7 * apply_multispecies_collision_moment_matrix(state, matrix)
+    np.testing.assert_allclose(drift_kinetic_rhs, expected, rtol=3.0e-6, atol=3.0e-6)
+    context = CollisionContext(
+        state,
+        state.at[:, 0, 3].add(0.5),
+        None,
+        cache,
+        params,
+    )
+    np.testing.assert_allclose(
+        drift_kinetic.apply(context),
+        apply_multispecies_collision_moment_matrix(state, matrix),
+        rtol=3.0e-6,
+        atol=3.0e-6,
+    )
+    assert not np.allclose(tabulated.apply(context), drift_kinetic.apply(context))
     assert len(jax.tree_util.tree_leaves(tabulated)) == 2
 
     bad_operator = TabulatedMultispeciesCollisionOperator(
@@ -1227,7 +1241,9 @@ def test_multispecies_sugama_operator_runs_through_linear_rhs() -> None:
         * jnp.arange(2 * 2 * 4 * 2 * 2 * 4, dtype=jnp.float32).reshape(2, 2, 4, 2, 2, 4)
     ).astype(jnp.complex64)
     cache = build_linear_cache(grid, geometry, params, Nl=2, Nm=4)
-    operator = DriftKineticSugamaOperator.from_species(density, mass, temperature)
+    operator = DriftKineticMomentCollisionOperator.from_species(
+        density, mass, temperature
+    )
     terms = LinearTerms(
         streaming=0.0,
         mirror=0.0,
@@ -1271,7 +1287,7 @@ def test_drift_kinetic_collision_model_is_blocked_for_short_wave_itg() -> None:
         ),
         dtype=jnp.complex64,
     )
-    operator = DriftKineticSugamaOperator.from_improved_species(
+    operator = DriftKineticMomentCollisionOperator.from_improved_species(
         jnp.ones(1), jnp.ones(1), jnp.ones(1)
     )
     term_values = dict(

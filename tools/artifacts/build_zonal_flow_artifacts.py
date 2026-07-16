@@ -385,7 +385,7 @@ def run_drift_kinetic_collisional_zonal_trace(
     from spectraxgk.geometry import apply_geometry_grid_defaults
     from spectraxgk.operators.linear.cache_builder import build_linear_cache
     from spectraxgk.operators.linear.collisions import (
-        TabulatedMultispeciesCollisionOperator,
+        DriftKineticMomentCollisionOperator,
     )
     from spectraxgk.operators.linear.params import LinearTerms
     from spectraxgk.solvers.linear.integrators import integrate_linear
@@ -436,6 +436,8 @@ def run_drift_kinetic_collisional_zonal_trace(
     )
     kx = 0.05
     cfg, _raw = load_runtime_from_toml(config)
+    major_radius = float(cfg.geometry.R0)
+    minor_radius = epsilon * major_radius
     cfg = replace(
         cfg,
         grid=replace(
@@ -449,6 +451,7 @@ def run_drift_kinetic_collisional_zonal_trace(
         ),
         geometry=replace(
             cfg.geometry,
+            rhoc=minor_radius,
             q=q,
             s_hat=0.5,
             epsilon=epsilon,
@@ -480,11 +483,8 @@ def run_drift_kinetic_collisional_zonal_trace(
         Nm=n_hermite,
         nspecies=1,
     )
-    table = np.empty((1, 1, 2, mode_count, mode_count), dtype=float)
-    table[0, 0, 0] = collision_frequency * matrix
-    table[0, 0, 1] = collision_frequency * matrix
-    operator = TabulatedMultispeciesCollisionOperator(
-        jnp.asarray([0.0, 1.0]), jnp.asarray(table)
+    operator = DriftKineticMomentCollisionOperator(
+        jnp.asarray(collision_frequency * matrix[None, None])
     )
     terms = LinearTerms(
         streaming=1.0,
@@ -569,6 +569,8 @@ def run_drift_kinetic_collisional_zonal_trace(
         "model_archive": str(model_archive),
         "q": q,
         "epsilon": epsilon,
+        "miller_minor_radius": minor_radius,
+        "miller_major_radius": major_radius,
         "normalized_collisionality": normalized_collisionality,
         "collision_frequency": collision_frequency,
         "kx": kx,

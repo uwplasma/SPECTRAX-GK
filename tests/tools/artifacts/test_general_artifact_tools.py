@@ -21,6 +21,7 @@ import numpy as np
 
 from support.paths import load_artifact_tool, load_comparison_tool, load_release_tool
 from spectraxgk.diagnostics.modes import save_eigenfunction_reference_bundle
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from tools.artifacts.make_benchmark_atlas import (
     _atlas_manifest_path,
     _build_convergence_gate_reports,
@@ -4067,6 +4068,14 @@ def test_collisional_zonal_frequency_matches_paper_normalization() -> None:
             q=0.0,
             epsilon=0.1,
         )
+
+
+def test_collisional_zonal_miller_surface_has_paper_inverse_aspect_ratio() -> None:
+    cfg, _raw = load_runtime_from_toml(
+        ROOT / "benchmarks" / "collisional_zonal_response.toml"
+    )
+
+    assert cfg.geometry.rhoc / cfg.geometry.R0 == pytest.approx(0.1)
 
 
 def test_collisional_zonal_requested_mode_must_survive_dealiasing() -> None:

@@ -239,6 +239,9 @@ geometry path used for VMEC ``eik.nc`` files.
 Set the Miller inputs directly in ``[geometry]``:
 ``rhoc``, ``q``, ``s_hat``, ``R0``, optional ``R_geo``, ``shift``,
 ``akappa``, ``akappri``, ``tri``, ``tripri``, and ``betaprim``.
+The generated Miller surface has inverse aspect ratio ``rhoc / R0``. Set that
+ratio explicitly when reproducing a benchmark; the separate ``epsilon`` field
+belongs to analytic geometry metadata and does not replace the surface radius.
 ``geometry_file`` can be used as an explicit output path for the generated
 Miller ``*.eiknc.nc`` file. Existing output is reused by default; pass
 ``--force`` to ``spectraxgk geometry miller`` to regenerate it. The

@@ -353,13 +353,16 @@ gyroradius convention, and return the spatial matrix layout consumed directly
 by ``apply_multispecies_collision_moment_matrix``. The resulting matrix may
 vary at every perpendicular/parallel grid point without leaving traced JAX
 execution.
-``TabulatedMultispeciesCollisionOperator`` exposes this boundary through the
-standard collision protocol. It is a JAX pytree containing the coefficient
+``TabulatedMultispeciesCollisionOperator`` exposes this finite-wavelength
+boundary through the standard collision protocol. It is a JAX pytree containing the coefficient
 grid and fully assembled, collision-frequency-weighted pair table; its
 ``apply`` method obtains :math:`k_\perp\rho_s=\sqrt{b_s}` from the solver cache,
 interpolates each target/source block, and acts on the post-field Hamiltonian.
-A constant-table full-RHS gate is identical to
-``DriftKineticSugamaOperator``. Generated tables, rather than the runtime
+In contrast, ``DriftKineticMomentCollisionOperator`` implements the
+drift-kinetic convention of Frei, Ernst & Ricci (2022), Eq. (73): its dense
+matrix acts directly on evolved gyrocenter moments because :math:`f\simeq g`
+in that limit. A full-RHS gate checks both conventions independently.
+Generated tables, rather than the runtime
 operator, own directed-frequency normalization and coefficient provenance.
 Tests require node and endpoint identity, generated-table/direct-equation
 identity for both models, species-local spatial application, and JVP/finite-
@@ -615,11 +618,11 @@ matrix-exponential trajectory preserves those invariants through unequal-
 species relaxation and reduces the collision residual by more than five
 orders of magnitude.
 
-For Python solver experiments, ``DriftKineticSugamaOperator.from_species``
-wraps that matrix in the standard collision protocol. Its ``apply`` method
-uses ``CollisionContext.hamiltonian`` rather than the evolved distribution,
-so the real linear and nonlinear RHS paths supply the post-field
-nonadiabatic response. A collision-only two-species linear-RHS gate verifies a
+For Python solver experiments,
+``DriftKineticMomentCollisionOperator.from_species`` wraps that matrix in the
+standard collision protocol. Its ``apply`` method uses
+``CollisionContext.distribution`` as required by the drift-kinetic limit. A
+collision-only two-species linear-RHS gate verifies a
 nonzero response and the same physical invariants. The operator is a JAX
 pytree, preserving differentiation when species parameters are constructed
 inside an objective.
@@ -646,7 +649,7 @@ the heat-flow-block Frobenius distance to the Coulomb matrix from about
 operator is non-positive over the complete reduced moment space.
 
 ``assemble_drift_kinetic_improved_sugama_matrix`` and
-``DriftKineticSugamaOperator.from_improved_species`` expose this equation slice
+``DriftKineticMomentCollisionOperator.from_improved_species`` expose this equation slice
 through the same vectorized JAX and collision-protocol paths. This is a
 friction-flow matrix validation, not a parallel-conductivity claim. The
 published conductivity comparison retains more moments and reports that the

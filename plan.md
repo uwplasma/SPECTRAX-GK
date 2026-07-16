@@ -377,6 +377,20 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Diagnosed the first full P24/J10 Coulomb zonal trace rather than
+  tuning its failed residual. The measured tail, ``0.01679``, matched the Xiao
+  residual for the surface's actual ``rhoc/R0=0.18`` (``0.01626``), not the
+  requested paper value ``epsilon=0.1`` (``0.00508``). The Miller benchmark
+  had changed analytic metadata without changing ``rhoc``. The canonical
+  runner and TOML now construct ``rhoc=epsilon*R0`` and report both radii.
+  Separately, the paper's drift-kinetic Eq. (73) fixes the collision matrix's
+  evolved variable as gyrocenter ``g``; the renamed
+  ``DriftKineticMomentCollisionOperator`` now encodes that convention while
+  finite-wavelength tabulated operators retain their explicit Hamiltonian
+  convention. Unit, artifact-protocol, geometry-ratio, invariant, lint, and
+  type-facing import gates pass. Corrected paper-resolution traces are running
+  before any physics promotion.
+
 - 2026-07-16: Removed the next collisional-zonal generator bottleneck before
   launching the paper hierarchy. The drift-kinetic Coulomb owner now
   determines the exact polynomial/parity support of all required speed moments
