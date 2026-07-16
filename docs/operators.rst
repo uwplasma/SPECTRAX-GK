@@ -552,10 +552,20 @@ kernel applies equations (3.48)--(3.49) to gyrocenter moments :math:`G_a` and
 the matrices to ``build_H`` because that would double-count the pullback
 polarization.
 
+For a single like-species plasma,
+``EqualSpeciesFiniteWavelengthCoulombOperator`` stores only the physical
+diagonal :math:`B_a=B_b` of those tables. This is not a reduced collision
+model: it retains the same test, field, and four polarization terms, while
+avoiding coefficient generation on target/source wavelength pairs that cannot
+occur in the one-ion-species problem. Its one-dimensional interpolation is
+JIT compatible and differentiable with respect to the local Bessel argument.
+Multispecies input is rejected rather than silently applying the diagonal
+assumption.
+
 Independent Python pair loops, JIT execution, JVP/finite-difference checks,
 like-species polarization cancellation, generated-coefficient application,
-and the complete cached linear-RHS seam pass. This closes runtime algebra and
-differentiable interpolation. It does not yet close Hermite/Laguerre
+full-pair/diagonal identity, and the complete cached linear-RHS seam pass. This
+closes runtime algebra and differentiable interpolation. It does not yet close Hermite/Laguerre
 truncation or any transport benchmark; therefore this class remains a Python
 research API and has no input-file selector.
 

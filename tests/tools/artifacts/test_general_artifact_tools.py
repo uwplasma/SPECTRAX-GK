@@ -3209,9 +3209,7 @@ def test_finite_wavelength_angular_cutoff_retains_complete_basis() -> None:
         **kwargs,
         maximum_angular_bessel_order=3,
     )
-    full_vectors = mod.coulomb_polarization_vectors(
-        2, 1, 0.3, 0.3, 1.0, 1.0, **kwargs
-    )
+    full_vectors = mod.coulomb_polarization_vectors(2, 1, 0.3, 0.3, 1.0, 1.0, **kwargs)
     bounded_vectors = mod.coulomb_polarization_vectors(
         2,
         1,
@@ -3274,6 +3272,44 @@ def test_finite_wavelength_endpoint_archive_is_replayable(tmp_path: Path) -> Non
             np.testing.assert_array_equal(
                 parallel[f"array_{index}"], serial[f"array_{index}"]
             )
+
+
+def test_equal_species_finite_wavelength_table_is_runtime_ready(
+    tmp_path: Path,
+) -> None:
+    """A shared-cache diagonal archive records a complete ordered B grid."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    out = tmp_path / "diagonal_table.npz"
+    metadata = mod.write_equal_species_finite_wavelength_coulomb_table(
+        out,
+        bessel_arguments=(0.1, 0.2),
+        maximum_hermite_order=1,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=1,
+        maximum_bessel_laguerre_order=1,
+        digits=24,
+        worker_count=1,
+    )
+    assert metadata["bessel_argument_grid"] == [0.1, 0.2]
+    assert metadata["laguerre_convention"] == "runtime_signed"
+    assert len(metadata["wavelength_seconds"]) == 2
+    with np.load(out) as archive:
+        assert archive["test_table"].shape == (2, 4, 4)
+        assert archive["field_table"].shape == (2, 4, 4)
+        assert archive["test_phi1"].shape == (2, 4)
+        assert np.all(np.isfinite(archive["field_phi2"]))
+
+    with pytest.raises(ValueError, match="strictly increasing"):
+        mod.write_equal_species_finite_wavelength_coulomb_table(
+            out,
+            bessel_arguments=(0.2, 0.1),
+            maximum_hermite_order=1,
+            maximum_laguerre_order=0,
+            maximum_angular_bessel_order=1,
+            maximum_bessel_laguerre_order=1,
+            digits=24,
+        )
 
 
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
@@ -4224,6 +4260,28 @@ def test_collisional_zonal_miller_surface_has_paper_inverse_aspect_ratio() -> No
     )
 
     assert cfg.geometry.rhoc / cfg.geometry.R0 == pytest.approx(0.1)
+
+
+def test_collisional_zonal_finite_wavelength_spans_fieldline_b() -> None:
+    """Finite-B tables must cover the Miller field line, not one mean point."""
+
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    ranges = []
+    for kx in (0.1, 0.2):
+        problem = mod._build_collisional_zonal_problem(
+            config=ROOT / "benchmarks" / "collisional_zonal_response.toml",
+            kx=kx,
+            nz=32,
+            n_laguerre=2,
+            n_hermite=4,
+        )
+        bessel_argument = np.sqrt(2.0 * np.asarray(problem.cache.b))[
+            0, 0, problem.kx_index
+        ]
+        ranges.append((float(np.min(bessel_argument)), float(np.max(bessel_argument))))
+    np.testing.assert_allclose(ranges[1], 2.0 * np.asarray(ranges[0]), rtol=2.0e-6)
+    assert ranges[0][0] < np.sqrt(2.0) * 0.1 < ranges[0][1]
+    assert ranges[1][0] < np.sqrt(2.0) * 0.2 < ranges[1][1]
 
 
 def test_collisional_zonal_requested_mode_must_survive_dealiasing() -> None:

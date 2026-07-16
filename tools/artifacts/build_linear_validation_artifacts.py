@@ -3111,6 +3111,7 @@ def write_finite_wavelength_coulomb_endpoint(
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
     with mp.workdps(digits):
         started = time.perf_counter()
+        print("collision endpoint: preparing speed coefficients", flush=True)
         coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
         coefficient_functions = _precompute_coulomb_speed_coefficients(
             coefficient_functions,
@@ -3135,6 +3136,7 @@ def write_finite_wavelength_coulomb_endpoint(
             "_assembly_cache": assembly_cache,
         }
         started = time.perf_counter()
+        print("collision endpoint: assembling polarization vectors", flush=True)
         vectors = coulomb_polarization_vectors(
             maximum_hermite_order,
             maximum_laguerre_order,
@@ -3146,6 +3148,7 @@ def write_finite_wavelength_coulomb_endpoint(
         )
         polarization_seconds = time.perf_counter() - started
         started = time.perf_counter()
+        print("collision endpoint: assembling test/field matrices", flush=True)
         matrices = coulomb_nonpolarized_moment_matrices(
             maximum_hermite_order,
             maximum_laguerre_order,
@@ -3186,6 +3189,143 @@ def write_finite_wavelength_coulomb_endpoint(
         out,
         metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
         **{f"array_{index}": array for index, array in enumerate(arrays)},
+    )
+    return metadata
+
+
+def write_equal_species_finite_wavelength_coulomb_table(
+    out: Path,
+    *,
+    bessel_arguments: tuple[float, ...],
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    maximum_angular_bessel_order: int,
+    maximum_bessel_laguerre_order: int,
+    digits: int = 32,
+    worker_count: int = 1,
+) -> dict[str, Any]:
+    """Write the diagonal finite-wavelength table needed by one ion species.
+
+    Target and source Bessel arguments are equal pointwise for like-species
+    collisions. All wavelengths share the expensive speed coefficients and
+    algebra caches; stored coefficients use the runtime's signed Laguerre
+    convention and can be passed directly to
+    ``EqualSpeciesFiniteWavelengthCoulombOperator``.
+    """
+
+    import mpmath as mp
+
+    grid = np.asarray(bessel_arguments, dtype=float)
+    if grid.ndim != 1 or grid.size < 2:
+        raise ValueError("bessel_arguments must contain at least two points")
+    if np.any(~np.isfinite(grid)) or np.any(grid < 0.0) or np.any(np.diff(grid) <= 0.0):
+        raise ValueError(
+            "bessel_arguments must be finite, nonnegative, and strictly increasing"
+        )
+    maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
+    mode_count = (maximum_hermite_order + 1) * (maximum_laguerre_order + 1)
+    matrices = [np.empty((grid.size, mode_count, mode_count)) for _ in range(2)]
+    vectors = [np.empty((grid.size, mode_count)) for _ in range(4)]
+    laguerre_sign = np.asarray(
+        [
+            (-1.0) ** laguerre_order
+            for _hermite_order in range(maximum_hermite_order + 1)
+            for laguerre_order in range(maximum_laguerre_order + 1)
+        ]
+    )
+    matrix_convention = laguerre_sign[:, None] * laguerre_sign[None, :]
+
+    with mp.workdps(digits):
+        total_started = time.perf_counter()
+        print(
+            "collision table: preparing wavelength-independent coefficients", flush=True
+        )
+        coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
+        coefficient_functions = _precompute_coulomb_speed_coefficients(
+            coefficient_functions,
+            maximum_spherical_order=maximum_degree,
+            maximum_spherical_radial_order=maximum_degree // 2,
+            maximum_speed_power=(
+                maximum_laguerre_order
+                + maximum_bessel_laguerre_order
+                + (maximum_hermite_order + maximum_angular_bessel_order) // 2
+            ),
+            worker_count=worker_count,
+        )
+        speed_precompute_seconds = time.perf_counter() - total_started
+        assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
+        kwargs = {
+            "maximum_spherical_order": maximum_degree,
+            "maximum_spherical_radial_order": maximum_degree // 2,
+            "maximum_angular_bessel_order": maximum_angular_bessel_order,
+            "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
+            "digits": digits,
+            "_coefficient_functions": coefficient_functions,
+            "_assembly_cache": assembly_cache,
+        }
+        wavelength_seconds = []
+        for index, bessel_argument in enumerate(grid):
+            started = time.perf_counter()
+            print(
+                f"collision table: wavelength {index + 1}/{grid.size}, B={bessel_argument:.9g}",
+                flush=True,
+            )
+            point_vectors = coulomb_polarization_vectors(
+                maximum_hermite_order,
+                maximum_laguerre_order,
+                float(bessel_argument),
+                float(bessel_argument),
+                1.0,
+                1.0,
+                **kwargs,
+            )
+            point_matrices = coulomb_nonpolarized_moment_matrices(
+                maximum_hermite_order,
+                maximum_laguerre_order,
+                float(bessel_argument),
+                1.0,
+                1.0,
+                **kwargs,
+                worker_count=worker_count,
+            )
+            for table, values in zip(matrices, point_matrices, strict=True):
+                table[index] = matrix_convention * values
+            for table, values in zip(vectors, point_vectors, strict=True):
+                table[index] = laguerre_sign * values
+            wavelength_seconds.append(time.perf_counter() - started)
+        total_seconds = time.perf_counter() - total_started
+
+    arrays = (*matrices, *vectors)
+    if any(not np.all(np.isfinite(array)) for array in arrays):
+        raise RuntimeError("generated Coulomb table contains non-finite values")
+    checksum = float(sum(float(np.sum(array)) for array in arrays))
+    metadata = {
+        "schema_version": 1,
+        "claim_scope": "equal_species_diagonal_finite_wavelength_coulomb_table",
+        "resolution": [maximum_hermite_order, maximum_laguerre_order],
+        "bessel_argument_grid": grid.tolist(),
+        "maximum_angular_bessel_order": maximum_angular_bessel_order,
+        "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
+        "precision_decimal_digits": digits,
+        "worker_count": worker_count,
+        "speed_precompute_seconds": speed_precompute_seconds,
+        "wavelength_seconds": wavelength_seconds,
+        "total_seconds": total_seconds,
+        "checksum": checksum,
+        "laguerre_convention": "runtime_signed",
+        "source": "Frei et al. (2021), equations (3.48)--(3.50)",
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out,
+        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
+        bessel_argument_grid=grid,
+        test_table=matrices[0],
+        field_table=matrices[1],
+        test_phi1=vectors[0],
+        field_phi1=vectors[1],
+        test_phi2=vectors[2],
+        field_phi2=vectors[3],
     )
     return metadata
 
@@ -5275,6 +5415,21 @@ def build_collision_endpoint_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_diagonal_table_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate an equal-species diagonal finite-wavelength table."
+    )
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--bessel-argument", action="append", type=float, required=True)
+    parser.add_argument("--maximum-hermite-order", type=int, required=True)
+    parser.add_argument("--maximum-laguerre-order", type=int, required=True)
+    parser.add_argument("--maximum-angular-bessel-order", type=int, default=4)
+    parser.add_argument("--maximum-bessel-laguerre-order", type=int, default=6)
+    parser.add_argument("--digits", type=int, default=32)
+    parser.add_argument("--worker-count", type=int, default=1)
+    return parser
+
+
 def build_figures_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate linear validation figures.")
     parser.add_argument(
@@ -5855,6 +6010,22 @@ def main_collision_endpoint(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_diagonal_table(argv: list[str] | None = None) -> int:
+    args = build_collision_diagonal_table_parser().parse_args(argv)
+    metadata = write_equal_species_finite_wavelength_coulomb_table(
+        args.out,
+        bessel_arguments=tuple(args.bessel_argument),
+        maximum_hermite_order=int(args.maximum_hermite_order),
+        maximum_laguerre_order=int(args.maximum_laguerre_order),
+        maximum_angular_bessel_order=int(args.maximum_angular_bessel_order),
+        maximum_bessel_laguerre_order=int(args.maximum_bessel_laguerre_order),
+        digits=int(args.digits),
+        worker_count=int(args.worker_count),
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
@@ -5870,6 +6041,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-response",
                 "collision-itg",
                 "collision-endpoint",
+                "collision-diagonal-table",
             ),
         )
         parser.print_help()
@@ -5891,6 +6063,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_itg(rest)
     if command == "collision-endpoint":
         return main_collision_endpoint(rest)
+    if command == "collision-diagonal-table":
+        return main_collision_diagonal_table(rest)
     raise SystemExit(f"unknown command: {command}")
 
 

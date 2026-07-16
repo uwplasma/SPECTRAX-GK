@@ -217,6 +217,10 @@ Linear Collisions
    :members:
    :no-index:
 
+.. automodule:: spectraxgk.operators.linear.collision_tables
+   :members:
+   :no-index:
+
 Linear Moments
 --------------
 

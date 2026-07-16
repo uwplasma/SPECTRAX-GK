@@ -40,11 +40,13 @@ from spectraxgk.operators.linear import (
     assemble_drift_kinetic_improved_sugama_matrix,
     assemble_drift_kinetic_sugama_matrix,
     DriftKineticMomentCollisionOperator,
+    EqualSpeciesFiniteWavelengthCoulombOperator,
     FiniteWavelengthCoulombOperator,
     TabulatedMultispeciesCollisionOperator,
     drift_kinetic_improved_sugama_pair_matrices,
     drift_kinetic_sugama_pair_matrices,
     interpolate_collision_moment_matrix,
+    interpolate_collision_diagonal_table,
     interpolate_collision_pair_table,
     load_collision_moment_matrix,
     parallel_electric_field_source,
@@ -410,6 +412,9 @@ def test_collision_matrix_kperp_interpolation_species_jvp_and_validation() -> No
         - interpolate_collision_moment_matrix(grid, shared_table, scalar - 0.4 * step)
     ) / (2.0 * step)
     np.testing.assert_allclose(tangent, finite_difference, rtol=4.0e-4, atol=4.0e-4)
+    scalar_species = interpolate_collision_moment_matrix(grid, species_table, scalar)
+    np.testing.assert_allclose(scalar_species[0], 1.6 * base)
+    np.testing.assert_allclose(scalar_species[1], 3.2 * base)
 
     with pytest.raises(ValueError, match="at least two points"):
         interpolate_collision_moment_matrix(
@@ -419,6 +424,10 @@ def test_collision_matrix_kperp_interpolation_species_jvp_and_validation() -> No
         interpolate_collision_moment_matrix(
             jnp.asarray([0.0, 2.0, 1.0]), shared_table, scalar
         )
+    with pytest.raises(ValueError, match="must have shape"):
+        interpolate_collision_moment_matrix(grid, jnp.ones((3, 3)), scalar)
+    with pytest.raises(ValueError, match="axis must match"):
+        interpolate_collision_moment_matrix(grid, shared_table[:2], scalar)
     with pytest.raises(ValueError, match="must be square"):
         interpolate_collision_moment_matrix(grid, jnp.ones((3, 8, 7)), scalar)
     with pytest.raises(ValueError, match="species-leading"):
@@ -730,6 +739,81 @@ def test_finite_wavelength_coulomb_uses_thermal_bessel_argument() -> None:
 
     # cache.b=1/2 gives B=1, so bilinear interpolation of Bt+Bs returns 2.
     np.testing.assert_allclose(operator.apply(context), 2.0 * state, atol=1.0e-6)
+
+
+def test_equal_species_finite_wavelength_table_matches_full_pair_diagonal() -> None:
+    """The compact like-species path retains the full Coulomb pair equations."""
+
+    grid = jnp.asarray([0.0, 1.0, 2.0], dtype=jnp.float32)
+    matrix = (1.0 + 0.3 * grid)[:, None, None]
+    vector = (0.2 - 0.04 * grid)[:, None]
+    zero_matrix = jnp.zeros_like(matrix)
+    zero_vector = jnp.zeros_like(vector)
+    frequency = jnp.asarray([[0.7]], dtype=jnp.float32)
+    diagonal = EqualSpeciesFiniteWavelengthCoulombOperator(
+        grid,
+        frequency,
+        matrix,
+        zero_matrix,
+        vector,
+        zero_vector,
+        zero_vector,
+        zero_vector,
+    )
+
+    # These bilinear tables equal the compact values along Bt=Bs.
+    midpoint = 0.5 * (grid[:, None] + grid[None, :])
+    full = FiniteWavelengthCoulombOperator(
+        grid,
+        frequency,
+        (1.0 + 0.3 * midpoint)[None, None, ..., None, None],
+        jnp.zeros((1, 1, 3, 3, 1, 1)),
+        (0.2 - 0.04 * midpoint)[None, None, ..., None],
+        jnp.zeros((1, 1, 3, 3, 1)),
+        jnp.zeros((1, 1, 3, 3, 1)),
+        jnp.zeros((1, 1, 3, 3, 1)),
+    )
+    state = jnp.asarray([[[[[[1.0, 1.5]]]]]], dtype=jnp.complex64)
+    b_argument = jnp.asarray([0.4, 1.6], dtype=jnp.float32)
+    context = CollisionContext(
+        distribution=state,
+        hamiltonian=state,
+        fields=FieldState(
+            phi=jnp.asarray([[[0.3, -0.2]]], dtype=jnp.float32),
+            apar=None,
+            bpar=None,
+        ),
+        cache=SimpleNamespace(b=0.5 * b_argument[None, None, None, :] ** 2),
+        parameters=SimpleNamespace(tz=jnp.ones(1)),
+    )
+    compact_result = diagonal.apply(context)
+    np.testing.assert_allclose(
+        compact_result, full.apply(context), rtol=2e-6, atol=2e-6
+    )
+    assert len(jax.tree_util.tree_leaves(diagonal)) == 8
+
+    direction = jnp.asarray([0.1, -0.2], dtype=jnp.float32)
+    tangent = jax.jvp(
+        lambda values: interpolate_collision_diagonal_table(grid, matrix, values),
+        (b_argument,),
+        (direction,),
+    )[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        interpolate_collision_diagonal_table(
+            grid, matrix, b_argument + step * direction
+        )
+        - interpolate_collision_diagonal_table(
+            grid, matrix, b_argument - step * direction
+        )
+    ) / (2.0 * step)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=8e-4, atol=8e-4)
+
+    multispecies = context._replace(
+        distribution=jnp.broadcast_to(state, (2,) + state.shape[1:])
+    )
+    with pytest.raises(ValueError, match="require one species"):
+        diagonal.apply(multispecies)
 
 
 def test_finite_wavelength_coulomb_operator_runs_through_linear_rhs() -> None:

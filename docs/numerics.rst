@@ -805,6 +805,27 @@ archive instead of a full two-dimensional interpolation table::
      --maximum-bessel-laguerre-order 6 --digits 32 --worker-count 16
 
 This command records every truncation, timing, and checksum in the archive.
+It is a coefficient diagnostic, not a complete zonal table: on the paper
+Miller surface the local Bessel argument varies along the field line. For the
+one-species zonal problem, generate the required equal-target/source diagonal
+table by repeating ``--bessel-argument`` over a grid that covers the measured
+field-line interval::
+
+   python tools/artifacts/build_linear_validation_artifacts.py collision-diagonal-table \
+     --out finite_b_zonal_P24_J10_diagonal.npz \
+     --bessel-argument 0.126 --bessel-argument 0.140 \
+     --bessel-argument 0.155 --bessel-argument 0.254 \
+     --bessel-argument 0.282 --bessel-argument 0.311 \
+     --maximum-hermite-order 24 --maximum-laguerre-order 10 \
+     --maximum-angular-bessel-order 4 \
+     --maximum-bessel-laguerre-order 6 --digits 32 --worker-count 16
+
+The generator prints each expensive phase, shares wavelength-independent
+Coulomb speed coefficients across the complete grid, and writes coefficients
+in the runtime Laguerre convention. A nested B-grid trace comparison remains
+mandatory because the illustrative grid above is coverage, not an interpolation
+convergence claim.
+
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
 angular cutoff must pass a nested endpoint or observable-level convergence

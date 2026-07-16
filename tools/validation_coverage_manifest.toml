@@ -353,7 +353,7 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.linear.collisions"
 path = "src/spectraxgk/operators/linear/collisions.py"
-owner_lane = "linearized collision matrices, finite-wavelength interpolation, and runtime application"
+owner_lane = "linearized collision matrices, finite-wavelength pair interpolation, and runtime application"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -390,6 +390,36 @@ artifact_paths = [
 next_tests = [
   "test fixed-particle-position conservation only if a pre-gyroaverage particle operator is implemented",
   "require finite-b ITG and collisional zonal-response gates before input-file promotion",
+]
+
+[[modules]]
+module = "spectraxgk.operators.linear.collision_tables"
+path = "src/spectraxgk/operators/linear/collision_tables.py"
+owner_lane = "generic tabulated multispecies collision matrices and interpolation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Frei et al. (2021) gyro-moment finite-wavelength collision blocks",
+  "JAX differentiable array-programming and interpolation semantics",
+]
+physics_contracts = [
+  "target/source species tables retain explicit ordered-pair axes",
+  "tabulated matrices act on the post-field Hamiltonian under the declared finite-wavelength convention",
+]
+numerics_contracts = [
+  "shared, per-species, and ordered-pair tables interpolate on device with explicit spatial axes",
+  "malformed grids, species axes, and nonsquare matrices fail closed",
+  "JVP interpolation agrees with centered finite differences",
+]
+fast_tests = [
+  "tests/unit/operators/test_operator_kernels.py",
+]
+artifact_paths = [
+  "docs/_static/collision_operator_verification.json",
+]
+next_tests = [
+  "retain exact table/runtimes identities whenever a new table layout is added",
 ]
 
 [[modules]]
