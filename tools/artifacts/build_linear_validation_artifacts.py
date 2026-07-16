@@ -2660,6 +2660,7 @@ def coulomb_polarization_vectors(
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     float64_final_contraction: bool = False,
+    worker_count: int = 1,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
     _assembly_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -2669,6 +2670,8 @@ def coulomb_polarization_vectors(
     paper's Laguerre convention.  Test vectors multiply ``q_a phi / T_a``;
     field vectors multiply ``q_b phi / T_b``.  Target and source gyroradii are
     separate because unlike-species polarization uses both.
+    On the float64 archive path, ``worker_count > 1`` partitions the additive
+    equation-(3.50) contraction by independent angular harmonic ``m``.
     """
 
     if maximum_hermite_order < 0:
@@ -2691,6 +2694,8 @@ def coulomb_polarization_vectors(
         raise ValueError("maximum_angular_bessel_order must be >= 0")
     if digits < 16:
         raise ValueError("digits must be >= 16")
+    if worker_count < 1:
+        raise ValueError("worker_count must be >= 1")
 
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
     spherical_limit = (
@@ -2878,6 +2883,139 @@ def coulomb_polarization_vectors(
             for m in range(angular_limit + 1)
             for output_laguerre in range(n_laguerre)
         }
+        if float64_final_contraction and worker_count > 1:
+
+            def build_angular_contribution(
+                angular_order: int,
+            ) -> tuple[int, tuple[np.ndarray, ...]]:
+                local_vectors = [mp.matrix(n_modes, 1) for _ in range(4)]
+                radial_groups: list[tuple[int, tuple[tuple[Any, ...], ...]]] = []
+                for p in range(angular_order, spherical_limit + 1):
+                    entries = []
+                    for j in range(radial_limit + 1):
+                        sigma_pj = (
+                            mp.factorial(p)
+                            * mp.gamma(p + j + mp.mpf("1.5"))
+                            / (
+                                mp.power(2, p)
+                                * mp.gamma(p + mp.mpf("1.5"))
+                                * mp.factorial(j)
+                            )
+                        )
+                        angular = (
+                            (1 if angular_order == 0 else 2)
+                            * mp.power(2, p)
+                            * mp.factorial(p) ** 2
+                            / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
+                        )
+                        target_value = polarization(p, j, angular_order, source=False)
+                        source_value = polarization(p, j, angular_order, source=True)
+                        if target_value != 0 or source_value != 0:
+                            entries.append((j, target_value, source_value, angular))
+                    if entries:
+                        radial_groups.append((p, tuple(entries)))
+
+                for output_hermite in range(maximum_hermite_order + 1):
+                    output_normalization = mp.sqrt(
+                        mp.power(2, output_hermite) * mp.factorial(output_hermite)
+                    )
+                    for output_laguerre in range(n_laguerre):
+                        row = output_hermite * n_laguerre + output_laguerre
+                        if angular_order == 0:
+                            for product_order, weighted_product in enumerate(
+                                weighted_products[(0, output_laguerre)]
+                            ):
+                                if weighted_product == 0:
+                                    continue
+                                for speed_order in range(
+                                    product_order + output_hermite // 2 + 1
+                                ):
+                                    inverse = inverse_transform(
+                                        output_hermite,
+                                        product_order,
+                                        0,
+                                        speed_order,
+                                        0,
+                                    )
+                                    if inverse == 0:
+                                        continue
+                                    test_speed, field_speed = integrated_speed(
+                                        0, 0, speed_order
+                                    )
+                                    common = (
+                                        weighted_product
+                                        * inverse
+                                        / output_normalization
+                                    )
+                                    local_vectors[0][row] -= common * test_speed
+                                    local_vectors[1][row] -= common * field_speed
+
+                        for p, radial_moments in radial_groups:
+                            speed_weights: dict[int, Any] = {}
+                            for product_order, weighted_product in enumerate(
+                                weighted_products[(angular_order, output_laguerre)]
+                            ):
+                                if (
+                                    weighted_product == 0
+                                    or p
+                                    > output_hermite + angular_order + 2 * product_order
+                                ):
+                                    continue
+                                maximum_speed_order = (
+                                    product_order
+                                    + (output_hermite + angular_order) // 2
+                                )
+                                for speed_order in range(maximum_speed_order + 1):
+                                    inverse = inverse_transform(
+                                        output_hermite,
+                                        product_order,
+                                        p,
+                                        speed_order,
+                                        angular_order,
+                                    )
+                                    if inverse != 0:
+                                        speed_weights[speed_order] = (
+                                            speed_weights.get(speed_order, mp.mpf(0))
+                                            + weighted_product
+                                            * inverse
+                                            / output_normalization
+                                        )
+                            for (
+                                j,
+                                target_value,
+                                source_value,
+                                angular,
+                            ) in radial_moments:
+                                test_coefficient = mp.mpf(0)
+                                field_coefficient = mp.mpf(0)
+                                for speed_order, weight in speed_weights.items():
+                                    test_speed, field_speed = integrated_speed(
+                                        p, j, speed_order
+                                    )
+                                    test_coefficient += weight * test_speed
+                                    field_coefficient += weight * field_speed
+                                local_vectors[2][row] += (
+                                    angular * target_value * test_coefficient
+                                )
+                                local_vectors[3][row] += (
+                                    angular * source_value * field_coefficient
+                                )
+                return angular_order, tuple(
+                    np.asarray(vector.tolist(), dtype=np.float64).reshape(n_modes)
+                    for vector in local_vectors
+                )
+
+            contributions = _forked_ordered_map(
+                build_angular_contribution,
+                angular_limit + 1,
+                min(worker_count, angular_limit + 1),
+            )
+            vectors = [np.zeros(n_modes, dtype=np.float64) for _ in range(4)]
+            for _angular_order, components in contributions:
+                for vector, component in zip(vectors, components, strict=True):
+                    vector += component
+            return tuple(vectors)  # type: ignore[return-value]
+
         grouped_polarization: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
         for p in range(spherical_limit + 1):
             for j in range(radial_limit + 1):
@@ -3154,6 +3292,7 @@ def write_finite_wavelength_coulomb_endpoint(
             1.0,
             **kwargs,
             float64_final_contraction=True,
+            worker_count=worker_count,
         )
         polarization_seconds = time.perf_counter() - started
         started = time.perf_counter()
@@ -3290,6 +3429,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
                 1.0,
                 **kwargs,
                 float64_final_contraction=True,
+                worker_count=worker_count,
             )
             point_matrices = coulomb_nonpolarized_moment_matrices(
                 maximum_hermite_order,

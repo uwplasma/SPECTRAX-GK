@@ -3235,9 +3235,17 @@ def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
     fast_vectors = mod.coulomb_polarization_vectors(
         **vector_inputs, float64_final_contraction=True
     )
-    for exact_vector, fast_vector in zip(exact_vectors, fast_vectors, strict=True):
+    decomposed_vectors = mod.coulomb_polarization_vectors(
+        **vector_inputs, float64_final_contraction=True, worker_count=2
+    )
+    for exact_vector, fast_vector, decomposed_vector in zip(
+        exact_vectors, fast_vectors, decomposed_vectors, strict=True
+    ):
         np.testing.assert_allclose(
             fast_vector, exact_vector, rtol=5.0e-15, atol=1.0e-14
+        )
+        np.testing.assert_allclose(
+            decomposed_vector, exact_vector, rtol=5.0e-15, atol=1.0e-14
         )
 
 
@@ -3324,8 +3332,11 @@ def test_finite_wavelength_endpoint_archive_is_replayable(tmp_path: Path) -> Non
     assert parallel_metadata["float64_final_contraction"] is True
     with np.load(out) as serial, np.load(parallel_out) as parallel:
         for index in range(6):
-            np.testing.assert_array_equal(
-                parallel[f"array_{index}"], serial[f"array_{index}"]
+            np.testing.assert_allclose(
+                parallel[f"array_{index}"],
+                serial[f"array_{index}"],
+                rtol=5.0e-15,
+                atol=1.0e-14,
             )
 
 

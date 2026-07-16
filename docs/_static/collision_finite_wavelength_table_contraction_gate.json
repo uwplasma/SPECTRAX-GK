@@ -8,9 +8,9 @@
     },
     "field_phi2": {
       "bitwise_equal": false,
-      "maximum_absolute_error": 1.0408340855860843e-17,
+      "maximum_absolute_error": 1.3877787807814457e-17,
       "passed": true,
-      "relative_l2": 2.6828582603290003e-16
+      "relative_l2": 2.868432318038423e-16
     },
     "field_table": {
       "bitwise_equal": false,
@@ -28,7 +28,7 @@
       "bitwise_equal": false,
       "maximum_absolute_error": 2.0816681711721685e-17,
       "passed": true,
-      "relative_l2": 4.945690021274336e-16
+      "relative_l2": 4.942394307898232e-16
     },
     "test_table": {
       "bitwise_equal": false,
@@ -55,7 +55,7 @@
   ],
   "schema_version": 1,
   "speed_gate_passed": true,
-  "speedup": 1.7770069940214603,
+  "speedup": 1.8143503296153622,
   "thresholds": {
     "maximum_absolute_error": 2e-13,
     "maximum_relative_l2": 2e-14,
@@ -63,6 +63,6 @@
   },
   "timing_seconds": {
     "exact": 86.78745041694492,
-    "fast": 48.83911583293229
+    "fast": 47.83389899972826
   }
 }

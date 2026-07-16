@@ -377,6 +377,19 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Implemented the P21-directed angular decomposition rather than
+  increasing its timeout. On the gated float64 archive path, equation (3.50)
+  is partitioned into its independent ``m=0,...,4`` contributions; ``phi1``
+  remains wholly in ``m=0`` and the ``phi2`` vectors are reduced in stable
+  angular order. The serial multiprecision oracle is unchanged. Low-order
+  decomposed vectors agree with the oracle to the predeclared roundoff gate.
+  The P12/J5 first wavelength falls from 17.86 to 13.96 seconds and the full
+  six-point table from 48.84 to 47.83 seconds; relative coefficient errors
+  remain below ``6.4e-16`` and the exact-to-fast speedup is now ``1.81x``.
+  Later wavelengths pay process startup, so this route is retained specifically
+  for high-order first-wavelength cache construction rather than claimed as a
+  universal parallel speedup.
+
 - 2026-07-16: Hard-bounded the next P21/J8 continuation on the 36-core office
   CPU after the P18 observable study. The clean shallow-clone run used the
   passed four-point B grid, 28 workers, and the gated float64 final
@@ -410,8 +423,9 @@ That topology is the reference design for the production parallel lane.
   float64 projection-vector products. The exact path remains the default
   oracle. The matched P10/J4 build falls from 78.77 to 16.19 seconds (4.87x).
   At the production-style six-wavelength P12/J5/8-worker setup it falls from
-  86.79 to 48.84 seconds (1.78x); errors across matrices and polarization
-  vectors are below ``6.4e-16`` relative L2 and ``6.3e-15`` absolute. The
+  86.79 to 47.83 seconds (1.81x) after angular decomposition; errors across
+  matrices and polarization vectors are below ``6.4e-16`` relative L2 and
+  ``6.3e-15`` absolute. The
   complete final-contraction path also produces a bitwise-identical physical
   ``kx=0.1`` trace in every saved real and imaginary sample. A reproducible
   coefficient-plus-speed gate records the evidence.
