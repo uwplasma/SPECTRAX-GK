@@ -383,8 +383,9 @@ artifact_paths = [
   "docs/_static/collision_response_convergence.csv",
   "docs/_static/collision_response_convergence.png",
   "docs/_static/collision_response_convergence.pdf",
-  "docs/_static/collision_itg_development_resolution.json",
   "docs/_static/collision_finite_wavelength_generation_hierarchy.json",
+  "docs/_static/collision_finite_wavelength_itg_convergence.json",
+  "docs/_static/collision_finite_wavelength_itg_convergence.png",
 ]
 next_tests = [
   "test fixed-particle-position conservation only if a pre-gyroaverage particle operator is implemented",

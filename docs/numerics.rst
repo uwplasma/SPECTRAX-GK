@@ -729,6 +729,33 @@ step. These are coefficient-hierarchy results, not a collisional-ITG
 acceptance claim: the paper-facing growth scan remains blocked until the
 published :math:`(18,6)` endpoint or a demonstrably equivalent converged
 resolution is available.
+
+The runtime-level scan below applies those exact tables through the complete
+solved-field RHS at the paper's homogeneous-slab parameters. It confirms
+collisional stabilization and shows why the gate remains open: the
+:math:`(9,4)` to :math:`(12,5)` growth change is only 0.12% over the unstable
+:math:`\nu\geq0.03` interval, but rises to 7.44% as :math:`\nu\rightarrow0`.
+The shaded interval is therefore unresolved rather than silently omitted.
+Machine-readable values and every gate are retained in
+:download:`collision_finite_wavelength_itg_convergence.json
+<_static/collision_finite_wavelength_itg_convergence.json>`.
+
+.. figure:: _static/collision_finite_wavelength_itg_convergence.png
+   :alt: Finite-wavelength Coulomb slab ITG growth and velocity-space convergence
+   :width: 86%
+   :align: center
+
+   Exact paper-wavelength slab-ITG hierarchy. The intermediate collisional
+   interval passes the prospective 5% gate, while the low-collisionality limit
+   and published :math:`(18,6)` resolution remain explicitly open.
+
+The panel is regenerated with the existing artifact owner after exact table
+archives are built with ``build_finite_wavelength_coulomb_pair_tables``::
+
+   python tools/artifacts/build_linear_validation_artifacts.py collision-itg \
+     --table finite_b_P7_J3.npz --table finite_b_P9_J4.npz \
+     --table finite_b_P12_J5.npz
+
 An independent homogeneous-slab matrix reconstruction now evaluates equations
 (2.14)--(2.18) directly at :math:`k_\perp=0.5`,
 :math:`k_\parallel=0.1`, :math:`\eta=3`, and :math:`\tau=1`. It exposed and
@@ -783,19 +810,6 @@ independent follow-ups hold :math:`P=18` for the perpendicular-wavenumber/J
 scan, use :math:`J=10` for the weak-collision P-scan and :math:`P=32` for the
 J-scan, and vary magnetic-gradient strength separately. Analytical peak
 estimates are context, not numerical acceptance data.
-
-The current development probe is deliberately narrower. It uses one matched
-high-resolution random state, slices the same low moments into
-:math:`(P,J)=(3,1),(5,2),(7,3)`, advances to :math:`t=20`, and fits only over
-:math:`10\leq t\leq20`. At collision weight three, the short-wave growth rates
-at the last two resolutions are 0.76098 and 0.76084 (0.018% relative change),
-while the damped intermediate branch changes by 2.43%. This corrects an older
-short-window estimate of 0.520 that mixed different random initial states and
-startup transients. The collisionless branches remain resolution sensitive.
-The machine-readable ``collision_itg_development_resolution.json`` therefore
-passes only its matched-protocol development checks and explicitly fails the
-literature acceptance gate: it uses a Cyclone s-alpha probe rather than the
-paper's slab/toroidal scan and does not reach :math:`(18,6)`.
 
 The strongly collisional stage now has a differentiable constrained-response
 solver rather than a matrix-distance surrogate. It removes stated invariant

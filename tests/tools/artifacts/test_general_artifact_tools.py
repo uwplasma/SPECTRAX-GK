@@ -3236,44 +3236,6 @@ def test_tracked_drift_kinetic_response_closes_convergence_gates() -> None:
     assert pdf_path.stat().st_size > 10_000
 
 
-def test_tracked_finite_wavelength_itg_probe_stays_fail_closed() -> None:
-    """Development moment convergence must not masquerade as paper acceptance."""
-    path = ROOT / "docs/_static/collision_itg_development_resolution.json"
-    summary = json.loads(path.read_text(encoding="utf-8"))
-
-    assert summary["schema_version"] == 2
-    assert summary["claim_scope"] == "development_probe_not_literature_itg_acceptance"
-    assert summary["literature_acceptance_passed"] is False
-    assert summary["literature_required_resolution"] == [18, 6]
-    assert summary["protocol"]["matched_low_moment_seed"] is True
-    assert summary["protocol"]["fit_window"] == [10.0, 20.0]
-    assert summary["protocol"]["geometry"] == "SAlpha Cyclone development probe"
-    assert [
-        (row["maximum_hermite_order"], row["maximum_laguerre_order"])
-        for row in summary["resolutions"]
-    ] == [(3, 1), (5, 2), (7, 3)]
-
-    p5, p7 = summary["resolutions"][-2:]
-    p5_collisional = p5["growth"]["3.0"]
-    p7_collisional = p7["growth"]["3.0"]
-    short_wave_change = abs(
-        p7_collisional["short_wave_branch"]
-        - p5_collisional["short_wave_branch"]
-    ) / abs(p7_collisional["short_wave_branch"])
-    intermediate_change = abs(
-        p7_collisional["intermediate_branch"]
-        - p5_collisional["intermediate_branch"]
-    ) / abs(p7_collisional["intermediate_branch"])
-    assert short_wave_change < 0.01
-    assert intermediate_change < 0.03
-    assert summary["gates"] == {
-        "collisional_intermediate_branch_p5_p7_relative_change_below_3_percent": True,
-        "collisional_short_wave_p5_p7_relative_change_below_1_percent": True,
-        "literature_geometry_reproduced": False,
-        "literature_resolution_reached": False,
-    }
-
-
 def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> None:
     """A faster intermediate table must not masquerade as ITG acceptance."""
     path = ROOT / "docs/_static/collision_finite_wavelength_generation_hierarchy.json"
@@ -3335,6 +3297,77 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert p12["total_seconds"] < 600.0
     assert p12["pure_python_total_completed"] is False
     assert max(p12["p9_p12_common_low_order_relative_l2"].values()) < 0.03
+
+
+def test_finite_wavelength_itg_summary_separates_resolved_collision_range(
+    tmp_path: Path,
+) -> None:
+    """A converged collisional interval must not hide an unresolved low-nu limit."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    collision_frequency = [0.0, 0.01, 0.03, 0.1]
+    curves = []
+    for p, j, growth in (
+        (7, 3, [0.090, 0.085, 0.0800, 0.0680]),
+        (9, 4, [0.087, 0.083, 0.0797, 0.0685]),
+        (12, 5, [0.081, 0.082, 0.0796, 0.0686]),
+    ):
+        curves.append(
+            {
+                "maximum_hermite_order": p,
+                "maximum_laguerre_order": j,
+                "mode_count": (p + 1) * (j + 1),
+                "bessel_argument": 1.0 / np.sqrt(2.0),
+                "paper_kperp": 0.5,
+                "collision_frequency": collision_frequency,
+                "growth": growth,
+                "frequency": [-0.1] * len(collision_frequency),
+            }
+        )
+
+    summary = mod.summarize_finite_wavelength_itg_curves(curves)
+    assert summary["gate_passed"] is False
+    assert summary["gates"] == {
+        "intermediate_collision_range_converged": True,
+        "literature_resolution_reached": False,
+        "low_collisionality_growth_converged": False,
+        "paper_wavelength_reproduced": True,
+    }
+    assert summary["comparisons"][-1][
+        "maximum_all_frequency_relative_change"
+    ] > 0.05
+    assert summary["comparisons"][-1][
+        "maximum_resolved_unstable_relative_change"
+    ] < 0.05
+
+    output = tmp_path / "finite_wavelength_itg.png"
+    mod.write_finite_wavelength_itg_figure(summary, output)
+    with Image.open(output) as image:
+        image.verify()
+    assert output.stat().st_size > 20_000
+
+
+def test_tracked_finite_wavelength_itg_convergence_stays_fail_closed() -> None:
+    """The paper-facing panel must retain its unresolved low-collisionality gate."""
+
+    path = ROOT / "docs/_static/collision_finite_wavelength_itg_convergence.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    assert summary["claim_scope"] == (
+        "intermediate_slab_itg_convergence_not_literature_acceptance"
+    )
+    assert summary["literature_required_resolution"] == [18, 6]
+    assert summary["gate_passed"] is False
+    assert summary["gates"] == {
+        "intermediate_collision_range_converged": True,
+        "literature_resolution_reached": False,
+        "low_collisionality_growth_converged": False,
+        "paper_wavelength_reproduced": True,
+    }
+    comparison = summary["comparisons"][-1]
+    assert comparison["maximum_all_frequency_relative_change"] == pytest.approx(
+        0.07439802232985072
+    )
+    assert comparison["maximum_resolved_unstable_relative_change"] < 0.002
 
 
 @pytest.mark.slow

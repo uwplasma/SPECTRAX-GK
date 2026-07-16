@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Added the first runtime-level finite-wavelength Coulomb slab-ITG
+  convergence artifact at the exact paper wavelength and protocol. The
+  dominant mode is collisionality-stabilized across :math:`(P,J)=(7,3)`,
+  :math:`(9,4)`, and :math:`(12,5)`. The final nested growth change is below
+  0.12% over the unstable :math:`\nu\geq0.03` interval, but reaches 7.44% in
+  the collisionless limit. The publication panel shades that unresolved
+  interval and reports ``OPEN``; tests require both the intermediate pass and
+  low-collisionality failure, preventing selective promotion. The next
+  collision action is a bounded higher-Hermite endpoint or equivalent
+  low-:math:`\nu` convergence demonstration, followed by the independent
+  collisional-zonal gate.
+
 - 2026-07-16: Generated the exact finite-wavelength Coulomb hierarchy at the
   paper's :math:`k_\perp=0.5`, :math:`\tau=1` point
   (:math:`B=1/\sqrt{2}`). The :math:`(7,3)`, :math:`(9,4)`, and

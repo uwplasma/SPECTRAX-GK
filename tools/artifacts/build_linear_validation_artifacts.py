@@ -7,6 +7,7 @@ Subcommands:
                   Build the Coulomb algebra/convergence verification panel.
   collision-response
                   Build the drift-kinetic driven-response convergence panel.
+  collision-itg   Build the finite-wavelength slab-ITG convergence panel.
   figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
@@ -62,6 +63,10 @@ DEFAULT_COLLISION_RESPONSE_JSON = (
 )
 DEFAULT_COLLISION_RESPONSE_CSV = DEFAULT_COLLISION_RESPONSE_JSON.with_suffix(".csv")
 DEFAULT_COLLISION_RESPONSE_PNG = DEFAULT_COLLISION_RESPONSE_JSON.with_suffix(".png")
+DEFAULT_COLLISION_ITG_JSON = (
+    REPO_ROOT / "docs" / "_static" / "collision_finite_wavelength_itg_convergence.json"
+)
+DEFAULT_COLLISION_ITG_PNG = DEFAULT_COLLISION_ITG_JSON.with_suffix(".png")
 
 
 def _coulomb_e_mp(order: int, chi: Any, mp: Any) -> Any:
@@ -4203,6 +4208,356 @@ def write_drift_kinetic_response_convergence_artifacts(
     return summary
 
 
+def finite_wavelength_itg_growth_curve(
+    table_path: Path,
+    collision_frequencies: np.ndarray,
+) -> dict[str, Any]:
+    r"""Evaluate the dominant slab-ITG eigenvalue from one exact pair table.
+
+    The protocol follows Frei, Hoffmann & Ricci (2022), Figure 16: slab
+    geometry, :math:`k_\perp=0.5`, :math:`k_\parallel=0.1`,
+    :math:`\eta=3`, and :math:`\tau=1`. The table archive stores the paper's
+    Hermite-major, unsigned-Laguerre convention; this routine converts it to
+    the runtime convention before probing the complete solved-field RHS.
+    """
+
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    import jax.numpy as jnp
+
+    from spectraxgk.config import GridConfig
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.geometry import SlabGeometry
+    from spectraxgk.linear import (
+        LinearParams,
+        LinearTerms,
+        build_linear_cache,
+        linear_rhs_cached,
+    )
+    from spectraxgk.operators.linear.collisions import (
+        FiniteWavelengthCoulombOperator,
+    )
+
+    frequencies = np.asarray(collision_frequencies, dtype=float)
+    if frequencies.ndim != 1 or frequencies.size < 2:
+        raise ValueError("collision_frequencies must contain at least two values")
+    if np.any(~np.isfinite(frequencies)) or np.any(frequencies < 0.0):
+        raise ValueError("collision_frequencies must be finite and >= 0")
+    if np.any(np.diff(frequencies) <= 0.0):
+        raise ValueError("collision_frequencies must be strictly increasing")
+
+    with np.load(table_path) as archive:
+        resolution = np.asarray(archive["resolution"], dtype=int)
+        if resolution.shape != (2,):
+            raise ValueError("table resolution must contain Hermite and Laguerre maxima")
+        maximum_hermite, maximum_laguerre = map(int, resolution)
+        bessel_argument = float(archive["bessel_argument"])
+        paper_kperp = float(archive["paper_kperp"])
+        raw = tuple(np.asarray(archive[f"array_{index}"]) for index in range(6))
+
+    nm, nl = maximum_hermite + 1, maximum_laguerre + 1
+    mode_count = nm * nl
+    expected_shapes = ((mode_count, mode_count),) * 2 + ((mode_count,),) * 4
+    if tuple(array.shape for array in raw) != expected_shapes:
+        raise ValueError("table arrays do not match the declared velocity resolution")
+    laguerre_sign = np.asarray(
+        [(-1.0) ** order for _p in range(nm) for order in range(nl)]
+    )
+    runtime_arrays: list[jnp.ndarray] = []
+    for index, array in enumerate(raw):
+        converted = (
+            laguerre_sign[:, None] * laguerre_sign[None, :] * array
+            if index < 2
+            else laguerre_sign * array
+        )
+        table = np.zeros((1, 1, 2, 2) + converted.shape)
+        table[0, 0, 1, 1] = converted
+        runtime_arrays.append(jnp.asarray(table))
+
+    grid = build_spectral_grid(
+        GridConfig(Nx=1, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=4.0 * np.pi)
+    )
+    parameters = LinearParams(
+        charge_sign=jnp.asarray([1.0]),
+        density=jnp.asarray([1.0]),
+        mass=jnp.asarray([1.0]),
+        temp=jnp.asarray([1.0]),
+        tau_e=1.0,
+        vth=jnp.asarray([1.0]),
+        rho=jnp.asarray([1.0]),
+        tz=jnp.asarray([1.0]),
+        kpar_scale=0.1,
+        R_over_Ln=jnp.asarray([1.0]),
+        R_over_LTi=jnp.asarray([3.0]),
+    )
+    cache = build_linear_cache(
+        grid,
+        SlabGeometry(s_hat=0.0, z0=10.0),
+        parameters,
+        Nl=nl,
+        Nm=nm,
+    )
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=1.0,
+        collisions=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    phase = np.exp(1j * np.asarray(grid.z))
+
+    def rhs_matrix(collision_frequency: float) -> np.ndarray:
+        operator = FiniteWavelengthCoulombOperator(
+            jnp.asarray([0.0, bessel_argument]),
+            jnp.asarray([[collision_frequency]]),
+            *runtime_arrays,
+        )
+        matrix = np.empty((mode_count, mode_count), dtype=complex)
+        for column in range(mode_count):
+            laguerre_order, hermite_order = divmod(column, nm)
+            state = np.zeros((1, nl, nm, 4, 1, 8), dtype=complex)
+            state[0, laguerre_order, hermite_order, 1, 0] = phase
+            rhs, _ = linear_rhs_cached(
+                jnp.asarray(state),
+                cache,
+                parameters,
+                terms=terms,
+                collision_operator=operator,
+                use_jit=False,
+            )
+            matrix[:, column] = (
+                np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
+            )
+        return matrix
+
+    collisionless = rhs_matrix(0.0)
+    collision_matrix = rhs_matrix(1.0) - collisionless
+    growth: list[float] = []
+    frequency: list[float] = []
+    for collision_frequency in frequencies:
+        eigenvalues = np.linalg.eigvals(
+            collisionless + collision_frequency * collision_matrix
+        )
+        dominant = eigenvalues[int(np.argmax(eigenvalues.real))]
+        growth.append(float(dominant.real))
+        frequency.append(float(dominant.imag))
+    jax.clear_caches()
+    return {
+        "maximum_hermite_order": maximum_hermite,
+        "maximum_laguerre_order": maximum_laguerre,
+        "mode_count": mode_count,
+        "bessel_argument": bessel_argument,
+        "paper_kperp": paper_kperp,
+        "collision_frequency": frequencies.tolist(),
+        "growth": growth,
+        "frequency": frequency,
+    }
+
+
+def summarize_finite_wavelength_itg_curves(
+    curves: list[dict[str, Any]],
+    *,
+    convergence_rtol: float = 0.05,
+    resolved_collision_minimum: float = 0.03,
+) -> dict[str, Any]:
+    """Build fail-closed growth convergence metrics from ordered resolutions."""
+
+    if len(curves) < 2:
+        raise ValueError("at least two resolution curves are required")
+    ordered = sorted(
+        curves,
+        key=lambda row: (
+            int(row["maximum_hermite_order"]),
+            int(row["maximum_laguerre_order"]),
+        ),
+    )
+    collision_frequency = np.asarray(ordered[0]["collision_frequency"], dtype=float)
+    if any(
+        not np.array_equal(
+            collision_frequency, np.asarray(row["collision_frequency"], dtype=float)
+        )
+        for row in ordered[1:]
+    ):
+        raise ValueError("all curves must use the same collision-frequency grid")
+    comparisons: list[dict[str, Any]] = []
+    for lower, upper in zip(ordered[:-1], ordered[1:], strict=True):
+        lower_growth = np.asarray(lower["growth"], dtype=float)
+        upper_growth = np.asarray(upper["growth"], dtype=float)
+        scale = np.maximum(np.abs(upper_growth), 1.0e-12)
+        relative_change = np.abs(lower_growth - upper_growth) / scale
+        resolved = collision_frequency >= resolved_collision_minimum
+        unstable = upper_growth > 0.0
+        comparisons.append(
+            {
+                "lower_resolution": [
+                    int(lower["maximum_hermite_order"]),
+                    int(lower["maximum_laguerre_order"]),
+                ],
+                "upper_resolution": [
+                    int(upper["maximum_hermite_order"]),
+                    int(upper["maximum_laguerre_order"]),
+                ],
+                "relative_growth_change": relative_change.tolist(),
+                "maximum_all_frequency_relative_change": float(
+                    np.max(relative_change)
+                ),
+                "maximum_resolved_unstable_relative_change": float(
+                    np.max(relative_change[resolved & unstable])
+                ),
+            }
+        )
+    final_change = comparisons[-1]
+    low_collisionality_converged = (
+        final_change["maximum_all_frequency_relative_change"] <= convergence_rtol
+    )
+    resolved_unstable_converged = (
+        final_change["maximum_resolved_unstable_relative_change"]
+        <= convergence_rtol
+    )
+    gates = {
+        "paper_wavelength_reproduced": bool(
+            np.isclose(float(ordered[-1]["bessel_argument"]), 1.0 / np.sqrt(2.0))
+        ),
+        "intermediate_collision_range_converged": resolved_unstable_converged,
+        "low_collisionality_growth_converged": low_collisionality_converged,
+        "literature_resolution_reached": (
+            int(ordered[-1]["maximum_hermite_order"]) >= 18
+            and int(ordered[-1]["maximum_laguerre_order"]) >= 6
+        ),
+    }
+    return {
+        "schema_version": 1,
+        "claim_scope": "intermediate_slab_itg_convergence_not_literature_acceptance",
+        "literature_reference": (
+            "Frei, Hoffmann & Ricci (2022), equations (2.14)--(2.18) and Figure 16"
+        ),
+        "protocol": {
+            "geometry": "homogeneous slab",
+            "paper_kperp": 0.5,
+            "kparallel": 0.1,
+            "eta": 3.0,
+            "tau": 1.0,
+            "bessel_argument": 1.0 / np.sqrt(2.0),
+            "resolved_collision_minimum": resolved_collision_minimum,
+        },
+        "thresholds": {"nested_growth_relative_tolerance": convergence_rtol},
+        "literature_required_resolution": [18, 6],
+        "curves": ordered,
+        "comparisons": comparisons,
+        "gates": gates,
+        "gate_passed": all(gates.values()),
+    }
+
+
+def write_finite_wavelength_itg_figure(
+    summary: dict[str, Any], out_png: Path
+) -> None:
+    """Write the paper-protocol growth and nested-convergence panel."""
+
+    colors = plt.get_cmap("viridis")(
+        np.linspace(0.12, 0.88, len(summary["curves"]))
+    )
+    fig, axes = plt.subplots(2, 1, figsize=(7.4, 7.2), constrained_layout=True)
+    fig.patch.set_facecolor("white")
+    for color, curve in zip(colors, summary["curves"], strict=True):
+        nu = np.asarray(curve["collision_frequency"], dtype=float)
+        axes[0].plot(
+            nu,
+            curve["growth"],
+            "o-",
+            color=color,
+            lw=1.8,
+            ms=3.7,
+            label=(
+                rf"$(P,J)=({curve['maximum_hermite_order']},"
+                rf"{curve['maximum_laguerre_order']})$"
+            ),
+        )
+    axes[0].axhline(0.0, color="#20272E", lw=0.9)
+    axes[0].set_xscale("symlog", linthresh=1.0e-4)
+    axes[0].set_xlim(0.0, 11.0)
+    axes[0].set(
+        xlabel=r"collision frequency $\nu$",
+        ylabel=r"dominant growth rate $\gamma$",
+        title="(a) Slab ITG collisional stabilization",
+    )
+    axes[0].legend(frameon=False, fontsize=8)
+
+    for color, comparison in zip(colors[1:], summary["comparisons"], strict=True):
+        upper = comparison["upper_resolution"]
+        axes[1].plot(
+            summary["curves"][0]["collision_frequency"],
+            comparison["relative_growth_change"],
+            "o-",
+            color=color,
+            lw=1.7,
+            ms=3.5,
+            label=rf"to $(P,J)=({upper[0]},{upper[1]})$",
+        )
+    tolerance = summary["thresholds"]["nested_growth_relative_tolerance"]
+    axes[1].axhline(tolerance, color="#B33A3A", ls="--", lw=1.4, label="5% gate")
+    axes[1].axvspan(
+        0.0,
+        summary["protocol"]["resolved_collision_minimum"],
+        color="#D97732",
+        alpha=0.12,
+        label=r"low-$\nu$ unresolved",
+    )
+    axes[1].set_xscale("symlog", linthresh=1.0e-4)
+    axes[1].set_xlim(0.0, 11.0)
+    axes[1].set_yscale("log")
+    axes[1].set(
+        xlabel=r"collision frequency $\nu$",
+        ylabel="nested relative growth change",
+        title="(b) Velocity-space convergence",
+    )
+    axes[1].legend(frameon=False, fontsize=8, ncol=2)
+    for axis in axes:
+        axis.set_facecolor("white")
+        axis.grid(alpha=0.22, lw=0.6)
+        axis.spines[["top", "right"]].set_visible(False)
+    fig.suptitle(
+        r"Finite-wavelength Coulomb slab ITG at $k_\perp=0.5$ (OPEN)",
+        fontsize=14,
+        color="#20272E",
+    )
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(
+        out_png,
+        dpi=220,
+        facecolor="white",
+        metadata={"Software": "SPECTRAX-GK"},
+    )
+    plt.close(fig)
+
+
+def write_finite_wavelength_itg_artifacts(
+    table_paths: list[Path], out_json: Path, out_png: Path
+) -> dict[str, Any]:
+    """Run exact tables through the slab RHS and write compact evidence."""
+
+    collision_frequencies = np.concatenate(([0.0], np.logspace(-4.0, 1.0, 31)))
+    curves = [
+        finite_wavelength_itg_growth_curve(path, collision_frequencies)
+        for path in table_paths
+    ]
+    summary = summarize_finite_wavelength_itg_curves(curves)
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(
+        json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    write_finite_wavelength_itg_figure(summary, out_png)
+    return summary
+
+
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
     """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 
@@ -4313,6 +4668,22 @@ def build_collision_response_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_COLLISION_RESPONSE_CSV)
     parser.add_argument("--out-png", type=Path, default=DEFAULT_COLLISION_RESPONSE_PNG)
     parser.add_argument("--digits", type=int, default=50)
+    return parser
+
+
+def build_collision_itg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate finite-wavelength slab-ITG convergence artifacts."
+    )
+    parser.add_argument(
+        "--table",
+        action="append",
+        type=Path,
+        required=True,
+        help="Exact finite-wavelength pair-table archive; repeat by resolution.",
+    )
+    parser.add_argument("--out-json", type=Path, default=DEFAULT_COLLISION_ITG_JSON)
+    parser.add_argument("--out-png", type=Path, default=DEFAULT_COLLISION_ITG_PNG)
     return parser
 
 
@@ -4866,6 +5237,20 @@ def main_collision_response(argv: list[str] | None = None) -> int:
     return 0 if summary["gate_passed"] else 1
 
 
+def main_collision_itg(argv: list[str] | None = None) -> int:
+    args = build_collision_itg_parser().parse_args(argv)
+    summary = write_finite_wavelength_itg_artifacts(
+        args.table, args.out_json, args.out_png
+    )
+    print(f"Wrote {args.out_json}")
+    print(f"Wrote {args.out_png}")
+    print(
+        "Finite-wavelength ITG literature gate: "
+        f"{'PASS' if summary['gate_passed'] else 'OPEN'}"
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
@@ -4879,6 +5264,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-table",
                 "collision-verification",
                 "collision-response",
+                "collision-itg",
             ),
         )
         parser.print_help()
@@ -4896,6 +5282,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_verification(rest)
     if command == "collision-response":
         return main_collision_response(rest)
+    if command == "collision-itg":
+        return main_collision_itg(rest)
     raise SystemExit(f"unknown command: {command}")
 
 
