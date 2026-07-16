@@ -20,38 +20,17 @@ import sys
 from collections.abc import Callable
 from functools import cache
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import matplotlib
 import numpy as np
 import pandas as pd
 
-from spectraxgk.diagnostics.analysis import (
-    branch_continuity_metrics,
-    estimate_observed_order,
-)
-from spectraxgk.diagnostics.validation_gates import (
-    branch_continuity_gate_report,
-    gate_report_to_dict,
-    observed_order_gate_report,
-)
-from spectraxgk.runtime import run_runtime_scan
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+if TYPE_CHECKING:
+    from spectraxgk.benchmarking.shared import LinearScanResult
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-
-from spectraxgk.artifacts.plotting import (  # noqa: E402
-    cyclone_comparison_figure,
-    cyclone_reference_figure,
-    scan_comparison_figure,
-)
-from spectraxgk.benchmarking.shared import (  # noqa: E402
-    LinearScanResult,
-    load_cyclone_reference,
-    load_etg_reference,
-    load_kbm_reference,
-)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OBSERVED_CSV = REPO_ROOT / "docs" / "_static" / "cyclone_resolution_subset.csv"
@@ -2437,6 +2416,8 @@ def build_figures_parser() -> argparse.ArgumentParser:
 def _load_spectrax_scan_from_mismatch(
     csv_path: Path, *, x_col: str = "ky"
 ) -> LinearScanResult:
+    from spectraxgk.benchmarking.shared import LinearScanResult
+
     table = pd.read_csv(csv_path).sort_values(x_col)
     return LinearScanResult(
         ky=table[x_col].to_numpy(dtype=float),
@@ -2446,6 +2427,8 @@ def _load_spectrax_scan_from_mismatch(
 
 
 def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
+    from spectraxgk.benchmarking.shared import LinearScanResult
+
     keep = np.asarray(ref.ky) <= 0.45 + 1.0e-12
     return LinearScanResult(
         ky=np.asarray(ref.ky)[keep],
@@ -2455,6 +2438,11 @@ def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
 
 
 def _run_etg_figures(*, outdir: Path, progress: bool) -> None:
+    from spectraxgk.artifacts.plotting import scan_comparison_figure
+    from spectraxgk.benchmarking.shared import load_etg_reference
+    from spectraxgk.runtime import run_runtime_scan
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+
     reference = load_etg_reference()
     mismatch_csv = outdir / "etg_mismatch_table.csv"
     if mismatch_csv.exists():
@@ -2499,6 +2487,9 @@ def _run_etg_figures(*, outdir: Path, progress: bool) -> None:
 
 
 def _run_kbm_figures(*, outdir: Path) -> None:
+    from spectraxgk.artifacts.plotting import scan_comparison_figure
+    from spectraxgk.benchmarking.shared import load_kbm_reference
+
     reference = load_kbm_reference()
     mismatch_csv = outdir / "kbm_mismatch_table.csv"
     if not mismatch_csv.exists():
@@ -2524,6 +2515,12 @@ def _run_kbm_figures(*, outdir: Path) -> None:
 
 
 def main_figures(argv: list[str] | None = None) -> int:
+    from spectraxgk.artifacts.plotting import (
+        cyclone_comparison_figure,
+        cyclone_reference_figure,
+    )
+    from spectraxgk.benchmarking.shared import load_cyclone_reference
+
     args = build_figures_parser().parse_args(argv)
     outdir = REPO_ROOT / "docs" / "_static"
     outdir.mkdir(parents=True, exist_ok=True)
@@ -2624,6 +2621,12 @@ def build_summary(
 ) -> dict[str, object]:
     """Build the JSON payload for an observed-order convergence gate."""
 
+    from spectraxgk.diagnostics.analysis import estimate_observed_order
+    from spectraxgk.diagnostics.validation_gates import (
+        gate_report_to_dict,
+        observed_order_gate_report,
+    )
+
     h, err, rows = load_convergence_series(
         csv_path,
         step_column=step_column,
@@ -2712,6 +2715,12 @@ def _branch_gate_report_from_selected_rows(
     max_rel_omega_jump: float,
     min_successive_overlap: float | None,
 ) -> dict[str, object] | None:
+    from spectraxgk.diagnostics.analysis import branch_continuity_metrics
+    from spectraxgk.diagnostics.validation_gates import (
+        branch_continuity_gate_report,
+        gate_report_to_dict,
+    )
+
     if len(rows) < 2:
         return None
     table = pd.DataFrame(rows).sort_values("ky")

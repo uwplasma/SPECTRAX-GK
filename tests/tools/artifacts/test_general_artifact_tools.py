@@ -718,8 +718,11 @@ def test_linear_artifacts_cyclone_uses_reviewed_mismatch_table(
     monkeypatch, tmp_path: Path
 ) -> None:
     import tools.artifacts.build_linear_validation_artifacts as linear_artifacts
+    import spectraxgk.artifacts.plotting as plotting
+    import spectraxgk.benchmarking.shared as benchmark_data
+    from spectraxgk.benchmarking.shared import LinearScanResult
 
-    ref = linear_artifacts.LinearScanResult(
+    ref = LinearScanResult(
         ky=np.array([0.1, 0.2, 0.55]),
         gamma=np.array([0.3, 0.4, 0.5]),
         omega=np.array([0.5, 0.6, 0.7]),
@@ -732,9 +735,9 @@ def test_linear_artifacts_cyclone_uses_reviewed_mismatch_table(
     )
     called: dict[str, np.ndarray] = {}
     monkeypatch.setattr(linear_artifacts, "REPO_ROOT", tmp_path)
-    monkeypatch.setattr(linear_artifacts, "load_cyclone_reference", lambda: ref)
+    monkeypatch.setattr(benchmark_data, "load_cyclone_reference", lambda: ref)
     monkeypatch.setattr(
-        linear_artifacts,
+        plotting,
         "cyclone_reference_figure",
         lambda _ref: (_DummyFigure(), None),
     )
@@ -744,7 +747,7 @@ def test_linear_artifacts_cyclone_uses_reviewed_mismatch_table(
         return _DummyFigure(), None
 
     monkeypatch.setattr(
-        linear_artifacts,
+        plotting,
         "cyclone_comparison_figure",
         fake_comparison,
     )
@@ -938,6 +941,10 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
 
 def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
     import tools.artifacts.build_linear_validation_artifacts as linear_artifacts
+    import spectraxgk.artifacts.plotting as plotting
+    import spectraxgk.benchmarking.shared as benchmark_data
+    import spectraxgk.runtime as runtime_module
+    from spectraxgk.benchmarking.shared import LinearScanResult
 
     called: dict[str, object] = {}
 
@@ -945,24 +952,24 @@ def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
         called["ky_values"] = np.asarray(ky_values).copy()
         called["cfg"] = cfg
         called.update(kwargs)
-        return linear_artifacts.LinearScanResult(
+        return LinearScanResult(
             ky=np.asarray(ky_values),
             gamma=np.array([1.0, 2.0, 3.0]),
             omega=np.array([-4.0, -5.0, -6.0]),
         )
 
     monkeypatch.setattr(
-        linear_artifacts,
+        benchmark_data,
         "load_etg_reference",
-        lambda: linear_artifacts.LinearScanResult(
+        lambda: LinearScanResult(
             ky=np.array([10.0, 20.0, 30.0]),
             gamma=np.array([1.0, 2.0, 3.0]),
             omega=np.array([-4.0, -5.0, -6.0]),
         ),
     )
-    monkeypatch.setattr(linear_artifacts, "run_runtime_scan", fake_run_runtime_scan)
+    monkeypatch.setattr(runtime_module, "run_runtime_scan", fake_run_runtime_scan)
     monkeypatch.setattr(
-        linear_artifacts,
+        plotting,
         "scan_comparison_figure",
         lambda *args, **kwargs: (_DummyFigure(), None),
     )
@@ -981,6 +988,10 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(
     monkeypatch, tmp_path: Path
 ) -> None:
     import tools.artifacts.build_linear_validation_artifacts as linear_artifacts
+    import spectraxgk.artifacts.plotting as plotting
+    import spectraxgk.benchmarking.shared as benchmark_data
+    import spectraxgk.runtime as runtime_module
+    from spectraxgk.benchmarking.shared import LinearScanResult
 
     mismatch = tmp_path / "etg_mismatch_table.csv"
     mismatch.write_text(
@@ -991,23 +1002,23 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(
     )
 
     monkeypatch.setattr(
-        linear_artifacts,
+        benchmark_data,
         "load_etg_reference",
-        lambda: linear_artifacts.LinearScanResult(
+        lambda: LinearScanResult(
             ky=np.array([10.0, 20.0]),
             gamma=np.array([1.0, 5.0]),
             omega=np.array([2.0, 6.0]),
         ),
     )
     monkeypatch.setattr(
-        linear_artifacts,
+        runtime_module,
         "run_runtime_scan",
         lambda *args, **kwargs: (_ for _ in ()).throw(
             AssertionError("should reuse mismatch csv")
         ),
     )
     monkeypatch.setattr(
-        linear_artifacts,
+        plotting,
         "scan_comparison_figure",
         lambda *args, **kwargs: (_DummyFigure(), None),
     )
@@ -1794,6 +1805,26 @@ def test_generate_collision_table_is_reproducible_and_matches_tracked_data(
     assert metadata["shape"] == [3, 8, 8]
     assert metadata["sha256"] == mod.hashlib.sha256(out.read_bytes()).hexdigest()
     assert metadata["precision_decimal_digits"] == 80
+
+
+def test_collision_artifact_import_does_not_initialize_jax() -> None:
+    """Offline multiprecision generation must not probe CPU/GPU devices."""
+    code = """
+import importlib.util
+import sys
+spec = importlib.util.spec_from_file_location(
+    'linear_artifacts', 'tools/artifacts/build_linear_validation_artifacts.py'
+)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+raise SystemExit(int('jax' in sys.modules))
+"""
+    env = dict(os.environ)
+    env["PYTHONPATH"] = "src"
+    completed = subprocess.run(
+        [sys.executable, "-c", code], cwd=ROOT, env=env, timeout=30, check=False
+    )
+    assert completed.returncode == 0
 
 
 def test_coulomb_speed_integrals_match_independent_quadrature() -> None:

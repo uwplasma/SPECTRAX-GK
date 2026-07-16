@@ -673,9 +673,14 @@ truncation gate. These intermediate coefficients are not direct runtime APIs.
 At the drift-kinetic endpoint the generator removes Bessel orders
 :math:`n>0` and azimuthal harmonics :math:`m>0` before forming contractions;
 their coefficients vanish exactly at :math:`b=0`. A bitwise regression against
-the unspecialized path protects the algebra. For the converged eight-mode
+the unspecialized pre-change path and a tracked Bessel-order-independence gate
+protect the algebra. For the converged eight-mode
 :math:`(p_{\max},j_{\max})=(6,3)` probe this reduces generation from 11.1 to
 4.24 seconds without changing either test- or field-particle matrices.
+The collision-table subcommands also avoid importing the runtime, JAX, or any
+device backend; benchmark and solver dependencies are loaded only by the
+subcommands that use them. This keeps offline arbitrary-precision generation
+CPU-only even on GPU hosts.
 
 That contraction is now implemented offline. Equations (3.48)--(3.49) produce
 test and field matrices in Hermite-major order, while equations (3.41) and
