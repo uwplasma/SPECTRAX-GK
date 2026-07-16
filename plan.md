@@ -400,6 +400,21 @@ That topology is the reference design for the production parallel lane.
   transform/contraction complexity before the published :math:`(18,6)` ITG
   endpoint is attempted.
 
+- 2026-07-16: Corrected the finite-wavelength ITG development protocol before
+  interpreting moment convergence. The earlier :math:`(3,1)` and
+  :math:`(5,2)` probes drew different shape-dependent random states and fit
+  only through :math:`t=10`; their reported 0.773-to-0.520 short-wave change
+  was not a controlled resolution comparison. A bounded office campaign built
+  the complete four-wavelength :math:`(7,3)` table in 530.99 s, then reran all
+  three resolutions from one common high-resolution seed through :math:`t=20`
+  with a :math:`10\leq t\leq20` fit. At collision weight three, the
+  :math:`(5,2)` and :math:`(7,3)` short-wave rates are 0.76098 and 0.76084
+  (0.018% relative change); the damped intermediate rates are -0.44503 and
+  -0.45584 (2.43%). Collisionless branches remain resolution sensitive. The
+  small tracked JSON records the corrected result and fails closed because
+  this is still a Cyclone s-alpha development probe, not the paper's geometry
+  or required :math:`(18,6)` endpoint.
+
 - 2026-07-16: Re-audited the collisional zonal-flow acceptance target against
   the complete source of Frei, Ernst & Ricci (2022), arXiv:2202.06293. The
   relevant references are Figures 12--14, not Figures 6--8. The prospective
@@ -431,10 +446,9 @@ That topology is the reference design for the production parallel lane.
   then routing polarization through the same cached exact transforms, reduces
   it again to 8.50 s after applying the exact finite-:math:`m` parity selector,
   without changing the equation-level checksum. The next
-  :math:`(5,2)` hierarchy point falls from 75.4 s to 44.0 s on four wavelengths
-  and lowers the
-  collisional short-wave growth from 0.773 to 0.520 while retaining main-branch
-  damping. This direction is physically consistent but still unconverged.
+  :math:`(5,2)` hierarchy point falls from 75.4 s to 44.0 s on four wavelengths.
+  Its original short-window growth comparison was subsequently superseded by
+  the matched-seed, late-window protocol above.
 
 - 2026-07-16: Closed dimensional Spitzer--Härm normalization for the
   unmagnetized equal-temperature drift-kinetic problem. The generated response

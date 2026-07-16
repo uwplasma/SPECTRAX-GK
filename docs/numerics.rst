@@ -731,6 +731,19 @@ scan, use :math:`J=10` for the weak-collision P-scan and :math:`P=32` for the
 J-scan, and vary magnetic-gradient strength separately. Analytical peak
 estimates are context, not numerical acceptance data.
 
+The current development probe is deliberately narrower. It uses one matched
+high-resolution random state, slices the same low moments into
+:math:`(P,J)=(3,1),(5,2),(7,3)`, advances to :math:`t=20`, and fits only over
+:math:`10\leq t\leq20`. At collision weight three, the short-wave growth rates
+at the last two resolutions are 0.76098 and 0.76084 (0.018% relative change),
+while the damped intermediate branch changes by 2.43%. This corrects an older
+short-window estimate of 0.520 that mixed different random initial states and
+startup transients. The collisionless branches remain resolution sensitive.
+The machine-readable ``collision_itg_development_resolution.json`` therefore
+passes only its matched-protocol development checks and explicitly fails the
+literature acceptance gate: it uses a Cyclone s-alpha probe rather than the
+paper's slab/toroidal scan and does not reach :math:`(18,6)`.
+
 The strongly collisional stage now has a differentiable constrained-response
 solver rather than a matrix-distance surrogate. It removes stated invariant
 modes, solves the remaining dense moment system on device, and differentiates
