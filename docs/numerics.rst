@@ -885,6 +885,16 @@ seconds (2.13x). The matched P12/J5 :math:`k_x=0.1` physical trace is bitwise
 identical in every saved real and imaginary sample. This optimization affects
 offline table generation, not the collision equations or runtime operator.
 
+For high-order tables, independent Bessel-argument points can also be assigned
+to separate processes. The default ``--wavelength-worker-count 1`` retains the
+lower-memory shared algebra cache. Setting, for example,
+``--worker-count 28 --wavelength-worker-count 4`` runs four points concurrently
+with seven inner angular/row workers per point. Every point still shares the
+wavelength-independent multiprecision speed coefficients, while its mutable
+algebra cache remains process-local. A serial-versus-decomposed archive test
+gates all six stored arrays to roundoff; this is an offline table-generation
+strategy and is not evidence for simulation-runtime strong scaling.
+
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
 angular cutoff must pass a nested endpoint or observable-level convergence

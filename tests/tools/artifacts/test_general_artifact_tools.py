@@ -3367,6 +3367,33 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
         assert archive["test_phi1"].shape == (2, 4)
         assert np.all(np.isfinite(archive["field_phi2"]))
 
+    parallel_out = tmp_path / "diagonal_table_parallel.npz"
+    parallel_metadata = mod.write_equal_species_finite_wavelength_coulomb_table(
+        parallel_out,
+        bessel_arguments=(0.1, 0.2),
+        maximum_hermite_order=1,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=1,
+        maximum_bessel_laguerre_order=1,
+        digits=24,
+        worker_count=2,
+        wavelength_worker_count=2,
+    )
+    assert parallel_metadata["wavelength_worker_count"] == 2
+    assert parallel_metadata["workers_per_wavelength"] == 1
+    with np.load(out) as serial, np.load(parallel_out) as parallel:
+        for name in (
+            "test_table",
+            "field_table",
+            "test_phi1",
+            "field_phi1",
+            "test_phi2",
+            "field_phi2",
+        ):
+            np.testing.assert_allclose(
+                parallel[name], serial[name], rtol=5.0e-15, atol=1.0e-14
+            )
+
     with pytest.raises(ValueError, match="strictly increasing"):
         mod.write_equal_species_finite_wavelength_coulomb_table(
             out,
@@ -3376,6 +3403,18 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
             maximum_angular_bessel_order=1,
             maximum_bessel_laguerre_order=1,
             digits=24,
+        )
+
+    with pytest.raises(ValueError, match="worker counts"):
+        mod.write_equal_species_finite_wavelength_coulomb_table(
+            out,
+            bessel_arguments=(0.1, 0.2),
+            maximum_hermite_order=1,
+            maximum_laguerre_order=0,
+            maximum_angular_bessel_order=1,
+            maximum_bessel_laguerre_order=1,
+            digits=24,
+            wavelength_worker_count=0,
         )
 
 

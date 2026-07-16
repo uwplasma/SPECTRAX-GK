@@ -377,6 +377,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Added bounded table-level decomposition for the remaining P21
+  multi-wavelength wall-time blocker. The default diagonal-table route keeps a
+  shared algebra cache across Bessel arguments; the opt-in route partitions
+  total workers across independent wavelengths and gives each process a private
+  mutable cache plus nested angular/row workers. Serial and two-wavelength
+  decomposed archives agree to the predeclared roundoff gate across both
+  matrices and all four polarization vectors. This addresses the observed
+  repeated high-order cache lifetime without changing coefficient equations or
+  claiming runtime strong scaling; a fresh hard-bounded P21/J8 continuation is
+  now permitted.
+
 - 2026-07-16: Removed the second serial high-order cache exposed by live P21
   telemetry. The nonpolarized matrix's wavelength-dependent spherical-moment
   vectors are now partitioned by the same independent angular harmonics before

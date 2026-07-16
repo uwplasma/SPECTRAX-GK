@@ -3378,13 +3378,16 @@ def write_equal_species_finite_wavelength_coulomb_table(
     maximum_bessel_laguerre_order: int,
     digits: int = 32,
     worker_count: int = 1,
+    wavelength_worker_count: int = 1,
 ) -> dict[str, Any]:
     """Write the diagonal finite-wavelength table needed by one ion species.
 
     Target and source Bessel arguments are equal pointwise for like-species
-    collisions. All wavelengths share the expensive speed coefficients and
-    algebra caches; stored coefficients use the runtime's signed Laguerre
-    convention and can be passed directly to
+    collisions. All wavelengths share the expensive speed coefficients. The
+    default serial wavelength route also shares algebra caches; the opt-in
+    wavelength decomposition gives each point a private cache so expensive
+    high-order points can run concurrently. Stored coefficients use the
+    runtime's signed Laguerre convention and can be passed directly to
     ``EqualSpeciesFiniteWavelengthCoulombOperator``.
     """
 
@@ -3397,6 +3400,8 @@ def write_equal_species_finite_wavelength_coulomb_table(
         raise ValueError(
             "bessel_arguments must be finite, nonnegative, and strictly increasing"
         )
+    if worker_count < 1 or wavelength_worker_count < 1:
+        raise ValueError("worker counts must be >= 1")
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
     mode_count = (maximum_hermite_order + 1) * (maximum_laguerre_order + 1)
     matrices = [np.empty((grid.size, mode_count, mode_count)) for _ in range(2)]
@@ -3428,23 +3433,29 @@ def write_equal_species_finite_wavelength_coulomb_table(
             worker_count=worker_count,
         )
         speed_precompute_seconds = time.perf_counter() - total_started
-        assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
-        kwargs = {
-            "maximum_spherical_order": maximum_degree,
-            "maximum_spherical_radial_order": maximum_degree // 2,
-            "maximum_angular_bessel_order": maximum_angular_bessel_order,
-            "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
-            "digits": digits,
-            "_coefficient_functions": coefficient_functions,
-            "_assembly_cache": assembly_cache,
-        }
-        wavelength_seconds = []
-        for index, bessel_argument in enumerate(grid):
+        active_wavelength_workers = min(wavelength_worker_count, grid.size)
+        inner_worker_count = max(1, worker_count // active_wavelength_workers)
+
+        def build_wavelength(
+            index: int,
+            assembly_cache: dict[str, dict[tuple[Any, ...], Any]],
+            point_worker_count: int,
+        ) -> tuple[int, tuple[np.ndarray, ...], float]:
+            bessel_argument = float(grid[index])
             started = time.perf_counter()
             print(
                 f"collision table: wavelength {index + 1}/{grid.size}, B={bessel_argument:.9g}",
                 flush=True,
             )
+            kwargs = {
+                "maximum_spherical_order": maximum_degree,
+                "maximum_spherical_radial_order": maximum_degree // 2,
+                "maximum_angular_bessel_order": maximum_angular_bessel_order,
+                "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
+                "digits": digits,
+                "_coefficient_functions": coefficient_functions,
+                "_assembly_cache": assembly_cache,
+            }
             point_vectors = coulomb_polarization_vectors(
                 maximum_hermite_order,
                 maximum_laguerre_order,
@@ -3454,7 +3465,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
                 1.0,
                 **kwargs,
                 float64_final_contraction=True,
-                worker_count=worker_count,
+                worker_count=point_worker_count,
             )
             point_matrices = coulomb_nonpolarized_moment_matrices(
                 maximum_hermite_order,
@@ -3464,13 +3475,42 @@ def write_equal_species_finite_wavelength_coulomb_table(
                 1.0,
                 **kwargs,
                 float64_final_contraction=True,
-                worker_count=worker_count,
+                worker_count=point_worker_count,
             )
+            return (
+                index,
+                (*point_matrices, *point_vectors),
+                time.perf_counter() - started,
+            )
+
+        if active_wavelength_workers == 1:
+            shared_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
+            point_results = [
+                build_wavelength(index, shared_cache, worker_count)
+                for index in range(grid.size)
+            ]
+        else:
+
+            def build_parallel_wavelength(
+                index: int,
+            ) -> tuple[int, tuple[np.ndarray, ...], float]:
+                return build_wavelength(index, {}, inner_worker_count)
+
+            point_results = _forked_ordered_map(
+                build_parallel_wavelength,
+                grid.size,
+                active_wavelength_workers,
+            )
+
+        wavelength_seconds = [0.0] * grid.size
+        for index, point_arrays, elapsed_seconds in point_results:
+            point_matrices = point_arrays[:2]
+            point_vectors = point_arrays[2:]
             for table, values in zip(matrices, point_matrices, strict=True):
                 table[index] = matrix_convention * values
             for table, values in zip(vectors, point_vectors, strict=True):
                 table[index] = laguerre_sign * values
-            wavelength_seconds.append(time.perf_counter() - started)
+            wavelength_seconds[index] = elapsed_seconds
         total_seconds = time.perf_counter() - total_started
 
     arrays = (*matrices, *vectors)
@@ -3486,6 +3526,8 @@ def write_equal_species_finite_wavelength_coulomb_table(
         "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
         "precision_decimal_digits": digits,
         "worker_count": worker_count,
+        "wavelength_worker_count": active_wavelength_workers,
+        "workers_per_wavelength": inner_worker_count,
         "float64_final_contraction": True,
         "speed_precompute_seconds": speed_precompute_seconds,
         "wavelength_seconds": wavelength_seconds,
@@ -5661,6 +5703,7 @@ def build_collision_diagonal_table_parser() -> argparse.ArgumentParser:
     parser.add_argument("--maximum-bessel-laguerre-order", type=int, default=6)
     parser.add_argument("--digits", type=int, default=32)
     parser.add_argument("--worker-count", type=int, default=1)
+    parser.add_argument("--wavelength-worker-count", type=int, default=1)
     return parser
 
 
@@ -6268,6 +6311,7 @@ def main_collision_diagonal_table(argv: list[str] | None = None) -> int:
         maximum_bessel_laguerre_order=int(args.maximum_bessel_laguerre_order),
         digits=int(args.digits),
         worker_count=int(args.worker_count),
+        wavelength_worker_count=int(args.wavelength_worker_count),
     )
     print(json.dumps(metadata, indent=2, sort_keys=True))
     return 0
