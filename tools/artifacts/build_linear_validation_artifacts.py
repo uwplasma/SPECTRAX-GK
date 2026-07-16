@@ -430,9 +430,7 @@ def _spherical_polynomial_mp(
                 legendre_order,
                 radial_power,
             )
-            total_radial_power = (
-                (legendre_order - parallel_power) // 2 + radial_power
-            )
+            total_radial_power = (legendre_order - parallel_power) // 2 + radial_power
             for parallel_radial_power in range(total_radial_power + 1):
                 key = (
                     parallel_power + 2 * parallel_radial_power,
@@ -464,10 +462,7 @@ def _hermite_gaussian_moment_mp(hermite_order: int, power: int, mp: Any) -> Any:
             (-1) ** pair_order
             * mp.factorial(hermite_order)
             * mp.power(2, hermite_order - 2 * pair_order)
-            / (
-                mp.factorial(pair_order)
-                * mp.factorial(hermite_order - 2 * pair_order)
-            )
+            / (mp.factorial(pair_order) * mp.factorial(hermite_order - 2 * pair_order))
         )
         total += coefficient * mp.gamma((combined_power + 1) / 2)
     return total
@@ -635,17 +630,15 @@ def _associated_legendre_radial_overlap_mp(
         )
         for power in range(auxiliary_radial_order + 1)
     )
-    radial_convolution = [mp.mpf(0)] * (
-        len(left_radial) + len(auxiliary_radial) - 1
-    )
+    radial_convolution = [mp.mpf(0)] * (len(left_radial) + len(auxiliary_radial) - 1)
     for left_power, left_value in enumerate(left_radial):
         for auxiliary_power, auxiliary_value in enumerate(auxiliary_radial):
             radial_convolution[left_power + auxiliary_power] += (
                 left_value * auxiliary_value
             )
-    radial_offset = mp.mpf(
-        legendre_order + auxiliary_legendre_order - bessel_order + 3
-    ) / 2
+    radial_offset = (
+        mp.mpf(legendre_order + auxiliary_legendre_order - bessel_order + 3) / 2
+    )
     return sum(
         value * mp.gamma(power + radial_offset)
         for power, value in enumerate(radial_convolution)
@@ -674,18 +667,14 @@ def _associated_legendre_angular_overlap_mp(
         legendre_monomial(auxiliary_legendre_order, power)
         for power in range(auxiliary_legendre_order + 1)
     )
-    angular_convolution = [mp.mpf(0)] * (
-        len(left_angular) + len(auxiliary_angular) - 1
-    )
+    angular_convolution = [mp.mpf(0)] * (len(left_angular) + len(auxiliary_angular) - 1)
     for left_power, left_value in enumerate(left_angular):
         for auxiliary_power, auxiliary_value in enumerate(auxiliary_angular):
             angular_convolution[left_power + auxiliary_power] += (
                 left_value * auxiliary_value
             )
     return sum(
-        value
-        * (1 + (-1) ** power)
-        / (2 * (power + 1))
+        value * (1 + (-1) ** power) / (2 * (power + 1))
         for power, value in enumerate(angular_convolution)
     )
 
@@ -753,9 +742,7 @@ def _associated_spherical_polynomial_mp(
             / mp.factorial(legendre_power - bessel_order)
         )
         for radial_power in range(radial_order + 1):
-            total_radial_power = (
-                (legendre_order - legendre_power) // 2 + radial_power
-            )
+            total_radial_power = (legendre_order - legendre_power) // 2 + radial_power
             common = derivative * associated_laguerre(
                 radial_order,
                 legendre_order,
@@ -763,14 +750,11 @@ def _associated_spherical_polynomial_mp(
             )
             for parallel_radial_power in range(total_radial_power + 1):
                 key = (
-                    legendre_power
-                    - bessel_order
-                    + 2 * parallel_radial_power,
+                    legendre_power - bessel_order + 2 * parallel_radial_power,
                     total_radial_power - parallel_radial_power,
                 )
                 coefficients[key] = coefficients.get(key, mp.mpf(0)) + (
-                    common
-                    * math.comb(total_radial_power, parallel_radial_power)
+                    common * math.comb(total_radial_power, parallel_radial_power)
                 )
     return tuple(
         (parallel_power, perpendicular_power, coefficient)
@@ -1043,9 +1027,7 @@ def _laguerre_product_expansion_coefficient_mp(
     if monomial_coefficient is None:
 
         def monomial_coefficient(order: int, alpha: Any, power: int) -> Any:
-            return _associated_laguerre_monomial_coefficient_mp(
-                order, alpha, power, mp
-            )
+            return _associated_laguerre_monomial_coefficient_mp(order, alpha, power, mp)
 
     associated = tuple(
         monomial_coefficient(
@@ -1364,7 +1346,9 @@ def _forked_ordered_map(
     if "fork" not in multiprocessing.get_all_start_methods():
         raise RuntimeError("parallel collision generation requires POSIX fork")
     context = multiprocessing.get_context("fork")
-    chunks = [tuple(range(worker, item_count, worker_count)) for worker in range(worker_count)]
+    chunks = [
+        tuple(range(worker, item_count, worker_count)) for worker in range(worker_count)
+    ]
     readers = []
     processes = []
 
@@ -1414,14 +1398,12 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
     associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
     bessel_kernels: tuple[Any, ...] | None = None,
+    float64_final_contraction: bool = False,
 ) -> Any:
     b = mp.mpf(bessel_argument)
-    coefficient = mp.mpf(0)
+    coefficient = 0.0 if float64_final_contraction else mp.mpf(0)
     remaining_degree = (
-        spherical_order
-        + 2 * spherical_radial_order
-        - bessel_order
-        - hermite_order
+        spherical_order + 2 * spherical_radial_order - bessel_order - hermite_order
     )
     if remaining_degree < 0 or remaining_degree % 2:
         return coefficient
@@ -1466,10 +1448,18 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
             )
             if product == 0:
                 continue
-            coefficient += (
-                transform * product * bessel_kernels[bessel_laguerre_order]
-            )
-    coefficient *= mp.sqrt(mp.power(2, hermite_order) * mp.factorial(hermite_order))
+            if float64_final_contraction:
+                coefficient += (
+                    float(transform)
+                    * float(product)
+                    * float(bessel_kernels[bessel_laguerre_order])
+                )
+            else:
+                coefficient += (
+                    transform * product * bessel_kernels[bessel_laguerre_order]
+                )
+    normalization = mp.sqrt(mp.power(2, hermite_order) * mp.factorial(hermite_order))
+    coefficient *= float(normalization) if float64_final_contraction else normalization
     return coefficient
 
 
@@ -1485,9 +1475,10 @@ def _gyroaveraged_polarization_coefficient_mp(
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
     bessel_kernels: tuple[Any, ...] | None = None,
     radial_kernels: tuple[Any, ...] | None = None,
+    float64_final_contraction: bool = False,
 ) -> Any:
     b = mp.mpf(bessel_argument)
-    total = mp.mpf(0)
+    total = 0.0 if float64_final_contraction else mp.mpf(0)
     remaining_degree = spherical_order + 2 * spherical_radial_order - bessel_order
     if remaining_degree % 2:
         return total
@@ -1535,8 +1526,9 @@ def _gyroaveraged_polarization_coefficient_mp(
             continue
         for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
             leading = (
-                transform
-                * bessel_kernels[bessel_laguerre_order]
+                float(transform) * float(bessel_kernels[bessel_laguerre_order])
+                if float64_final_contraction
+                else transform * bessel_kernels[bessel_laguerre_order]
             )
             if leading == 0:
                 continue
@@ -1550,7 +1542,14 @@ def _gyroaveraged_polarization_coefficient_mp(
                     output_order,
                     bessel_order,
                 )
-                total += leading * radial_kernels[output_order] * product
+                if float64_final_contraction:
+                    total += (
+                        float(leading)
+                        * float(radial_kernels[output_order])
+                        * float(product)
+                    )
+                else:
+                    total += leading * radial_kernels[output_order] * product
     return total
 
 
@@ -1790,6 +1789,7 @@ def coulomb_nonpolarized_moment_matrices(
     maximum_angular_bessel_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
+    float64_final_contraction: bool = False,
     worker_count: int = 1,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
     _assembly_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
@@ -1810,6 +1810,9 @@ def coulomb_nonpolarized_moment_matrices(
     ``worker_count`` partitions complete output-Hermite rows after shared
     moment and Laguerre-product construction; one worker is the portable
     default and multiple workers require POSIX ``fork``.
+    ``float64_final_contraction`` retains multiprecision coefficient generation
+    but performs the final projection-vector products in the archive's float64
+    precision. The exact path remains the default verification oracle.
     """
 
     if maximum_hermite_order < 0:
@@ -1870,9 +1873,7 @@ def coulomb_nonpolarized_moment_matrices(
         quarter_b_squared = half_b * half_b
         drift_kinetic = target_b == 0
         bessel_orders = (
-            (0,)
-            if drift_kinetic
-            else tuple(range(maximum_bessel_laguerre_order + 1))
+            (0,) if drift_kinetic else tuple(range(maximum_bessel_laguerre_order + 1))
         )
         assembly_cache = {} if _assembly_cache is None else _assembly_cache
         moment_cache = assembly_cache.setdefault("spherical_moment", {})
@@ -1934,6 +1935,7 @@ def coulomb_nonpolarized_moment_matrices(
                     associated_transform=inverse_associated,
                     laguerre_product=inverse_product,
                     bessel_kernels=bessel_kernel_cache[kernel_key],
+                    float64_final_contraction=float64_final_contraction,
                 )
             return moment_cache[key]
 
@@ -2033,11 +2035,7 @@ def coulomb_nonpolarized_moment_matrices(
             sigma_pj = (
                 mp.factorial(p)
                 * mp.gamma(p + j + mp.mpf("1.5"))
-                / (
-                    mp.power(2, p)
-                    * mp.gamma(p + mp.mpf("1.5"))
-                    * mp.factorial(j)
-                )
+                / (mp.power(2, p) * mp.gamma(p + mp.mpf("1.5")) * mp.factorial(j))
             )
             angular_weights[(p, j, m)] = (
                 (1 if m == 0 else 2)
@@ -2048,10 +2046,7 @@ def coulomb_nonpolarized_moment_matrices(
         exponential = mp.exp(-quarter_b_squared)
         bessel_factors = {
             m: tuple(
-                exponential
-                * quarter_b_squared**n
-                * half_b**m
-                / mp.factorial(n + m)
+                exponential * quarter_b_squared**n * half_b**m / mp.factorial(n + m)
                 for n in bessel_orders
             )
             for m in range(angular_limit + 1)
@@ -2072,27 +2067,42 @@ def coulomb_nonpolarized_moment_matrices(
         for p, j, m in moment_orders:
             test_vector, field_vector = moment_vectors[(p, j, m)]
             if not any(
-                value != 0
-                for vector in (test_vector, field_vector)
-                for value in vector
+                value != 0 for vector in (test_vector, field_vector) for value in vector
             ):
                 continue
             grouped_moments.setdefault((p, m), []).append(
                 (
                     j,
-                    test_vector,
-                    field_vector,
+                    (
+                        np.asarray(test_vector, dtype=np.float64)
+                        if float64_final_contraction
+                        else test_vector
+                    ),
+                    (
+                        np.asarray(field_vector, dtype=np.float64)
+                        if float64_final_contraction
+                        else field_vector
+                    ),
                     angular_weights[(p, j, m)],
                 )
             )
         active_moment_groups = tuple(
-            (p, m, tuple(entries))
-            for (p, m), entries in grouped_moments.items()
+            (p, m, tuple(entries)) for (p, m), entries in grouped_moments.items()
         )
 
-        def build_hermite_rows(output_hermite: int) -> tuple[int, np.ndarray, np.ndarray]:
-            test_rows = mp.matrix(n_laguerre, n_modes)
-            field_rows = mp.matrix(n_laguerre, n_modes)
+        def build_hermite_rows(
+            output_hermite: int,
+        ) -> tuple[int, np.ndarray, np.ndarray]:
+            test_rows = (
+                np.zeros((n_laguerre, n_modes), dtype=np.float64)
+                if float64_final_contraction
+                else mp.matrix(n_laguerre, n_modes)
+            )
+            field_rows = (
+                np.zeros((n_laguerre, n_modes), dtype=np.float64)
+                if float64_final_contraction
+                else mp.matrix(n_laguerre, n_modes)
+            )
             output_normalization = mp.sqrt(
                 mp.power(2, output_hermite) * mp.factorial(output_hermite)
             )
@@ -2106,9 +2116,7 @@ def coulomb_nonpolarized_moment_matrices(
                             continue
                         if p > output_hermite + m + 2 * product_order:
                             continue
-                        maximum_speed_order = (
-                            product_order + (output_hermite + m) // 2
-                        )
+                        maximum_speed_order = product_order + (output_hermite + m) // 2
                         for speed_order in range(maximum_speed_order + 1):
                             inverse = inverse_transform(
                                 output_hermite,
@@ -2119,13 +2127,14 @@ def coulomb_nonpolarized_moment_matrices(
                             )
                             if inverse == 0:
                                 continue
-                            common = (
-                                weighted_product * inverse / output_normalization
+                            common = weighted_product * inverse / output_normalization
+                            speed_weights[speed_order] = (
+                                speed_weights.get(
+                                    speed_order,
+                                    mp.mpf(0),
+                                )
+                                + common
                             )
-                            speed_weights[speed_order] = speed_weights.get(
-                                speed_order,
-                                mp.mpf(0),
-                            ) + common
                     for (
                         j,
                         test_moment_vector,
@@ -2145,19 +2154,37 @@ def coulomb_nonpolarized_moment_matrices(
                         test_output_coefficient *= angular
                         field_output_coefficient *= angular
                         if test_output_coefficient != 0:
-                            for column, moment in enumerate(test_moment_vector):
-                                test_rows[output_laguerre, column] += (
-                                    test_output_coefficient * moment
-                                )
+                            if float64_final_contraction:
+                                test_rows[output_laguerre] += float(
+                                    test_output_coefficient
+                                ) * np.asarray(test_moment_vector)
+                            else:
+                                for column, moment in enumerate(test_moment_vector):
+                                    test_rows[output_laguerre, column] += (
+                                        test_output_coefficient * moment
+                                    )
                         if field_output_coefficient != 0:
-                            for column, moment in enumerate(field_moment_vector):
-                                field_rows[output_laguerre, column] += (
-                                    field_output_coefficient * moment
-                                )
+                            if float64_final_contraction:
+                                field_rows[output_laguerre] += float(
+                                    field_output_coefficient
+                                ) * np.asarray(field_moment_vector)
+                            else:
+                                for column, moment in enumerate(field_moment_vector):
+                                    field_rows[output_laguerre, column] += (
+                                        field_output_coefficient * moment
+                                    )
             return (
                 output_hermite,
-                np.asarray(test_rows.tolist(), dtype=np.float64),
-                np.asarray(field_rows.tolist(), dtype=np.float64),
+                (
+                    test_rows
+                    if float64_final_contraction
+                    else np.asarray(test_rows.tolist(), dtype=np.float64)
+                ),
+                (
+                    field_rows
+                    if float64_final_contraction
+                    else np.asarray(field_rows.tolist(), dtype=np.float64)
+                ),
             )
 
         row_blocks = _forked_ordered_map(
@@ -2238,9 +2265,7 @@ def coulomb_drift_kinetic_moment_matrices(
     n_laguerre = maximum_laguerre_order + 1
     n_modes = (maximum_hermite_order + 1) * n_laguerre
     moment_orders = tuple(
-        (p, j)
-        for p in range(spherical_limit + 1)
-        for j in range(radial_limit + 1)
+        (p, j) for p in range(spherical_limit + 1) for j in range(radial_limit + 1)
     )
 
     with mp.workdps(digits):
@@ -2280,9 +2305,7 @@ def coulomb_drift_kinetic_moment_matrices(
             )
 
         @cache
-        def direct_speed_moment(
-            p: int, j: int, speed_power: int
-        ) -> tuple[Any, Any]:
+        def direct_speed_moment(p: int, j: int, speed_power: int) -> tuple[Any, Any]:
             return _coulomb_speed_moments_mp(
                 p,
                 j,
@@ -2417,9 +2440,7 @@ def coulomb_drift_kinetic_moment_matrices(
                 @ moment_map_float
             )
         else:
-            test = np.asarray(
-                (test_projection * moment_map).tolist(), dtype=np.float64
-            )
+            test = np.asarray((test_projection * moment_map).tolist(), dtype=np.float64)
             field = np.asarray(
                 (field_projection * moment_map).tolist(), dtype=np.float64
             )
@@ -2542,9 +2563,7 @@ def improved_sugama_equal_temperature_moment_matrices(
 
         @cache
         def laguerre(order: int, monomial: int) -> Any:
-            return _associated_laguerre_monomial_coefficient_mp(
-                order, 1, monomial, mp
-            )
+            return _associated_laguerre_monomial_coefficient_mp(order, 1, monomial, mp)
 
         def flow_weight(order: int) -> Any:
             double_factorial = mp.fac2(2 * order + 3)
@@ -2566,9 +2585,7 @@ def improved_sugama_equal_temperature_moment_matrices(
             for k in range(correction_order + 1):
                 delta_n[ell, k] = (
                     coulomb_n[ell, k]
-                    - coulomb_n[ell, 0]
-                    * coulomb_n[0, k]
-                    / coulomb_n[0, 0]
+                    - coulomb_n[ell, 0] * coulomb_n[0, k] / coulomb_n[0, 0]
                 )
         for order in range(correction_order + 1):
             delta_n[0, order] = mp.mpf(0)
@@ -2612,10 +2629,9 @@ def improved_sugama_equal_temperature_moment_matrices(
                     h = remainder // 2
                     if h > maximum_laguerre_order:
                         continue
-                    source[g * n_laguerre + h] = (
-                        _legendre_to_hermite_laguerre_mp(1, k, g, h, mp)
-                        * mp.sqrt(mp.power(2, g) * mp.factorial(g))
-                    )
+                    source[g * n_laguerre + h] = _legendre_to_hermite_laguerre_mp(
+                        1, k, g, h, mp
+                    ) * mp.sqrt(mp.power(2, g) * mp.factorial(g))
                 prefactor = (
                     4
                     * flow_weight(ell)
@@ -2643,6 +2659,7 @@ def coulomb_polarization_vectors(
     maximum_angular_bessel_order: int | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
+    float64_final_contraction: bool = False,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
     _assembly_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -2764,13 +2781,11 @@ def coulomb_polarization_vectors(
                     maximum_bessel_laguerre_order,
                 )
                 if bessel_key not in polarization_bessel_cache:
-                    polarization_bessel_cache[bessel_key] = (
-                        _bessel_laguerre_kernels_mp(
-                            wavelength,
-                            m,
-                            maximum_bessel_laguerre_order + 1,
-                            mp,
-                        )
+                    polarization_bessel_cache[bessel_key] = _bessel_laguerre_kernels_mp(
+                        wavelength,
+                        m,
+                        maximum_bessel_laguerre_order + 1,
+                        mp,
                     )
                 radial_count = (
                     2 * maximum_bessel_laguerre_order
@@ -2780,12 +2795,10 @@ def coulomb_polarization_vectors(
                 )
                 radial_key = (float(wavelength), radial_count)
                 if radial_key not in polarization_radial_cache:
-                    polarization_radial_cache[radial_key] = (
-                        _radial_poisson_kernels_mp(
-                            wavelength,
-                            radial_count,
-                            mp,
-                        )
+                    polarization_radial_cache[radial_key] = _radial_poisson_kernels_mp(
+                        wavelength,
+                        radial_count,
+                        mp,
                     )
                 polarization_cache[key] = _gyroaveraged_polarization_coefficient_mp(
                     p,
@@ -2798,6 +2811,7 @@ def coulomb_polarization_vectors(
                     laguerre_product=inverse_product,
                     bessel_kernels=polarization_bessel_cache[bessel_key],
                     radial_kernels=polarization_radial_cache[radial_key],
+                    float64_final_contraction=float64_final_contraction,
                 )
             return polarization_cache[key]
 
@@ -2870,11 +2884,7 @@ def coulomb_polarization_vectors(
                 sigma_pj = (
                     mp.factorial(p)
                     * mp.gamma(p + j + mp.mpf("1.5"))
-                    / (
-                        mp.power(2, p)
-                        * mp.gamma(p + mp.mpf("1.5"))
-                        * mp.factorial(j)
-                    )
+                    / (mp.power(2, p) * mp.gamma(p + mp.mpf("1.5")) * mp.factorial(j))
                 )
                 angular_base = (
                     mp.power(2, p)
@@ -2895,8 +2905,7 @@ def coulomb_polarization_vectors(
                         )
                     )
         active_polarization_groups = tuple(
-            (p, m, tuple(entries))
-            for (p, m), entries in grouped_polarization.items()
+            (p, m, tuple(entries)) for (p, m), entries in grouped_polarization.items()
         )
 
         for output_hermite in range(maximum_hermite_order + 1):
@@ -2910,9 +2919,7 @@ def coulomb_polarization_vectors(
                 ):
                     if weighted_product == 0:
                         continue
-                    for speed_order in range(
-                        product_order + output_hermite // 2 + 1
-                    ):
+                    for speed_order in range(product_order + output_hermite // 2 + 1):
                         inverse = inverse_transform(
                             output_hermite,
                             product_order,
@@ -2941,9 +2948,7 @@ def coulomb_polarization_vectors(
                             or p > output_hermite + m + 2 * product_order
                         ):
                             continue
-                        maximum_speed_order = (
-                            product_order + (output_hermite + m) // 2
-                        )
+                        maximum_speed_order = product_order + (output_hermite + m) // 2
                         for speed_order in range(maximum_speed_order + 1):
                             inverse = inverse_transform(
                                 output_hermite,
@@ -2954,13 +2959,14 @@ def coulomb_polarization_vectors(
                             )
                             if inverse == 0:
                                 continue
-                            common = (
-                                weighted_product * inverse / output_normalization
+                            common = weighted_product * inverse / output_normalization
+                            speed_weights[speed_order] = (
+                                speed_weights.get(
+                                    speed_order,
+                                    mp.mpf(0),
+                                )
+                                + common
                             )
-                            speed_weights[speed_order] = speed_weights.get(
-                                speed_order,
-                                mp.mpf(0),
-                            ) + common
                     for (
                         j,
                         target_polarization,
@@ -3030,7 +3036,9 @@ def build_finite_wavelength_coulomb_pair_tables(
     import mpmath as mp
 
     mode_count = (maximum_hermite_order + 1) * (maximum_laguerre_order + 1)
-    matrices = [np.empty((grid.size, grid.size, mode_count, mode_count)) for _ in range(2)]
+    matrices = [
+        np.empty((grid.size, grid.size, mode_count, mode_count)) for _ in range(2)
+    ]
     vectors = [np.empty((grid.size, grid.size, mode_count)) for _ in range(4)]
     laguerre_sign = np.asarray(
         [
@@ -3145,6 +3153,7 @@ def write_finite_wavelength_coulomb_endpoint(
             1.0,
             1.0,
             **kwargs,
+            float64_final_contraction=True,
         )
         polarization_seconds = time.perf_counter() - started
         started = time.perf_counter()
@@ -3156,6 +3165,7 @@ def write_finite_wavelength_coulomb_endpoint(
             1.0,
             1.0,
             **kwargs,
+            float64_final_contraction=True,
             worker_count=worker_count,
         )
         matrix_seconds = time.perf_counter() - started
@@ -3174,6 +3184,7 @@ def write_finite_wavelength_coulomb_endpoint(
         "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
         "precision_decimal_digits": digits,
         "worker_count": worker_count,
+        "float64_final_contraction": True,
         "speed_precompute_seconds": speed_precompute_seconds,
         "polarization_seconds": polarization_seconds,
         "matrix_seconds": matrix_seconds,
@@ -3278,6 +3289,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
                 1.0,
                 1.0,
                 **kwargs,
+                float64_final_contraction=True,
             )
             point_matrices = coulomb_nonpolarized_moment_matrices(
                 maximum_hermite_order,
@@ -3286,6 +3298,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
                 1.0,
                 1.0,
                 **kwargs,
+                float64_final_contraction=True,
                 worker_count=worker_count,
             )
             for table, values in zip(matrices, point_matrices, strict=True):
@@ -3308,6 +3321,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
         "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
         "precision_decimal_digits": digits,
         "worker_count": worker_count,
+        "float64_final_contraction": True,
         "speed_precompute_seconds": speed_precompute_seconds,
         "wavelength_seconds": wavelength_seconds,
         "total_seconds": total_seconds,
@@ -3328,6 +3342,89 @@ def write_equal_species_finite_wavelength_coulomb_table(
         field_phi2=vectors[3],
     )
     return metadata
+
+
+def write_collision_table_contraction_gate(
+    exact_archive: Path,
+    fast_archive: Path,
+    out_json: Path,
+    *,
+    maximum_relative_l2: float = 2.0e-14,
+    maximum_absolute_error: float = 2.0e-13,
+    minimum_speedup: float = 1.25,
+) -> dict[str, Any]:
+    """Gate a fast float64 final contraction against an exact table archive."""
+
+    if min(maximum_relative_l2, maximum_absolute_error, minimum_speedup) <= 0.0:
+        raise ValueError("contraction gate thresholds must be > 0")
+    array_names = (
+        "test_table",
+        "field_table",
+        "test_phi1",
+        "field_phi1",
+        "test_phi2",
+        "field_phi2",
+    )
+    with np.load(exact_archive) as exact, np.load(fast_archive) as fast:
+        exact_metadata = json.loads(str(exact["metadata"].item()))
+        fast_metadata = json.loads(str(fast["metadata"].item()))
+        for key in ("resolution", "bessel_argument_grid", "laguerre_convention"):
+            if exact_metadata.get(key) != fast_metadata.get(key):
+                raise ValueError(f"archive metadata mismatch: {key}")
+        if not fast_metadata.get("float64_final_contraction", False):
+            raise ValueError("fast archive does not declare float64 final contraction")
+        arrays: dict[str, object] = {}
+        coefficient_gate_passed = True
+        for name in array_names:
+            exact_values = np.asarray(exact[name], dtype=float)
+            fast_values = np.asarray(fast[name], dtype=float)
+            if exact_values.shape != fast_values.shape:
+                raise ValueError(f"archive array shape mismatch: {name}")
+            difference = fast_values - exact_values
+            relative_l2 = float(
+                np.linalg.norm(difference)
+                / max(float(np.linalg.norm(exact_values)), 1.0e-300)
+            )
+            maximum_absolute = float(np.max(np.abs(difference)))
+            passed = (
+                relative_l2 <= maximum_relative_l2
+                and maximum_absolute <= maximum_absolute_error
+            )
+            coefficient_gate_passed = coefficient_gate_passed and passed
+            arrays[name] = {
+                "relative_l2": relative_l2,
+                "maximum_absolute_error": maximum_absolute,
+                "bitwise_equal": bool(np.array_equal(exact_values, fast_values)),
+                "passed": passed,
+            }
+    exact_seconds = float(exact_metadata["total_seconds"])
+    fast_seconds = float(fast_metadata["total_seconds"])
+    speedup = exact_seconds / fast_seconds
+    speed_gate_passed = speedup >= minimum_speedup
+    report = {
+        "schema_version": 1,
+        "claim_scope": "finite_wavelength_collision_table_final_contraction",
+        "resolution": exact_metadata["resolution"],
+        "bessel_argument_grid": exact_metadata["bessel_argument_grid"],
+        "thresholds": {
+            "maximum_relative_l2": maximum_relative_l2,
+            "maximum_absolute_error": maximum_absolute_error,
+            "minimum_speedup": minimum_speedup,
+        },
+        "timing_seconds": {"exact": exact_seconds, "fast": fast_seconds},
+        "speedup": speedup,
+        "arrays": arrays,
+        "coefficient_gate_passed": coefficient_gate_passed,
+        "speed_gate_passed": speed_gate_passed,
+        "gate_passed": coefficient_gate_passed and speed_gate_passed,
+        "notes": (
+            "All collision coefficients are generated at the archive precision; "
+            "only the final projection-vector contraction uses float64."
+        ),
+    }
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+    return report
 
 
 def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str, Any]:
@@ -3966,13 +4063,9 @@ def build_drift_kinetic_response_convergence_summary(
     if (
         not saturation_times
         or saturation_times[0] != 0.0
+        or any(not math.isfinite(value) or value < 0.0 for value in saturation_times)
         or any(
-            not math.isfinite(value) or value < 0.0
-            for value in saturation_times
-        )
-        or any(
-            right <= left
-            for left, right in zip(saturation_times, saturation_times[1:])
+            right <= left for left, right in zip(saturation_times, saturation_times[1:])
         )
     ):
         raise ValueError("saturation_times must increase strictly from zero")
@@ -3992,9 +4085,7 @@ def build_drift_kinetic_response_convergence_summary(
 
     charge_values = np.asarray(ion_charges, dtype=float)
     solver_normalized_field = paper_normalized_field / np.sqrt(2.0)
-    spitzer_conductivity = 64.0 / (
-        3.0 * 2.0**1.5 * np.pi * charge_values
-    )
+    spitzer_conductivity = 64.0 / (3.0 * 2.0**1.5 * np.pi * charge_values)
     rows: list[dict[str, Any]] = []
     previous_current: np.ndarray | None = None
     previous_improved_current: np.ndarray | None = None
@@ -4005,7 +4096,10 @@ def build_drift_kinetic_response_convergence_summary(
         radial_limit = maximum_degree // 2
         pair_blocks: dict[str, tuple[np.ndarray, np.ndarray]] = {}
         pair_times: dict[str, float] = {}
-        for label, mass_ratio in (("electron_electron", 1.0), ("electron_ion", 1 / 1836)):
+        for label, mass_ratio in (
+            ("electron_electron", 1.0),
+            ("electron_ion", 1 / 1836),
+        ):
             start = time.perf_counter()
             pair_blocks[label] = coulomb_drift_kinetic_moment_matrices(
                 maximum_hermite,
@@ -4030,12 +4124,10 @@ def build_drift_kinetic_response_convergence_summary(
 
         electron_test, electron_field = pair_blocks["electron_electron"]
         ion_test, _ion_field = pair_blocks["electron_ion"]
-        _original_test, original_field = (
-            original_sugama_like_species_moment_matrices(
-                electron_test,
-                maximum_hermite,
-                maximum_laguerre,
-            )
+        _original_test, original_field = original_sugama_like_species_moment_matrices(
+            electron_test,
+            maximum_hermite,
+            maximum_laguerre,
         )
         effective_correction_order = min(
             improved_sugama_correction_order,
@@ -4052,16 +4144,13 @@ def build_drift_kinetic_response_convergence_summary(
             )
         )
         convention = convention_sign[:, None] * convention_sign[None, :]
-        electron_collision = (
-            convention * (electron_test + electron_field)
-        )
+        electron_collision = convention * (electron_test + electron_field)
         original_electron_collision = convention * (electron_test + original_field)
         improved_electron_collision = convention * (electron_test + improved_field)
         previous_order_improved_collision: np.ndarray | None = None
-        if (
-            (maximum_hermite, maximum_laguerre) == resolutions[-1]
-            and effective_correction_order >= 2
-        ):
+        if (maximum_hermite, maximum_laguerre) == resolutions[
+            -1
+        ] and effective_correction_order >= 2:
             _previous_test, previous_field = (
                 improved_sugama_equal_temperature_moment_matrices(
                     electron_test,
@@ -4222,8 +4311,7 @@ def build_drift_kinetic_response_convergence_summary(
             improved_electron_collision,
         )
         symmetry_error = max(
-            float(np.max(np.abs(matrix - matrix.T)))
-            for matrix in collision_models
+            float(np.max(np.abs(matrix - matrix.T))) for matrix in collision_models
         )
         maximum_eigenvalue = max(
             float(np.linalg.eigvalsh(0.5 * (matrix + matrix.T)).max())
@@ -4287,9 +4375,7 @@ def build_drift_kinetic_response_convergence_summary(
                     "conductivity_over_ne2_mnu": conductivity_array.tolist(),
                     "field_linearity_relative_error": float(
                         np.max(
-                            np.abs(
-                                conductivity_array / reference_conductivity - 1.0
-                            )
+                            np.abs(conductivity_array / reference_conductivity - 1.0)
                         )
                     ),
                 }
@@ -4442,9 +4528,7 @@ def build_drift_kinetic_response_convergence_summary(
             "original_sugama_relative_gap"
         ][-1]
         <= original_sugama_high_charge_gap_max,
-        "improved_sugama_order_reached": final[
-            "improved_sugama_correction_order"
-        ]
+        "improved_sugama_order_reached": final["improved_sugama_correction_order"]
         >= improved_sugama_correction_order,
         "improved_sugama_nested_current_converged": final[
             "improved_maximum_relative_change"
@@ -4455,8 +4539,7 @@ def build_drift_kinetic_response_convergence_summary(
             "improved_correction_order_maximum_change"
         ]
         is not None
-        and final["improved_correction_order_maximum_change"]
-        <= nested_current_rtol,
+        and final["improved_correction_order_maximum_change"] <= nested_current_rtol,
         "improved_sugama_matches_coulomb": max(
             abs(value) for value in final["improved_sugama_relative_gap"]
         )
@@ -4507,9 +4590,7 @@ def build_drift_kinetic_response_convergence_summary(
             "computed_value": (
                 np.asarray(final["conductivity_over_ne2_mnu"], dtype=float)
             ).tolist(),
-            "spitzer_high_charge": (
-                "64 / (3 * 2^(3/2) * pi * Z)"
-            ),
+            "spitzer_high_charge": ("64 / (3 * 2^(3/2) * pi * Z)"),
             "spitzer_value": spitzer_conductivity.tolist(),
             "high_charge_relative_error": final["spitzer_relative_error"][
                 high_charge_index
@@ -4520,9 +4601,7 @@ def build_drift_kinetic_response_convergence_summary(
         "thresholds": {
             "nested_current_rtol": nested_current_rtol,
             "algebra_atol": algebra_atol,
-            "original_sugama_low_charge_gap_min": (
-                original_sugama_low_charge_gap_min
-            ),
+            "original_sugama_low_charge_gap_min": (original_sugama_low_charge_gap_min),
             "original_sugama_high_charge_gap_max": (
                 original_sugama_high_charge_gap_max
             ),
@@ -4607,9 +4686,7 @@ def write_drift_kinetic_response_convergence_figure(
     )
     axes[0, 0].semilogx(
         charges,
-        np.asarray(
-            summary["conductivity_normalization"]["spitzer_value"], dtype=float
-        ),
+        np.asarray(summary["conductivity_normalization"]["spitzer_value"], dtype=float),
         "o:",
         color=colors["ink"],
         markerfacecolor="white",
@@ -4709,8 +4786,7 @@ def write_drift_kinetic_response_convergence_figure(
     ):
         axes[1, 1].plot(
             time_values,
-            1.0e3
-            * np.asarray(saturation["models"][model]["current_over_vte"]),
+            1.0e3 * np.asarray(saturation["models"][model]["current_over_vte"]),
             style,
             color=color,
             lw=1.8,
@@ -4800,7 +4876,9 @@ def finite_wavelength_itg_growth_curve(
     with np.load(table_path) as archive:
         resolution = np.asarray(archive["resolution"], dtype=int)
         if resolution.shape != (2,):
-            raise ValueError("table resolution must contain Hermite and Laguerre maxima")
+            raise ValueError(
+                "table resolution must contain Hermite and Laguerre maxima"
+            )
         maximum_hermite, maximum_laguerre = map(int, resolution)
         bessel_argument = float(archive["bessel_argument"])
         paper_kperp = float(archive["paper_kperp"])
@@ -4882,9 +4960,7 @@ def finite_wavelength_itg_growth_curve(
                 collision_operator=operator,
                 use_jit=False,
             )
-            matrix[:, column] = (
-                np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
-            )
+            matrix[:, column] = np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
         return matrix
 
     collisionless = rhs_matrix(0.0)
@@ -4982,9 +5058,7 @@ def collisionless_slab_itg_hierarchy(
             rhs, _ = linear_rhs_cached(
                 jnp.asarray(state), cache, parameters, terms=terms, use_jit=False
             )
-            matrix[:, column] = (
-                np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
-            )
+            matrix[:, column] = np.asarray(rhs)[0, :, :, 1, 0, 0].reshape(-1) / phase[0]
         eigenvalues = np.linalg.eigvals(matrix)
         dominant = eigenvalues[int(np.argmax(eigenvalues.real))]
         rows.append(
@@ -5046,9 +5120,7 @@ def summarize_finite_wavelength_itg_curves(
                     int(upper["maximum_laguerre_order"]),
                 ],
                 "relative_growth_change": relative_change.tolist(),
-                "maximum_all_frequency_relative_change": float(
-                    np.max(relative_change)
-                ),
+                "maximum_all_frequency_relative_change": float(np.max(relative_change)),
                 "maximum_resolved_unstable_relative_change": float(
                     np.max(relative_change[resolved & unstable])
                 ),
@@ -5059,8 +5131,7 @@ def summarize_finite_wavelength_itg_curves(
         final_change["maximum_all_frequency_relative_change"] <= convergence_rtol
     )
     resolved_unstable_converged = (
-        final_change["maximum_resolved_unstable_relative_change"]
-        <= convergence_rtol
+        final_change["maximum_resolved_unstable_relative_change"] <= convergence_rtol
     )
     endpoint_change = None
     if collisionless_hierarchy is not None:
@@ -5134,14 +5205,10 @@ def summarize_finite_wavelength_itg_curves(
     }
 
 
-def write_finite_wavelength_itg_figure(
-    summary: dict[str, Any], out_png: Path
-) -> None:
+def write_finite_wavelength_itg_figure(summary: dict[str, Any], out_png: Path) -> None:
     """Write the paper-protocol growth and nested-convergence panel."""
 
-    colors = plt.get_cmap("viridis")(
-        np.linspace(0.12, 0.88, len(summary["curves"]))
-    )
+    colors = plt.get_cmap("viridis")(np.linspace(0.12, 0.88, len(summary["curves"])))
     fig, axes = plt.subplots(2, 1, figsize=(7.4, 7.2), constrained_layout=True)
     fig.patch.set_facecolor("white")
     for color, curve in zip(colors, summary["curves"], strict=True):
@@ -5377,7 +5444,9 @@ def build_collision_response_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate the drift-kinetic Coulomb response convergence artifacts."
     )
-    parser.add_argument("--out-json", type=Path, default=DEFAULT_COLLISION_RESPONSE_JSON)
+    parser.add_argument(
+        "--out-json", type=Path, default=DEFAULT_COLLISION_RESPONSE_JSON
+    )
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_COLLISION_RESPONSE_CSV)
     parser.add_argument("--out-png", type=Path, default=DEFAULT_COLLISION_RESPONSE_PNG)
     parser.add_argument("--digits", type=int, default=50)
@@ -5427,6 +5496,19 @@ def build_collision_diagonal_table_parser() -> argparse.ArgumentParser:
     parser.add_argument("--maximum-bessel-laguerre-order", type=int, default=6)
     parser.add_argument("--digits", type=int, default=32)
     parser.add_argument("--worker-count", type=int, default=1)
+    return parser
+
+
+def build_collision_contraction_gate_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Gate the fast finite-wavelength final contraction."
+    )
+    parser.add_argument("--exact-archive", type=Path, required=True)
+    parser.add_argument("--fast-archive", type=Path, required=True)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--maximum-relative-l2", type=float, default=2.0e-14)
+    parser.add_argument("--maximum-absolute-error", type=float, default=2.0e-13)
+    parser.add_argument("--minimum-speedup", type=float, default=1.25)
     return parser
 
 
@@ -6026,6 +6108,20 @@ def main_collision_diagonal_table(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_contraction_gate(argv: list[str] | None = None) -> int:
+    args = build_collision_contraction_gate_parser().parse_args(argv)
+    report = write_collision_table_contraction_gate(
+        args.exact_archive,
+        args.fast_archive,
+        args.out_json,
+        maximum_relative_l2=float(args.maximum_relative_l2),
+        maximum_absolute_error=float(args.maximum_absolute_error),
+        minimum_speedup=float(args.minimum_speedup),
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["gate_passed"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
@@ -6042,6 +6138,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-itg",
                 "collision-endpoint",
                 "collision-diagonal-table",
+                "collision-contraction-gate",
             ),
         )
         parser.print_help()
@@ -6065,6 +6162,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_endpoint(rest)
     if command == "collision-diagonal-table":
         return main_collision_diagonal_table(rest)
+    if command == "collision-contraction-gate":
+        return main_collision_contraction_gate(rest)
     raise SystemExit(f"unknown command: {command}")
 
 

@@ -857,8 +857,12 @@ must satisfy both a 5% relative :math:`L_2` bound and a 5% maximum-deviation
 bound at :math:`k_x=0.1` and :math:`0.2`. The P7/J3 to P12/J5 changes are
 19.2% and 12.0% in relative :math:`L_2`; P12/J5 to P15/J6 still changes by
 8.90% and 9.93%. The latter maximum deviations are 6.89% and 5.82%.
-Consequently the tracked hierarchy correctly fails: it is useful negative
-convergence evidence, not a substitute for the paper-required P24/J10 traces.
+The four-point P18/J7 extension costs 189.06 seconds and changes the P15/J6
+traces by 3.86% at :math:`k_x=0.1` and 7.16% at :math:`k_x=0.2`; the first
+wavelength passes both criteria while the second still fails relative
+:math:`L_2`. Consequently the tracked hierarchy correctly remains open: it is
+useful convergence evidence, not a substitute for the paper-required P24/J10
+traces.
 Reproduce the report with::
 
    python tools/artifacts/build_zonal_flow_artifacts.py \
@@ -866,7 +870,20 @@ Reproduce the report with::
      --level 7 3 p7_kx010.csv p7_kx020.csv \
      --level 12 5 p12_kx010.csv p12_kx020.csv \
      --level 15 6 p15_kx010.csv p15_kx020.csv \
+     --level 18 7 p18_kx010.csv p18_kx020.csv \
      --out-json collision_finite_wavelength_zonal_moment_hierarchy.json
+
+The bounded archive generator uses a separate, prospectively gated
+optimization. Every transform, collision moment, and projection coefficient is
+still evaluated at the requested multiprecision; only the final dense
+projection-vector contraction is performed in the float64 precision of the
+stored table. The tracked P12/J5 six-wavelength gate in
+``docs/_static/collision_finite_wavelength_table_contraction_gate.json`` gives
+relative errors below :math:`6.4\times10^{-16}` across all matrices and
+polarization vectors, and reduces eight-worker generation from 86.79 to 48.84
+seconds (1.78x). The matched P12/J5 :math:`k_x=0.1` physical trace is bitwise
+identical in every saved real and imaginary sample. This optimization affects
+offline table generation, not the collision equations or runtime operator.
 
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate

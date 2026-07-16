@@ -377,6 +377,32 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Extended the physical finite-wavelength hierarchy to P18/J7 on
+  the already-passed four-point B grid. Sixteen workers generated the table in
+  189.06 seconds (3.52 seconds precompute, 103.61 seconds first wavelength,
+  and about 27.3 seconds per cached wavelength). Both 8,020-step traces reached
+  :math:`t\nu=2` and remained finite. P15/J6 to P18/J7 changes by ``0.0386``
+  relative L2 and ``0.0270`` maximum at ``kx=0.1``, passing both 5% criteria;
+  ``kx=0.2`` improves to ``0.0716`` relative L2 and ``0.0378`` maximum, so only
+  its L2 criterion remains open. This is monotone convergence evidence, not a
+  promoted P24/J10 paper result.
+
+- 2026-07-16: Removed the dominant exact-table Python contraction overhead
+  without lowering coefficient precision. A cProfile P10/J4 two-wavelength
+  oracle made 388 million Python calls in 79.38 seconds; the nonpolarized
+  matrix path consumed 47.51 seconds, including millions of scalar
+  multiprecision matrix updates after all coefficients were already known.
+  The archive writers now keep every transform, Coulomb moment, and projection
+  coefficient at the requested multiprecision and vectorize only the final
+  float64 projection-vector products. The exact path remains the default
+  oracle. The matched P10/J4 build falls from 78.77 to 16.19 seconds (4.87x).
+  At the production-style six-wavelength P12/J5/8-worker setup it falls from
+  86.79 to 48.84 seconds (1.78x); errors across matrices and polarization
+  vectors are below ``6.4e-16`` relative L2 and ``6.3e-15`` absolute. The
+  complete final-contraction path also produces a bitwise-identical physical
+  ``kx=0.1`` trace in every saved real and imaginary sample. A reproducible
+  coefficient-plus-speed gate records the evidence.
+
 - 2026-07-16: Closed the lower-order *diagnostic* portion of the
   finite-wavelength collisional-zonal moment study without promoting an
   unconverged trace. Six-point field-line tables generated in 86.79 seconds at

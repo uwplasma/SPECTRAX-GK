@@ -3187,6 +3187,60 @@ def test_finite_wavelength_hermite_workers_preserve_exact_rows() -> None:
         np.testing.assert_array_equal(parallel_table, serial_table)
 
 
+def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
+    """The fast finite-b archive path must retain exact generated coefficients."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    inputs = dict(
+        maximum_hermite_order=3,
+        maximum_laguerre_order=1,
+        target_bessel_argument=0.4,
+        mass_ratio=1.0,
+        temperature_ratio=1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        maximum_angular_bessel_order=3,
+        maximum_bessel_laguerre_order=3,
+        digits=50,
+    )
+    exact = mod.coulomb_nonpolarized_moment_matrices(**inputs)
+    contracted = mod.coulomb_nonpolarized_moment_matrices(
+        **inputs, float64_final_contraction=True
+    )
+    parallel = mod.coulomb_nonpolarized_moment_matrices(
+        **inputs, float64_final_contraction=True, worker_count=2
+    )
+    for exact_component, contracted_component, parallel_component in zip(
+        exact, contracted, parallel, strict=True
+    ):
+        np.testing.assert_allclose(
+            contracted_component, exact_component, rtol=5.0e-15, atol=1.0e-14
+        )
+        np.testing.assert_array_equal(parallel_component, contracted_component)
+
+    vector_inputs = dict(
+        maximum_hermite_order=3,
+        maximum_laguerre_order=1,
+        target_bessel_argument=0.4,
+        source_bessel_argument=0.4,
+        mass_ratio=1.0,
+        temperature_ratio=1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        maximum_angular_bessel_order=3,
+        maximum_bessel_laguerre_order=3,
+        digits=50,
+    )
+    exact_vectors = mod.coulomb_polarization_vectors(**vector_inputs)
+    fast_vectors = mod.coulomb_polarization_vectors(
+        **vector_inputs, float64_final_contraction=True
+    )
+    for exact_vector, fast_vector in zip(exact_vectors, fast_vectors, strict=True):
+        np.testing.assert_allclose(
+            fast_vector, exact_vector, rtol=5.0e-15, atol=1.0e-14
+        )
+
+
 def test_finite_wavelength_angular_cutoff_retains_complete_basis() -> None:
     """An angular cutoff at the spherical limit is exactly the full sum."""
 
@@ -3267,6 +3321,7 @@ def test_finite_wavelength_endpoint_archive_is_replayable(tmp_path: Path) -> Non
         worker_count=2,
     )
     assert parallel_metadata["speed_precompute_seconds"] >= 0.0
+    assert parallel_metadata["float64_final_contraction"] is True
     with np.load(out) as serial, np.load(parallel_out) as parallel:
         for index in range(6):
             np.testing.assert_array_equal(
@@ -3293,6 +3348,7 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
     )
     assert metadata["bessel_argument_grid"] == [0.1, 0.2]
     assert metadata["laguerre_convention"] == "runtime_signed"
+    assert metadata["float64_final_contraction"] is True
     assert len(metadata["wavelength_seconds"]) == 2
     with np.load(out) as archive:
         assert archive["test_table"].shape == (2, 4, 4)
@@ -3310,6 +3366,71 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
             maximum_bessel_laguerre_order=1,
             digits=24,
         )
+
+
+def test_collision_table_contraction_gate_checks_coefficients_and_speed(
+    tmp_path: Path,
+) -> None:
+    """Fast archive promotion requires both roundoff parity and real speedup."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    exact_path = tmp_path / "exact.npz"
+    fast_path = tmp_path / "fast.npz"
+    metadata = {
+        "resolution": [3, 1],
+        "bessel_argument_grid": [0.1, 0.2],
+        "laguerre_convention": "runtime_signed",
+        "total_seconds": 10.0,
+    }
+    arrays = {
+        name: np.ones((2, 2))
+        for name in (
+            "test_table",
+            "field_table",
+            "test_phi1",
+            "field_phi1",
+            "test_phi2",
+            "field_phi2",
+        )
+    }
+    np.savez_compressed(exact_path, metadata=np.asarray(json.dumps(metadata)), **arrays)
+    fast_metadata = {
+        **metadata,
+        "total_seconds": 5.0,
+        "float64_final_contraction": True,
+    }
+    np.savez_compressed(
+        fast_path, metadata=np.asarray(json.dumps(fast_metadata)), **arrays
+    )
+    report = mod.write_collision_table_contraction_gate(
+        exact_path, fast_path, tmp_path / "gate.json"
+    )
+    assert report["gate_passed"] is True
+    assert report["speedup"] == 2.0
+
+    fast_metadata["resolution"] = [4, 1]
+    np.savez_compressed(
+        fast_path, metadata=np.asarray(json.dumps(fast_metadata)), **arrays
+    )
+    with pytest.raises(ValueError, match="metadata mismatch"):
+        mod.write_collision_table_contraction_gate(
+            exact_path, fast_path, tmp_path / "mismatch.json"
+        )
+
+
+def test_tracked_collision_table_contraction_gate_passes() -> None:
+    """The retained P12/J5 profile supports the bounded fast archive path."""
+
+    payload = json.loads(
+        (
+            ROOT
+            / "docs/_static/collision_finite_wavelength_table_contraction_gate.json"
+        ).read_text()
+    )
+    assert payload["gate_passed"] is True
+    assert payload["resolution"] == [12, 5]
+    assert payload["speedup"] > 1.5
+    assert max(row["relative_l2"] for row in payload["arrays"].values()) < 7.0e-16
 
 
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
@@ -4454,10 +4575,12 @@ def test_tracked_finite_wavelength_zonal_moment_hierarchy_remains_open() -> None
         ).read_text()
     )
     assert payload["gate_passed"] is False
-    assert payload["resolutions"] == [[7, 3], [12, 5], [15, 6]]
+    assert payload["resolutions"] == [[7, 3], [12, 5], [15, 6], [18, 7]]
     latest = payload["comparisons"][-1]
     assert latest["passed"] is False
-    assert max(row["relative_l2"] for row in latest["traces"].values()) > 0.08
+    assert latest["traces"]["0.1"]["passed"] is True
+    assert latest["traces"]["0.2"]["passed"] is False
+    assert latest["traces"]["0.2"]["relative_l2"] > 0.07
 
 
 def test_plot_zonal_flow_response_output_subcommand(

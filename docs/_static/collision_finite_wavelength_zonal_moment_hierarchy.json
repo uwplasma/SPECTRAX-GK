@@ -62,6 +62,37 @@
           "samples": 402
         }
       }
+    },
+    {
+      "higher_resolution": [
+        18,
+        7
+      ],
+      "lower_resolution": [
+        15,
+        6
+      ],
+      "passed": false,
+      "traces": {
+        "0.1": {
+          "higher_final": -0.04021776842414104,
+          "lower_final": -0.05156834243350103,
+          "maximum_absolute_error": 0.02700869304243189,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": true,
+          "relative_l2": 0.038581589229645406,
+          "samples": 402
+        },
+        "0.2": {
+          "higher_final": 0.06368366857236504,
+          "lower_final": 0.04921140442780544,
+          "maximum_absolute_error": 0.03776284194638431,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": false,
+          "relative_l2": 0.07163079533432178,
+          "samples": 402
+        }
+      }
     }
   ],
   "gate_passed": false,
@@ -78,6 +109,10 @@
     [
       15,
       6
+    ],
+    [
+      18,
+      7
     ]
   ],
   "schema_version": 1,
