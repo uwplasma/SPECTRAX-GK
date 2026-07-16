@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 import sys
@@ -355,6 +355,162 @@ def _read_campaign_csv(path: Path) -> list[dict[str, object]]:
         return [dict(row) for row in csv.DictReader(handle)]
 
 
+@dataclass(frozen=True)
+class _CollisionalZonalProblem:
+    grid: Any
+    geometry: Any
+    parameters: Any
+    cache: Any
+    initial: Any
+    volume_weight: Any
+    kx_index: int
+    major_radius: float
+    minor_radius: float
+
+
+def _build_collisional_zonal_problem(
+    *,
+    config: Path,
+    kx: float,
+    nz: int,
+    n_laguerre: int,
+    n_hermite: int,
+) -> _CollisionalZonalProblem:
+    """Build the common paper-geometry state used by every collision model."""
+
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
+    from spectraxgk.geometry import apply_geometry_grid_defaults
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.workflows.runtime.startup import (
+        _build_initial_condition,
+        build_runtime_geometry,
+        build_runtime_linear_params,
+    )
+
+    q = float(COLLISIONAL_ZONAL_PROTOCOL["q"])
+    epsilon = float(COLLISIONAL_ZONAL_PROTOCOL["epsilon"])
+    cfg, _raw = load_runtime_from_toml(config)
+    major_radius = float(cfg.geometry.R0)
+    minor_radius = epsilon * major_radius
+    cfg = replace(
+        cfg,
+        grid=replace(
+            cfg.grid,
+            Nx=3,
+            Ny=1,
+            Nz=int(nz),
+            Lx=float(2.0 * np.pi / kx),
+            Ly=float(2.0 * np.pi),
+            boundary="periodic",
+        ),
+        geometry=replace(
+            cfg.geometry,
+            rhoc=minor_radius,
+            q=q,
+            s_hat=0.5,
+            epsilon=epsilon,
+            akappa=1.0,
+            akappri=0.0,
+            tri=0.0,
+            tripri=0.0,
+            shift=0.0,
+        ),
+    )
+    geometry = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(apply_geometry_grid_defaults(geometry, cfg.grid))
+    kx_index = int(np.argmin(np.abs(np.asarray(grid.kx, dtype=float) - kx)))
+    if not np.isclose(float(np.asarray(grid.kx)[kx_index]), kx, atol=1.0e-12):
+        raise ValueError("spectral grid does not contain the requested kx")
+    require_active_zonal_mode(grid, kx_index=kx_index)
+    parameters = build_runtime_linear_params(cfg, Nm=n_hermite, geom=geometry)
+    cache = build_linear_cache(grid, geometry, parameters, n_laguerre, n_hermite)
+    initial = _build_initial_condition(
+        grid,
+        geometry,
+        cfg,
+        ky_index=0,
+        kx_index=kx_index,
+        Nl=n_laguerre,
+        Nm=n_hermite,
+        nspecies=1,
+    )
+    volume_weight, _flux_weight = fieldline_quadrature_weights(geometry, grid)
+    return _CollisionalZonalProblem(
+        grid=grid,
+        geometry=geometry,
+        parameters=parameters,
+        cache=cache,
+        initial=initial,
+        volume_weight=volume_weight,
+        kx_index=kx_index,
+        major_radius=major_radius,
+        minor_radius=minor_radius,
+    )
+
+
+def _integrate_collisional_zonal_trace(
+    problem: _CollisionalZonalProblem,
+    *,
+    collision_operator: Any,
+    terms: Any,
+    collision_frequency: float,
+    dt: float,
+    maximum_normalized_time: float,
+    sample_stride: int,
+) -> tuple[np.ndarray, np.ndarray, float, int]:
+    """Advance one collision model and return the common normalized observable."""
+
+    import time
+
+    import jax
+    import jax.numpy as jnp
+
+    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from spectraxgk.terms.assembly import compute_fields_cached
+
+    initial_phi = compute_fields_cached(
+        problem.initial,
+        problem.cache,
+        problem.parameters,
+        terms=terms,
+        use_custom_vjp=False,
+    ).phi
+    initial_response = jnp.sum(
+        initial_phi[0, problem.kx_index] * problem.volume_weight
+    )
+    requested_steps = int(np.ceil(maximum_normalized_time / collision_frequency / dt))
+    steps = int(np.ceil(requested_steps / sample_stride) * sample_stride)
+    started = time.perf_counter()
+    _final, field_history = integrate_linear(
+        problem.initial,
+        problem.grid,
+        problem.geometry,
+        problem.parameters,
+        dt=dt,
+        steps=steps,
+        method="rk2",
+        terms=terms,
+        sample_stride=sample_stride,
+        show_progress=True,
+        collision_operator=collision_operator,
+    )
+    jax.block_until_ready(field_history)
+    elapsed_seconds = time.perf_counter() - started
+    history = np.asarray(field_history)
+    response = np.einsum(
+        "tz,z->t",
+        history[:, 0, problem.kx_index, :],
+        np.asarray(problem.volume_weight),
+    )
+    times = (np.arange(response.size) + 1) * dt * sample_stride
+    response = np.concatenate(([complex(np.asarray(initial_response))], response))
+    normalized_time = np.concatenate(([0.0], times)) * collision_frequency
+    if not np.all(np.isfinite(response)):
+        raise RuntimeError("collisional-zonal trace contains non-finite values")
+    return normalized_time, response, elapsed_seconds, steps
+
+
 def run_drift_kinetic_collisional_zonal_trace(
     *,
     config: Path,
@@ -375,26 +531,13 @@ def run_drift_kinetic_collisional_zonal_trace(
     reproducible research workflow, not a default executable dependency.
     """
 
-    import time
-
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
-    from spectraxgk.geometry import apply_geometry_grid_defaults
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
     from spectraxgk.operators.linear.collisions import (
         DriftKineticMomentCollisionOperator,
     )
     from spectraxgk.operators.linear.params import LinearTerms
-    from spectraxgk.solvers.linear.integrators import integrate_linear
-    from spectraxgk.terms.assembly import compute_fields_cached
-    from spectraxgk.workflows.runtime.startup import (
-        _build_initial_condition,
-        build_runtime_geometry,
-        build_runtime_linear_params,
-    )
 
     if model not in {"coulomb", "original_sugama", "improved_sugama"}:
         raise ValueError("unknown drift-kinetic collision model")
@@ -435,53 +578,14 @@ def run_drift_kinetic_collisional_zonal_trace(
         epsilon=epsilon,
     )
     kx = 0.05
-    cfg, _raw = load_runtime_from_toml(config)
-    major_radius = float(cfg.geometry.R0)
-    minor_radius = epsilon * major_radius
-    cfg = replace(
-        cfg,
-        grid=replace(
-            cfg.grid,
-            Nx=3,
-            Ny=1,
-            Nz=int(nz),
-            Lx=float(2.0 * np.pi / kx),
-            Ly=float(2.0 * np.pi),
-            boundary="periodic",
-        ),
-        geometry=replace(
-            cfg.geometry,
-            rhoc=minor_radius,
-            q=q,
-            s_hat=0.5,
-            epsilon=epsilon,
-            akappa=1.0,
-            akappri=0.0,
-            tri=0.0,
-            tripri=0.0,
-            shift=0.0,
-        ),
-    )
-    geometry = build_runtime_geometry(cfg)
-    grid = build_spectral_grid(apply_geometry_grid_defaults(geometry, cfg.grid))
-    kx_index = int(np.argmin(np.abs(np.asarray(grid.kx, dtype=float) - kx)))
-    if not np.isclose(float(np.asarray(grid.kx)[kx_index]), kx, atol=1.0e-12):
-        raise ValueError("spectral grid does not contain the requested kx")
-    require_active_zonal_mode(grid, kx_index=kx_index)
-
     n_laguerre = maximum_laguerre + 1
     n_hermite = maximum_hermite + 1
-    parameters = build_runtime_linear_params(cfg, Nm=n_hermite, geom=geometry)
-    cache = build_linear_cache(grid, geometry, parameters, n_laguerre, n_hermite)
-    initial = _build_initial_condition(
-        grid,
-        geometry,
-        cfg,
-        ky_index=0,
-        kx_index=kx_index,
-        Nl=n_laguerre,
-        Nm=n_hermite,
-        nspecies=1,
+    problem = _build_collisional_zonal_problem(
+        config=config,
+        kx=kx,
+        nz=nz,
+        n_laguerre=n_laguerre,
+        n_hermite=n_hermite,
     )
     operator = DriftKineticMomentCollisionOperator(
         jnp.asarray(collision_frequency * matrix[None, None])
@@ -499,38 +603,17 @@ def run_drift_kinetic_collisional_zonal_trace(
         apar=0.0,
         bpar=0.0,
     )
-    volume_weight, _flux_weight = fieldline_quadrature_weights(geometry, grid)
-    initial_phi = compute_fields_cached(
-        initial, cache, parameters, terms=terms, use_custom_vjp=False
-    ).phi
-    initial_response = jnp.sum(initial_phi[0, kx_index] * volume_weight)
-    requested_steps = int(np.ceil(maximum_normalized_time / collision_frequency / dt))
-    steps = int(np.ceil(requested_steps / sample_stride) * sample_stride)
-    started = time.perf_counter()
-    _final, field_history = integrate_linear(
-        initial,
-        grid,
-        geometry,
-        parameters,
-        dt=dt,
-        steps=steps,
-        method="rk2",
-        terms=terms,
-        sample_stride=sample_stride,
-        show_progress=True,
-        collision_operator=operator,
+    normalized_time, response, elapsed_seconds, steps = (
+        _integrate_collisional_zonal_trace(
+            problem,
+            collision_operator=operator,
+            terms=terms,
+            collision_frequency=collision_frequency,
+            dt=dt,
+            maximum_normalized_time=maximum_normalized_time,
+            sample_stride=sample_stride,
+        )
     )
-    jax.block_until_ready(field_history)
-    elapsed_seconds = time.perf_counter() - started
-    history = np.asarray(field_history)
-    response = np.einsum(
-        "tz,z->t", history[:, 0, kx_index, :], np.asarray(volume_weight)
-    )
-    times = (np.arange(response.size) + 1) * dt * sample_stride
-    response = np.concatenate(([complex(np.asarray(initial_response))], response))
-    normalized_time = np.concatenate(([0.0], times)) * collision_frequency
-    if not np.all(np.isfinite(response)):
-        raise RuntimeError("collisional-zonal trace contains non-finite values")
 
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     with out_csv.open("w", newline="", encoding="utf-8") as handle:
@@ -569,8 +652,8 @@ def run_drift_kinetic_collisional_zonal_trace(
         "model_archive": str(model_archive),
         "q": q,
         "epsilon": epsilon,
-        "miller_minor_radius": minor_radius,
-        "miller_major_radius": major_radius,
+        "miller_minor_radius": problem.minor_radius,
+        "miller_major_radius": problem.major_radius,
         "normalized_collisionality": normalized_collisionality,
         "collision_frequency": collision_frequency,
         "kx": kx,
