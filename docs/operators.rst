@@ -756,9 +756,11 @@ paper's Laguerre signs to the runtime convention. This is an implementation
 prerequisite, not the integrated ITG gate. A low-order :math:`(P,J)=(3,1)`
 development probe still excites the short-wave branch even with the complete
 finite-:math:`b` contribution. Consistent with the paper's convergence study,
-the result is rejected as velocity-space under-resolution. Promotion requires
-the independently converged :math:`(18,6)` endpoint and matching
-:math:`k_\perp`/collisionality scans; no reduced probe substitutes for it.
+the result is rejected as velocity-space under-resolution. Increasing from
+:math:`(3,1)` to :math:`(5,2)` lowers its fitted collisional growth from 0.773
+to 0.520, but does not suppress it. Promotion requires the independently
+converged :math:`(18,6)` endpoint and matching :math:`k_\perp`/collisionality
+scans; no reduced probe or favorable trend substitutes for it.
 
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
