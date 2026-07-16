@@ -684,9 +684,12 @@ The tracked ``collision_operator_verification.json`` and matching panel in
 :doc:`operators` turn this into a numerical gate rather than a visual claim.
 The present level covers arbitrary-precision coefficient generation, direct
 manufactured velocity-space projection, Bessel-sum convergence, the three
-collision-invariant null modes, and non-positive entropy production. The next
-levels are intentionally sequential: Hermite/Laguerre/spherical truncation of
-the assembled runtime table; Spitzer--Härm and Braginskii transport;
+collision-invariant null modes, and non-positive entropy production. Its
+coupled spherical/radial scan rejects the former low-order cutoff at 29%
+relative error and admits :math:`(p_{\max},j_{\max})=(6,3)` at
+:math:`4.70\times10^{-4}` against a converged :math:`(9,4)` reference. The next
+levels are intentionally sequential: Hermite/Laguerre truncation of larger
+runtime tables; Spitzer--Härm and Braginskii transport;
 collision-frequency and velocity-resolution convergence; finite-:math:`b`
 ITG; and collisionless versus collisional zonal response. Finite-:math:`b`
 gyrocenter density is deliberately not treated as a local invariant: the

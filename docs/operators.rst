@@ -496,9 +496,10 @@ The reproducible algebra/convergence artifact is generated with
    :alt: Coulomb collision operator convergence, projection, entropy, and matrix gates
    :width: 100%
 
-   **Offline Coulomb-operator closure.** Panel (a) shows spectral convergence
-   of a finite-:math:`b` polarization coefficient to a 24-term reference and
-   of an assembled 4-by-4 collision block to its order-six reference;
+   **Offline Coulomb-operator closure.** Panel (a) shows Bessel--Laguerre
+   convergence of a finite-:math:`b` polarization coefficient to a 24-term
+   reference, Bessel convergence of an assembled 4-by-4 collision block, and
+   the independent spherical/radial hierarchy convergence of that block;
    panel (b) compares five generated coefficients with independent
    80-by-80 Gauss--Hermite/Laguerre velocity projection; panel (c) shows five
    dissipative modes and the three density, parallel-momentum, and thermal-
@@ -510,7 +511,11 @@ The reproducible algebra/convergence artifact is generated with
 The largest direct-projection relative error is :math:`3.2\times10^{-13}`;
 the published-coefficient, symmetry, and invariant residuals are at or below
 :math:`1.2\times10^{-16}`. At :math:`b=0.8`, the assembled 4-by-4 block changes
-by :math:`1.6\times10^{-7}` between Bessel orders four and six. These checks
+by :math:`1.6\times10^{-7}` between Bessel orders four and six. The former
+default spherical cutoff :math:`(p_{\max},j_{\max})=(3,1)` is rejected because
+it differs by 29% from the converged :math:`(9,4)` reference. The :math:`(6,3)`
+and :math:`(8,4)` blocks reduce that error to :math:`4.70\times10^{-4}` and
+:math:`8.68\times10^{-7}`, respectively. These checks
 implement the conservation,
 Maxwellian-null, adjointness, and H-theorem requirements emphasized by
 `Abel et al. (2008) <https://arxiv.org/abs/0808.1300>`_ and the
