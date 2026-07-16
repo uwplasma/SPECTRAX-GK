@@ -1293,7 +1293,7 @@ def coulomb_nonpolarized_moment_matrices(
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
-    _wavelength_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
+    _assembly_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     r"""Generate finite-``b`` Coulomb test and field moment matrices.
 
@@ -1355,11 +1355,11 @@ def coulomb_nonpolarized_moment_matrices(
         bessel_orders = (0,) if drift_kinetic else range(maximum_bessel_laguerre_order + 1)
         test_matrix = mp.matrix(n_modes, n_modes)
         field_matrix = mp.matrix(n_modes, n_modes)
-        wavelength_cache = {} if _wavelength_cache is None else _wavelength_cache
-        moment_cache = wavelength_cache.setdefault("spherical_moment", {})
-        speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
-        product_cache: dict[tuple[int, int, int, int], Any] = {}
-        inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
+        assembly_cache = {} if _assembly_cache is None else _assembly_cache
+        moment_cache = assembly_cache.setdefault("spherical_moment", {})
+        speed_cache = assembly_cache.setdefault("integrated_speed", {})
+        product_cache = assembly_cache.setdefault("laguerre_product", {})
+        inverse_cache = assembly_cache.setdefault("inverse_transform", {})
 
         coefficient_functions = (
             _coulomb_coefficient_functions(mp, sigma, tau)
@@ -2049,7 +2049,7 @@ def coulomb_polarization_vectors(
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
-    _wavelength_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
+    _assembly_cache: dict[str, dict[tuple[Any, ...], Any]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     r"""Generate the four Coulomb polarization vectors in equation (3.50).
 
@@ -2107,11 +2107,11 @@ def coulomb_polarization_vectors(
         field_phi1 = mp.matrix(n_modes, 1)
         test_phi2 = mp.matrix(n_modes, 1)
         field_phi2 = mp.matrix(n_modes, 1)
-        speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
-        wavelength_cache = {} if _wavelength_cache is None else _wavelength_cache
-        polarization_cache = wavelength_cache.setdefault("polarization", {})
-        product_cache: dict[tuple[int, int, int, int], Any] = {}
-        inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
+        assembly_cache = {} if _assembly_cache is None else _assembly_cache
+        speed_cache = assembly_cache.setdefault("integrated_speed", {})
+        polarization_cache = assembly_cache.setdefault("polarization", {})
+        product_cache = assembly_cache.setdefault("laguerre_product", {})
+        inverse_cache = assembly_cache.setdefault("inverse_transform", {})
         coefficient_functions = (
             _coulomb_coefficient_functions(mp, sigma, tau)
             if _coefficient_functions is None
@@ -2363,7 +2363,7 @@ def build_finite_wavelength_coulomb_pair_tables(
             mp.mpf(mass_ratio),
             mp.mpf(temperature_ratio),
         )
-        wavelength_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
+        assembly_cache: dict[str, dict[tuple[Any, ...], Any]] = {}
         for target_index, target_kperp in enumerate(grid):
             for source_index, source_kperp in enumerate(grid):
                 pair_matrices = coulomb_nonpolarized_moment_matrices(
@@ -2378,7 +2378,7 @@ def build_finite_wavelength_coulomb_pair_tables(
                     maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
                     digits=digits,
                     _coefficient_functions=coefficient_functions,
-                    _wavelength_cache=wavelength_cache,
+                    _assembly_cache=assembly_cache,
                 )
                 pair_vectors = coulomb_polarization_vectors(
                     maximum_hermite_order,
@@ -2392,7 +2392,7 @@ def build_finite_wavelength_coulomb_pair_tables(
                     maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
                     digits=digits,
                     _coefficient_functions=coefficient_functions,
-                    _wavelength_cache=wavelength_cache,
+                    _assembly_cache=assembly_cache,
                 )
                 for table, values in zip(matrices, pair_matrices, strict=True):
                     table[target_index, source_index] = matrix_convention * values

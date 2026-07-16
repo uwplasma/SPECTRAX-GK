@@ -2880,10 +2880,30 @@ def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
         mod.coulomb_nonpolarized_moment_matrices(1, 1, 0.0, 1.0, 1.0, digits=10)
 
 
-def test_finite_wavelength_pair_table_matches_equation_generators() -> None:
+def test_finite_wavelength_pair_table_matches_equation_generators(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Shared table generation must preserve equations and runtime signs."""
 
     mod = load_artifact_tool("build_linear_validation_artifacts")
+    calls = {"moment": 0, "polarization": 0}
+    moment_coefficient = mod._gyroaveraged_spherical_moment_coefficient_mp
+    polarization_coefficient = mod._gyroaveraged_polarization_coefficient_mp
+
+    def counted_moment(*args: object, **kwargs: object) -> object:
+        calls["moment"] += 1
+        return moment_coefficient(*args, **kwargs)
+
+    def counted_polarization(*args: object, **kwargs: object) -> object:
+        calls["polarization"] += 1
+        return polarization_coefficient(*args, **kwargs)
+
+    monkeypatch.setattr(mod, "_gyroaveraged_spherical_moment_coefficient_mp", counted_moment)
+    monkeypatch.setattr(
+        mod,
+        "_gyroaveraged_polarization_coefficient_mp",
+        counted_polarization,
+    )
     grid = (0.0, 0.3)
     tables = mod.build_finite_wavelength_coulomb_pair_tables(
         grid,
@@ -2896,6 +2916,7 @@ def test_finite_wavelength_pair_table_matches_equation_generators() -> None:
         maximum_bessel_laguerre_order=2,
         digits=32,
     )
+    assert calls == {"moment": 96, "polarization": 24}
     assert [table.shape for table in tables] == [
         (2, 2, 4, 4),
         (2, 2, 4, 4),
