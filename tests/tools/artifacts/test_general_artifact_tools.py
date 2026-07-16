@@ -2584,6 +2584,127 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
     np.testing.assert_allclose(unequal_test, same_test, rtol=0.0, atol=1.0e-14)
     assert np.linalg.norm(unequal_field - same_field) > 5.0e-2
 
+
+@pytest.mark.parametrize(
+    ("mass_ratio", "temperature_ratio"),
+    ((1.0, 1.0), (0.25, 2.0)),
+)
+def test_direct_drift_kinetic_coulomb_matches_finite_wavelength_endpoint(
+    mass_ratio: float,
+    temperature_ratio: float,
+) -> None:
+    """Frei et al. Eqs. (3.53)--(3.56) must equal Eqs. (3.48)--(3.49) at b=0."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    expected = mod.coulomb_nonpolarized_moment_matrices(
+        2,
+        1,
+        0.0,
+        mass_ratio,
+        temperature_ratio,
+        maximum_spherical_order=3,
+        maximum_spherical_radial_order=1,
+        maximum_bessel_laguerre_order=0,
+        digits=60,
+    )
+    actual = mod.coulomb_drift_kinetic_moment_matrices(
+        2,
+        1,
+        mass_ratio,
+        temperature_ratio,
+        maximum_spherical_order=3,
+        maximum_spherical_radial_order=1,
+        digits=60,
+    )
+    for actual_component, expected_component in zip(actual, expected, strict=True):
+        np.testing.assert_allclose(
+            actual_component,
+            expected_component,
+            rtol=2.0e-15,
+            atol=1.0e-50,
+        )
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"maximum_hermite_order": -1}, "maximum_hermite_order"),
+        ({"maximum_laguerre_order": -1}, "maximum_laguerre_order"),
+        ({"mass_ratio": 0.0}, "mass_ratio"),
+        ({"temperature_ratio": float("inf")}, "temperature_ratio"),
+        ({"maximum_spherical_order": -1}, "maximum_spherical_order"),
+        ({"maximum_spherical_radial_order": -1}, "maximum_spherical_radial_order"),
+        ({"digits": 10}, "digits"),
+    ),
+)
+def test_direct_drift_kinetic_coulomb_rejects_invalid_domain(
+    kwargs: dict[str, object], message: str
+) -> None:
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    inputs: dict[str, object] = {
+        "maximum_hermite_order": 1,
+        "maximum_laguerre_order": 1,
+        "mass_ratio": 1.0,
+        "temperature_ratio": 1.0,
+    }
+    inputs.update(kwargs)
+    with pytest.raises(ValueError, match=message):
+        mod.coulomb_drift_kinetic_moment_matrices(**inputs)
+
+
+def test_drift_kinetic_response_artifact_closes_nested_physics_gates(
+    tmp_path: Path,
+) -> None:
+    """A nested Frei hierarchy must conserve invariants and converge its current."""
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    out_json = tmp_path / "json" / "response.json"
+    out_csv = tmp_path / "csv" / "response.csv"
+    out_png = tmp_path / "figure" / "response.png"
+    summary = mod.write_drift_kinetic_response_convergence_artifacts(
+        out_json,
+        out_csv,
+        out_png,
+        resolutions=((3, 1), (5, 2)),
+        required_resolution=(5, 2),
+        nested_current_rtol=5.0e-2,
+        digits=32,
+    )
+
+    assert summary["gate_passed"] is True
+    assert all(summary["gates"].values())
+    assert len(summary["rows"]) == 10
+    final = summary["resolutions"][-1]
+    assert final["maximum_relative_change"] < 5.0e-2
+    assert max(final["invariant_residuals"].values()) < 2.0e-12
+    assert final["maximum_eigenvalue"] < 2.0e-12
+    assert json.loads(out_json.read_text(encoding="utf-8"))["gate_passed"] is True
+    assert len(pd.read_csv(out_csv)) == 10
+    with Image.open(out_png) as image:
+        assert image.width > 1_000
+        assert image.height > 700
+    assert out_png.with_suffix(".pdf").exists()
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"resolutions": ()}, "at least one"),
+        ({"resolutions": ((1, 1),)}, "P >= 2"),
+        ({"required_resolution": (1, 1)}, "required_resolution"),
+        ({"ion_charges": (0.0,)}, "ion_charges"),
+        ({"nested_current_rtol": 0.0}, "nested_current_rtol"),
+        ({"algebra_atol": float("inf")}, "algebra_atol"),
+    ),
+)
+def test_drift_kinetic_response_artifact_rejects_invalid_policy(
+    kwargs: dict[str, object], message: str
+) -> None:
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    with pytest.raises(ValueError, match=message):
+        mod.build_drift_kinetic_response_convergence_summary(**kwargs)
+
+
+def test_coulomb_nonpolarized_matrix_rejects_invalid_domain() -> None:
+    mod = load_artifact_tool("build_linear_validation_artifacts")
     for args, message in (
         ((-1, 1, 0.0, 1.0, 1.0), "maximum_hermite_order"),
         ((1, -1, 0.0, 1.0, 1.0), "maximum_laguerre_order"),
@@ -2781,6 +2902,33 @@ def test_tracked_coulomb_operator_verification_closes_release_gates() -> None:
     with Image.open(png_path) as image:
         image.verify()
     assert png_path.stat().st_size > 100_000
+
+
+def test_tracked_drift_kinetic_response_closes_convergence_gates() -> None:
+    """The committed paper-scale response must retain its prospective gates."""
+    json_path = ROOT / "docs/_static/collision_response_convergence.json"
+    csv_path = json_path.with_suffix(".csv")
+    png_path = json_path.with_suffix(".png")
+    pdf_path = json_path.with_suffix(".pdf")
+    summary = json.loads(json_path.read_text(encoding="utf-8"))
+
+    assert summary["gate_passed"] is True
+    assert all(summary["gates"].values())
+    assert summary["required_resolution"] == [20, 5]
+    assert len(summary["resolutions"]) == 7
+    final = summary["resolutions"][-1]
+    assert final["maximum_hermite_order"] == 20
+    assert final["maximum_laguerre_order"] == 5
+    assert final["maximum_relative_change"] < 5.0e-3
+    assert max(final["invariant_residuals"].values()) < 2.0e-12
+    assert final["symmetry_max_abs"] < 2.0e-12
+    assert final["maximum_eigenvalue"] < 2.0e-12
+    assert final["solve_residual_max"] < 2.0e-12
+    assert len(pd.read_csv(csv_path)) == 35
+    with Image.open(png_path) as image:
+        image.verify()
+    assert png_path.stat().st_size > 100_000
+    assert pdf_path.stat().st_size > 10_000
 
 
 @pytest.mark.slow

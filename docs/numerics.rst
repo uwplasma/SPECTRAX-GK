@@ -683,9 +683,13 @@ subcommands that use them. This keeps offline arbitrary-precision generation
 CPU-only even on GPU hosts.
 The general finite-:math:`b` contraction remains too expensive for the
 conductivity resolution: two independent :math:`(P,J)=(7,3)` blocks reached a
-600-second CPU bound. Paper-scale drift-kinetic tables must therefore use the
-specialized equations (3.53)--(3.56), with overlap against the general formula
-as a regression, rather than extending this timeout.
+600-second CPU bound. The drift-kinetic generator therefore evaluates the
+collapsed equations (3.53)--(3.56) directly, with overlap against the general
+formula as a regression rather than a longer timeout. Call-local Coulomb-
+integral and speed-moment caches reduce direct :math:`(P,J)=(20,5)` generation
+to about 56 seconds for electron--electron and 62 seconds for electron--ion
+blocks on the tracked development CPU. These are local algorithm timings, not
+portable runtime-performance claims.
 
 That contraction is now implemented offline. Equations (3.48)--(3.49) produce
 test and field matrices in Hermite-major order, while equations (3.41) and
@@ -704,11 +708,12 @@ manufactured velocity-space projection, Bessel-sum convergence, the three
 collision-invariant null modes, and non-positive entropy production. Its
 coupled spherical/radial scan rejects the former low-order cutoff at 29%
 relative error and admits :math:`(p_{\max},j_{\max})=(8,4)` at
-:math:`8.68\times10^{-7}` against a converged :math:`(9,4)` reference. The next
-levels are intentionally sequential: Hermite/Laguerre truncation of larger
-runtime tables; Spitzer--Härm and Braginskii transport;
-collision-frequency and velocity-resolution convergence; finite-:math:`b`
-ITG; and collisionless versus collisional zonal response. Finite-:math:`b`
+:math:`8.68\times10^{-7}` against a converged :math:`(9,4)` reference. The
+drift-kinetic driven response now has its separate paper-scale
+Hermite/Laguerre scan; the remaining levels are intentionally sequential:
+finite-:math:`b` runtime-table convergence; Spitzer--Härm and Braginskii
+transport; collision-frequency convergence; finite-:math:`b` ITG; and
+collisionless versus collisional zonal response. Finite-:math:`b`
 gyrocenter density is deliberately not treated as a local invariant: the
 tracked test, field, and combined :math:`O(b^2)` density-row gates resolve the
 classical gyro-diffusion discussed after equation (3.5) of Frei et al. (2021).
@@ -721,11 +726,31 @@ solver rather than a matrix-distance surrogate. It removes stated invariant
 modes, solves the remaining dense moment system on device, and differentiates
 the resulting current through the same JAX solve. Analytic damping, long-time
 matrix-exponential, JIT, and centered finite-difference checks close this
-algorithmic layer. Physical conductivity remains open until the full
-:math:`(P,J)=(20,5)` collision hierarchy is generated and its current is
-converged in both velocity resolution and saturation time.
+algorithmic layer. The direct Coulomb hierarchy is resolved through
+:math:`(P,J)=(20,5)`: its largest current change from :math:`(15,5)` is
+:math:`1.66\times10^{-4}` over :math:`Z=1,2,5,10,100`, below the fixed 0.5%
+gate. Physical Spitzer--Härm conductivity remains open because it additionally
+requires the paper's dimensional collision-frequency normalization, saturation
+and field-amplitude checks, and arbitrary-order original/improved-Sugama
+hierarchies under the same convention.
 Rosenbluth--Hinton residual flow is collisionless and is therefore not used as
 a substitute for the Hinton--Rosenbluth collisional damping test.
+
+Nonlinear full-distribution Landau collisions are a separate future model, not
+an extension flag on this linearized matrix. A dense precomputed collision
+tensor would have prohibitive basis scaling. The planned route follows the
+one-centre Coulomb/Talmi formulation of `Jorge et al. (2026)
+<https://arxiv.org/abs/2606.31035>`_: approximate the Boys kernel with a
+controlled sum of exponentials, contract the resulting separable factors
+matrix-free, rotate between oscillator and Hermite--Laguerre bases, and project
+roundoff-level particle, momentum, and energy defects. Generic separable
+Kronecker contractions and differentiable constrained solves belong in
+`SOLVAX <https://github.com/uwplasma/SOLVAX>`_; gyrokinetic normalization,
+species coupling, and Landau physics remain SPECTRAX-GK responsibilities. Any
+implementation must reproduce manufactured dense low-order tensors, quadrature
+refinement, Maxwellian stationarity, conservation, entropy production,
+isotropic relaxation, two-species equilibration, JVP/VJP checks, and measured
+memory scaling before runtime exposure.
 
 For unlike species, runtime interpolation is two-dimensional: target
 :math:`k_\perp\rho_a` controls the outer/test factors and source

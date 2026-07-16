@@ -1,0 +1,585 @@
+{
+  "gate_passed": true,
+  "gates": {
+    "collision_invariants": true,
+    "driven_solve_residual": true,
+    "nested_current_converged": true,
+    "nonpositive_spectrum": true,
+    "required_resolution_reached": true,
+    "self_adjoint_symmetry": true
+  },
+  "ion_charge": [
+    1.0,
+    2.0,
+    5.0,
+    10.0,
+    100.0
+  ],
+  "literature_equations": {
+    "collision": "Frei et al. (2021), equations (3.53)--(3.56)",
+    "drive": "Frei, Ernst & Ricci (2022), equation (81)"
+  },
+  "normalized_field": 0.001,
+  "required_resolution": [
+    20,
+    5
+  ],
+  "resolutions": [
+    {
+      "current": [
+        0.0012850602780755261,
+        0.0007698779241535628,
+        0.0003658403783798363,
+        0.00019749309251906825,
+        2.142455018071106e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 0.05580870807170868,
+        "electron_ion": 0.034220332745462656
+      },
+      "invariant_residuals": {
+        "density": 2.2799892604126522e-51,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 5.551115123125783e-17
+      },
+      "maximum_eigenvalue": 9.00846363925679e-18,
+      "maximum_hermite_order": 3,
+      "maximum_laguerre_order": 1,
+      "maximum_relative_change": null,
+      "maximum_spherical_order": 5,
+      "maximum_spherical_radial_order": 2,
+      "mode_count": 8,
+      "relative_change_from_previous": null,
+      "solve_residual_max": 8.673617379884035e-19,
+      "symmetry_max_abs": 8.326672684688674e-17
+    },
+    {
+      "current": [
+        0.0012980095373061492,
+        0.0007711628397253855,
+        0.00036694306475906855,
+        0.0001999341918057103,
+        2.2192439237798572e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 0.26982824970036745,
+        "electron_ion": 0.29661958385258913
+      },
+      "invariant_residuals": {
+        "density": 4.0127534332155556e-50,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 5.551115123125783e-17
+      },
+      "maximum_eigenvalue": 3.264962554302943e-17,
+      "maximum_hermite_order": 5,
+      "maximum_laguerre_order": 2,
+      "maximum_relative_change": 0.034601381527255934,
+      "maximum_spherical_order": 9,
+      "maximum_spherical_radial_order": 4,
+      "mode_count": 18,
+      "relative_change_from_previous": [
+        0.009976243516282275,
+        0.001666205249568678,
+        0.0030050612346530577,
+        0.012209513863512855,
+        0.034601381527255934
+      ],
+      "solve_residual_max": 8.673617379884035e-19,
+      "symmetry_max_abs": 1.7694179454963432e-16
+    },
+    {
+      "current": [
+        0.0013060726865397278,
+        0.0007726291388374765,
+        0.0003669476419675151,
+        0.00019999029076151243,
+        2.2214059299104582e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 1.170380333904177,
+        "electron_ion": 1.3034095410257578
+      },
+      "invariant_residuals": {
+        "density": 1.629690023835178e-48,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 6.938893903907228e-17
+      },
+      "maximum_eigenvalue": 3.63833910941486e-16,
+      "maximum_hermite_order": 7,
+      "maximum_laguerre_order": 3,
+      "maximum_relative_change": 0.006173583841601415,
+      "maximum_spherical_order": 13,
+      "maximum_spherical_radial_order": 6,
+      "mode_count": 32,
+      "relative_change_from_previous": [
+        0.006173583841601415,
+        0.001897804571928558,
+        1.2473737185046995e-05,
+        0.00028050839662518913,
+        0.0009732602679637827
+      ],
+      "solve_residual_max": 1.734723475976807e-18,
+      "symmetry_max_abs": 2.949029909160572e-16
+    },
+    {
+      "current": [
+        0.0013091988245263887,
+        0.0007730136435498905,
+        0.0003669550136713882,
+        0.00020001853437844232,
+        2.2217686327251634e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 3.7995570842176676,
+        "electron_ion": 4.161863999906927
+      },
+      "invariant_residuals": {
+        "density": 7.802419219318562e-48,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 6.938893903907228e-17
+      },
+      "maximum_eigenvalue": 1.0756962488639478e-15,
+      "maximum_hermite_order": 9,
+      "maximum_laguerre_order": 4,
+      "maximum_relative_change": 0.0023878252318106385,
+      "maximum_spherical_order": 17,
+      "maximum_spherical_radial_order": 8,
+      "mode_count": 50,
+      "relative_change_from_previous": [
+        0.0023878252318106385,
+        0.0004974099947941798,
+        2.0088849037195403e-05,
+        0.00014120499891499155,
+        0.000163249588351752
+      ],
+      "solve_residual_max": 1.3010426069826053e-18,
+      "symmetry_max_abs": 9.107298248878237e-16
+    },
+    {
+      "current": [
+        0.0013105933294708229,
+        0.0007731182360662535,
+        0.0003669682586841974,
+        0.00020003679345433596,
+        2.2218758634928318e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 9.910709834191948,
+        "electron_ion": 10.896677249576896
+      },
+      "invariant_residuals": {
+        "density": 4.073582522856303e-46,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 6.938893903907228e-17
+      },
+      "maximum_eigenvalue": 5.906441397291506e-17,
+      "maximum_hermite_order": 11,
+      "maximum_laguerre_order": 5,
+      "maximum_relative_change": 0.0010640256691961379,
+      "maximum_spherical_order": 21,
+      "maximum_spherical_radial_order": 10,
+      "mode_count": 72,
+      "relative_change_from_previous": [
+        0.0010640256691961379,
+        0.00013528657258844137,
+        3.609307479800614e-05,
+        9.127858719557344e-05,
+        4.82613675364491e-05
+      ],
+      "solve_residual_max": 1.5178830414797062e-18,
+      "symmetry_max_abs": 2.174909558005922e-15
+    },
+    {
+      "current": [
+        0.0013112915640191769,
+        0.0007731446234276384,
+        0.00036698130982067633,
+        0.00020004662140990785,
+        2.221904717693738e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 22.531534042209387,
+        "electron_ion": 25.077082333154976
+      },
+      "invariant_residuals": {
+        "density": 1.3851085669378066e-44,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 6.938893903907228e-17
+      },
+      "maximum_eigenvalue": 4.709833350675305e-16,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 5,
+      "maximum_relative_change": 0.0005324784872510369,
+      "maximum_spherical_order": 25,
+      "maximum_spherical_radial_order": 12,
+      "mode_count": 96,
+      "relative_change_from_previous": [
+        0.0005324784872510369,
+        3.412991642873914e-05,
+        3.556349091814531e-05,
+        4.912832570041273e-05,
+        1.2986245844145184e-05
+      ],
+      "solve_residual_max": 2.6020852139652106e-18,
+      "symmetry_max_abs": 6.98760168650614e-15
+    },
+    {
+      "current": [
+        0.001311508933223421,
+        0.0007731467132704579,
+        0.00036698740876091833,
+        0.00020004939767205698,
+        2.2219097961598725e-05
+      ],
+      "generation_seconds": {
+        "electron_electron": 55.72513454221189,
+        "electron_ion": 61.669253000058234
+      },
+      "invariant_residuals": {
+        "density": 1.0778119983571085e-42,
+        "parallel_momentum": 0.0,
+        "thermal_energy": 6.938893903907228e-17
+      },
+      "maximum_eigenvalue": 4.558030581329953e-19,
+      "maximum_hermite_order": 20,
+      "maximum_laguerre_order": 5,
+      "maximum_relative_change": 0.00016573978166493068,
+      "maximum_spherical_order": 30,
+      "maximum_spherical_radial_order": 15,
+      "mode_count": 126,
+      "relative_change_from_previous": [
+        0.00016573978166493068,
+        2.70303525016841e-06,
+        1.6618935953663957e-05,
+        1.3877883070058718e-05,
+        2.2856311013177536e-06
+      ],
+      "solve_residual_max": 1.2468324983583301e-18,
+      "symmetry_max_abs": 6.209675108099708e-14
+    }
+  ],
+  "rows": [
+    {
+      "current_per_unit_field": 1.285060278075526,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 3,
+      "maximum_laguerre_order": 1,
+      "mode_count": 8,
+      "normalized_current": 0.0012850602780755261,
+      "relative_change_from_previous": null
+    },
+    {
+      "current_per_unit_field": 0.7698779241535628,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 3,
+      "maximum_laguerre_order": 1,
+      "mode_count": 8,
+      "normalized_current": 0.0007698779241535628,
+      "relative_change_from_previous": null
+    },
+    {
+      "current_per_unit_field": 0.3658403783798363,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 3,
+      "maximum_laguerre_order": 1,
+      "mode_count": 8,
+      "normalized_current": 0.0003658403783798363,
+      "relative_change_from_previous": null
+    },
+    {
+      "current_per_unit_field": 0.19749309251906824,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 3,
+      "maximum_laguerre_order": 1,
+      "mode_count": 8,
+      "normalized_current": 0.00019749309251906825,
+      "relative_change_from_previous": null
+    },
+    {
+      "current_per_unit_field": 0.021424550180711058,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 3,
+      "maximum_laguerre_order": 1,
+      "mode_count": 8,
+      "normalized_current": 2.142455018071106e-05,
+      "relative_change_from_previous": null
+    },
+    {
+      "current_per_unit_field": 1.298009537306149,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 5,
+      "maximum_laguerre_order": 2,
+      "mode_count": 18,
+      "normalized_current": 0.0012980095373061492,
+      "relative_change_from_previous": 0.009976243516282275
+    },
+    {
+      "current_per_unit_field": 0.7711628397253855,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 5,
+      "maximum_laguerre_order": 2,
+      "mode_count": 18,
+      "normalized_current": 0.0007711628397253855,
+      "relative_change_from_previous": 0.001666205249568678
+    },
+    {
+      "current_per_unit_field": 0.3669430647590685,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 5,
+      "maximum_laguerre_order": 2,
+      "mode_count": 18,
+      "normalized_current": 0.00036694306475906855,
+      "relative_change_from_previous": 0.0030050612346530577
+    },
+    {
+      "current_per_unit_field": 0.19993419180571032,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 5,
+      "maximum_laguerre_order": 2,
+      "mode_count": 18,
+      "normalized_current": 0.0001999341918057103,
+      "relative_change_from_previous": 0.012209513863512855
+    },
+    {
+      "current_per_unit_field": 0.02219243923779857,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 5,
+      "maximum_laguerre_order": 2,
+      "mode_count": 18,
+      "normalized_current": 2.2192439237798572e-05,
+      "relative_change_from_previous": 0.034601381527255934
+    },
+    {
+      "current_per_unit_field": 1.3060726865397276,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 7,
+      "maximum_laguerre_order": 3,
+      "mode_count": 32,
+      "normalized_current": 0.0013060726865397278,
+      "relative_change_from_previous": 0.006173583841601415
+    },
+    {
+      "current_per_unit_field": 0.7726291388374765,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 7,
+      "maximum_laguerre_order": 3,
+      "mode_count": 32,
+      "normalized_current": 0.0007726291388374765,
+      "relative_change_from_previous": 0.001897804571928558
+    },
+    {
+      "current_per_unit_field": 0.3669476419675151,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 7,
+      "maximum_laguerre_order": 3,
+      "mode_count": 32,
+      "normalized_current": 0.0003669476419675151,
+      "relative_change_from_previous": 1.2473737185046995e-05
+    },
+    {
+      "current_per_unit_field": 0.19999029076151242,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 7,
+      "maximum_laguerre_order": 3,
+      "mode_count": 32,
+      "normalized_current": 0.00019999029076151243,
+      "relative_change_from_previous": 0.00028050839662518913
+    },
+    {
+      "current_per_unit_field": 0.022214059299104583,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 7,
+      "maximum_laguerre_order": 3,
+      "mode_count": 32,
+      "normalized_current": 2.2214059299104582e-05,
+      "relative_change_from_previous": 0.0009732602679637827
+    },
+    {
+      "current_per_unit_field": 1.3091988245263886,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 9,
+      "maximum_laguerre_order": 4,
+      "mode_count": 50,
+      "normalized_current": 0.0013091988245263887,
+      "relative_change_from_previous": 0.0023878252318106385
+    },
+    {
+      "current_per_unit_field": 0.7730136435498904,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 9,
+      "maximum_laguerre_order": 4,
+      "mode_count": 50,
+      "normalized_current": 0.0007730136435498905,
+      "relative_change_from_previous": 0.0004974099947941798
+    },
+    {
+      "current_per_unit_field": 0.3669550136713882,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 9,
+      "maximum_laguerre_order": 4,
+      "mode_count": 50,
+      "normalized_current": 0.0003669550136713882,
+      "relative_change_from_previous": 2.0088849037195403e-05
+    },
+    {
+      "current_per_unit_field": 0.2000185343784423,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 9,
+      "maximum_laguerre_order": 4,
+      "mode_count": 50,
+      "normalized_current": 0.00020001853437844232,
+      "relative_change_from_previous": 0.00014120499891499155
+    },
+    {
+      "current_per_unit_field": 0.022217686327251632,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 9,
+      "maximum_laguerre_order": 4,
+      "mode_count": 50,
+      "normalized_current": 2.2217686327251634e-05,
+      "relative_change_from_previous": 0.000163249588351752
+    },
+    {
+      "current_per_unit_field": 1.310593329470823,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 11,
+      "maximum_laguerre_order": 5,
+      "mode_count": 72,
+      "normalized_current": 0.0013105933294708229,
+      "relative_change_from_previous": 0.0010640256691961379
+    },
+    {
+      "current_per_unit_field": 0.7731182360662535,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 11,
+      "maximum_laguerre_order": 5,
+      "mode_count": 72,
+      "normalized_current": 0.0007731182360662535,
+      "relative_change_from_previous": 0.00013528657258844137
+    },
+    {
+      "current_per_unit_field": 0.3669682586841974,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 11,
+      "maximum_laguerre_order": 5,
+      "mode_count": 72,
+      "normalized_current": 0.0003669682586841974,
+      "relative_change_from_previous": 3.609307479800614e-05
+    },
+    {
+      "current_per_unit_field": 0.20003679345433595,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 11,
+      "maximum_laguerre_order": 5,
+      "mode_count": 72,
+      "normalized_current": 0.00020003679345433596,
+      "relative_change_from_previous": 9.127858719557344e-05
+    },
+    {
+      "current_per_unit_field": 0.022218758634928316,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 11,
+      "maximum_laguerre_order": 5,
+      "mode_count": 72,
+      "normalized_current": 2.2218758634928318e-05,
+      "relative_change_from_previous": 4.82613675364491e-05
+    },
+    {
+      "current_per_unit_field": 1.311291564019177,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 5,
+      "mode_count": 96,
+      "normalized_current": 0.0013112915640191769,
+      "relative_change_from_previous": 0.0005324784872510369
+    },
+    {
+      "current_per_unit_field": 0.7731446234276385,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 5,
+      "mode_count": 96,
+      "normalized_current": 0.0007731446234276384,
+      "relative_change_from_previous": 3.412991642873914e-05
+    },
+    {
+      "current_per_unit_field": 0.36698130982067634,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 5,
+      "mode_count": 96,
+      "normalized_current": 0.00036698130982067633,
+      "relative_change_from_previous": 3.556349091814531e-05
+    },
+    {
+      "current_per_unit_field": 0.20004662140990784,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 5,
+      "mode_count": 96,
+      "normalized_current": 0.00020004662140990785,
+      "relative_change_from_previous": 4.912832570041273e-05
+    },
+    {
+      "current_per_unit_field": 0.02221904717693738,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 15,
+      "maximum_laguerre_order": 5,
+      "mode_count": 96,
+      "normalized_current": 2.221904717693738e-05,
+      "relative_change_from_previous": 1.2986245844145184e-05
+    },
+    {
+      "current_per_unit_field": 1.3115089332234209,
+      "ion_charge": 1.0,
+      "maximum_hermite_order": 20,
+      "maximum_laguerre_order": 5,
+      "mode_count": 126,
+      "normalized_current": 0.001311508933223421,
+      "relative_change_from_previous": 0.00016573978166493068
+    },
+    {
+      "current_per_unit_field": 0.7731467132704579,
+      "ion_charge": 2.0,
+      "maximum_hermite_order": 20,
+      "maximum_laguerre_order": 5,
+      "mode_count": 126,
+      "normalized_current": 0.0007731467132704579,
+      "relative_change_from_previous": 2.70303525016841e-06
+    },
+    {
+      "current_per_unit_field": 0.36698740876091834,
+      "ion_charge": 5.0,
+      "maximum_hermite_order": 20,
+      "maximum_laguerre_order": 5,
+      "mode_count": 126,
+      "normalized_current": 0.00036698740876091833,
+      "relative_change_from_previous": 1.6618935953663957e-05
+    },
+    {
+      "current_per_unit_field": 0.20004939767205698,
+      "ion_charge": 10.0,
+      "maximum_hermite_order": 20,
+      "maximum_laguerre_order": 5,
+      "mode_count": 126,
+      "normalized_current": 0.00020004939767205698,
+      "relative_change_from_previous": 1.3877883070058718e-05
+    },
+    {
+      "current_per_unit_field": 0.022219097961598724,
+      "ion_charge": 100.0,
+      "maximum_hermite_order": 20,
+      "maximum_laguerre_order": 5,
+      "mode_count": 126,
+      "normalized_current": 2.2219097961598725e-05,
+      "relative_change_from_previous": 2.2856311013177536e-06
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Converged normalized Coulomb current response. Absolute Spitzer--Harm conductivity and original/improved Sugama comparison remain separate gates.",
+  "thresholds": {
+    "algebra_atol": 2e-12,
+    "nested_current_rtol": 0.005
+  },
+  "title": "Drift-kinetic Coulomb driven-response convergence"
+}

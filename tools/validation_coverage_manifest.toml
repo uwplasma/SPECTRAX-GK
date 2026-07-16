@@ -379,11 +379,15 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/collision_operator_verification.json",
   "docs/_static/collision_operator_verification.png",
+  "docs/_static/collision_response_convergence.json",
+  "docs/_static/collision_response_convergence.csv",
+  "docs/_static/collision_response_convergence.png",
+  "docs/_static/collision_response_convergence.pdf",
 ]
 next_tests = [
-  "extend the closed low-order coupled sweep to larger Hermite/Laguerre runtime tables",
+  "add arbitrary-order original/improved-Sugama hierarchies under the same driven-response convention",
   "test fixed-particle-position conservation only if a pre-gyroaverage particle operator is implemented",
-  "run the implemented driven-response solver with converged P=20 J=5 Coulomb/original/improved tables before conductivity promotion",
+  "close dimensional collision-frequency normalization and saturation before absolute conductivity promotion",
   "require finite-b ITG and collisional zonal-response gates before input-file promotion",
 ]
 

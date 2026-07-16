@@ -679,11 +679,38 @@ useful equation-level boundary: at :math:`Z=1` the improved block carries over
 10% more current than the original, while their difference is below 1% by
 :math:`Z=100`, where pitch-angle scattering dominates. This reproduces the
 published qualitative ordering, but it is not a Spitzer-conductivity result.
-The publication gate still requires independently generated Coulomb, original,
-and improved matrices at :math:`(P,J)=(20,5)`, a truncation scan, saturation in
-time under :math:`eE/(\sqrt{m_eT_e}\nu_{ee})=10^{-3}`, and the Figure-16 scan
+The absolute-conductivity gate still requires arbitrary-order original and
+improved matrices at :math:`(P,J)=(20,5)` alongside the now-generated Coulomb
+hierarchy, matched collision-frequency normalization, saturation under
+:math:`eE/(\sqrt{m_eT_e}\nu_{ee})=10^{-3}`, and the three-model Figure-16 scan
 over ion charge. No input-file collision selector is enabled by this response
 utility.
+
+The direct Coulomb contraction now resolves that response through
+:math:`(P,J)=(20,5)` without evaluating the finite-wavelength Bessel hierarchy.
+At the final point, the largest current change from :math:`(15,5)` is
+:math:`1.66\times10^{-4}` over :math:`Z=1,2,5,10,100`; the invariant,
+self-adjointness, non-positive-spectrum, and driven-solve residuals all pass a
+:math:`2\times10^{-12}` algebra gate. The figure is regenerated from equations
+(3.53)--(3.56), not from stored coefficient arrays:
+
+.. figure:: _static/collision_response_convergence.png
+   :alt: Nested Hermite--Laguerre convergence of the Coulomb driven response
+   :width: 96%
+
+   Drift-kinetic Coulomb response hierarchy. Panel (a) shows the ion-charge
+   scan, panel (b) is the nested velocity-space error, panel (c) records the
+   conservation/dissipation gates, and panel (d) reports local coefficient-
+   generation cost. The panel validates the normalized Coulomb response; it
+   does not substitute for an absolute Spitzer--Härm conductivity comparison.
+
+The machine-readable JSON and CSV use the same prospectively fixed 0.5%
+current and :math:`2\times10^{-12}` algebra thresholds. Regenerate all three
+formats with
+
+.. code-block:: bash
+
+   python tools/artifacts/build_linear_validation_artifacts.py collision-response
 
 A deterministic Cyclone ITG probe also records the finite-wavelength failure
 boundary rather than hiding it. At :math:`k_y\rho\simeq0.63`, increasing the

@@ -5,6 +5,8 @@ Subcommands:
   collision-table Generate checked high-precision collision coefficient data.
   collision-verification
                   Build the Coulomb algebra/convergence verification panel.
+  collision-response
+                  Build the drift-kinetic driven-response convergence panel.
   figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
@@ -17,6 +19,7 @@ import hashlib
 import json
 import math
 import sys
+import time
 from collections.abc import Callable
 from functools import cache
 from pathlib import Path
@@ -54,6 +57,11 @@ DEFAULT_COLLISION_VERIFICATION_JSON = (
 DEFAULT_COLLISION_VERIFICATION_PNG = (
     REPO_ROOT / "docs" / "_static" / "collision_operator_verification.png"
 )
+DEFAULT_COLLISION_RESPONSE_JSON = (
+    REPO_ROOT / "docs" / "_static" / "collision_response_convergence.json"
+)
+DEFAULT_COLLISION_RESPONSE_CSV = DEFAULT_COLLISION_RESPONSE_JSON.with_suffix(".csv")
+DEFAULT_COLLISION_RESPONSE_PNG = DEFAULT_COLLISION_RESPONSE_JSON.with_suffix(".png")
 
 
 def _coulomb_e_mp(order: int, chi: Any, mp: Any) -> Any:
@@ -70,6 +78,24 @@ def _coulomb_E_mp(order: int, chi: Any, mp: Any) -> Any:
             for index in range(order + 1)
         )
     )
+
+
+def _cached_coulomb_integrals_mp(
+    chi: Any, mp: Any
+) -> tuple[Callable[[int], Any], Callable[[int], Any]]:
+    """Return call-local Appendix-A integrals with the exact E-order recurrence."""
+
+    @cache
+    def coulomb_e(order: int) -> Any:
+        return _coulomb_e_mp(order, chi, mp)
+
+    @cache
+    def coulomb_E(order: int) -> Any:
+        if order == 0:
+            return chi * coulomb_e(0) / 2
+        return order * coulomb_E(order - 1) + chi * coulomb_e(order) / 2
+
+    return coulomb_e, coulomb_E
 
 
 def coulomb_speed_integrals(
@@ -157,6 +183,9 @@ def _coulomb_speed_moments_mp(
     temperature_ratio: Any,
     collision_frequency: Any,
     mp: Any,
+    *,
+    coulomb_e: Callable[[int], Any] | None = None,
+    coulomb_E: Callable[[int], Any] | None = None,
 ) -> tuple[Any, Any]:
     p = spherical_order
     j = spherical_radial_order
@@ -165,6 +194,16 @@ def _coulomb_speed_moments_mp(
     tau = mp.mpf(temperature_ratio)
     nu = mp.mpf(collision_frequency)
     chi = mp.sqrt(tau / sigma)
+    e_integral = (
+        (lambda order: _coulomb_e_mp(order, chi, mp))
+        if coulomb_e is None
+        else coulomb_e
+    )
+    E_integral = (
+        (lambda order: _coulomb_E_mp(order, chi, mp))
+        if coulomb_E is None
+        else coulomb_E
+    )
     inverse_sqrt_pi = 1 / mp.sqrt(mp.pi)
     test_moment = mp.mpf(0)
     field_moment = mp.mpf(0)
@@ -203,7 +242,7 @@ def _coulomb_speed_moments_mp(
                     * 4
                     * nu
                     * inverse_sqrt_pi
-                    * _coulomb_E_mp(integral_order, chi, mp)
+                    * E_integral(integral_order)
                 )
             if gaussian_coefficient != 0:
                 integral_order = d + monomial_order + p - summation_order + 1
@@ -214,7 +253,7 @@ def _coulomb_speed_moments_mp(
                     * chi
                     * nu
                     * inverse_sqrt_pi
-                    * _coulomb_e_mp(integral_order, chi, mp)
+                    * e_integral(integral_order)
                 )
 
         field_prime_coefficients = (
@@ -241,11 +280,7 @@ def _coulomb_speed_moments_mp(
                 * nu
                 * inverse_sqrt_pi
                 * chi ** (p + 2 * monomial_order + 2 * summation_order - 1)
-                * _coulomb_e_mp(
-                    p + 1 + d + monomial_order + summation_order,
-                    chi,
-                    mp,
-                )
+                * e_integral(p + 1 + d + monomial_order + summation_order)
             )
             beta_plus = (
                 4
@@ -256,11 +291,7 @@ def _coulomb_speed_moments_mp(
                     chi ** (2 * inner_order)
                     * mp.factorial(monomial_order)
                     / mp.factorial(inner_order)
-                    * _coulomb_e_mp(
-                        p + summation_order + 1 + d + inner_order,
-                        chi,
-                        mp,
-                    )
+                    * e_integral(p + summation_order + 1 + d + inner_order)
                     / 2
                     for inner_order in range(monomial_order + 1)
                 )
@@ -274,17 +305,13 @@ def _coulomb_speed_moments_mp(
                 * (
                     gamma_factor
                     / mp.gamma(mp.mpf("1.5"))
-                    * _coulomb_E_mp(d + summation_order, chi, mp)
+                    * E_integral(d + summation_order)
                     / 2
                     - sum(
                         chi ** (2 * inner_order + 1)
                         * gamma_factor
                         / mp.gamma(inner_order + mp.mpf("1.5"))
-                        * _coulomb_e_mp(
-                            d + summation_order + inner_order + 1,
-                            chi,
-                            mp,
-                        )
+                        * e_integral(d + summation_order + inner_order + 1)
                         / 2
                         for inner_order in range(p + monomial_order + 1)
                     )
@@ -1191,6 +1218,7 @@ def coulomb_nonpolarized_moment_matrices(
         source_b = mp.mpf(source_kperp_rho)
         sigma = mp.mpf(mass_ratio)
         tau = mp.mpf(temperature_ratio)
+        chi = mp.sqrt(tau / sigma)
         half_b = target_b / 2
         bessel_argument = half_b * half_b
         drift_kinetic = target_b == 0
@@ -1201,6 +1229,22 @@ def coulomb_nonpolarized_moment_matrices(
         speed_cache: dict[tuple[int, int, int], tuple[Any, Any]] = {}
         product_cache: dict[tuple[int, int, int, int], Any] = {}
         inverse_cache: dict[tuple[int, int, int, int, int], Any] = {}
+
+        coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(chi, mp)
+
+        @cache
+        def speed_moment(p: int, j: int, speed_power: int) -> tuple[Any, Any]:
+            return _coulomb_speed_moments_mp(
+                p,
+                j,
+                speed_power,
+                sigma,
+                tau,
+                1,
+                mp,
+                coulomb_e=coulomb_e,
+                coulomb_E=coulomb_E,
+            )
 
         @cache
         def inverse_associated(
@@ -1271,15 +1315,7 @@ def coulomb_nonpolarized_moment_matrices(
                         speed_power,
                         mp,
                     )
-                    test_term, field_term = _coulomb_speed_moments_mp(
-                        p,
-                        j,
-                        speed_power,
-                        sigma,
-                        tau,
-                        1,
-                        mp,
-                    )
+                    test_term, field_term = speed_moment(p, j, speed_power)
                     test_speed += laguerre_coefficient * test_term
                     field_speed += laguerre_coefficient * field_term
                 speed_cache[key] = (test_speed, field_speed)
@@ -1455,6 +1491,247 @@ def coulomb_nonpolarized_moment_matrices(
 
         test = np.asarray(test_matrix.tolist(), dtype=np.float64)
         field = np.asarray(field_matrix.tolist(), dtype=np.float64)
+    return test, field
+
+
+def coulomb_drift_kinetic_moment_matrices(
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    mass_ratio: float,
+    temperature_ratio: float,
+    *,
+    maximum_spherical_order: int | None = None,
+    maximum_spherical_radial_order: int | None = None,
+    digits: int = 80,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Generate drift-kinetic Coulomb test and field moment matrices.
+
+    This evaluates equations (3.53)--(3.56) of Frei et al. (2021) directly.
+    At zero Larmor radius only the azimuthal harmonic ``m=0`` remains, so the
+    Bessel and Laguerre-product sums used by the finite-wavelength generator
+    collapse exactly. Rows and columns use Hermite-major ``p * Nl + j``
+    ordering and the paper's Laguerre convention.
+
+    The spherical and radial limits remain explicit because collision-table
+    promotion requires a resolved hierarchy, not only a resolved runtime
+    Hermite--Laguerre state.
+    """
+
+    if maximum_hermite_order < 0:
+        raise ValueError("maximum_hermite_order must be >= 0")
+    if maximum_laguerre_order < 0:
+        raise ValueError("maximum_laguerre_order must be >= 0")
+    if mass_ratio <= 0.0 or not math.isfinite(mass_ratio):
+        raise ValueError("mass_ratio must be finite and > 0")
+    if temperature_ratio <= 0.0 or not math.isfinite(temperature_ratio):
+        raise ValueError("temperature_ratio must be finite and > 0")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+
+    maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
+    spherical_limit = (
+        maximum_degree if maximum_spherical_order is None else maximum_spherical_order
+    )
+    radial_limit = (
+        maximum_degree // 2
+        if maximum_spherical_radial_order is None
+        else maximum_spherical_radial_order
+    )
+    if spherical_limit < 0:
+        raise ValueError("maximum_spherical_order must be >= 0")
+    if radial_limit < 0:
+        raise ValueError("maximum_spherical_radial_order must be >= 0")
+
+    import mpmath as mp
+
+    n_laguerre = maximum_laguerre_order + 1
+    n_modes = (maximum_hermite_order + 1) * n_laguerre
+    moment_orders = tuple(
+        (p, j)
+        for p in range(spherical_limit + 1)
+        for j in range(radial_limit + 1)
+    )
+
+    with mp.workdps(digits):
+        sigma = mp.mpf(mass_ratio)
+        tau = mp.mpf(temperature_ratio)
+        chi = mp.sqrt(tau / sigma)
+
+        coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(chi, mp)
+
+        @cache
+        def spherical_polynomial(p: int, j: int) -> tuple[tuple[int, int, Any], ...]:
+            coefficients: dict[tuple[int, int], Any] = {}
+            for parallel_power in range(p + 1):
+                legendre = _legendre_monomial_coefficient_mp(
+                    p, parallel_power, mp
+                )
+                if legendre == 0:
+                    continue
+                for radial_power in range(j + 1):
+                    laguerre = _associated_laguerre_monomial_coefficient_mp(
+                        j, p, radial_power, mp
+                    )
+                    total_radial_power = (p - parallel_power) // 2 + radial_power
+                    for parallel_radial_power in range(total_radial_power + 1):
+                        key = (
+                            parallel_power + 2 * parallel_radial_power,
+                            total_radial_power - parallel_radial_power,
+                        )
+                        coefficients[key] = coefficients.get(key, mp.mpf(0)) + (
+                            legendre
+                            * laguerre
+                            * math.comb(total_radial_power, parallel_radial_power)
+                        )
+            return tuple(
+                (parallel_power, perpendicular_power, coefficient)
+                for (parallel_power, perpendicular_power), coefficient in sorted(
+                    coefficients.items()
+                )
+                if coefficient != 0
+            )
+
+        @cache
+        def hermite_gaussian_moment(g: int, power: int) -> Any:
+            total = mp.mpf(0)
+            for pair_order in range(g // 2 + 1):
+                combined_power = power + g - 2 * pair_order
+                if combined_power % 2:
+                    continue
+                coefficient = (
+                    (-1) ** pair_order
+                    * mp.factorial(g)
+                    * mp.power(2, g - 2 * pair_order)
+                    / (
+                        mp.factorial(pair_order)
+                        * mp.factorial(g - 2 * pair_order)
+                    )
+                )
+                total += coefficient * mp.gamma((combined_power + 1) / 2)
+            return total
+
+        @cache
+        def laguerre_exponential_moment(h: int, power: int) -> Any:
+            return sum(
+                _associated_laguerre_monomial_coefficient_mp(
+                    h, -mp.mpf("0.5"), monomial_order, mp
+                )
+                * mp.factorial(power + monomial_order)
+                for monomial_order in range(h + 1)
+            )
+
+        @cache
+        def transform(p: int, j: int, g: int, h: int) -> Any:
+            left_degree = p + 2 * j
+            right_degree = g + 2 * h
+            if right_degree > left_degree or (left_degree - right_degree) % 2:
+                return mp.mpf(0)
+            projection = sum(
+                coefficient
+                * hermite_gaussian_moment(g, parallel_power)
+                * laguerre_exponential_moment(h, perpendicular_power)
+                for parallel_power, perpendicular_power, coefficient in spherical_polynomial(
+                    p, j
+                )
+            )
+            return projection / (
+                mp.sqrt(mp.pi) * mp.power(2, g) * mp.factorial(g)
+            )
+
+        @cache
+        def speed_moment(p: int, j: int, speed_power: int) -> tuple[Any, Any]:
+            return _coulomb_speed_moments_mp(
+                p,
+                j,
+                speed_power,
+                sigma,
+                tau,
+                1,
+                mp,
+                coulomb_e=coulomb_e,
+                coulomb_E=coulomb_E,
+            )
+
+        @cache
+        def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
+            test_speed = mp.mpf(0)
+            field_speed = mp.mpf(0)
+            for speed_power in range(t + 1):
+                laguerre_coefficient = _associated_laguerre_monomial_coefficient_mp(
+                    t, p, speed_power, mp
+                )
+                test_term, field_term = speed_moment(p, j, speed_power)
+                test_speed += laguerre_coefficient * test_term
+                field_speed += laguerre_coefficient * field_term
+            return test_speed, field_speed
+
+        # Equation (3.54): map runtime Hermite--Laguerre coefficients to the
+        # particle spherical moments used by both collision components.
+        moment_map = mp.matrix(len(moment_orders), n_modes)
+        for moment_index, (p, j) in enumerate(moment_orders):
+            for g in range(maximum_hermite_order + 1):
+                normalization = mp.sqrt(mp.power(2, g) * mp.factorial(g))
+                for h in range(n_laguerre):
+                    moment_map[moment_index, g * n_laguerre + h] = (
+                        transform(p, j, g, h) * normalization
+                    )
+
+        test_projection = mp.matrix(n_modes, len(moment_orders))
+        field_projection = mp.matrix(n_modes, len(moment_orders))
+        for output_hermite in range(maximum_hermite_order + 1):
+            output_normalization = mp.sqrt(
+                mp.power(2, output_hermite) * mp.factorial(output_hermite)
+            )
+            for output_laguerre in range(n_laguerre):
+                row = output_hermite * n_laguerre + output_laguerre
+                maximum_speed_order = output_laguerre + output_hermite // 2
+                for moment_index, (p, j) in enumerate(moment_orders):
+                    if p > output_hermite + 2 * output_laguerre:
+                        continue
+                    sigma_pj = (
+                        mp.factorial(p)
+                        * mp.gamma(p + j + mp.mpf("1.5"))
+                        / (
+                            mp.power(2, p)
+                            * mp.gamma(p + mp.mpf("1.5"))
+                            * mp.factorial(j)
+                        )
+                    )
+                    angular = (
+                        mp.power(2, p)
+                        * mp.factorial(p) ** 2
+                        / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
+                    )
+                    test_coefficient = mp.mpf(0)
+                    field_coefficient = mp.mpf(0)
+                    for speed_order in range(maximum_speed_order + 1):
+                        if output_laguerre > speed_order + p // 2:
+                            continue
+                        inverse_prefactor = (
+                            mp.sqrt(mp.pi)
+                            * mp.power(2, output_hermite)
+                            * mp.factorial(output_hermite)
+                            * mp.factorial(speed_order)
+                            * (p + mp.mpf("0.5"))
+                            / mp.gamma(speed_order + p + mp.mpf("1.5"))
+                        )
+                        inverse = inverse_prefactor * transform(
+                            p,
+                            speed_order,
+                            output_hermite,
+                            output_laguerre,
+                        )
+                        if inverse == 0:
+                            continue
+                        test_speed, field_speed = integrated_speed(p, j, speed_order)
+                        common = angular * inverse / output_normalization
+                        test_coefficient += common * test_speed
+                        field_coefficient += common * field_speed
+                    test_projection[row, moment_index] = test_coefficient
+                    field_projection[row, moment_index] = field_coefficient
+
+        test = np.asarray((test_projection * moment_map).tolist(), dtype=np.float64)
+        field = np.asarray((field_projection * moment_map).tolist(), dtype=np.float64)
     return test, field
 
 
@@ -2297,6 +2574,399 @@ def write_coulomb_operator_verification_artifacts(
     return summary
 
 
+def build_drift_kinetic_response_convergence_summary(
+    *,
+    resolutions: tuple[tuple[int, int], ...] = (
+        (3, 1),
+        (5, 2),
+        (7, 3),
+        (9, 4),
+        (11, 5),
+        (15, 5),
+        (20, 5),
+    ),
+    ion_charges: tuple[float, ...] = (1.0, 2.0, 5.0, 10.0, 100.0),
+    required_resolution: tuple[int, int] = (20, 5),
+    nested_current_rtol: float = 5.0e-3,
+    algebra_atol: float = 2.0e-12,
+    digits: int = 50,
+) -> dict[str, Any]:
+    r"""Build the converged driven Coulomb-response hierarchy.
+
+    Electron--electron and electron--ion blocks use equations (3.53)--(3.56)
+    of Frei et al. (2021). The electric-field source follows equation (81) of
+    Frei, Ernst & Ricci (2022). The report verifies the matrix algebra and
+    velocity-space convergence of the resulting current; it is deliberately
+    not labelled electrical conductivity because that comparison also needs
+    the paper's collision-frequency normalization and full original/improved
+    Sugama hierarchies.
+    """
+
+    if not resolutions:
+        raise ValueError("resolutions must contain at least one (P, J) pair")
+    if any(p < 2 or j < 1 for p, j in resolutions):
+        raise ValueError("response resolutions require P >= 2 and J >= 1")
+    if required_resolution[0] < 2 or required_resolution[1] < 1:
+        raise ValueError("required_resolution must satisfy P >= 2 and J >= 1")
+    if any(not math.isfinite(z) or z <= 0.0 for z in ion_charges):
+        raise ValueError("ion_charges must be finite and > 0")
+    if nested_current_rtol <= 0.0 or not math.isfinite(nested_current_rtol):
+        raise ValueError("nested_current_rtol must be finite and > 0")
+    if algebra_atol <= 0.0 or not math.isfinite(algebra_atol):
+        raise ValueError("algebra_atol must be finite and > 0")
+
+    charge_values = np.asarray(ion_charges, dtype=float)
+    rows: list[dict[str, Any]] = []
+    previous_current: np.ndarray | None = None
+    resolution_reports: list[dict[str, Any]] = []
+    for maximum_hermite, maximum_laguerre in resolutions:
+        maximum_degree = maximum_hermite + 2 * maximum_laguerre
+        radial_limit = maximum_degree // 2
+        pair_blocks: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+        pair_times: dict[str, float] = {}
+        for label, mass_ratio in (("electron_electron", 1.0), ("electron_ion", 1 / 1836)):
+            start = time.perf_counter()
+            pair_blocks[label] = coulomb_drift_kinetic_moment_matrices(
+                maximum_hermite,
+                maximum_laguerre,
+                mass_ratio,
+                1.0,
+                maximum_spherical_order=maximum_degree,
+                maximum_spherical_radial_order=radial_limit,
+                digits=digits,
+            )
+            pair_times[label] = time.perf_counter() - start
+
+        n_laguerre = maximum_laguerre + 1
+        mode_count = (maximum_hermite + 1) * n_laguerre
+        convention_sign = np.asarray(
+            [
+                (-1.0) ** laguerre
+                for _hermite in range(maximum_hermite + 1)
+                for laguerre in range(n_laguerre)
+            ]
+        )
+
+        electron_test, electron_field = pair_blocks["electron_electron"]
+        ion_test, _ion_field = pair_blocks["electron_ion"]
+        electron_collision = (
+            convention_sign[:, None]
+            * convention_sign[None, :]
+            * (electron_test + electron_field)
+        )
+        ion_collision = (
+            convention_sign[:, None]
+            * convention_sign[None, :]
+            * ion_test
+        )
+        active_modes = np.asarray(
+            [
+                hermite * n_laguerre + laguerre
+                for hermite in range(1, maximum_hermite + 1, 2)
+                for laguerre in range(n_laguerre)
+            ],
+            dtype=int,
+        )
+        source = np.zeros(mode_count)
+        source[n_laguerre] = -np.sqrt(2.0) * 1.0e-3
+        currents: list[float] = []
+        solve_residuals: list[float] = []
+        for charge in charge_values:
+            collision = electron_collision + charge * ion_collision
+            response = np.zeros(mode_count)
+            response[active_modes] = np.linalg.solve(
+                collision[np.ix_(active_modes, active_modes)],
+                -source[active_modes],
+            )
+            currents.append(float(abs(response[n_laguerre] / np.sqrt(2.0))))
+            solve_residuals.append(
+                float(np.max(np.abs((collision @ response + source)[active_modes])))
+            )
+
+        current_array = np.asarray(currents)
+        relative_change = (
+            None
+            if previous_current is None
+            else np.abs(current_array - previous_current)
+            / np.maximum(np.abs(current_array), np.finfo(float).tiny)
+        )
+        previous_current = current_array
+
+        density = np.zeros(mode_count)
+        density[0] = 1.0
+        momentum = np.zeros(mode_count)
+        momentum[n_laguerre] = 1.0
+        energy = np.zeros(mode_count)
+        if maximum_laguerre >= 1 and maximum_hermite >= 2:
+            energy[1] = 1.0
+            energy[2 * n_laguerre] = 1 / np.sqrt(2.0)
+        invariant_residuals = {
+            name: float(np.max(np.abs(electron_collision @ vector)))
+            for name, vector in (
+                ("density", density),
+                ("parallel_momentum", momentum),
+                ("thermal_energy", energy),
+            )
+        }
+        symmetry_error = float(
+            np.max(np.abs(electron_collision - electron_collision.T))
+        )
+        maximum_eigenvalue = float(
+            np.linalg.eigvalsh(0.5 * (electron_collision + electron_collision.T)).max()
+        )
+        maximum_change = (
+            None if relative_change is None else float(np.max(relative_change))
+        )
+        report = {
+            "maximum_hermite_order": maximum_hermite,
+            "maximum_laguerre_order": maximum_laguerre,
+            "mode_count": mode_count,
+            "maximum_spherical_order": maximum_degree,
+            "maximum_spherical_radial_order": radial_limit,
+            "current": current_array.tolist(),
+            "relative_change_from_previous": (
+                None if relative_change is None else relative_change.tolist()
+            ),
+            "maximum_relative_change": maximum_change,
+            "invariant_residuals": invariant_residuals,
+            "symmetry_max_abs": symmetry_error,
+            "maximum_eigenvalue": maximum_eigenvalue,
+            "solve_residual_max": float(max(solve_residuals)),
+            "generation_seconds": pair_times,
+        }
+        resolution_reports.append(report)
+        for charge_index, charge in enumerate(charge_values):
+            rows.append(
+                {
+                    "maximum_hermite_order": maximum_hermite,
+                    "maximum_laguerre_order": maximum_laguerre,
+                    "mode_count": mode_count,
+                    "ion_charge": float(charge),
+                    "normalized_current": float(current_array[charge_index]),
+                    "current_per_unit_field": float(current_array[charge_index] / 1.0e-3),
+                    "relative_change_from_previous": (
+                        None
+                        if relative_change is None
+                        else float(relative_change[charge_index])
+                    ),
+                }
+            )
+
+    final = resolution_reports[-1]
+    resolution_reached = (
+        final["maximum_hermite_order"] >= required_resolution[0]
+        and final["maximum_laguerre_order"] >= required_resolution[1]
+    )
+    gates = {
+        "required_resolution_reached": resolution_reached,
+        "nested_current_converged": (
+            final["maximum_relative_change"] is not None
+            and final["maximum_relative_change"] <= nested_current_rtol
+        ),
+        "collision_invariants": max(final["invariant_residuals"].values())
+        <= algebra_atol,
+        "self_adjoint_symmetry": final["symmetry_max_abs"] <= algebra_atol,
+        "nonpositive_spectrum": final["maximum_eigenvalue"] <= algebra_atol,
+        "driven_solve_residual": final["solve_residual_max"] <= algebra_atol,
+    }
+    return {
+        "schema_version": 1,
+        "title": "Drift-kinetic Coulomb driven-response convergence",
+        "literature_equations": {
+            "collision": "Frei et al. (2021), equations (3.53)--(3.56)",
+            "drive": "Frei, Ernst & Ricci (2022), equation (81)",
+        },
+        "scope": (
+            "Converged normalized Coulomb current response. Absolute Spitzer--Harm "
+            "conductivity and original/improved Sugama comparison remain separate gates."
+        ),
+        "ion_charge": charge_values.tolist(),
+        "normalized_field": 1.0e-3,
+        "required_resolution": list(required_resolution),
+        "thresholds": {
+            "nested_current_rtol": nested_current_rtol,
+            "algebra_atol": algebra_atol,
+        },
+        "resolutions": resolution_reports,
+        "rows": rows,
+        "gates": gates,
+        "gate_passed": all(gates.values()),
+    }
+
+
+def write_drift_kinetic_response_convergence_figure(
+    summary: dict[str, Any], out_png: Path
+) -> None:
+    """Write the publication panel for the driven-response hierarchy."""
+
+    colors = {
+        "navy": "#17324D",
+        "blue": "#2878A8",
+        "teal": "#16817A",
+        "orange": "#D97732",
+        "red": "#B33A3A",
+        "ink": "#20272E",
+    }
+    reports = summary["resolutions"]
+    charges = np.asarray(summary["ion_charge"], dtype=float)
+    mode_counts = np.asarray([row["mode_count"] for row in reports], dtype=float)
+    labels = [
+        f"({row['maximum_hermite_order']}, {row['maximum_laguerre_order']})"
+        for row in reports
+    ]
+    palette = plt.get_cmap("viridis")(np.linspace(0.15, 0.88, len(reports)))
+    fig, axes = plt.subplots(2, 2, figsize=(11.2, 8.0), constrained_layout=True)
+
+    for color, label, row in zip(palette, labels, reports, strict=True):
+        axes[0, 0].semilogx(
+            charges,
+            np.asarray(row["current"], dtype=float) / summary["normalized_field"],
+            "o-",
+            color=color,
+            lw=1.7,
+            ms=4.2,
+            label=label,
+        )
+    axes[0, 0].set(
+        xlabel="ion charge $Z$",
+        ylabel=r"normalized response $|u_e|/E$",
+        title="(a) Driven-current hierarchy",
+    )
+    axes[0, 0].legend(
+        title=r"$(P,J)$", frameon=False, fontsize=7, title_fontsize=8, ncol=2
+    )
+
+    for charge_index, charge in enumerate(charges):
+        x_values: list[float] = []
+        y_values: list[float] = []
+        for row in reports[1:]:
+            change = row["relative_change_from_previous"]
+            if change is not None:
+                x_values.append(float(row["mode_count"]))
+                y_values.append(max(float(change[charge_index]), 1.0e-16))
+        axes[0, 1].semilogy(
+            x_values,
+            y_values,
+            "o-",
+            lw=1.5,
+            ms=4.0,
+            label=rf"$Z={charge:g}$",
+        )
+    axes[0, 1].axhline(
+        summary["thresholds"]["nested_current_rtol"],
+        color=colors["red"],
+        ls="--",
+        lw=1.4,
+        label="acceptance",
+    )
+    axes[0, 1].set(
+        xlabel="retained Hermite--Laguerre modes",
+        ylabel="nested relative current change",
+        title="(b) Velocity-space convergence",
+    )
+    axes[0, 1].legend(frameon=False, fontsize=7, ncol=2)
+
+    invariant = np.asarray(
+        [max(row["invariant_residuals"].values()) for row in reports]
+    )
+    symmetry = np.asarray([row["symmetry_max_abs"] for row in reports])
+    positive_eigenvalue = np.maximum(
+        np.asarray([row["maximum_eigenvalue"] for row in reports]), 0.0
+    )
+    solve_residual = np.asarray([row["solve_residual_max"] for row in reports])
+    for values, marker, label, color in (
+        (invariant, "o", "invariants", colors["blue"]),
+        (symmetry, "s", "self-adjoint symmetry", colors["orange"]),
+        (positive_eigenvalue, "^", "positive spectrum", colors["red"]),
+        (solve_residual, "D", "forced solve", colors["teal"]),
+    ):
+        axes[1, 0].semilogy(
+            mode_counts,
+            np.maximum(values, 1.0e-18),
+            marker + "-",
+            lw=1.5,
+            ms=4.2,
+            color=color,
+            label=label,
+        )
+    axes[1, 0].axhline(
+        summary["thresholds"]["algebra_atol"],
+        color=colors["ink"],
+        ls="--",
+        lw=1.2,
+        label="acceptance",
+    )
+    axes[1, 0].set(
+        xlabel="retained Hermite--Laguerre modes",
+        ylabel="absolute residual",
+        title="(c) Conservation and dissipation gates",
+    )
+    axes[1, 0].legend(frameon=False, fontsize=7, ncol=2)
+
+    electron_times = np.asarray(
+        [row["generation_seconds"]["electron_electron"] for row in reports]
+    )
+    ion_times = np.asarray(
+        [row["generation_seconds"]["electron_ion"] for row in reports]
+    )
+    axes[1, 1].loglog(
+        mode_counts,
+        electron_times,
+        "o-",
+        color=colors["blue"],
+        lw=1.8,
+        label="electron--electron",
+    )
+    axes[1, 1].loglog(
+        mode_counts,
+        ion_times,
+        "s-",
+        color=colors["orange"],
+        lw=1.8,
+        label="electron--ion",
+    )
+    axes[1, 1].set(
+        xlabel="retained Hermite--Laguerre modes",
+        ylabel="coefficient generation time [s]",
+        title="(d) Direct contraction cost",
+    )
+    axes[1, 1].legend(frameon=False, fontsize=8)
+
+    for axis in axes.flat:
+        axis.grid(alpha=0.22, lw=0.6)
+        axis.spines[["top", "right"]].set_visible(False)
+    status = "PASS" if summary["gate_passed"] else "OPEN"
+    fig.suptitle(
+        f"Drift-kinetic Coulomb response: resolved hierarchy ({status})",
+        fontsize=15,
+        color=colors["ink"],
+    )
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=220, metadata={"Software": "SPECTRAX-GK"})
+    fig.savefig(out_png.with_suffix(".pdf"), metadata={"Creator": "SPECTRAX-GK"})
+    plt.close(fig)
+
+
+def write_drift_kinetic_response_convergence_artifacts(
+    out_json: Path,
+    out_csv: Path,
+    out_png: Path,
+    **summary_kwargs: Any,
+) -> dict[str, Any]:
+    """Generate compact machine-readable and publication response artifacts."""
+
+    summary = build_drift_kinetic_response_convergence_summary(**summary_kwargs)
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+    out_json.write_text(
+        json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(summary["rows"]).to_csv(out_csv, index=False)
+    write_drift_kinetic_response_convergence_figure(summary, out_png)
+    return summary
+
+
 def build_collision_table(*, digits: int = 80) -> np.ndarray:
     """Generate the published C6/C9/103 matrices with multiprecision arithmetic."""
 
@@ -2396,6 +3066,17 @@ def build_collision_verification_parser() -> argparse.ArgumentParser:
         "--out-png", type=Path, default=DEFAULT_COLLISION_VERIFICATION_PNG
     )
     parser.add_argument("--digits", type=int, default=80)
+    return parser
+
+
+def build_collision_response_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate the drift-kinetic Coulomb response convergence artifacts."
+    )
+    parser.add_argument("--out-json", type=Path, default=DEFAULT_COLLISION_RESPONSE_JSON)
+    parser.add_argument("--out-csv", type=Path, default=DEFAULT_COLLISION_RESPONSE_CSV)
+    parser.add_argument("--out-png", type=Path, default=DEFAULT_COLLISION_RESPONSE_PNG)
+    parser.add_argument("--digits", type=int, default=50)
     return parser
 
 
@@ -2934,6 +3615,21 @@ def main_collision_verification(argv: list[str] | None = None) -> int:
     return 0 if summary["gate_passed"] else 1
 
 
+def main_collision_response(argv: list[str] | None = None) -> int:
+    args = build_collision_response_parser().parse_args(argv)
+    summary = write_drift_kinetic_response_convergence_artifacts(
+        args.out_json,
+        args.out_csv,
+        args.out_png,
+        digits=int(args.digits),
+    )
+    print(f"Wrote {args.out_json}")
+    print(f"Wrote {args.out_csv}")
+    print(f"Wrote {args.out_png}")
+    print(f"Collision response gate: {'PASS' if summary['gate_passed'] else 'FAIL'}")
+    return 0 if summary["gate_passed"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
     if not tokens:
@@ -2946,6 +3642,7 @@ def main(argv: list[str] | None = None) -> int:
                 "kbm-branch",
                 "collision-table",
                 "collision-verification",
+                "collision-response",
             ),
         )
         parser.print_help()
@@ -2961,6 +3658,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_table(rest)
     if command == "collision-verification":
         return main_collision_verification(rest)
+    if command == "collision-response":
+        return main_collision_response(rest)
     raise SystemExit(f"unknown command: {command}")
 
 
