@@ -680,7 +680,11 @@ protect the algebra. For the converged eight-mode
 The collision-table subcommands also avoid importing the runtime, JAX, or any
 device backend; benchmark and solver dependencies are loaded only by the
 subcommands that use them. This keeps offline arbitrary-precision generation
-CPU-only even on GPU hosts.
+CPU-only even on GPU hosts. The development extra installs ``gmpy2`` so
+``mpmath`` can use its GMP backend for these exact offline tables; it is not a
+runtime dependency and does not alter stored coefficients. A matched
+:math:`(5,2)` office probe retained the checksum and reduced generation by
+18% relative to the pure-Python multiprecision backend.
 The general finite-:math:`b` contraction remains too expensive for the full
 conductivity resolution. It now evaluates equation (A4)'s basis transform as
 an exact polynomial projection followed by analytic Gaussian and Laguerre
