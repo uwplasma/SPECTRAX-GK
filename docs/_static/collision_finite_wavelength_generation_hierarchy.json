@@ -2,12 +2,14 @@
   "claim_scope": "offline_generator_hierarchy_not_transport_acceptance",
   "gates": {
     "all_generated_coefficients_finite": true,
+    "b_0p5_p12_completed_within_600_seconds": true,
+    "b_0p5_p7_p9_common_block_converged": true,
+    "b_0p5_p9_p12_common_block_converged": true,
     "literature_resolution_reached": false,
-    "paper_required_wavelength_generated": false,
-    "p12_completed_within_600_seconds": true,
-    "p7_p9_common_block_converged": true,
-    "p9_p12_common_block_converged": true,
-    "p9_completed_within_600_seconds": true
+    "paper_required_wavelength_generated": true,
+    "paper_wavelength_p12_completed_within_600_seconds": true,
+    "paper_wavelength_p7_p9_common_block_converged": false,
+    "paper_wavelength_p9_p12_common_block_converged": true
   },
   "literature_required_resolution": [18, 6],
   "normalization": {
@@ -69,6 +71,51 @@
       "test_phi2": 9.267307115e-12
     }
   },
-  "schema_version": 2,
-  "source_commit": "4f27f6ce"
+  "paper_wavelength_hierarchy": {
+    "bessel_argument": 0.7071067811865476,
+    "common_block_relative_l2": {
+      "p7_j3_to_p9_j4": {
+        "field_matrix": 0.0235240781061066,
+        "field_phi1": 0.0,
+        "field_phi2": 2.13752518001032e-07,
+        "test_matrix": 0.0586763887881256,
+        "test_phi1": 0.0,
+        "test_phi2": 6.49133971951658e-07
+      },
+      "p9_j4_to_p12_j5": {
+        "field_matrix": 0.0192061155687689,
+        "field_phi1": 0.0,
+        "field_phi2": 5.43972265699233e-10,
+        "test_matrix": 0.0437507618672582,
+        "test_phi1": 0.0,
+        "test_phi2": 2.1356591754048e-09
+      }
+    },
+    "paper_kperp": 0.5,
+    "resolutions": [
+      {
+        "checksum": -84.28216105079215,
+        "matrix_seconds": 36.06821463000961,
+        "maximum_hermite_order": 7,
+        "maximum_laguerre_order": 3,
+        "total_seconds": 43.47615610505454
+      },
+      {
+        "checksum": -155.73849579768742,
+        "matrix_seconds": 124.94561048108153,
+        "maximum_hermite_order": 9,
+        "maximum_laguerre_order": 4,
+        "total_seconds": 145.7076915220823
+      },
+      {
+        "checksum": -270.4521326763041,
+        "matrix_seconds": 490.4765930880094,
+        "maximum_hermite_order": 12,
+        "maximum_laguerre_order": 5,
+        "total_seconds": 557.8667111319955
+      }
+    ]
+  },
+  "schema_version": 3,
+  "source_commit": "b8035b09"
 }

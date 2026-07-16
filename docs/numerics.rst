@@ -712,13 +712,23 @@ completes in 556.21 seconds; its common :math:`(9,4)` test/field blocks change
 by 2.87% and 1.07%, and polarization changes remain below
 :math:`10^{-11}`. ``collision_finite_wavelength_generation_hierarchy.json``
 records the prospective 5% intermediate-resolution pass while failing closed
-on both the paper wavelength and the still-unreached :math:`(18,6)` endpoint.
+on the still-unreached :math:`(18,6)` endpoint.
 This distinction matters: Frei, Hoffmann & Ricci normalize the Bessel argument
 as :math:`B=k_\perp\sqrt{2\tau}`. At :math:`\tau=1`, the existing
 :math:`B=0.5` hierarchy corresponds to paper :math:`k_\perp=0.5/\sqrt{2}`;
 their :math:`k_\perp=0.5` convergence point requires :math:`B=1/\sqrt{2}`.
 The runtime interpolation uses the same convention explicitly through
 :math:`B=\sqrt{2b_\mathrm{cache}}`.
+At that required wavelength, exact :math:`(7,3)`, :math:`(9,4)`, and
+:math:`(12,5)` builds complete in 43.48, 145.71, and 557.87 seconds on the
+office CPU. The common test/field matrix changes are 5.87%/2.35% from
+:math:`(7,3)` to :math:`(9,4)`, then 4.38%/1.92% from :math:`(9,4)` to
+:math:`(12,5)`; the latter passes the prospective 5% intermediate gate.
+Polarization-vector changes are below :math:`2.2\times10^{-9}` at the latter
+step. These are coefficient-hierarchy results, not a collisional-ITG
+acceptance claim: the paper-facing growth scan remains blocked until the
+published :math:`(18,6)` endpoint or a demonstrably equivalent converged
+resolution is available.
 An independent homogeneous-slab matrix reconstruction now evaluates equations
 (2.14)--(2.18) directly at :math:`k_\perp=0.5`,
 :math:`k_\parallel=0.1`, :math:`\eta=3`, and :math:`\tau=1`. It exposed and

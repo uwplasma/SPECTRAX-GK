@@ -3279,19 +3279,21 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     path = ROOT / "docs/_static/collision_finite_wavelength_generation_hierarchy.json"
     summary = json.loads(path.read_text(encoding="utf-8"))
 
-    assert summary["schema_version"] == 2
+    assert summary["schema_version"] == 3
     assert summary["claim_scope"] == (
         "offline_generator_hierarchy_not_transport_acceptance"
     )
     assert summary["literature_required_resolution"] == [18, 6]
     assert summary["gates"] == {
         "all_generated_coefficients_finite": True,
+        "b_0p5_p12_completed_within_600_seconds": True,
+        "b_0p5_p7_p9_common_block_converged": True,
+        "b_0p5_p9_p12_common_block_converged": True,
         "literature_resolution_reached": False,
-        "paper_required_wavelength_generated": False,
-        "p12_completed_within_600_seconds": True,
-        "p7_p9_common_block_converged": True,
-        "p9_p12_common_block_converged": True,
-        "p9_completed_within_600_seconds": True,
+        "paper_required_wavelength_generated": True,
+        "paper_wavelength_p12_completed_within_600_seconds": True,
+        "paper_wavelength_p7_p9_common_block_converged": False,
+        "paper_wavelength_p9_p12_common_block_converged": True,
     }
     assert summary["normalization"] == {
         "generator_coordinate": "B=k_perp*v_thermal/Omega=sqrt(2*tau)*k_perp",
@@ -3309,6 +3311,20 @@ def test_tracked_finite_wavelength_generation_hierarchy_stays_fail_closed() -> N
     assert p9["optimized"]["total_seconds"] < 0.5 * p9[
         "pre_radial_factorization"
     ]["total_seconds"]
+
+    paper = summary["paper_wavelength_hierarchy"]
+    assert paper["paper_kperp"] == 0.5
+    assert paper["bessel_argument"] == pytest.approx(1.0 / np.sqrt(2.0))
+    assert [
+        (row["maximum_hermite_order"], row["maximum_laguerre_order"])
+        for row in paper["resolutions"]
+    ] == [(7, 3), (9, 4), (12, 5)]
+    assert paper["resolutions"][-1]["total_seconds"] < 600.0
+    changes = paper["common_block_relative_l2"]
+    assert changes["p7_j3_to_p9_j4"]["test_matrix"] > 0.05
+    assert changes["p9_j4_to_p12_j5"]["test_matrix"] < 0.05
+    assert changes["p9_j4_to_p12_j5"]["field_matrix"] < 0.02
+    assert changes["p9_j4_to_p12_j5"]["test_phi2"] < 3.0e-9
     assert max(summary["p7_p9_common_low_order_relative_l2"].values()) < 0.05
     p12 = summary["p12_j5_B_0p5"]
     assert p12["resolution"] == [12, 5]
