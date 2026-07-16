@@ -1123,8 +1123,12 @@ def _hermite_laguerre_to_associated_legendre_mp(
     bessel_order: int,
     mp: Any,
     *,
-    associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
-    laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
+    associated_spherical_polynomial: Callable[
+        [int, int, int], tuple[tuple[int, int, Any], ...]
+    ]
+    | None = None,
+    hermite_gaussian_moment: Callable[[int, int], Any] | None = None,
+    laguerre_exponential_moment: Callable[[int, int], Any] | None = None,
 ) -> Any:
     if hermite_order > spherical_order + bessel_order + 2 * spherical_radial_order:
         return mp.mpf(0)
@@ -1141,38 +1145,38 @@ def _hermite_laguerre_to_associated_legendre_mp(
         * mp.factorial(spherical_order - bessel_order)
         / mp.factorial(spherical_order + bessel_order)
     )
-    maximum_auxiliary_order = min(
-        spherical_radial_order + (spherical_order + bessel_order) // 2,
-        bessel_order + laguerre_order,
-    )
-    if associated_transform is None:
+    if associated_spherical_polynomial is None:
+        associated_spherical_polynomial = lambda p, j, m: (  # noqa: E731
+            _associated_spherical_polynomial_mp(p, j, m, mp)
+        )
+    if hermite_gaussian_moment is None:
+        hermite_gaussian_moment = lambda g, power: (  # noqa: E731
+            _hermite_gaussian_moment_mp(g, power, mp)
+        )
+    if laguerre_exponential_moment is None:
+        laguerre_exponential_moment = lambda k, power: (  # noqa: E731
+            _laguerre_exponential_moment_mp(k, power, mp)
+        )
 
-        def associated_transform(p: int, j: int, m: int, g: int, s: int) -> Any:
-            return _associated_legendre_to_hermite_laguerre_mp(p, j, m, g, s, mp)
-
-    if laguerre_product is None:
-
-        def laguerre_product(m: int, n: int, k: int, output: int, radial: int) -> Any:
-            return _laguerre_product_expansion_coefficient_mp(
-                m, n, k, output, radial, mp
-            )
-
+    # Equation (3.33) expands x**m L_k in ordinary Laguerre modes and then
+    # projects each mode.  Laguerre orthogonality collapses that sum to this
+    # single weighted projection of the factored spherical polynomial.
     contraction = sum(
-        associated_transform(
+        coefficient
+        * hermite_gaussian_moment(hermite_order, parallel_power)
+        * laguerre_exponential_moment(
+            laguerre_order,
+            perpendicular_power + bessel_order,
+        )
+        for parallel_power, perpendicular_power, coefficient in associated_spherical_polynomial(
             spherical_order,
             spherical_radial_order,
             bessel_order,
-            hermite_order,
-            auxiliary_order,
         )
-        * laguerre_product(
-            bessel_order,
-            0,
-            laguerre_order,
-            auxiliary_order,
-            bessel_order,
-        )
-        for auxiliary_order in range(maximum_auxiliary_order + 1)
+    ) / (
+        mp.sqrt(mp.pi)
+        * mp.power(2, hermite_order)
+        * mp.factorial(hermite_order)
     )
     return prefactor * contraction
 
@@ -1602,6 +1606,9 @@ def _coulomb_coefficient_functions(
         inverse_associated,
         inverse_product,
         speed_moment,
+        associated_spherical_polynomial,
+        hermite_gaussian_moment,
+        laguerre_exponential_moment,
     )
 
 
@@ -1702,6 +1709,9 @@ def coulomb_nonpolarized_moment_matrices(
             inverse_associated,
             inverse_product,
             speed_moment,
+            associated_spherical_polynomial,
+            hermite_gaussian_moment,
+            laguerre_exponential_moment,
         ) = coefficient_functions
 
         def spherical_moment(
@@ -1780,8 +1790,9 @@ def coulomb_nonpolarized_moment_matrices(
                     speed_order,
                     m,
                     mp,
-                    associated_transform=inverse_associated,
-                    laguerre_product=inverse_product,
+                    associated_spherical_polynomial=associated_spherical_polynomial,
+                    hermite_gaussian_moment=hermite_gaussian_moment,
+                    laguerre_exponential_moment=laguerre_exponential_moment,
                 )
             return inverse_cache[key]
 
@@ -2436,6 +2447,9 @@ def coulomb_polarization_vectors(
             inverse_associated,
             inverse_product,
             speed_moment,
+            associated_spherical_polynomial,
+            hermite_gaussian_moment,
+            laguerre_exponential_moment,
         ) = coefficient_functions
 
         def integrated_speed(p: int, j: int, t: int) -> tuple[Any, Any]:
@@ -2504,8 +2518,9 @@ def coulomb_polarization_vectors(
                     speed_order,
                     m,
                     mp,
-                    associated_transform=inverse_associated,
-                    laguerre_product=inverse_product,
+                    associated_spherical_polynomial=associated_spherical_polynomial,
+                    hermite_gaussian_moment=hermite_gaussian_moment,
+                    laguerre_exponential_moment=laguerre_exponential_moment,
                 )
             return inverse_cache[key]
 
