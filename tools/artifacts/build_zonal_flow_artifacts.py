@@ -676,6 +676,279 @@ def run_drift_kinetic_collisional_zonal_trace(
     return report
 
 
+def run_finite_wavelength_collisional_zonal_trace(
+    *,
+    config: Path,
+    table_archive: Path,
+    kx: float,
+    out_csv: Path,
+    dt: float = 0.005,
+    maximum_normalized_time: float = 30.0,
+    sample_stride: int = 10,
+    nz: int = 32,
+) -> dict[str, object]:
+    """Run one equal-species finite-wavelength Coulomb zonal trace."""
+
+    import jax
+    import jax.numpy as jnp
+
+    from spectraxgk.operators.linear import (
+        EqualSpeciesFiniteWavelengthCoulombOperator,
+    )
+    from spectraxgk.operators.linear.params import LinearTerms
+
+    if kx not in {0.1, 0.2}:
+        raise ValueError("finite-wavelength zonal kx must be 0.1 or 0.2")
+    if not np.isfinite(dt) or dt <= 0.0:
+        raise ValueError("dt must be finite and > 0")
+    if not np.isfinite(maximum_normalized_time) or maximum_normalized_time <= 0.0:
+        raise ValueError("maximum_normalized_time must be finite and > 0")
+    if sample_stride < 1 or nz < 8:
+        raise ValueError("sample_stride must be >= 1 and nz must be >= 8")
+
+    required = {
+        "metadata",
+        "bessel_argument_grid",
+        "test_table",
+        "field_table",
+        "test_phi1",
+        "field_phi1",
+        "test_phi2",
+        "field_phi2",
+    }
+    with np.load(table_archive) as archive:
+        if missing := required - set(archive.files):
+            raise ValueError(f"collision table archive is missing {sorted(missing)}")
+        metadata = json.loads(str(archive["metadata"]))
+        grid = np.asarray(archive["bessel_argument_grid"], dtype=float)
+        arrays = tuple(
+            np.asarray(archive[name], dtype=float)
+            for name in (
+                "test_table",
+                "field_table",
+                "test_phi1",
+                "field_phi1",
+                "test_phi2",
+                "field_phi2",
+            )
+        )
+    if metadata.get("claim_scope") != (
+        "equal_species_diagonal_finite_wavelength_coulomb_table"
+    ):
+        raise ValueError("collision table archive has the wrong claim scope")
+    if metadata.get("laguerre_convention") != "runtime_signed":
+        raise ValueError("collision table archive must use runtime Laguerre signs")
+    resolution = metadata.get("resolution")
+    if not isinstance(resolution, list) or len(resolution) != 2:
+        raise ValueError("collision table archive has invalid resolution metadata")
+    maximum_hermite, maximum_laguerre = map(int, resolution)
+    mode_count = (maximum_hermite + 1) * (maximum_laguerre + 1)
+    expected_shapes = (
+        (grid.size, mode_count, mode_count),
+        (grid.size, mode_count, mode_count),
+        (grid.size, mode_count),
+        (grid.size, mode_count),
+        (grid.size, mode_count),
+        (grid.size, mode_count),
+    )
+    if grid.ndim != 1 or grid.size < 2 or not np.all(np.diff(grid) > 0.0):
+        raise ValueError("collision table Bessel grid must be strictly increasing")
+    if any(
+        array.shape != shape
+        for array, shape in zip(arrays, expected_shapes, strict=True)
+    ):
+        raise ValueError("collision table arrays do not match the declared resolution")
+    if any(not np.all(np.isfinite(array)) for array in arrays):
+        raise ValueError("collision table arrays must be finite")
+
+    collision_frequency = collisional_zonal_frequency(
+        normalized_collisionality=float(
+            COLLISIONAL_ZONAL_PROTOCOL["normalized_collisionality"]
+        ),
+        q=float(COLLISIONAL_ZONAL_PROTOCOL["q"]),
+        epsilon=float(COLLISIONAL_ZONAL_PROTOCOL["epsilon"]),
+    )
+    problem = _build_collisional_zonal_problem(
+        config=config,
+        kx=kx,
+        nz=nz,
+        n_laguerre=maximum_laguerre + 1,
+        n_hermite=maximum_hermite + 1,
+    )
+    local_bessel_argument = np.sqrt(2.0 * np.asarray(problem.cache.b))[
+        0, 0, problem.kx_index
+    ]
+    local_range = (
+        float(np.min(local_bessel_argument)),
+        float(np.max(local_bessel_argument)),
+    )
+    if local_range[0] < grid[0] or local_range[1] > grid[-1]:
+        raise ValueError(
+            "collision table does not cover the field-line Bessel-argument range"
+        )
+    operator = EqualSpeciesFiniteWavelengthCoulombOperator(
+        jnp.asarray(grid),
+        jnp.asarray([[collision_frequency]]),
+        *(jnp.asarray(array) for array in arrays),
+    )
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=0.0,
+        collisions=1.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    normalized_time, response, elapsed_seconds, steps = (
+        _integrate_collisional_zonal_trace(
+            problem,
+            collision_operator=operator,
+            terms=terms,
+            collision_frequency=collision_frequency,
+            dt=dt,
+            maximum_normalized_time=maximum_normalized_time,
+            sample_stride=sample_stride,
+        )
+    )
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    with out_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=(
+                "model",
+                "kx",
+                "t_nu",
+                "response",
+                "response_imag",
+                "p_max",
+                "j_max",
+            ),
+        )
+        writer.writeheader()
+        for time_value, value in zip(normalized_time, response, strict=True):
+            writer.writerow(
+                {
+                    "model": "coulomb",
+                    "kx": kx,
+                    "t_nu": float(time_value),
+                    "response": float(value.real),
+                    "response_imag": float(value.imag),
+                    "p_max": maximum_hermite,
+                    "j_max": maximum_laguerre,
+                }
+            )
+    report: dict[str, object] = {
+        "schema_version": 1,
+        "claim_scope": "finite_wavelength_collisional_zonal_trace",
+        "model": "coulomb",
+        "config": _repo_relative(config),
+        "table_archive": str(table_archive),
+        "collision_frequency": collision_frequency,
+        "kx": kx,
+        "dt": dt,
+        "steps": steps,
+        "sample_stride": sample_stride,
+        "nz": nz,
+        "maximum_hermite_order": maximum_hermite,
+        "maximum_laguerre_order": maximum_laguerre,
+        "bessel_argument_grid": grid.tolist(),
+        "fieldline_bessel_argument_range": list(local_range),
+        "elapsed_seconds": elapsed_seconds,
+        "maximum_imaginary_fraction": float(
+            np.max(np.abs(response.imag)) / max(np.max(np.abs(response.real)), 1.0e-300)
+        ),
+        "finite": True,
+        "devices": [str(device) for device in jax.devices()],
+    }
+    _write_json(out_csv.with_suffix(".json"), report)
+    return report
+
+
+def write_finite_wavelength_zonal_grid_gate(
+    *,
+    coarse_traces: dict[float, Path],
+    fine_traces: dict[float, Path],
+    out_json: Path,
+    maximum_relative_l2: float = 1.0e-3,
+    maximum_absolute_error: float = 5.0e-4,
+) -> dict[str, object]:
+    """Gate nested B-grid interpolation on matched finite-B zonal traces."""
+
+    if set(coarse_traces) != {0.1, 0.2} or set(fine_traces) != {0.1, 0.2}:
+        raise ValueError("nested B-grid gate requires kx=0.1 and kx=0.2 traces")
+    if maximum_relative_l2 <= 0.0 or maximum_absolute_error <= 0.0:
+        raise ValueError("nested B-grid tolerances must be > 0")
+
+    rows: dict[str, object] = {}
+    passed = True
+    for kx in (0.1, 0.2):
+        coarse = _read_campaign_csv(coarse_traces[kx])
+        fine = _read_campaign_csv(fine_traces[kx])
+        coarse_time = np.asarray([float(row["t_nu"]) for row in coarse])
+        fine_time = np.asarray([float(row["t_nu"]) for row in fine])
+        if coarse_time.shape != fine_time.shape or not np.allclose(
+            coarse_time, fine_time, rtol=0.0, atol=1.0e-12
+        ):
+            raise ValueError("nested B-grid traces must use identical sample times")
+        coarse_response = np.asarray([float(row["response"]) for row in coarse])
+        fine_response = np.asarray([float(row["response"]) for row in fine])
+        if (
+            coarse_response.size < 2
+            or coarse_response[0] == 0.0
+            or fine_response[0] == 0.0
+            or not np.all(np.isfinite(coarse_response))
+            or not np.all(np.isfinite(fine_response))
+        ):
+            raise ValueError("nested B-grid traces must be finite and normalizable")
+        coarse_normalized = coarse_response / coarse_response[0]
+        fine_normalized = fine_response / fine_response[0]
+        difference = coarse_normalized - fine_normalized
+        relative_l2 = float(
+            np.linalg.norm(difference)
+            / max(float(np.linalg.norm(fine_normalized)), 1.0e-300)
+        )
+        maximum_absolute = float(np.max(np.abs(difference)))
+        row_passed = (
+            relative_l2 <= maximum_relative_l2
+            and maximum_absolute <= maximum_absolute_error
+        )
+        passed = passed and row_passed
+        rows[f"{kx:.1f}"] = {
+            "samples": int(fine_time.size),
+            "maximum_normalized_time": float(fine_time[-1]),
+            "relative_l2": relative_l2,
+            "maximum_absolute_error": maximum_absolute,
+            "coarse_final": float(coarse_normalized[-1]),
+            "fine_final": float(fine_normalized[-1]),
+            "passed": row_passed,
+        }
+    report: dict[str, object] = {
+        "schema_version": 1,
+        "claim_scope": "finite_wavelength_zonal_b_grid_interpolation_pilot",
+        "resolution": [7, 3],
+        "coarse_bessel_argument_grid": [0.12, 0.16, 0.24, 0.32],
+        "fine_bessel_argument_grid": [0.12, 0.14, 0.16, 0.24, 0.28, 0.32],
+        "thresholds": {
+            "maximum_relative_l2": maximum_relative_l2,
+            "maximum_absolute_error": maximum_absolute_error,
+        },
+        "traces": rows,
+        "gate_passed": passed,
+        "notes": (
+            "This closes B-grid interpolation at P7/J3 through t*nu=2 only. "
+            "It does not close the paper-required P24/J10 moment hierarchy or "
+            "the t*nu=30 collisional-zonal trace."
+        ),
+    }
+    _write_json(out_json, report)
+    return report
+
+
 def write_collisional_zonal_artifacts(
     trace_records: list[dict[str, object]],
     section_records: list[dict[str, object]],
@@ -1021,6 +1294,55 @@ def _main_simulate_collisional_zonal_dk(argv: list[str]) -> int:
     )
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
+
+
+def _main_simulate_collisional_zonal_finite_b(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Run one finite-wavelength Coulomb zonal trace."
+    )
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--table-archive", type=Path, required=True)
+    parser.add_argument("--kx", type=float, choices=(0.1, 0.2), required=True)
+    parser.add_argument("--out-csv", type=Path, required=True)
+    parser.add_argument("--dt", type=float, default=0.005)
+    parser.add_argument("--maximum-normalized-time", type=float, default=30.0)
+    parser.add_argument("--sample-stride", type=int, default=10)
+    parser.add_argument("--nz", type=int, default=32)
+    args = parser.parse_args(argv)
+    report = run_finite_wavelength_collisional_zonal_trace(
+        config=args.config,
+        table_archive=args.table_archive,
+        kx=float(args.kx),
+        out_csv=args.out_csv,
+        dt=float(args.dt),
+        maximum_normalized_time=float(args.maximum_normalized_time),
+        sample_stride=int(args.sample_stride),
+        nz=int(args.nz),
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+def _main_collisional_zonal_grid_gate(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Gate finite-wavelength zonal B-grid interpolation."
+    )
+    for prefix in ("coarse", "fine"):
+        parser.add_argument(f"--{prefix}-kx010", type=Path, required=True)
+        parser.add_argument(f"--{prefix}-kx020", type=Path, required=True)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--maximum-relative-l2", type=float, default=1.0e-3)
+    parser.add_argument("--maximum-absolute-error", type=float, default=5.0e-4)
+    args = parser.parse_args(argv)
+    report = write_finite_wavelength_zonal_grid_gate(
+        coarse_traces={0.1: args.coarse_kx010, 0.2: args.coarse_kx020},
+        fine_traces={0.1: args.fine_kx010, 0.2: args.fine_kx020},
+        out_json=args.out_json,
+        maximum_relative_l2=float(args.maximum_relative_l2),
+        maximum_absolute_error=float(args.maximum_absolute_error),
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["gate_passed"] else 1
 
 
 def _build_response_csv_parser() -> argparse.ArgumentParser:
@@ -1678,7 +2000,8 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "usage: build_zonal_flow_artifacts.py "
             "{response-csv,response-output,objective-gate,miller-panel,"
-            "collisional-zonal-dk,collisional-zonal,simulate-collisional-zonal-dk} ..."
+            "collisional-zonal-dk,collisional-zonal,simulate-collisional-zonal-dk,"
+            "simulate-collisional-zonal-finite-b,collisional-zonal-grid-gate} ..."
         )
         return 2
     command, rest = tokens[0], tokens[1:]
@@ -1696,6 +2019,10 @@ def main(argv: list[str] | None = None) -> int:
         return _main_collisional_zonal(rest)
     if command == "simulate-collisional-zonal-dk":
         return _main_simulate_collisional_zonal_dk(rest)
+    if command == "simulate-collisional-zonal-finite-b":
+        return _main_simulate_collisional_zonal_finite_b(rest)
+    if command == "collisional-zonal-grid-gate":
+        return _main_collisional_zonal_grid_gate(rest)
     raise SystemExit(f"unknown command: {command}")
 
 

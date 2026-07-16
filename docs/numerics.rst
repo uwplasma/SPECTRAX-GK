@@ -826,6 +826,30 @@ in the runtime Laguerre convention. A nested B-grid trace comparison remains
 mandatory because the illustrative grid above is coverage, not an interpolation
 convergence claim.
 
+Run one table through the common zonal integrator with::
+
+   python tools/artifacts/build_zonal_flow_artifacts.py \
+     simulate-collisional-zonal-finite-b \
+     --config benchmarks/collisional_zonal_response.toml \
+     --table-archive finite_b_zonal_P24_J10_diagonal.npz \
+     --kx 0.1 --out-csv finite_b_zonal_kx010.csv \
+     --dt 0.005 --maximum-normalized-time 30 --sample-stride 10 --nz 32
+
+The runner rejects the wrong archive scope or Laguerre convention, malformed
+resolution metadata, non-finite coefficients, and tables that do not cover the
+actual field-line Bessel-argument range. The same command with ``--kx 0.2``
+produces the second Figure-13 wavelength once the table and moment hierarchy
+have passed their nested convergence gates.
+
+The tracked lower-hierarchy interpolation pilot is
+``docs/_static/collision_finite_wavelength_zonal_b_grid_pilot.json``. At
+:math:`(P,J)=(7,3)` through :math:`t\nu=2`, refining from four to six B-grid
+points changes the normalized traces by relative :math:`L_2` errors
+:math:`1.40\times10^{-4}` at :math:`k_x=0.1` and
+:math:`3.68\times10^{-4}` at :math:`k_x=0.2`. This passes the declared
+:math:`10^{-3}` interpolation gate but deliberately does not promote moment
+resolution or the paper's :math:`t\nu=30` trace.
+
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
 angular cutoff must pass a nested endpoint or observable-level convergence

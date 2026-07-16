@@ -4317,6 +4317,70 @@ def test_collisional_zonal_runtime_archive_fails_closed_before_simulation(
             out_csv=tmp_path / "trace.csv",
         )
 
+    with pytest.raises(ValueError, match="archive is missing"):
+        mod.run_finite_wavelength_collisional_zonal_trace(
+            config=ROOT / "benchmarks" / "collisional_zonal_response.toml",
+            table_archive=archive,
+            kx=0.1,
+            out_csv=tmp_path / "finite_b_trace.csv",
+        )
+
+
+def test_finite_wavelength_collisional_zonal_table_runs_through_integrator(
+    tmp_path: Path,
+) -> None:
+    """The exact table route reaches a physical finite-B zonal time step."""
+
+    linear_tool = load_artifact_tool("build_linear_validation_artifacts")
+    zonal_tool = load_artifact_tool("build_zonal_flow_artifacts")
+    table = tmp_path / "finite_b_table.npz"
+    linear_tool.write_equal_species_finite_wavelength_coulomb_table(
+        table,
+        bessel_arguments=(0.10, 0.20),
+        maximum_hermite_order=1,
+        maximum_laguerre_order=0,
+        maximum_angular_bessel_order=1,
+        maximum_bessel_laguerre_order=1,
+        digits=24,
+    )
+    out_csv = tmp_path / "finite_b_trace.csv"
+    report = zonal_tool.run_finite_wavelength_collisional_zonal_trace(
+        config=ROOT / "benchmarks" / "collisional_zonal_response.toml",
+        table_archive=table,
+        kx=0.1,
+        out_csv=out_csv,
+        dt=0.005,
+        maximum_normalized_time=0.001,
+        sample_stride=1,
+        nz=8,
+    )
+    assert report["claim_scope"] == "finite_wavelength_collisional_zonal_trace"
+    assert report["steps"] >= 1
+    assert report["finite"] is True
+    assert out_csv.exists()
+    assert len(list(csv.DictReader(out_csv.open(encoding="utf-8")))) >= 2
+    gate = zonal_tool.write_finite_wavelength_zonal_grid_gate(
+        coarse_traces={0.1: out_csv, 0.2: out_csv},
+        fine_traces={0.1: out_csv, 0.2: out_csv},
+        out_json=tmp_path / "grid_gate.json",
+    )
+    assert gate["gate_passed"] is True
+
+
+def test_tracked_finite_wavelength_zonal_b_grid_pilot_passes() -> None:
+    """The tracked pilot closes interpolation, not moment resolution."""
+
+    payload = json.loads(
+        (
+            ROOT
+            / "docs/_static/collision_finite_wavelength_zonal_b_grid_pilot.json"
+        ).read_text()
+    )
+    assert payload["gate_passed"] is True
+    assert payload["resolution"] == [7, 3]
+    assert max(row["relative_l2"] for row in payload["traces"].values()) < 4.0e-4
+    assert "does not close" in payload["notes"]
+
 
 def test_plot_zonal_flow_response_output_subcommand(
     tmp_path: Path, monkeypatch

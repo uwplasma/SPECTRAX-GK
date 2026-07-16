@@ -403,6 +403,20 @@ That topology is the reference design for the production parallel lane.
   at a bounded lower hierarchy while the exact high-order speed precompute is
   reduced; only then should P24/J10 traces be launched.
 
+- 2026-07-16: Wired the equal-species table through the common physical zonal
+  integrator with strict archive scope, Laguerre convention, resolution,
+  finite-coefficient, and field-line coverage checks. A six-point P7/J3 table
+  covering both paper wavelengths generated in 8.40 seconds; the first real
+  trace advanced 8,020 RK2 steps through :math:`t\nu=2` in 10.76 seconds with
+  imaginary-response fraction ``4.22e-7``. A nested four-/six-point B-grid
+  comparison passes at both wavelengths: relative trace errors are
+  ``1.40e-4`` for ``kx=0.1`` and ``3.68e-4`` for ``kx=0.2``, with maximum
+  absolute error below ``1.90e-4``. The tracked JSON is explicitly a P7/J3
+  interpolation pilot; P24/J10 moment convergence and :math:`t\nu=30` remain
+  open. Function profiling shows the next high-order targets are Coulomb speed
+  contractions (about 57% of P12/J5 polarization time) and inverse transforms
+  (about 22%), not sparse-key pruning.
+
 - 2026-07-16: Resumed the finite-wavelength collisional-zonal blocker with a
   bounded truncation study rather than another default-order endpoint build.
   Frei, Ernst & Ricci (2022) state that the radial Bessel expansion is
