@@ -394,13 +394,96 @@ def _legendre_monomial_coefficient_mp(order: int, power: int, mp: Any) -> Any:
     )
 
 
-def _nonnegative_binomial(n: int, k: int, mp: Any) -> Any:
-    if k < 0 or k > n:
-        return mp.mpf(0)
-    # Every caller supplies integer polynomial indices. ``math.comb`` is exact
-    # and avoids mpmath's gamma-based generalized-binomial path in the deepest
-    # basis-transform loop.
-    return math.comb(n, k)
+def _spherical_polynomial_mp(
+    legendre_order: int,
+    radial_order: int,
+    mp: Any,
+    *,
+    associated_laguerre: Callable[[int, Any, int], Any] | None = None,
+    legendre_monomial: Callable[[int, int], Any] | None = None,
+) -> tuple[tuple[int, int, Any], ...]:
+    """Expand one spherical basis polynomial in parallel/perpendicular powers."""
+
+    if associated_laguerre is None:
+        associated_laguerre = lambda n, alpha, power: (  # noqa: E731
+            _associated_laguerre_monomial_coefficient_mp(n, alpha, power, mp)
+        )
+    if legendre_monomial is None:
+        legendre_monomial = lambda n, power: _legendre_monomial_coefficient_mp(  # noqa: E731
+            n, power, mp
+        )
+    coefficients: dict[tuple[int, int], Any] = {}
+    for parallel_power in range(legendre_order + 1):
+        legendre = legendre_monomial(legendre_order, parallel_power)
+        if legendre == 0:
+            continue
+        for radial_power in range(radial_order + 1):
+            laguerre = associated_laguerre(
+                radial_order,
+                legendre_order,
+                radial_power,
+            )
+            total_radial_power = (
+                (legendre_order - parallel_power) // 2 + radial_power
+            )
+            for parallel_radial_power in range(total_radial_power + 1):
+                key = (
+                    parallel_power + 2 * parallel_radial_power,
+                    total_radial_power - parallel_radial_power,
+                )
+                coefficients[key] = coefficients.get(key, mp.mpf(0)) + (
+                    legendre
+                    * laguerre
+                    * math.comb(total_radial_power, parallel_radial_power)
+                )
+    return tuple(
+        (parallel_power, perpendicular_power, coefficient)
+        for (parallel_power, perpendicular_power), coefficient in sorted(
+            coefficients.items()
+        )
+        if coefficient != 0
+    )
+
+
+def _hermite_gaussian_moment_mp(hermite_order: int, power: int, mp: Any) -> Any:
+    """Integrate ``exp(-x**2) H_n(x) x**power`` analytically."""
+
+    total = mp.mpf(0)
+    for pair_order in range(hermite_order // 2 + 1):
+        combined_power = power + hermite_order - 2 * pair_order
+        if combined_power % 2:
+            continue
+        coefficient = (
+            (-1) ** pair_order
+            * mp.factorial(hermite_order)
+            * mp.power(2, hermite_order - 2 * pair_order)
+            / (
+                mp.factorial(pair_order)
+                * mp.factorial(hermite_order - 2 * pair_order)
+            )
+        )
+        total += coefficient * mp.gamma((combined_power + 1) / 2)
+    return total
+
+
+def _laguerre_exponential_moment_mp(
+    laguerre_order: int,
+    power: int,
+    mp: Any,
+    *,
+    associated_laguerre: Callable[[int, Any, int], Any] | None = None,
+) -> Any:
+    """Integrate ``exp(-x) L_n(x) x**power`` analytically."""
+
+    if associated_laguerre is None:
+        associated_laguerre = lambda n, alpha, monomial: (  # noqa: E731
+            _associated_laguerre_monomial_coefficient_mp(n, alpha, monomial, mp)
+        )
+    return sum(
+        associated_laguerre(laguerre_order, -mp.mpf("0.5"), monomial_order)
+        * mp.factorial(power + monomial_order)
+        for monomial_order in range(laguerre_order + 1)
+    )
 
 
 def _legendre_to_hermite_laguerre_mp(
@@ -409,56 +492,35 @@ def _legendre_to_hermite_laguerre_mp(
     hermite_order: int,
     laguerre_order: int,
     mp: Any,
+    *,
+    spherical_polynomial: Callable[[int, int], tuple[tuple[int, int, Any], ...]]
+    | None = None,
+    hermite_gaussian_moment: Callable[[int, int], Any] | None = None,
+    laguerre_exponential_moment: Callable[[int, int], Any] | None = None,
 ) -> Any:
-    total = mp.mpf(0)
-    half = mp.mpf("0.5")
-    for q in range(legendre_order // 2 + 1):
-        for v in range(hermite_order // 2 + 1):
-            for i in range(radial_order + 1):
-                for r in range(q + 1):
-                    for s in range(min(laguerre_order, i) + 1):
-                        for m in range(radial_order - i + 1):
-                            combinatoric = (
-                                _nonnegative_binomial(legendre_order, q, mp)
-                                * _nonnegative_binomial(
-                                    2 * (legendre_order - q),
-                                    legendre_order,
-                                    mp,
-                                )
-                                * _nonnegative_binomial(q, r, mp)
-                                * _nonnegative_binomial(r, laguerre_order - s, mp)
-                                * _nonnegative_binomial(r, i - s, mp)
-                                * _nonnegative_binomial(s + r, s, mp)
-                                * mp.factorial(r)
-                            )
-                            if combinatoric == 0:
-                                continue
-                            exponent = (
-                                mp.mpf(3 * legendre_order + hermite_order) / 2
-                                + m
-                                + v
-                                - r
-                            )
-                            numerator = mp.gamma(
-                                radial_order - i + legendre_order + half
-                            ) * mp.fac2(
-                                legendre_order + hermite_order + 2 * (m - r - v) - 1
-                            )
-                            denominator = (
-                                mp.factorial(hermite_order - 2 * v)
-                                * mp.factorial(radial_order - i - m)
-                                * mp.gamma(legendre_order + m + half)
-                                * mp.factorial(v)
-                                * mp.factorial(m)
-                                * mp.power(2, exponent)
-                            )
-                            total += (
-                                (-1) ** (q + i + laguerre_order + v + m)
-                                * combinatoric
-                                * numerator
-                                / denominator
-                            )
-    return total
+    if spherical_polynomial is None:
+        spherical_polynomial = lambda p, j: _spherical_polynomial_mp(  # noqa: E731
+            p, j, mp
+        )
+    if hermite_gaussian_moment is None:
+        hermite_gaussian_moment = lambda g, power: (  # noqa: E731
+            _hermite_gaussian_moment_mp(g, power, mp)
+        )
+    if laguerre_exponential_moment is None:
+        laguerre_exponential_moment = lambda h, power: (  # noqa: E731
+            _laguerre_exponential_moment_mp(h, power, mp)
+        )
+    projection = sum(
+        coefficient
+        * hermite_gaussian_moment(hermite_order, parallel_power)
+        * laguerre_exponential_moment(laguerre_order, perpendicular_power)
+        for parallel_power, perpendicular_power, coefficient in spherical_polynomial(
+            legendre_order, radial_order
+        )
+    )
+    return projection / (
+        mp.sqrt(mp.pi) * mp.power(2, hermite_order) * mp.factorial(hermite_order)
+    )
 
 
 def legendre_to_hermite_laguerre_coefficient(
@@ -1254,21 +1316,6 @@ def _coulomb_coefficient_functions(
     coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(mp.sqrt(tau / sigma), mp)
 
     @cache
-    def base_transform(
-        legendre_order: int,
-        radial_order: int,
-        hermite_order: int,
-        laguerre_order: int,
-    ) -> Any:
-        return _legendre_to_hermite_laguerre_mp(
-            legendre_order,
-            radial_order,
-            hermite_order,
-            laguerre_order,
-            mp,
-        )
-
-    @cache
     def associated_laguerre(
         polynomial_order: int,
         tensor_order: Any,
@@ -1284,6 +1331,50 @@ def _coulomb_coefficient_functions(
     @cache
     def legendre_monomial(order: int, power: int) -> Any:
         return _legendre_monomial_coefficient_mp(order, power, mp)
+
+    @cache
+    def spherical_polynomial(
+        legendre_order: int,
+        radial_order: int,
+    ) -> tuple[tuple[int, int, Any], ...]:
+        return _spherical_polynomial_mp(
+            legendre_order,
+            radial_order,
+            mp,
+            associated_laguerre=associated_laguerre,
+            legendre_monomial=legendre_monomial,
+        )
+
+    @cache
+    def hermite_gaussian_moment(hermite_order: int, power: int) -> Any:
+        return _hermite_gaussian_moment_mp(hermite_order, power, mp)
+
+    @cache
+    def laguerre_exponential_moment(laguerre_order: int, power: int) -> Any:
+        return _laguerre_exponential_moment_mp(
+            laguerre_order,
+            power,
+            mp,
+            associated_laguerre=associated_laguerre,
+        )
+
+    @cache
+    def base_transform(
+        legendre_order: int,
+        radial_order: int,
+        hermite_order: int,
+        laguerre_order: int,
+    ) -> Any:
+        return _legendre_to_hermite_laguerre_mp(
+            legendre_order,
+            radial_order,
+            hermite_order,
+            laguerre_order,
+            mp,
+            spherical_polynomial=spherical_polynomial,
+            hermite_gaussian_moment=hermite_gaussian_moment,
+            laguerre_exponential_moment=laguerre_exponential_moment,
+        )
 
     @cache
     def associated_overlap(
@@ -1746,64 +1837,15 @@ def coulomb_drift_kinetic_moment_matrices(
 
         @cache
         def spherical_polynomial(p: int, j: int) -> tuple[tuple[int, int, Any], ...]:
-            coefficients: dict[tuple[int, int], Any] = {}
-            for parallel_power in range(p + 1):
-                legendre = _legendre_monomial_coefficient_mp(
-                    p, parallel_power, mp
-                )
-                if legendre == 0:
-                    continue
-                for radial_power in range(j + 1):
-                    laguerre = _associated_laguerre_monomial_coefficient_mp(
-                        j, p, radial_power, mp
-                    )
-                    total_radial_power = (p - parallel_power) // 2 + radial_power
-                    for parallel_radial_power in range(total_radial_power + 1):
-                        key = (
-                            parallel_power + 2 * parallel_radial_power,
-                            total_radial_power - parallel_radial_power,
-                        )
-                        coefficients[key] = coefficients.get(key, mp.mpf(0)) + (
-                            legendre
-                            * laguerre
-                            * math.comb(total_radial_power, parallel_radial_power)
-                        )
-            return tuple(
-                (parallel_power, perpendicular_power, coefficient)
-                for (parallel_power, perpendicular_power), coefficient in sorted(
-                    coefficients.items()
-                )
-                if coefficient != 0
-            )
+            return _spherical_polynomial_mp(p, j, mp)
 
         @cache
         def hermite_gaussian_moment(g: int, power: int) -> Any:
-            total = mp.mpf(0)
-            for pair_order in range(g // 2 + 1):
-                combined_power = power + g - 2 * pair_order
-                if combined_power % 2:
-                    continue
-                coefficient = (
-                    (-1) ** pair_order
-                    * mp.factorial(g)
-                    * mp.power(2, g - 2 * pair_order)
-                    / (
-                        mp.factorial(pair_order)
-                        * mp.factorial(g - 2 * pair_order)
-                    )
-                )
-                total += coefficient * mp.gamma((combined_power + 1) / 2)
-            return total
+            return _hermite_gaussian_moment_mp(g, power, mp)
 
         @cache
         def laguerre_exponential_moment(h: int, power: int) -> Any:
-            return sum(
-                _associated_laguerre_monomial_coefficient_mp(
-                    h, -mp.mpf("0.5"), monomial_order, mp
-                )
-                * mp.factorial(power + monomial_order)
-                for monomial_order in range(h + 1)
-            )
+            return _laguerre_exponential_moment_mp(h, power, mp)
 
         @cache
         def transform(p: int, j: int, g: int, h: int) -> Any:
@@ -1811,16 +1853,15 @@ def coulomb_drift_kinetic_moment_matrices(
             right_degree = g + 2 * h
             if right_degree > left_degree or (left_degree - right_degree) % 2:
                 return mp.mpf(0)
-            projection = sum(
-                coefficient
-                * hermite_gaussian_moment(g, parallel_power)
-                * laguerre_exponential_moment(h, perpendicular_power)
-                for parallel_power, perpendicular_power, coefficient in spherical_polynomial(
-                    p, j
-                )
-            )
-            return projection / (
-                mp.sqrt(mp.pi) * mp.power(2, g) * mp.factorial(g)
+            return _legendre_to_hermite_laguerre_mp(
+                p,
+                j,
+                g,
+                h,
+                mp,
+                spherical_polynomial=spherical_polynomial,
+                hermite_gaussian_moment=hermite_gaussian_moment,
+                laguerre_exponential_moment=laguerre_exponential_moment,
             )
 
         @cache

@@ -681,15 +681,18 @@ The collision-table subcommands also avoid importing the runtime, JAX, or any
 device backend; benchmark and solver dependencies are loaded only by the
 subcommands that use them. This keeps offline arbitrary-precision generation
 CPU-only even on GPU hosts.
-The general finite-:math:`b` contraction remains too expensive for the
-conductivity resolution: two independent :math:`(P,J)=(7,3)` blocks reached a
-600-second CPU bound. The drift-kinetic generator therefore evaluates the
-collapsed equations (3.53)--(3.56) directly, with overlap against the general
-formula as a regression rather than a longer timeout. Call-local Coulomb-
-integral and speed-moment caches reduce direct :math:`(P,J)=(20,5)` generation
-to about 56 seconds for electron--electron and 62 seconds for electron--ion
-blocks on the tracked development CPU. These are local algorithm timings, not
-portable runtime-performance claims.
+The general finite-:math:`b` contraction remains too expensive for the full
+conductivity resolution. It now evaluates equation (A4)'s basis transform as
+an exact polynomial projection followed by analytic Gaussian and Laguerre
+moments, replacing a six-deep combinatorial sum. Independent velocity
+quadrature and inverse-shell gates are unchanged. A representative
+:math:`(5,2)` two-wavelength build falls from 26.41 to 16.00 seconds with the
+same checksum; :math:`(7,3)` falls from 411.22 to 291.61 seconds on the office
+CPU. The drift-kinetic generator still evaluates collapsed equations
+(3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport
+path, whereas finite-:math:`b` must still reach the independent ITG and zonal
+resolution gates. These are local algorithm timings, not portable
+runtime-performance claims.
 
 That contraction is now implemented offline. Equations (3.48)--(3.49) produce
 test and field matrices in Hermite-major order, while equations (3.41) and
