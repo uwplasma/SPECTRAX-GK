@@ -55,7 +55,7 @@
   ],
   "schema_version": 1,
   "speed_gate_passed": true,
-  "speedup": 1.8143503296153622,
+  "speedup": 2.1339495038171603,
   "thresholds": {
     "maximum_absolute_error": 2e-13,
     "maximum_relative_l2": 2e-14,
@@ -63,6 +63,6 @@
   },
   "timing_seconds": {
     "exact": 86.78745041694492,
-    "fast": 47.83389899972826
+    "fast": 40.66987070767209
   }
 }

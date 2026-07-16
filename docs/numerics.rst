@@ -880,8 +880,8 @@ projection-vector contraction is performed in the float64 precision of the
 stored table. The tracked P12/J5 six-wavelength gate in
 ``docs/_static/collision_finite_wavelength_table_contraction_gate.json`` gives
 relative errors below :math:`6.4\times10^{-16}` across all matrices and
-polarization vectors, and reduces eight-worker generation from 86.79 to 47.83
-seconds (1.81x). The matched P12/J5 :math:`k_x=0.1` physical trace is bitwise
+polarization vectors, and reduces eight-worker generation from 86.79 to 40.67
+seconds (2.13x). The matched P12/J5 :math:`k_x=0.1` physical trace is bitwise
 identical in every saved real and imaginary sample. This optimization affects
 offline table generation, not the collision equations or runtime operator.
 

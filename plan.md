@@ -377,6 +377,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Removed the second serial high-order cache exposed by live P21
+  telemetry. The nonpolarized matrix's wavelength-dependent spherical-moment
+  vectors are now partitioned by the same independent angular harmonics before
+  Hermite-row assembly. The serial exact path remains unchanged, decomposed
+  low-order matrices pass exact/roundoff gates, and the matched 402-sample
+  physical trace remains bitwise identical. At P12/J5 the first wavelength
+  falls from 13.96 to 6.67 seconds and the complete six-point table from 47.83
+  to 40.67 seconds, giving ``2.13x`` over the 86.79-second exact oracle. This
+  addresses both serial phases observed in the failed P21 run and justifies one
+  new bounded high-order attempt.
+
 - 2026-07-16: Implemented the P21-directed angular decomposition rather than
   increasing its timeout. On the gated float64 archive path, equation (3.50)
   is partitioned into its independent ``m=0,...,4`` contributions; ``phi1``
@@ -384,8 +395,8 @@ That topology is the reference design for the production parallel lane.
   angular order. The serial multiprecision oracle is unchanged. Low-order
   decomposed vectors agree with the oracle to the predeclared roundoff gate.
   The P12/J5 first wavelength falls from 17.86 to 13.96 seconds and the full
-  six-point table from 48.84 to 47.83 seconds; relative coefficient errors
-  remain below ``6.4e-16`` and the exact-to-fast speedup is now ``1.81x``.
+  six-point table from 48.84 to 47.83 seconds before the matrix-side angular
+  decomposition; relative coefficient errors remain below ``6.4e-16``.
   Later wavelengths pay process startup, so this route is retained specifically
   for high-order first-wavelength cache construction rather than claimed as a
   universal parallel speedup.
@@ -423,7 +434,7 @@ That topology is the reference design for the production parallel lane.
   float64 projection-vector products. The exact path remains the default
   oracle. The matched P10/J4 build falls from 78.77 to 16.19 seconds (4.87x).
   At the production-style six-wavelength P12/J5/8-worker setup it falls from
-  86.79 to 47.83 seconds (1.81x) after angular decomposition; errors across
+  86.79 to 40.67 seconds (2.13x) after both angular decompositions; errors across
   matrices and polarization vectors are below ``6.4e-16`` relative L2 and
   ``6.3e-15`` absolute. The
   complete final-contraction path also produces a bitwise-identical physical

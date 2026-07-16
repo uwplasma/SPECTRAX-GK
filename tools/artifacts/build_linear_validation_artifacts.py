@@ -2001,8 +2001,9 @@ def coulomb_nonpolarized_moment_matrices(
             for j in range(radial_limit + 1)
             for m in ((0,) if drift_kinetic else range(min(p, angular_limit) + 1))
         )
-        moment_vectors = {
-            (p, j, m): (
+
+        def build_moment_vector(p: int, j: int, m: int) -> tuple[Any, Any]:
+            return (
                 tuple(
                     spherical_moment(
                         p,
@@ -2028,8 +2029,32 @@ def coulomb_nonpolarized_moment_matrices(
                     for input_laguerre in range(n_laguerre)
                 ),
             )
-            for p, j, m in moment_orders
-        }
+
+        if float64_final_contraction and worker_count > 1 and not drift_kinetic:
+
+            def build_angular_moment_vectors(
+                angular_order: int,
+            ) -> tuple[int, tuple[tuple[tuple[int, int, int], tuple[Any, Any]], ...]]:
+                return angular_order, tuple(
+                    ((p, j, m), build_moment_vector(p, j, m))
+                    for p, j, m in moment_orders
+                    if m == angular_order
+                )
+
+            angular_blocks = _forked_ordered_map(
+                build_angular_moment_vectors,
+                angular_limit + 1,
+                min(worker_count, angular_limit + 1),
+            )
+            moment_vectors = {
+                key: values
+                for _angular_order, block in angular_blocks
+                for key, values in block
+            }
+        else:
+            moment_vectors = {
+                (p, j, m): build_moment_vector(p, j, m) for p, j, m in moment_orders
+            }
         angular_weights = {}
         for p, j, m in moment_orders:
             sigma_pj = (
