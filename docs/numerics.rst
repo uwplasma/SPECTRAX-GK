@@ -850,6 +850,24 @@ points changes the normalized traces by relative :math:`L_2` errors
 :math:`10^{-3}` interpolation gate but deliberately does not promote moment
 resolution or the paper's :math:`t\nu=30` trace.
 
+Velocity-space convergence is tracked independently in
+``docs/_static/collision_finite_wavelength_zonal_moment_hierarchy.json``.
+Adjacent physical traces are normalized by their common initial potential and
+must satisfy both a 5% relative :math:`L_2` bound and a 5% maximum-deviation
+bound at :math:`k_x=0.1` and :math:`0.2`. The P7/J3 to P12/J5 changes are
+19.2% and 12.0% in relative :math:`L_2`; P12/J5 to P15/J6 still changes by
+8.90% and 9.93%. The latter maximum deviations are 6.89% and 5.82%.
+Consequently the tracked hierarchy correctly fails: it is useful negative
+convergence evidence, not a substitute for the paper-required P24/J10 traces.
+Reproduce the report with::
+
+   python tools/artifacts/build_zonal_flow_artifacts.py \
+     collisional-zonal-moment-gate \
+     --level 7 3 p7_kx010.csv p7_kx020.csv \
+     --level 12 5 p12_kx010.csv p12_kx020.csv \
+     --level 15 6 p15_kx010.csv p15_kx020.csv \
+     --out-json collision_finite_wavelength_zonal_moment_hierarchy.json
+
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
 angular cutoff must pass a nested endpoint or observable-level convergence

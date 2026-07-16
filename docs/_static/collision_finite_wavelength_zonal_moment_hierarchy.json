@@ -1,0 +1,88 @@
+{
+  "claim_scope": "finite_wavelength_zonal_moment_hierarchy",
+  "comparisons": [
+    {
+      "higher_resolution": [
+        12,
+        5
+      ],
+      "lower_resolution": [
+        7,
+        3
+      ],
+      "passed": false,
+      "traces": {
+        "0.1": {
+          "higher_final": -0.09290184545512394,
+          "lower_final": 0.040798648844817986,
+          "maximum_absolute_error": 0.13925523181409954,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": false,
+          "relative_l2": 0.19244773020636394,
+          "samples": 402
+        },
+        "0.2": {
+          "higher_final": 0.011845179343964585,
+          "lower_final": -0.00032496587926048054,
+          "maximum_absolute_error": 0.08149896982562536,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": false,
+          "relative_l2": 0.11972709670230595,
+          "samples": 402
+        }
+      }
+    },
+    {
+      "higher_resolution": [
+        15,
+        6
+      ],
+      "lower_resolution": [
+        12,
+        5
+      ],
+      "passed": false,
+      "traces": {
+        "0.1": {
+          "higher_final": -0.05156834243350103,
+          "lower_final": -0.09290184545512394,
+          "maximum_absolute_error": 0.0688833548773901,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": false,
+          "relative_l2": 0.08901244648321392,
+          "samples": 402
+        },
+        "0.2": {
+          "higher_final": 0.04921140442780544,
+          "lower_final": 0.011845179343964585,
+          "maximum_absolute_error": 0.058242845353703734,
+          "maximum_normalized_time": 2.004682857570937,
+          "passed": false,
+          "relative_l2": 0.09927742591530496,
+          "samples": 402
+        }
+      }
+    }
+  ],
+  "gate_passed": false,
+  "notes": "Adjacent levels are compared on initial-value-normalized physical traces. A failed lower hierarchy is diagnostic evidence only; the paper protocol remains P24/J10 through t*nu=30.",
+  "resolutions": [
+    [
+      7,
+      3
+    ],
+    [
+      12,
+      5
+    ],
+    [
+      15,
+      6
+    ]
+  ],
+  "schema_version": 1,
+  "thresholds": {
+    "maximum_absolute_error": 0.05,
+    "maximum_relative_l2": 0.05
+  }
+}

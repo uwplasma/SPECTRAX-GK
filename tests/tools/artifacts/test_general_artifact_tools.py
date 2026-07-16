@@ -4372,14 +4372,92 @@ def test_tracked_finite_wavelength_zonal_b_grid_pilot_passes() -> None:
 
     payload = json.loads(
         (
-            ROOT
-            / "docs/_static/collision_finite_wavelength_zonal_b_grid_pilot.json"
+            ROOT / "docs/_static/collision_finite_wavelength_zonal_b_grid_pilot.json"
         ).read_text()
     )
     assert payload["gate_passed"] is True
     assert payload["resolution"] == [7, 3]
     assert max(row["relative_l2"] for row in payload["traces"].values()) < 4.0e-4
     assert "does not close" in payload["notes"]
+
+
+def test_finite_wavelength_zonal_moment_gate_passes_and_fails_closed(
+    tmp_path: Path,
+) -> None:
+    """The hierarchy gate uses declared metadata and normalized observables."""
+
+    zonal_tool = load_artifact_tool("build_zonal_flow_artifacts")
+
+    def write_trace(
+        path: Path, resolution: tuple[int, int], response: list[float]
+    ) -> None:
+        with path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(
+                handle,
+                fieldnames=(
+                    "model",
+                    "kx",
+                    "t_nu",
+                    "response",
+                    "response_imag",
+                    "p_max",
+                    "j_max",
+                ),
+            )
+            writer.writeheader()
+            for index, value in enumerate(response):
+                writer.writerow(
+                    {
+                        "model": "coulomb",
+                        "kx": 0.1,
+                        "t_nu": index,
+                        "response": value,
+                        "response_imag": 0.0,
+                        "p_max": resolution[0],
+                        "j_max": resolution[1],
+                    }
+                )
+
+    low_paths = {kx: tmp_path / f"low_{kx}.csv" for kx in (0.1, 0.2)}
+    high_paths = {kx: tmp_path / f"high_{kx}.csv" for kx in (0.1, 0.2)}
+    for path in low_paths.values():
+        write_trace(path, (3, 1), [2.0, 1.0, 0.5])
+    for path in high_paths.values():
+        write_trace(path, (5, 2), [4.0, 2.0, 1.0])
+    passed = zonal_tool.write_finite_wavelength_zonal_moment_gate(
+        hierarchy=[((3, 1), low_paths), ((5, 2), high_paths)],
+        out_json=tmp_path / "passed.json",
+    )
+    assert passed["gate_passed"] is True
+
+    write_trace(high_paths[0.2], (5, 2), [4.0, 3.0, 2.0])
+    failed = zonal_tool.write_finite_wavelength_zonal_moment_gate(
+        hierarchy=[((3, 1), low_paths), ((5, 2), high_paths)],
+        out_json=tmp_path / "failed.json",
+    )
+    assert failed["gate_passed"] is False
+    assert failed["comparisons"][0]["traces"]["0.2"]["passed"] is False
+    with pytest.raises(ValueError, match="declared resolution"):
+        zonal_tool.write_finite_wavelength_zonal_moment_gate(
+            hierarchy=[((2, 1), low_paths), ((5, 2), high_paths)],
+            out_json=tmp_path / "metadata.json",
+        )
+
+
+def test_tracked_finite_wavelength_zonal_moment_hierarchy_remains_open() -> None:
+    """The tracked hierarchy records negative evidence without promotion."""
+
+    payload = json.loads(
+        (
+            ROOT
+            / "docs/_static/collision_finite_wavelength_zonal_moment_hierarchy.json"
+        ).read_text()
+    )
+    assert payload["gate_passed"] is False
+    assert payload["resolutions"] == [[7, 3], [12, 5], [15, 6]]
+    latest = payload["comparisons"][-1]
+    assert latest["passed"] is False
+    assert max(row["relative_l2"] for row in latest["traces"].values()) > 0.08
 
 
 def test_plot_zonal_flow_response_output_subcommand(

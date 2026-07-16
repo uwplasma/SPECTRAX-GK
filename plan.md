@@ -377,6 +377,21 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Closed the lower-order *diagnostic* portion of the
+  finite-wavelength collisional-zonal moment study without promoting an
+  unconverged trace. Six-point field-line tables generated in 86.79 seconds at
+  P12/J5 and 163.08 seconds at P15/J6. The two P15/J6 physical runs each
+  advanced 8,020 RK2 steps through :math:`t\nu=2` in about 56--58 seconds.
+  Relative trace changes from P7/J3 to P12/J5 are ``0.192`` and ``0.120`` at
+  ``kx=0.1`` and ``0.2``; P12/J5 to P15/J6 still changes by ``0.0890`` and
+  ``0.0993``, with maximum normalized deviations ``0.0689`` and ``0.0582``.
+  A reusable adjacent-level gate now validates declared resolution, matched
+  sample times, finite normalization, and both 5% error criteria. Its tracked
+  JSON fails by construction and explicitly preserves P24/J10 through
+  :math:`t\nu=30` as the paper requirement. No unchanged P18/P24 run is
+  launched until the profiled speed-contraction and inverse-transform costs
+  are reduced.
+
 - 2026-07-16: The second hard-bounded P24/J10 endpoint attempt used 16 fork
   workers and the validated angular/radial ``(m,n)=(4,6)`` truncation, but
   still exceeded 600 seconds and exited without an archive. This is retained

@@ -476,9 +476,7 @@ def _integrate_collisional_zonal_trace(
         terms=terms,
         use_custom_vjp=False,
     ).phi
-    initial_response = jnp.sum(
-        initial_phi[0, problem.kx_index] * problem.volume_weight
-    )
+    initial_response = jnp.sum(initial_phi[0, problem.kx_index] * problem.volume_weight)
     requested_steps = int(np.ceil(maximum_normalized_time / collision_frequency / dt))
     steps = int(np.ceil(requested_steps / sample_stride) * sample_stride)
     started = time.perf_counter()
@@ -869,6 +867,54 @@ def run_finite_wavelength_collisional_zonal_trace(
     return report
 
 
+def _normalized_trace_comparison(
+    reference: list[dict[str, str]],
+    candidate: list[dict[str, str]],
+    *,
+    maximum_relative_l2: float,
+    maximum_absolute_error: float,
+    error_context: str,
+) -> dict[str, object]:
+    """Compare two matched, initial-value-normalized zonal traces."""
+
+    reference_time = np.asarray([float(row["t_nu"]) for row in reference])
+    candidate_time = np.asarray([float(row["t_nu"]) for row in candidate])
+    if reference_time.shape != candidate_time.shape or not np.allclose(
+        reference_time, candidate_time, rtol=0.0, atol=1.0e-12
+    ):
+        raise ValueError(f"{error_context} traces require identical sample times")
+    reference_response = np.asarray([float(row["response"]) for row in reference])
+    candidate_response = np.asarray([float(row["response"]) for row in candidate])
+    if (
+        reference_response.size < 2
+        or reference_response[0] == 0.0
+        or candidate_response[0] == 0.0
+        or not np.all(np.isfinite(reference_response))
+        or not np.all(np.isfinite(candidate_response))
+    ):
+        raise ValueError(f"{error_context} traces must be finite and normalizable")
+    reference_normalized = reference_response / reference_response[0]
+    candidate_normalized = candidate_response / candidate_response[0]
+    difference = reference_normalized - candidate_normalized
+    relative_l2 = float(
+        np.linalg.norm(difference)
+        / max(float(np.linalg.norm(candidate_normalized)), 1.0e-300)
+    )
+    maximum_absolute = float(np.max(np.abs(difference)))
+    return {
+        "samples": int(candidate_time.size),
+        "maximum_normalized_time": float(candidate_time[-1]),
+        "relative_l2": relative_l2,
+        "maximum_absolute_error": maximum_absolute,
+        "reference_final": float(reference_normalized[-1]),
+        "candidate_final": float(candidate_normalized[-1]),
+        "passed": (
+            relative_l2 <= maximum_relative_l2
+            and maximum_absolute <= maximum_absolute_error
+        ),
+    }
+
+
 def write_finite_wavelength_zonal_grid_gate(
     *,
     coarse_traces: dict[float, Path],
@@ -889,44 +935,17 @@ def write_finite_wavelength_zonal_grid_gate(
     for kx in (0.1, 0.2):
         coarse = _read_campaign_csv(coarse_traces[kx])
         fine = _read_campaign_csv(fine_traces[kx])
-        coarse_time = np.asarray([float(row["t_nu"]) for row in coarse])
-        fine_time = np.asarray([float(row["t_nu"]) for row in fine])
-        if coarse_time.shape != fine_time.shape or not np.allclose(
-            coarse_time, fine_time, rtol=0.0, atol=1.0e-12
-        ):
-            raise ValueError("nested B-grid traces must use identical sample times")
-        coarse_response = np.asarray([float(row["response"]) for row in coarse])
-        fine_response = np.asarray([float(row["response"]) for row in fine])
-        if (
-            coarse_response.size < 2
-            or coarse_response[0] == 0.0
-            or fine_response[0] == 0.0
-            or not np.all(np.isfinite(coarse_response))
-            or not np.all(np.isfinite(fine_response))
-        ):
-            raise ValueError("nested B-grid traces must be finite and normalizable")
-        coarse_normalized = coarse_response / coarse_response[0]
-        fine_normalized = fine_response / fine_response[0]
-        difference = coarse_normalized - fine_normalized
-        relative_l2 = float(
-            np.linalg.norm(difference)
-            / max(float(np.linalg.norm(fine_normalized)), 1.0e-300)
+        metrics = _normalized_trace_comparison(
+            coarse,
+            fine,
+            maximum_relative_l2=maximum_relative_l2,
+            maximum_absolute_error=maximum_absolute_error,
+            error_context="nested B-grid",
         )
-        maximum_absolute = float(np.max(np.abs(difference)))
-        row_passed = (
-            relative_l2 <= maximum_relative_l2
-            and maximum_absolute <= maximum_absolute_error
-        )
-        passed = passed and row_passed
-        rows[f"{kx:.1f}"] = {
-            "samples": int(fine_time.size),
-            "maximum_normalized_time": float(fine_time[-1]),
-            "relative_l2": relative_l2,
-            "maximum_absolute_error": maximum_absolute,
-            "coarse_final": float(coarse_normalized[-1]),
-            "fine_final": float(fine_normalized[-1]),
-            "passed": row_passed,
-        }
+        passed = passed and bool(metrics["passed"])
+        metrics["coarse_final"] = metrics.pop("reference_final")
+        metrics["fine_final"] = metrics.pop("candidate_final")
+        rows[f"{kx:.1f}"] = metrics
     report: dict[str, object] = {
         "schema_version": 1,
         "claim_scope": "finite_wavelength_zonal_b_grid_interpolation_pilot",
@@ -943,6 +962,89 @@ def write_finite_wavelength_zonal_grid_gate(
             "This closes B-grid interpolation at P7/J3 through t*nu=2 only. "
             "It does not close the paper-required P24/J10 moment hierarchy or "
             "the t*nu=30 collisional-zonal trace."
+        ),
+    }
+    _write_json(out_json, report)
+    return report
+
+
+def write_finite_wavelength_zonal_moment_gate(
+    *,
+    hierarchy: list[tuple[tuple[int, int], dict[float, Path]]],
+    out_json: Path,
+    maximum_relative_l2: float = 5.0e-2,
+    maximum_absolute_error: float = 5.0e-2,
+) -> dict[str, object]:
+    """Gate adjacent velocity-moment levels on matched normalized traces."""
+
+    if len(hierarchy) < 2:
+        raise ValueError("moment hierarchy gate requires at least two levels")
+    if maximum_relative_l2 <= 0.0 or maximum_absolute_error <= 0.0:
+        raise ValueError("moment hierarchy tolerances must be > 0")
+    resolutions = [resolution for resolution, _ in hierarchy]
+    if any(
+        high[0] <= low[0] or high[1] <= low[1]
+        for low, high in zip(resolutions, resolutions[1:])
+    ):
+        raise ValueError("moment hierarchy levels must increase in both P and J")
+
+    loaded: list[tuple[tuple[int, int], dict[float, list[dict[str, str]]]]] = []
+    for resolution, traces in hierarchy:
+        if set(traces) != {0.1, 0.2}:
+            raise ValueError("moment hierarchy levels require kx=0.1 and kx=0.2")
+        rows_by_kx: dict[float, list[dict[str, str]]] = {}
+        for kx, path in traces.items():
+            rows = _read_campaign_csv(path)
+            if not rows or any(
+                int(row["p_max"]) != resolution[0] or int(row["j_max"]) != resolution[1]
+                for row in rows
+            ):
+                raise ValueError("trace metadata does not match declared resolution")
+            rows_by_kx[kx] = rows
+        loaded.append((resolution, rows_by_kx))
+
+    comparisons: list[dict[str, object]] = []
+    passed = True
+    for (low_resolution, low_traces), (high_resolution, high_traces) in zip(
+        loaded, loaded[1:]
+    ):
+        trace_metrics: dict[str, object] = {}
+        comparison_passed = True
+        for kx in (0.1, 0.2):
+            metrics = _normalized_trace_comparison(
+                low_traces[kx],
+                high_traces[kx],
+                maximum_relative_l2=maximum_relative_l2,
+                maximum_absolute_error=maximum_absolute_error,
+                error_context="moment hierarchy",
+            )
+            comparison_passed = comparison_passed and bool(metrics["passed"])
+            metrics["lower_final"] = metrics.pop("reference_final")
+            metrics["higher_final"] = metrics.pop("candidate_final")
+            trace_metrics[f"{kx:.1f}"] = metrics
+        passed = passed and comparison_passed
+        comparisons.append(
+            {
+                "lower_resolution": list(low_resolution),
+                "higher_resolution": list(high_resolution),
+                "traces": trace_metrics,
+                "passed": comparison_passed,
+            }
+        )
+    report: dict[str, object] = {
+        "schema_version": 1,
+        "claim_scope": "finite_wavelength_zonal_moment_hierarchy",
+        "resolutions": [list(resolution) for resolution in resolutions],
+        "thresholds": {
+            "maximum_relative_l2": maximum_relative_l2,
+            "maximum_absolute_error": maximum_absolute_error,
+        },
+        "comparisons": comparisons,
+        "gate_passed": passed,
+        "notes": (
+            "Adjacent levels are compared on initial-value-normalized physical "
+            "traces. A failed lower hierarchy is diagnostic evidence only; the "
+            "paper protocol remains P24/J10 through t*nu=30."
         ),
     }
     _write_json(out_json, report)
@@ -1337,6 +1439,38 @@ def _main_collisional_zonal_grid_gate(argv: list[str]) -> int:
     report = write_finite_wavelength_zonal_grid_gate(
         coarse_traces={0.1: args.coarse_kx010, 0.2: args.coarse_kx020},
         fine_traces={0.1: args.fine_kx010, 0.2: args.fine_kx020},
+        out_json=args.out_json,
+        maximum_relative_l2=float(args.maximum_relative_l2),
+        maximum_absolute_error=float(args.maximum_absolute_error),
+    )
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["gate_passed"] else 1
+
+
+def _main_collisional_zonal_moment_gate(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Gate adjacent finite-wavelength zonal moment levels."
+    )
+    parser.add_argument(
+        "--level",
+        action="append",
+        nargs=4,
+        metavar=("P", "J", "KX010_CSV", "KX020_CSV"),
+        required=True,
+    )
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--maximum-relative-l2", type=float, default=5.0e-2)
+    parser.add_argument("--maximum-absolute-error", type=float, default=5.0e-2)
+    args = parser.parse_args(argv)
+    hierarchy = [
+        (
+            (int(level[0]), int(level[1])),
+            {0.1: Path(level[2]), 0.2: Path(level[3])},
+        )
+        for level in args.level
+    ]
+    report = write_finite_wavelength_zonal_moment_gate(
+        hierarchy=hierarchy,
         out_json=args.out_json,
         maximum_relative_l2=float(args.maximum_relative_l2),
         maximum_absolute_error=float(args.maximum_absolute_error),
@@ -2001,7 +2135,8 @@ def main(argv: list[str] | None = None) -> int:
             "usage: build_zonal_flow_artifacts.py "
             "{response-csv,response-output,objective-gate,miller-panel,"
             "collisional-zonal-dk,collisional-zonal,simulate-collisional-zonal-dk,"
-            "simulate-collisional-zonal-finite-b,collisional-zonal-grid-gate} ..."
+            "simulate-collisional-zonal-finite-b,collisional-zonal-grid-gate,"
+            "collisional-zonal-moment-gate} ..."
         )
         return 2
     command, rest = tokens[0], tokens[1:]
@@ -2023,6 +2158,8 @@ def main(argv: list[str] | None = None) -> int:
         return _main_simulate_collisional_zonal_finite_b(rest)
     if command == "collisional-zonal-grid-gate":
         return _main_collisional_zonal_grid_gate(rest)
+    if command == "collisional-zonal-moment-gate":
+        return _main_collisional_zonal_moment_gate(rest)
     raise SystemExit(f"unknown command: {command}")
 
 
