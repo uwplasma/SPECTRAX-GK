@@ -604,7 +604,7 @@ def hermite_laguerre_to_legendre_coefficient(
     return float(inverse)
 
 
-def _associated_legendre_overlap_mp(
+def _associated_legendre_radial_overlap_mp(
     legendre_order: int,
     radial_order: int,
     bessel_order: int,
@@ -613,9 +613,8 @@ def _associated_legendre_overlap_mp(
     mp: Any,
     *,
     associated_laguerre: Callable[[int, Any, int], Any],
-    legendre_monomial: Callable[[int, int], Any],
 ) -> Any:
-    """Contract one associated-basis overlap shared by a parity shell."""
+    """Contract the radial factor of one associated-basis overlap."""
 
     left_radial = tuple(
         associated_laguerre(radial_order, legendre_order, power)
@@ -640,10 +639,21 @@ def _associated_legendre_overlap_mp(
     radial_offset = mp.mpf(
         legendre_order + auxiliary_legendre_order - bessel_order + 3
     ) / 2
-    radial = sum(
+    return sum(
         value * mp.gamma(power + radial_offset)
         for power, value in enumerate(radial_convolution)
     )
+
+
+def _associated_legendre_angular_overlap_mp(
+    legendre_order: int,
+    bessel_order: int,
+    auxiliary_legendre_order: int,
+    mp: Any,
+    *,
+    legendre_monomial: Callable[[int, int], Any],
+) -> Any:
+    """Contract the angular factor shared by all radial-order pairs."""
 
     left_angular = []
     for left_power in range(bessel_order, legendre_order + 1):
@@ -665,11 +675,42 @@ def _associated_legendre_overlap_mp(
             angular_convolution[left_power + auxiliary_power] += (
                 left_value * auxiliary_value
             )
-    angular = sum(
+    return sum(
         value
         * (1 + (-1) ** power)
         / (2 * (power + 1))
         for power, value in enumerate(angular_convolution)
+    )
+
+
+def _associated_legendre_overlap_mp(
+    legendre_order: int,
+    radial_order: int,
+    bessel_order: int,
+    auxiliary_legendre_order: int,
+    auxiliary_radial_order: int,
+    mp: Any,
+    *,
+    associated_laguerre: Callable[[int, Any, int], Any],
+    legendre_monomial: Callable[[int, int], Any],
+) -> Any:
+    """Contract one associated-basis overlap shared by a parity shell."""
+
+    radial = _associated_legendre_radial_overlap_mp(
+        legendre_order,
+        radial_order,
+        bessel_order,
+        auxiliary_legendre_order,
+        auxiliary_radial_order,
+        mp,
+        associated_laguerre=associated_laguerre,
+    )
+    angular = _associated_legendre_angular_overlap_mp(
+        legendre_order,
+        bessel_order,
+        auxiliary_legendre_order,
+        mp,
+        legendre_monomial=legendre_monomial,
     )
     return radial * angular
 
@@ -1377,14 +1418,14 @@ def _coulomb_coefficient_functions(
         )
 
     @cache
-    def associated_overlap(
+    def associated_radial_overlap(
         spherical_order: int,
         spherical_radial_order: int,
         bessel_order: int,
         auxiliary_spherical_order: int,
         auxiliary_radial_order: int,
     ) -> Any:
-        return _associated_legendre_overlap_mp(
+        return _associated_legendre_radial_overlap_mp(
             spherical_order,
             spherical_radial_order,
             bessel_order,
@@ -1392,7 +1433,40 @@ def _coulomb_coefficient_functions(
             auxiliary_radial_order,
             mp,
             associated_laguerre=associated_laguerre,
+        )
+
+    @cache
+    def associated_angular_overlap(
+        spherical_order: int,
+        bessel_order: int,
+        auxiliary_spherical_order: int,
+    ) -> Any:
+        return _associated_legendre_angular_overlap_mp(
+            spherical_order,
+            bessel_order,
+            auxiliary_spherical_order,
+            mp,
             legendre_monomial=legendre_monomial,
+        )
+
+    @cache
+    def associated_overlap(
+        spherical_order: int,
+        spherical_radial_order: int,
+        bessel_order: int,
+        auxiliary_spherical_order: int,
+        auxiliary_radial_order: int,
+    ) -> Any:
+        return associated_radial_overlap(
+            spherical_order,
+            spherical_radial_order,
+            bessel_order,
+            auxiliary_spherical_order,
+            auxiliary_radial_order,
+        ) * associated_angular_overlap(
+            spherical_order,
+            bessel_order,
+            auxiliary_spherical_order,
         )
 
     @cache

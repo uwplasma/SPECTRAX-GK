@@ -685,10 +685,13 @@ The general finite-:math:`b` contraction remains too expensive for the full
 conductivity resolution. It now evaluates equation (A4)'s basis transform as
 an exact polynomial projection followed by analytic Gaussian and Laguerre
 moments, replacing a six-deep combinatorial sum. Independent velocity
-quadrature and inverse-shell gates are unchanged. A representative
-:math:`(5,2)` two-wavelength build falls from 26.41 to 16.00 seconds with the
-same checksum; :math:`(7,3)` falls from 411.22 to 291.61 seconds on the office
-CPU. The drift-kinetic generator still evaluates collapsed equations
+quadrature and inverse-shell gates are unchanged. Radial and angular factors
+of the associated overlap are cached separately because the angular factor is
+shared by every radial-order pair. A representative :math:`(5,2)`
+two-wavelength build falls from 26.41 to 14.58 seconds with the same checksum;
+the preceding projection tranche reduced :math:`(7,3)` from 411.22 to 291.61
+seconds on the office CPU. The drift-kinetic generator still evaluates
+collapsed equations
 (3.53)--(3.56) directly: its :math:`(20,5)` response is the validated transport
 path, whereas finite-:math:`b` must still reach the independent ITG and zonal
 resolution gates. These are local algorithm timings, not portable
