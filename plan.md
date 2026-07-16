@@ -377,6 +377,19 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Hard-bounded the next P21/J8 continuation on the 36-core office
+  CPU after the P18 observable study. The clean shallow-clone run used the
+  passed four-point B grid, 28 workers, and the gated float64 final
+  contraction, but remained in first-wavelength cache construction until the
+  600-second timeout and wrote no archive. Process telemetry showed one Python
+  process at about 80% of one CPU core with healthy memory, proving that the
+  blocker is serial wavelength-dependent spherical-moment, inverse-transform,
+  and polarization cache generation rather than row contraction or available
+  hardware. No identical retry is allowed. The next implementation must
+  partition exact cache construction by independent angular harmonic
+  ``m=0,...,4``, return those disjoint blocks to the parent, and pass exact
+  low-order plus P18 physical-trace identity gates before P21/P24 is resumed.
+
 - 2026-07-16: Extended the physical finite-wavelength hierarchy to P18/J7 on
   the already-passed four-point B grid. Sixteen workers generated the table in
   189.06 seconds (3.52 seconds precompute, 103.61 seconds first wavelength,
