@@ -670,6 +670,13 @@ Independent Bessel-weighted velocity projection verifies six coefficients
 through :math:`m=3`; agreement between 20- and 32-term sums provides a local
 truncation gate. These intermediate coefficients are not direct runtime APIs.
 
+At the drift-kinetic endpoint the generator removes Bessel orders
+:math:`n>0` and azimuthal harmonics :math:`m>0` before forming contractions;
+their coefficients vanish exactly at :math:`b=0`. A bitwise regression against
+the unspecialized path protects the algebra. For the converged eight-mode
+:math:`(p_{\max},j_{\max})=(6,3)` probe this reduces generation from 11.1 to
+4.24 seconds without changing either test- or field-particle matrices.
+
 That contraction is now implemented offline. Equations (3.48)--(3.49) produce
 test and field matrices in Hermite-major order, while equations (3.41) and
 (3.50) produce separately coupled polarization vectors for target and source

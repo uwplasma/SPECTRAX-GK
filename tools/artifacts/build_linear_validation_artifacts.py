@@ -1214,6 +1214,8 @@ def coulomb_nonpolarized_moment_matrices(
         tau = mp.mpf(temperature_ratio)
         half_b = target_b / 2
         bessel_argument = half_b * half_b
+        drift_kinetic = target_b == 0
+        bessel_orders = (0,) if drift_kinetic else range(maximum_bessel_laguerre_order + 1)
         test_matrix = mp.matrix(n_modes, n_modes)
         field_matrix = mp.matrix(n_modes, n_modes)
         moment_cache: dict[tuple[bool, int, int, int, int, int], Any] = {}
@@ -1372,7 +1374,7 @@ def coulomb_nonpolarized_moment_matrices(
             )
             for p in range(spherical_limit + 1)
             for j in range(radial_limit + 1)
-            for m in range(p + 1)
+            for m in ((0,) if drift_kinetic else range(p + 1))
         }
 
         for output_hermite in range(maximum_hermite_order + 1):
@@ -1397,7 +1399,7 @@ def coulomb_nonpolarized_moment_matrices(
                             * mp.factorial(p) ** 2
                             / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
                         )
-                        for m in range(p + 1):
+                        for m in ((0,) if drift_kinetic else range(p + 1)):
                             test_moment_vector, field_moment_vector = moment_vectors[
                                 (p, j, m)
                             ]
@@ -1409,7 +1411,7 @@ def coulomb_nonpolarized_moment_matrices(
                             angular = (1 if m == 0 else 2) * angular_base
                             test_output_coefficient = mp.mpf(0)
                             field_output_coefficient = mp.mpf(0)
-                            for n in range(maximum_bessel_laguerre_order + 1):
+                            for n in bessel_orders:
                                 kernel = (
                                     mp.exp(-bessel_argument)
                                     * bessel_argument**n

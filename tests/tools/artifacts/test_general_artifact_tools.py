@@ -2488,6 +2488,19 @@ def test_coulomb_nonpolarized_matrix_recovers_drift_kinetic_physics() -> None:
         maximum_bessel_laguerre_order=0,
         digits=80,
     )
+    high_bessel_test, high_bessel_field = mod.coulomb_nonpolarized_moment_matrices(
+        3,
+        1,
+        0.0,
+        1.0,
+        1.0,
+        maximum_spherical_order=5,
+        maximum_spherical_radial_order=2,
+        maximum_bessel_laguerre_order=6,
+        digits=80,
+    )
+    np.testing.assert_array_equal(high_bessel_test, test_matrix)
+    np.testing.assert_array_equal(high_bessel_field, field_matrix)
     laguerre_sign = np.asarray([1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0])
     code_convention = (
         laguerre_sign[:, None] * laguerre_sign[None, :] * (test_matrix + field_matrix)
