@@ -686,8 +686,8 @@ The present level covers arbitrary-precision coefficient generation, direct
 manufactured velocity-space projection, Bessel-sum convergence, the three
 collision-invariant null modes, and non-positive entropy production. Its
 coupled spherical/radial scan rejects the former low-order cutoff at 29%
-relative error and admits :math:`(p_{\max},j_{\max})=(6,3)` at
-:math:`4.70\times10^{-4}` against a converged :math:`(9,4)` reference. The next
+relative error and admits :math:`(p_{\max},j_{\max})=(8,4)` at
+:math:`8.68\times10^{-7}` against a converged :math:`(9,4)` reference. The next
 levels are intentionally sequential: Hermite/Laguerre truncation of larger
 runtime tables; Spitzer--Härm and Braginskii transport;
 collision-frequency and velocity-resolution convergence; finite-:math:`b`

@@ -2728,9 +2728,12 @@ def test_tracked_coulomb_operator_verification_closes_release_gates() -> None:
     assert matrix_errors[0] > 1.0e-4
     assert matrix_errors[1] < 5.0e-6
     spherical_errors = summary["spherical_truncation"]["relative_errors"]
+    assert summary["matrix_truncation"]["spherical_cutoff"] == {
+        "maximum_order": 8,
+        "maximum_radial_order": 4,
+    }
     assert spherical_errors[0] > 2.0e-1
-    assert spherical_errors[1] < 1.0e-3
-    assert spherical_errors[2] < 2.0e-6
+    assert spherical_errors[1] < 2.0e-6
     with Image.open(png_path) as image:
         image.verify()
     assert png_path.stat().st_size > 100_000
@@ -2769,9 +2772,12 @@ def test_coulomb_operator_verification_artifact_closes_physical_gates(
     assert matrix_errors[0] > 1.0e-4
     assert matrix_errors[1] < 5.0e-6
     spherical_errors = summary["spherical_truncation"]["relative_errors"]
+    assert summary["matrix_truncation"]["spherical_cutoff"] == {
+        "maximum_order": 8,
+        "maximum_radial_order": 4,
+    }
     assert spherical_errors[0] > 2.0e-1
-    assert spherical_errors[1] < 1.0e-3
-    assert spherical_errors[2] < 2.0e-6
+    assert spherical_errors[1] < 2.0e-6
 
     assert json.loads(out_json.read_text())["gate_passed"] is True
     assert out_png.stat().st_size > 100_000

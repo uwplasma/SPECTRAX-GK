@@ -511,11 +511,11 @@ The reproducible algebra/convergence artifact is generated with
 The largest direct-projection relative error is :math:`3.2\times10^{-13}`;
 the published-coefficient, symmetry, and invariant residuals are at or below
 :math:`1.2\times10^{-16}`. At :math:`b=0.8`, the assembled 4-by-4 block changes
-by :math:`1.6\times10^{-7}` between Bessel orders four and six. The former
+by :math:`4.50\times10^{-7}` between Bessel orders four and six at the admitted
+:math:`(p_{\max},j_{\max})=(8,4)` spherical cutoff. The former
 default spherical cutoff :math:`(p_{\max},j_{\max})=(3,1)` is rejected because
-it differs by 29% from the converged :math:`(9,4)` reference. The :math:`(6,3)`
-and :math:`(8,4)` blocks reduce that error to :math:`4.70\times10^{-4}` and
-:math:`8.68\times10^{-7}`, respectively. These checks
+it differs by 29% from the converged :math:`(9,4)` reference. The admitted
+:math:`(8,4)` block reduces that error to :math:`8.68\times10^{-7}`. These checks
 implement the conservation,
 Maxwellian-null, adjointness, and H-theorem requirements emphasized by
 `Abel et al. (2008) <https://arxiv.org/abs/0808.1300>`_ and the

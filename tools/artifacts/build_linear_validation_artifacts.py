@@ -1831,21 +1831,33 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             float(abs(generated - projected) / max(abs(projected), 1.0e-14))
         )
 
+    matrix_cache: dict[tuple[int, int, int], np.ndarray] = {}
+
+    def finite_b_matrix(
+        spherical_order: int,
+        spherical_radial_order: int,
+        bessel_laguerre_order: int,
+    ) -> np.ndarray:
+        key = (spherical_order, spherical_radial_order, bessel_laguerre_order)
+        if key not in matrix_cache:
+            matrix_test, matrix_field = coulomb_nonpolarized_moment_matrices(
+                1,
+                1,
+                0.8,
+                1.0,
+                1.0,
+                maximum_spherical_order=spherical_order,
+                maximum_spherical_radial_order=spherical_radial_order,
+                maximum_bessel_laguerre_order=bessel_laguerre_order,
+                digits=max(32, min(digits, 40)),
+            )
+            matrix_cache[key] = matrix_test + matrix_field
+        return matrix_cache[key]
+
     matrix_truncation_orders = np.asarray((2, 4, 6), dtype=int)
-    matrix_truncations = []
-    for order in matrix_truncation_orders:
-        matrix_test, matrix_field = coulomb_nonpolarized_moment_matrices(
-            1,
-            1,
-            0.8,
-            1.0,
-            1.0,
-            maximum_spherical_order=3,
-            maximum_spherical_radial_order=1,
-            maximum_bessel_laguerre_order=int(order),
-            digits=max(32, min(digits, 48)),
-        )
-        matrix_truncations.append(matrix_test + matrix_field)
+    matrix_truncations = [
+        finite_b_matrix(8, 4, int(order)) for order in matrix_truncation_orders
+    ]
     matrix_truncation_reference = matrix_truncations[-1]
     matrix_reference_norm = np.linalg.norm(matrix_truncation_reference)
     matrix_truncation_errors = np.asarray(
@@ -1855,21 +1867,11 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         ]
     )
 
-    spherical_truncation_cutoffs = ((3, 1), (6, 3), (8, 4), (9, 4))
-    spherical_truncations = []
-    for spherical_order, spherical_radial_order in spherical_truncation_cutoffs:
-        spherical_test, spherical_field = coulomb_nonpolarized_moment_matrices(
-            1,
-            1,
-            0.8,
-            1.0,
-            1.0,
-            maximum_spherical_order=spherical_order,
-            maximum_spherical_radial_order=spherical_radial_order,
-            maximum_bessel_laguerre_order=6,
-            digits=max(32, min(digits, 40)),
-        )
-        spherical_truncations.append(spherical_test + spherical_field)
+    spherical_truncation_cutoffs = ((3, 1), (8, 4), (9, 4))
+    spherical_truncations = [
+        finite_b_matrix(spherical_order, spherical_radial_order, 6)
+        for spherical_order, spherical_radial_order in spherical_truncation_cutoffs
+    ]
     spherical_truncation_reference = spherical_truncations[-1]
     spherical_reference_norm = np.linalg.norm(spherical_truncation_reference)
     spherical_truncation_errors = np.asarray(
@@ -1972,7 +1974,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         "finite_b_matrix_relative_error_at_order_4": float(
             matrix_truncation_errors[-2]
         ),
-        "finite_b_spherical_relative_error_at_order_6": float(
+        "finite_b_spherical_relative_error_at_order_8": float(
             spherical_truncation_errors[1]
         ),
     }
@@ -1988,7 +1990,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
         "small_b_gyrocenter_diffusion_order_minimum": 1.7,
         "small_b_gyrocenter_diffusion_order_maximum": 2.3,
         "finite_b_matrix_relative_error_at_order_4": 5.0e-6,
-        "finite_b_spherical_relative_error_at_order_6": 1.0e-3,
+        "finite_b_spherical_relative_error_at_order_8": 2.0e-6,
     }
     gates = {
         name: bool(metrics[name] <= thresholds[name])
@@ -2001,7 +2003,7 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             "maximum_invariant_residual",
             "drift_kinetic_gyrocenter_density_row",
             "finite_b_matrix_relative_error_at_order_4",
-            "finite_b_spherical_relative_error_at_order_6",
+            "finite_b_spherical_relative_error_at_order_8",
         )
     }
     gates["finite_b_gyrocenter_diffusion_nonzero"] = bool(
@@ -2045,6 +2047,10 @@ def build_coulomb_operator_verification_summary(*, digits: int = 80) -> dict[str
             "matrix_truncation": {
                 "basis": {"maximum_hermite_order": 1, "maximum_laguerre_order": 1},
                 "kperp_rho": 0.8,
+                "spherical_cutoff": {
+                    "maximum_order": 8,
+                    "maximum_radial_order": 4,
+                },
                 "orders": matrix_truncation_orders,
                 "relative_errors": matrix_truncation_errors,
                 "reference_order": int(matrix_truncation_orders[-1]),
