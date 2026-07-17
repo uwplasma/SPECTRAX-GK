@@ -30,7 +30,7 @@ from spectraxgk import (  # noqa: E402
     VMECJAXTransportObjectiveConfig,
 )
 from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES  # noqa: E402
-from spectraxgk.objectives.portfolio_contracts import (  # noqa: E402
+from spectraxgk.objectives.portfolio import (  # noqa: E402
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,

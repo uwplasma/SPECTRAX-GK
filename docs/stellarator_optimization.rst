@@ -1453,7 +1453,7 @@ separate two contracts:
 - row reduction, where those fixed samples are combined into one scalar for an
   optimizer or UQ ensemble.
 
-The reducer in :mod:`spectraxgk.objectives.portfolio_contracts` requires a real
+The reducer in :mod:`spectraxgk.objectives.portfolio` requires a real
 numeric ``(surface, alpha, ky, objective)`` table, finite non-negative
 normalized weights, and an explicit reduction policy. Its unit tests cover
 shape, weighting, JVP, reverse-mode, and finite-difference contracts. The

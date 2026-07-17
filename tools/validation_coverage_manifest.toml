@@ -1488,9 +1488,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.objectives.zonal"
 path = "src/spectraxgk/objectives/zonal.py"
-owned_modules = [
-  "spectraxgk.objectives.zonal_records",
-]
 owner_lane = "reduced zonal-flow objective, AD/FD gates, and stellarator optimization bridge"
 status = "active"
 coverage_priority = "high"
@@ -2574,23 +2571,27 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.portfolio_contracts"
-path = "src/spectraxgk/objectives/portfolio_contracts.py"
-owner_lane = "backend-free multi-surface, multi-alpha, multi-ky objective-table shape and weight contracts"
+module = "spectraxgk.objectives.portfolio"
+path = "src/spectraxgk/objectives/portfolio.py"
+owner_lane = "objective portfolio reduction, sensitivity, conditioning, and covariance"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "multi-field-line and multi-surface stellarator microstability optimization",
   "weighted portfolio reductions used by differentiable geometry objectives",
+  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
 ]
 physics_contracts = [
   "fixed surface/alpha/ky sample tables are reduced explicitly before any geometry-wide optimization claim",
   "sample and objective weights remain visible, normalized, and independent of backend-specific row production",
+  "a scalar-gradient pass cannot hide rank-deficient sample-row sensitivities",
 ]
 numerics_contracts = [
   "objective rows are real finite four-dimensional tensors with positive sample axes",
   "sample and objective weights are finite, non-negative, normalized, and shape checked",
+  "aggregate objectives pass reverse-mode and central finite-difference parity",
+  "row-Jacobian conditioning and covariance gates are explicit",
 ]
 fast_tests = [
   "tests/unit/objectives/test_autodiff_solver_objectives.py",
@@ -2598,40 +2599,40 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/vmec_boozer_aggregate_objective_gate.json",
   "docs/_static/vmec_boozer_aggregate_objective_gate.png",
-  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
 ]
 next_tests = [
   "extend aggregate-weight tests to sparse held-out surface/alpha/ky portfolio slices",
+  "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.portfolio_sensitivity"
-path = "src/spectraxgk/objectives/portfolio_sensitivity.py"
-owner_lane = "AD/FD, conditioning, and covariance gates for objective portfolios"
+module = "spectraxgk.objectives.portfolio_guard"
+path = "src/spectraxgk/objectives/portfolio_guard.py"
+owner_lane = "persisted VMEC/Boozer objective-portfolio promotion gates"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
-  "conditioning diagnostics for inverse-design and uncertainty quantification objectives",
+  "held-out surface and field-line validation for stellarator microstability optimization",
+  "release guardrails separating reduced growth/QL rows from nonlinear claims",
 ]
 physics_contracts = [
-  "portfolio sensitivity gates validate rows before promoting geometry-wide optimization claims",
-  "a scalar-gradient pass cannot hide rank-deficient sample-row sensitivities",
+  "real reduced portfolios include growth and quasilinear objectives before promotion",
+  "artifact guards fail closed for nonlinear turbulent-transport claims",
 ]
 numerics_contracts = [
-  "aggregate scalar objectives pass reverse-mode and central finite-difference parity",
-  "row-Jacobian conditioning and covariance diagnostics are reported with explicit rank gates",
+  "persisted samples reconstruct rectangular surface/alpha/ky tensors",
+  "provenance, coverage, reduction, and AD/FD gates are explicit",
 ]
 fast_tests = [
   "tests/unit/objectives/test_autodiff_solver_objectives.py",
+  "tests/validation/stellarator/test_check_vmec_boozer_gates.py",
 ]
 artifact_paths = [
-  "docs/_static/vmec_boozer_aggregate_objective_gate.json",
-  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
 ]
 next_tests = [
-  "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
+  "repeat the guard on selected held-out surface/alpha artifacts before manuscript promotion",
 ]
 
 [[modules]]
@@ -2788,35 +2789,6 @@ artifact_paths = [
 ]
 next_tests = [
   "add residual-specific failure fixtures for rank-deficient and ill-conditioned sensitivity maps",
-]
-
-[[modules]]
-module = "spectraxgk.objectives.portfolio_artifacts"
-path = "src/spectraxgk/objectives/portfolio_artifacts.py"
-owner_lane = "artifact-level promotion guards for real VMEC/Boozer reduced objective portfolios"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "held-out surface and field-line validation for stellarator microstability optimization",
-  "release guardrails that separate reduced growth/QL rows from nonlinear turbulent-flux claims",
-]
-physics_contracts = [
-  "real VMEC/Boozer reduced portfolios must include growth and quasilinear objectives before promotion",
-  "artifact guard must fail closed for nonlinear turbulent-transport optimization claims",
-]
-numerics_contracts = [
-  "artifact tables reconstruct rectangular surface/alpha/ky tensors with finite weights",
-  "provenance, Boozer resolution, finite-difference, AD/FD, and reducer-value gates all pass before promotion",
-]
-fast_tests = [
-  "tests/validation/stellarator/test_check_vmec_boozer_gates.py",
-]
-artifact_paths = [
-  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
-]
-next_tests = [
-  "repeat the reduced-portfolio guard on the selected held-out surface/alpha artifacts before manuscript promotion",
 ]
 
 [[modules]]

@@ -456,14 +456,14 @@ Release `v2.0.0` only when:
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
 | 1. Delete unpromoted/duplicate code | 18% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 10% | <=70 source files / <=50k lines with parity |
+| 2. Consolidate package core and API | 13% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
 | 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
 | 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
 | 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
 
-Overall completion: 11%.
+Overall completion: 12%.
 
 ## Evidence Sources
 
@@ -539,3 +539,11 @@ Overall completion: 11%.
   43 focused artifact/restart tests, focused release gates, public artifact API
   identity checks, Ruff, architecture/coverage manifests, and warning-free
   strict documentation pass. Source is now 207 files/86,265 lines.
+- 2026-07-17: Consolidated objective-portfolio shape/reduction with AD/FD,
+  conditioning, and covariance into ``objectives/portfolio.py``; retained a
+  separate sub-1,000-line persisted-artifact admission owner; and folded zonal
+  record normalization into its sole physical consumer. This removes two more
+  source files and 11 lines without an oversized-module exception. All 123
+  objective/VMEC-Boozer tests, 34 zonal-artifact tests, public API checks,
+  Ruff/format, architecture and coverage manifests, and strict docs pass.
+  Source is now 205 files/86,254 lines.

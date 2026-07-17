@@ -2167,17 +2167,17 @@ def test_write_solver_objective_gradient_artifacts(tmp_path: Path) -> None:
 # ---- test_stellarator_objective_portfolio.py ----
 
 
-from spectraxgk.objectives.portfolio_artifacts import (
+from spectraxgk.objectives.portfolio_guard import (
     ReducedPortfolioArtifactGuardConfig,
     reduced_portfolio_artifact_guard_report,
 )
-from spectraxgk.objectives.portfolio_contracts import (
+from spectraxgk.objectives.portfolio import (
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
     validate_objective_portfolio_contract,
 )
-from spectraxgk.objectives.portfolio_sensitivity import (
+from spectraxgk.objectives.portfolio import (
     objective_portfolio_sensitivity_report,
 )
 
@@ -3240,12 +3240,12 @@ from spectraxgk.objectives.zonal import (
     zonal_flow_objective_sensitivity_report,
     zonal_flow_reduced_objective,
 )
-from spectraxgk.objectives import zonal_records
-from spectraxgk.objectives.zonal_records import _finite_metric_tensor_from_records
+from spectraxgk.objectives import zonal
+from spectraxgk.objectives.zonal import _finite_metric_tensor_from_records
 
 
 def test_zonal_record_helpers_have_single_canonical_owner() -> None:
-    assert inspect.getmodule(_finite_metric_tensor_from_records) is zonal_records
+    assert inspect.getmodule(_finite_metric_tensor_from_records) is zonal
 
 
 def test_zonal_flow_objective_prefers_large_residual_and_low_damping() -> None:

@@ -1012,23 +1012,17 @@ Stellarator Reduced ITG Model And Gates
    :members:
    :private-members:
 
-Stellarator Objective Portfolio Contracts
------------------------------------------
+Stellarator Objective Portfolios
+--------------------------------
 
-.. automodule:: spectraxgk.objectives.portfolio_contracts
-   :members:
-
-Stellarator Objective Portfolio Sensitivity
--------------------------------------------
-
-.. automodule:: spectraxgk.objectives.portfolio_sensitivity
+.. automodule:: spectraxgk.objectives.portfolio
    :members:
    :private-members:
 
-Stellarator Objective Portfolio Artifact Guards
------------------------------------------------
+Stellarator Objective Portfolio Guard
+-------------------------------------
 
-.. automodule:: spectraxgk.objectives.portfolio_artifacts
+.. automodule:: spectraxgk.objectives.portfolio_guard
    :members:
    :private-members:
 
