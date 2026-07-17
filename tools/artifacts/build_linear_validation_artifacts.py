@@ -1398,6 +1398,7 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
     associated_transform: Callable[[int, int, int, int, int], Any] | None = None,
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
     bessel_kernels: tuple[Any, ...] | None = None,
+    bessel_product_projection: Callable[[int, int], Any] | None = None,
     float64_final_contraction: bool = False,
 ) -> Any:
     b = mp.mpf(bessel_argument)
@@ -1437,6 +1438,11 @@ def _gyroaveraged_spherical_moment_coefficient_mp(
             auxiliary_laguerre_order,
         )
         if transform == 0:
+            continue
+        if bessel_product_projection is not None:
+            coefficient += float(transform) * float(
+                bessel_product_projection(auxiliary_laguerre_order, laguerre_order)
+            )
             continue
         for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
             product = laguerre_product(
@@ -1878,6 +1884,9 @@ def coulomb_nonpolarized_moment_matrices(
         assembly_cache = {} if _assembly_cache is None else _assembly_cache
         moment_cache = assembly_cache.setdefault("spherical_moment", {})
         bessel_kernel_cache = assembly_cache.setdefault("spherical_bessel_kernel", {})
+        bessel_projection_cache = assembly_cache.setdefault(
+            "spherical_bessel_projection", {}
+        )
         speed_cache = assembly_cache.setdefault("integrated_speed", {})
         product_cache = assembly_cache.setdefault("laguerre_product", {})
         inverse_cache = assembly_cache.setdefault("inverse_transform", {})
@@ -1923,6 +1932,37 @@ def coulomb_nonpolarized_moment_matrices(
                         maximum_bessel_laguerre_order + 1,
                         mp,
                     )
+
+                def projected_product(
+                    auxiliary_laguerre_order: int,
+                    input_laguerre_order: int,
+                ) -> float:
+                    projection_key = (
+                        float(wavelength),
+                        m,
+                        auxiliary_laguerre_order,
+                        input_laguerre_order,
+                    )
+                    if projection_key not in bessel_projection_cache:
+                        bessel_projection_cache[projection_key] = sum(
+                            float(
+                                inverse_product(
+                                    m,
+                                    bessel_laguerre_order,
+                                    auxiliary_laguerre_order,
+                                    input_laguerre_order,
+                                    m,
+                                )
+                            )
+                            * float(
+                                bessel_kernel_cache[kernel_key][bessel_laguerre_order]
+                            )
+                            for bessel_laguerre_order in range(
+                                maximum_bessel_laguerre_order + 1
+                            )
+                        )
+                    return float(bessel_projection_cache[projection_key])
+
                 moment_cache[key] = _gyroaveraged_spherical_moment_coefficient_mp(
                     p,
                     j,
@@ -1935,6 +1975,9 @@ def coulomb_nonpolarized_moment_matrices(
                     associated_transform=inverse_associated,
                     laguerre_product=inverse_product,
                     bessel_kernels=bessel_kernel_cache[kernel_key],
+                    bessel_product_projection=(
+                        projected_product if float64_final_contraction else None
+                    ),
                     float64_final_contraction=float64_final_contraction,
                 )
             return moment_cache[key]
