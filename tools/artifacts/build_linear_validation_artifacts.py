@@ -1807,9 +1807,9 @@ def coulomb_nonpolarized_moment_matrices(
     ``maximum_angular_bessel_order`` truncates the angular Bessel harmonic
     :math:`m` independently from the radial Bessel--Laguerre expansion.  The
     default retains every harmonic allowed by the spherical basis.
-    ``worker_count`` partitions independent spherical-moment vectors and then
-    complete output-Hermite rows; one worker is the portable default and
-    multiple workers require POSIX ``fork``.
+    ``worker_count`` partitions angular moment-vector blocks and then complete
+    output-Hermite rows; one worker is the portable default and multiple
+    workers require POSIX ``fork``.
     ``float64_final_contraction`` retains multiprecision coefficient generation
     but performs the final projection-vector products in the archive's float64
     precision. The exact path remains the default verification oracle.
@@ -2031,25 +2031,24 @@ def coulomb_nonpolarized_moment_matrices(
             )
 
         if float64_final_contraction and worker_count > 1 and not drift_kinetic:
-            moment_worker_count = min(worker_count, len(moment_orders))
 
-            def build_moment_vector_chunk(
-                worker_index: int,
+            def build_angular_moment_vectors(
+                angular_order: int,
             ) -> tuple[int, tuple[tuple[tuple[int, int, int], tuple[Any, Any]], ...]]:
-                return worker_index, tuple(
-                    (orders, build_moment_vector(*orders))
-                    for index, orders in enumerate(moment_orders)
-                    if index % moment_worker_count == worker_index
+                return angular_order, tuple(
+                    ((p, j, m), build_moment_vector(p, j, m))
+                    for p, j, m in moment_orders
+                    if m == angular_order
                 )
 
-            moment_blocks = _forked_ordered_map(
-                build_moment_vector_chunk,
-                moment_worker_count,
-                moment_worker_count,
+            angular_blocks = _forked_ordered_map(
+                build_angular_moment_vectors,
+                angular_limit + 1,
+                min(worker_count, angular_limit + 1),
             )
             moment_vectors = {
                 key: values
-                for _worker_index, block in moment_blocks
+                for _angular_order, block in angular_blocks
                 for key, values in block
             }
         else:

@@ -377,6 +377,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Rejected a finer mixed-moment process partition after a matched
+  P18/J7, B=0.16 office benchmark. Although the checksum remained exactly
+  ``-604.0543094294402``, distributing individual spherical moments across 16
+  workers duplicated angular Bessel and inverse-transform cache construction:
+  matrix time regressed from 141.18 to 193.67 seconds and total endpoint time
+  from 235.12 to 251.09 seconds. The change was removed. Further P24 work must
+  preserve angular cache locality, most likely by precomputing each angular
+  block once and partitioning only disjoint output rows afterward.
+
 - 2026-07-16: Completed the first exact P21/J8 four-wavelength Coulomb table
   inside the hard campaign bound. Four concurrent Bessel points with seven
   inner workers each finished in 584.73 seconds; the 1.2 MB archive is finite,
