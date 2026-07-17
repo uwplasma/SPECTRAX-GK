@@ -338,7 +338,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "CYCLONE_KRYLOV_DEFAULT",
         ),
         EvidenceCheck(
-            "diagnostics channel module", "src/spectraxgk/diagnostics/channels.py"
+            "diagnostic moment kernels", "src/spectraxgk/diagnostics/moments.py"
         ),
         EvidenceCheck(
             "coverage manifest",

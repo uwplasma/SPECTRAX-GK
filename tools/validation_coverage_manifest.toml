@@ -261,7 +261,6 @@ module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
 owned_modules = [
   "spectraxgk.diagnostics.analysis",
-  "spectraxgk.diagnostics.growth_fit",
   "spectraxgk.diagnostics.growth_rates",
   "spectraxgk.diagnostics.growth_windows",
   "spectraxgk.diagnostics.modes",
@@ -1375,17 +1374,13 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.diagnostics.core"
-path = "src/spectraxgk/diagnostics/core.py"
+module = "spectraxgk.diagnostics.moments"
+path = "src/spectraxgk/diagnostics/moments.py"
 owned_modules = [
-  "spectraxgk.diagnostics.channels",
-  "spectraxgk.diagnostics.energy",
   "spectraxgk.diagnostics.metadata",
-  "spectraxgk.diagnostics.resolved",
   "spectraxgk.diagnostics.transport",
-  "spectraxgk.diagnostics.weights",
 ]
-owner_lane = "scalar, resolved, flux, and zonal diagnostics"
+owner_lane = "quadrature, energy, transport-channel, resolved, and metadata diagnostics"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -1411,7 +1406,6 @@ artifact_paths = [
   "docs/_static/w7x_zonal_contract_audit.json",
 ]
 next_tests = [
-  "extract resolved diagnostic shape helpers",
   "add direct tests for every public diagnostic written to NetCDF",
 ]
 

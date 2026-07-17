@@ -5,9 +5,8 @@ from dataclasses import fields, replace
 import pytest
 import spectraxgk.solvers.time.explicit as explicit_time_integrators
 import spectraxgk.diagnostics as diagnostics_module
-import spectraxgk.diagnostics.channels as diagnostics_channels
+import spectraxgk.diagnostics.moments as diagnostics_moments
 import spectraxgk.diagnostics.metadata as diagnostics_metadata
-import spectraxgk.diagnostics.weights as diagnostics_weights
 from types import SimpleNamespace
 
 from spectraxgk.config import CycloneBaseCase
@@ -104,32 +103,32 @@ def test_diagnostics_refactor_preserves_runtime_import_identities() -> None:
     )
     assert (
         diagnostics_module.fieldline_quadrature_weights
-        is diagnostics_weights.fieldline_quadrature_weights
+        is diagnostics_moments.fieldline_quadrature_weights
     )
     assert (
         diagnostics_module._hermitian_mode_weight
-        is diagnostics_weights._hermitian_mode_weight
+        is diagnostics_moments._hermitian_mode_weight
     )
     assert (
         diagnostics_module._cached_hermitian_mode_weight
-        is diagnostics_weights._cached_hermitian_mode_weight
+        is diagnostics_moments._cached_hermitian_mode_weight
     )
     assert (
         diagnostics_module._transport_mode_weight
-        is diagnostics_weights._transport_mode_weight
+        is diagnostics_moments._transport_mode_weight
     )
-    assert diagnostics_module._jl_family is diagnostics_weights._jl_family
+    assert diagnostics_module._jl_family is diagnostics_moments._jl_family
     assert (
         diagnostics_module._heat_flux_channel_contrib_species
-        is diagnostics_channels._heat_flux_channel_contrib_species
+        is diagnostics_moments._heat_flux_channel_contrib_species
     )
     assert (
         diagnostics_module._particle_flux_channel_contrib_species
-        is diagnostics_channels._particle_flux_channel_contrib_species
+        is diagnostics_moments._particle_flux_channel_contrib_species
     )
     assert (
         diagnostics_module._turbulent_heating_contrib_species
-        is diagnostics_channels._turbulent_heating_contrib_species
+        is diagnostics_moments._turbulent_heating_contrib_species
     )
 
 

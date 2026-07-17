@@ -456,14 +456,14 @@ Release `v2.0.0` only when:
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
 | 1. Delete unpromoted/duplicate code | 18% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 17% | <=70 source files / <=50k lines with parity |
+| 2. Consolidate package core and API | 22% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
 | 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
 | 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
 | 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
 
-Overall completion: 13%.
+Overall completion: 14%.
 
 ## Evidence Sources
 
@@ -554,3 +554,12 @@ Overall completion: 13%.
   removes four source files and 60 lines; all 114 VMEC transport/campaign
   tests, API identity checks, Ruff/format, architecture and coverage manifests,
   and strict docs pass. Source is now 202 files/86,194 lines.
+- 2026-07-17: Unified diagnostic quadrature/mode weights, scalar energy,
+  transport-channel kernels, and resolved spectra in a 903-line
+  ``diagnostics/moments.py`` physical owner; removed the redundant facade; and
+  moved least-squares growth/frequency fits into the growth diagnostics owner
+  while keeping fit-window selection separate. This removes five source files
+  and 106 lines. Runtime/nonlinear diagnostic tests, 107 growth/benchmark
+  tests, 95 release gates, API identities, architecture/coverage/readiness
+  checks, Ruff/format, and strict docs pass. Source is now 197 files/86,088
+  lines.

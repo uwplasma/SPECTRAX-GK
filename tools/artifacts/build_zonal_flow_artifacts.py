@@ -379,7 +379,7 @@ def _build_collisional_zonal_problem(
     """Build the common paper-geometry state used by every collision model."""
 
     from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
+    from spectraxgk.diagnostics.moments import fieldline_quadrature_weights
     from spectraxgk.geometry import apply_geometry_grid_defaults
     from spectraxgk.operators.linear.cache_builder import build_linear_cache
     from spectraxgk.workflows.runtime.startup import (

@@ -16,7 +16,7 @@ from spectraxgk.operators.nonlinear import projection as nonlinear_projection
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.diagnostics.transport import heat_flux_species
-from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
+from spectraxgk.diagnostics.moments import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache

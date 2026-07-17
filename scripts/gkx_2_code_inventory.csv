@@ -26,14 +26,10 @@ src/spectraxgk/data/cyclone_reference_kinetic.csv,src/spectraxgk/data,promoted l
 src/spectraxgk/data/etg_reference.csv,src/spectraxgk/data,promoted library code,merge-to-2.0-domain,.csv,104,4,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
 src/spectraxgk/data/kbm_reference.csv,src/spectraxgk/data,promoted library code,merge-to-2.0-domain,.csv,180,6,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
 src/spectraxgk/data/tem_reference.csv,src/spectraxgk/data,promoted library code,merge-to-2.0-domain,.csv,180,7,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/__init__.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,254,8,target=gkx.diagnostics; preserve promoted physics and JAX contracts
+src/spectraxgk/diagnostics/__init__.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,937,34,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/analysis.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,21287,664,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/channels.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,10154,334,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/core.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,2810,97,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/energy.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,3207,111,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/growth_fit.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,3682,123,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/growth_rates.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,18432,580,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/growth_windows.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,19865,598,target=gkx.diagnostics; preserve promoted physics and JAX contracts
+src/spectraxgk/diagnostics/growth_rates.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,21166,673,target=gkx.diagnostics; preserve promoted physics and JAX contracts
+src/spectraxgk/diagnostics/growth_windows.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,20490,617,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/metadata.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,30461,898,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/modes.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,11521,345,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/nonlinear_gradient_evidence.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,34834,915,target=gkx.diagnostics; preserve promoted physics and JAX contracts
@@ -43,12 +39,10 @@ src/spectraxgk/diagnostics/normalization.py,src/spectraxgk/diagnostics,promoted 
 src/spectraxgk/diagnostics/quasilinear_calibration.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,30418,885,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/quasilinear_model_selection.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,27012,728,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/quasilinear_transport.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,20562,625,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/resolved.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,11336,370,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/stellarator_transport_reports.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,33913,912,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/transport.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,20707,698,target=gkx.diagnostics; preserve promoted physics and JAX contracts
+src/spectraxgk/diagnostics/transport.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,20706,698,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/transport_windows.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,33080,911,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/validation_gates.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,20807,644,target=gkx.diagnostics; preserve promoted physics and JAX contracts
-src/spectraxgk/diagnostics/weights.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,3804,112,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/zonal_validation.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,25461,733,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/geometry/__init__.py,src/spectraxgk/geometry,promoted library code,merge-to-2.0-domain,.py,1293,48,target=gkx.geometry; preserve promoted physics and JAX contracts
 src/spectraxgk/geometry/analytic.py,src/spectraxgk/geometry,promoted library code,merge-to-2.0-domain,.py,12397,415,target=gkx.geometry; preserve promoted physics and JAX contracts
@@ -101,6 +95,7 @@ src/spectraxgk/objectives/vmec_candidate_admission.py,src/spectraxgk/objectives,
 src/spectraxgk/objectives/vmec_transport.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,22512,635,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/vmec_transport_admission.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,20018,542,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/vmec_transport_branch.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,12316,405,target=gkx.optimize; preserve promoted physics and JAX contracts
+src/spectraxgk/objectives/vmec_transport_optimization.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,20269,562,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/zonal.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,28160,851,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/operators/__init__.py,src/spectraxgk/operators,promoted library code,merge-to-2.0-domain,.py,465,16,target=gkx.model; preserve promoted physics and JAX contracts
 src/spectraxgk/operators/linear/__init__.py,src/spectraxgk/operators,promoted library code,merge-to-2.0-domain,.py,2523,81,target=gkx.model; preserve promoted physics and JAX contracts
@@ -216,7 +211,7 @@ tests/integration/runtime/test_restart_gate.py,tests/integration,organized test,
 tests/integration/runtime/test_runtime_artifacts.py,tests/integration,organized test,merge-by-domain,.py,76747,2064,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_chunks.py,tests/integration,organized test,merge-by-domain,.py,5739,180,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_config.py,tests/integration,organized test,merge-by-domain,.py,25192,801,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/integration/runtime/test_runtime_diagnostics.py,tests/integration,organized test,merge-by-domain,.py,65595,1924,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/integration/runtime/test_runtime_diagnostics.py,tests/integration,organized test,merge-by-domain,.py,65529,1923,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_helpers.py,tests/integration,organized test,merge-by-domain,.py,75890,2379,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_policies.py,tests/integration,organized test,merge-by-domain,.py,8752,271,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_runner.py,tests/integration,organized test,merge-by-domain,.py,129194,4088,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -240,7 +235,7 @@ tests/tools/comparison/test_reference_comparison_tools.py,tests/tools,organized 
 tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py,tests/tools,organized test,merge-by-domain,.py,23066,733,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/profiling/test_runtime_and_scaling_profile_contracts.py,tests/tools,organized test,merge-by-domain,.py,24943,696,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/core/test_core_contracts.py,tests/unit,organized test,merge-by-domain,.py,29424,845,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/unit/diagnostics/test_analysis.py,tests/unit,organized test,merge-by-domain,.py,30289,843,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/unit/diagnostics/test_analysis.py,tests/unit,organized test,merge-by-domain,.py,30052,838,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/diagnostics/test_plotting.py,tests/unit,organized test,merge-by-domain,.py,12452,415,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/geometry/test_differentiable_geometry.py,tests/unit,organized test,merge-by-domain,.py,6454,183,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/geometry/test_geometry.py,tests/unit,organized test,merge-by-domain,.py,41576,1020,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -402,7 +397,7 @@ tools/release/check_nonlinear_transport_gates.py,tools/release,release gate,keep
 tools/release/check_package_architecture_manifest.py,tools/release,release gate,keep-or-merge,.py,30102,828,owned by tools/release
 tools/release/check_parallel_scaling_artifacts.py,tools/release,release gate,keep-or-merge,.py,53573,1400,owned by tools/release
 tools/release/check_quasilinear_promotion_guardrails.py,tools/release,release gate,keep-or-merge,.py,67927,1757,owned by tools/release
-tools/release/check_release_readiness.py,tools/release,release gate,keep-or-merge,.py,44056,1178,owned by tools/release
+tools/release/check_release_readiness.py,tools/release,release gate,keep-or-merge,.py,44054,1178,owned by tools/release
 tools/release/check_repository_size_manifest.py,tools/release,release gate,keep-or-merge,.py,26057,739,owned by tools/release
 tools/release/check_validation_coverage_manifest.py,tools/release,release gate,keep-or-merge,.py,27428,709,owned by tools/release
 tools/release/check_vmec_boozer_gates.py,tools/release,release gate,keep-or-merge,.py,74748,1879,owned by tools/release
@@ -411,5 +406,5 @@ tools/release_artifact_manifest.toml,tools/release_artifact_manifest.toml,tool s
 tools/repository_size_manifest.toml,tools/repository_size_manifest.toml,tool support file,keep-or-review,.toml,343,7,non-python tool asset
 tools/restart_gate_lanes.office.toml,tools/restart_gate_lanes.office.toml,tool support file,keep-or-review,.toml,1041,31,non-python tool asset
 tools/runtime_memory_manifest.toml,tools/runtime_memory_manifest.toml,tool support file,keep-or-review,.toml,18058,241,non-python tool asset
-tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,137796,2937,non-python tool asset
+tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,137599,2931,non-python tool asset
 tools/vmec_roundtrip_lanes.office.toml,tools/vmec_roundtrip_lanes.office.toml,tool support file,keep-or-review,.toml,438,9,non-python tool asset

@@ -650,13 +650,6 @@ Growth-Rate Diagnostics
    :members:
    :private-members:
 
-Growth-Rate Fit Kernels
------------------------
-
-.. automodule:: spectraxgk.diagnostics.growth_fit
-   :members:
-   :private-members:
-
 Growth-Rate Fit Windows
 -----------------------
 
@@ -688,10 +681,10 @@ Normalization
 .. automodule:: spectraxgk.diagnostics.normalization
    :members:
 
-Energy Diagnostics
-------------------
+Moment And Energy Diagnostics
+-----------------------------
 
-.. automodule:: spectraxgk.diagnostics.energy
+.. automodule:: spectraxgk.diagnostics.moments
    :members:
    :private-members:
 
@@ -699,13 +692,6 @@ Transport Diagnostics
 ---------------------
 
 .. automodule:: spectraxgk.diagnostics.transport
-   :members:
-   :private-members:
-
-Resolved Diagnostics
---------------------
-
-.. automodule:: spectraxgk.diagnostics.resolved
    :members:
    :private-members:
 

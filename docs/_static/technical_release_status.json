@@ -390,9 +390,9 @@
         },
         {
           "exists": true,
-          "name": "diagnostics channel module",
+          "name": "diagnostic moment kernels",
           "passed": true,
-          "path": "src/spectraxgk/diagnostics/channels.py",
+          "path": "src/spectraxgk/diagnostics/moments.py",
           "required": true,
           "snippet": null
         },

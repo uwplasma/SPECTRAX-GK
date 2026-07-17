@@ -26,14 +26,9 @@ def test_growth_rate_public_facades_point_to_numerical_owners() -> None:
     """Growth diagnostics keep stable imports with one owner per algorithm."""
 
     import spectraxgk.diagnostics.analysis as analysis
-    import spectraxgk.diagnostics.growth_fit as growth_fit
     import spectraxgk.diagnostics.growth_rates as growth_rates
     import spectraxgk.diagnostics.growth_windows as growth_windows
 
-    assert growth_rates.fit_growth_rate is growth_fit.fit_growth_rate
-    assert (
-        growth_rates.fit_growth_rate_with_stats is growth_fit.fit_growth_rate_with_stats
-    )
     assert growth_rates.select_fit_window is growth_windows.select_fit_window
     assert (
         growth_rates.select_fit_window_loglinear

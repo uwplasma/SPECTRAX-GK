@@ -9,7 +9,7 @@ import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics.transport import heat_flux_total
-from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
+from spectraxgk.diagnostics.moments import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
 from spectraxgk.solvers.time.explicit import _linear_frequency_bound
 from spectraxgk.core.grid import build_spectral_grid
