@@ -2846,6 +2846,28 @@ def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
     np.testing.assert_allclose(
         finite_field[0], convention * original_field, rtol=2.0e-15, atol=3.0e-16
     )
+    _improved_test, improved_field = (
+        mod.improved_sugama_equal_temperature_moment_matrices(
+            test, 3, 1, correction_order=1, digits=60
+        )
+    )
+    _finite_improved_test, finite_improved_field = (
+        mod.finite_wavelength_improved_sugama_like_species_moment_matrices(
+            (convention * test)[None, ...],
+            np.asarray([0.0]),
+            3,
+            1,
+            correction_order=1,
+            quadrature_order=64,
+            digits=60,
+        )
+    )
+    np.testing.assert_allclose(
+        finite_improved_field[0],
+        convention * improved_field,
+        rtol=3.0e-15,
+        atol=8.0e-16,
+    )
 
 
 def test_finite_wavelength_original_sugama_restores_published_flow_channels(
@@ -2859,7 +2881,7 @@ def test_finite_wavelength_original_sugama_restores_published_flow_channels(
     mod.write_equal_species_finite_wavelength_coulomb_table(
         coulomb_path,
         bessel_arguments=(0.1, bessel_argument),
-        maximum_hermite_order=2,
+        maximum_hermite_order=3,
         maximum_laguerre_order=1,
         maximum_angular_bessel_order=2,
         maximum_bessel_laguerre_order=2,
@@ -2873,16 +2895,27 @@ def test_finite_wavelength_original_sugama_restores_published_flow_channels(
     with np.load(sugama_path) as archive:
         test = np.asarray(archive["test_table"])[1]
         field = np.asarray(archive["field_table"])[1]
-    signs = np.asarray([1.0, -1.0] * 3)
+    signs = np.asarray([1.0, -1.0] * 4)
     radial = 0.25 * bessel_argument**2
     kernels = np.exp(-radial) * np.asarray([1.0, radial, radial**2 / 2.0])
     parallel = signs * np.asarray(
-        [0.0, 0.0, kernels[0] / np.sqrt(2.0), kernels[1] / np.sqrt(2.0), 0.0, 0.0]
+        [
+            0.0,
+            0.0,
+            kernels[0] / np.sqrt(2.0),
+            kernels[1] / np.sqrt(2.0),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
     )
     perpendicular = signs * np.asarray(
         [
             0.5 * bessel_argument * kernels[0],
             0.5 * bessel_argument * (kernels[1] - kernels[0]),
+            0.0,
+            0.0,
             0.0,
             0.0,
             0.0,
@@ -2897,6 +2930,8 @@ def test_finite_wavelength_original_sugama_restores_published_flow_channels(
             0.0,
             2.0 * kernels[0] / (3.0 * np.sqrt(2.0)),
             2.0 * kernels[1] / (3.0 * np.sqrt(2.0)),
+            0.0,
+            0.0,
         ]
     )
     collision = test + field
@@ -2904,6 +2939,22 @@ def test_finite_wavelength_original_sugama_restores_published_flow_channels(
         np.testing.assert_allclose(collision @ invariant, 0.0, atol=2.0e-15)
         np.testing.assert_allclose(invariant @ collision, 0.0, atol=2.0e-15)
     assert np.linalg.matrix_rank(field, tol=1.0e-12) <= 3
+
+    improved_path = tmp_path / "improved_sugama.npz"
+    improved_metadata = mod.write_equal_species_finite_wavelength_improved_sugama_table(
+        coulomb_path,
+        improved_path,
+        correction_order=1,
+        quadrature_order=64,
+        digits=48,
+    )
+    assert improved_metadata["improved_correction_order"] == 1
+    assert improved_metadata["velocity_quadrature_orders"] == [64, 80]
+    with np.load(improved_path) as archive:
+        improved_field = np.asarray(archive["field_table"])[1]
+    correction = improved_field - field
+    assert np.linalg.norm(correction) > 1.0e-2
+    assert np.linalg.matrix_rank(correction, tol=1.0e-12) <= 2
 
 
 @pytest.mark.parametrize(

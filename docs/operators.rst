@@ -811,11 +811,34 @@ Laguerre convention, finite coefficients, and a negative-definite flow-channel
 Gram matrix. Its equation test reproduces the published drift-kinetic C6
 construction at :math:`B=0`, limits the finite-wavelength field block to rank
 three, and annihilates all retained flow channels from both sides to
-:math:`2\times10^{-15}`. ``EqualSpeciesFiniteWavelengthOriginalSugamaOperator``
+:math:`2\times10^{-15}`. ``EqualSpeciesFiniteWavelengthSugamaOperator``
 interpolates the resulting table in JAX and acts on the post-field
 nonadiabatic response :math:`H`; JIT/JVP and finite-difference interpolation
-gates remain required before a paper-facing zonal trace is promoted. The
-finite-wavelength improved-Sugama correction is still open.
+gates pass, but a paper-facing zonal trace is still required for promotion.
+
+The finite-wavelength improved-Sugama field correction is generated from the
+same Coulomb archive. At equal mass and temperature the test correction
+vanishes, while equations (61)--(69) of
+`Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_ add the
+Braginskii field correction through parallel and perpendicular generalized
+flow projections. The implementation evaluates those velocity integrals
+independently with product Gauss--Hermite/Laguerre quadrature and accepts the
+higher-order result only when an additional 16 nodes change the correction by
+less than :math:`10^{-11}` relative or :math:`10^{-12}` absolute::
+
+   python tools/artifacts/build_linear_validation_artifacts.py \
+     collision-improved-sugama-table \
+     --coulomb-table finite_b_zonal_P24_J10_diagonal.npz \
+     --out finite_b_zonal_P24_J10_improved_sugama.npz \
+     --correction-order 5 --quadrature-order 80 --digits 80
+
+At :math:`B=0`, correction orders :math:`K=1,2,3` reproduce the independent
+drift-kinetic analytical implementation with relative matrix errors from
+:math:`3.4\times10^{-15}` to :math:`1.1\times10^{-14}`. At the production
+P24/J10, :math:`K=5` resolution, nested 80/120-node checks over
+:math:`B=0.12,0.16,0.24,0.32` differ by at most :math:`7.1\times10^{-14}`
+relative. These are equation and quadrature gates. The Figure-13/14 zonal
+ordering and velocity-section comparisons remain the physical promotion gate.
 
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates

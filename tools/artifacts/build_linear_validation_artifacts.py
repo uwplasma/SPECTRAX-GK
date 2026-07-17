@@ -2726,6 +2726,58 @@ def finite_wavelength_original_sugama_like_species_moment_matrices(
     return test.copy(), field
 
 
+def _improved_sugama_equal_temperature_delta_n_mp(
+    correction_order: int,
+    mp: Any,
+) -> Any:
+    """Return the equal-species Braginskii field correction in equation (45)."""
+
+    root_pi = mp.sqrt(mp.pi)
+    collision_time = 3 * root_pi / 4
+    coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(mp.mpf(1), mp)
+
+    @cache
+    def field_speed_moment(k: int, speed_power: int) -> Any:
+        return _coulomb_speed_moments_mp(
+            1,
+            k,
+            speed_power,
+            mp.mpf(1),
+            mp.mpf(1),
+            mp.mpf(1),
+            mp,
+            coulomb_e=coulomb_e,
+            coulomb_E=coulomb_E,
+        )[1]
+
+    @cache
+    def laguerre(order: int, monomial: int) -> Any:
+        return _associated_laguerre_monomial_coefficient_mp(order, 1, monomial, mp)
+
+    coulomb_n = mp.matrix(correction_order + 1, correction_order + 1)
+    for ell in range(correction_order + 1):
+        for k in range(correction_order + 1):
+            coulomb_n[ell, k] = sum(
+                mp.mpf(2)
+                / 3
+                * collision_time
+                * laguerre(ell, power)
+                * field_speed_moment(k, power)
+                for power in range(ell + 1)
+            )
+    delta_n = mp.matrix(correction_order + 1, correction_order + 1)
+    for ell in range(correction_order + 1):
+        for k in range(correction_order + 1):
+            delta_n[ell, k] = (
+                coulomb_n[ell, k]
+                - coulomb_n[ell, 0] * coulomb_n[0, k] / coulomb_n[0, 0]
+            )
+    for order in range(correction_order + 1):
+        delta_n[0, order] = mp.mpf(0)
+        delta_n[order, 0] = mp.mpf(0)
+    return delta_n
+
+
 def improved_sugama_equal_temperature_moment_matrices(
     coulomb_test_matrix: np.ndarray,
     maximum_hermite_order: int,
@@ -2770,51 +2822,11 @@ def improved_sugama_equal_temperature_moment_matrices(
     with mp.workdps(digits):
         root_pi = mp.sqrt(mp.pi)
         collision_time = 3 * root_pi / 4
-        coulomb_e, coulomb_E = _cached_coulomb_integrals_mp(mp.mpf(1), mp)
-
-        @cache
-        def field_speed_moment(k: int, speed_power: int) -> Any:
-            return _coulomb_speed_moments_mp(
-                1,
-                k,
-                speed_power,
-                mp.mpf(1),
-                mp.mpf(1),
-                mp.mpf(1),
-                mp,
-                coulomb_e=coulomb_e,
-                coulomb_E=coulomb_E,
-            )[1]
-
-        @cache
-        def laguerre(order: int, monomial: int) -> Any:
-            return _associated_laguerre_monomial_coefficient_mp(order, 1, monomial, mp)
+        delta_n = _improved_sugama_equal_temperature_delta_n_mp(correction_order, mp)
 
         def flow_weight(order: int) -> Any:
             double_factorial = mp.fac2(2 * order + 3)
             return 3 * mp.power(2, order) * mp.factorial(order) / double_factorial
-
-        coulomb_n = mp.matrix(correction_order + 1, correction_order + 1)
-        for ell in range(correction_order + 1):
-            for k in range(correction_order + 1):
-                coulomb_n[ell, k] = sum(
-                    mp.mpf(2)
-                    / 3
-                    * collision_time
-                    * laguerre(ell, power)
-                    * field_speed_moment(k, power)
-                    for power in range(ell + 1)
-                )
-        delta_n = mp.matrix(correction_order + 1, correction_order + 1)
-        for ell in range(correction_order + 1):
-            for k in range(correction_order + 1):
-                delta_n[ell, k] = (
-                    coulomb_n[ell, k]
-                    - coulomb_n[ell, 0] * coulomb_n[0, k] / coulomb_n[0, 0]
-                )
-        for order in range(correction_order + 1):
-            delta_n[0, order] = mp.mpf(0)
-            delta_n[order, 0] = mp.mpf(0)
 
         correction = mp.matrix(mode_count, mode_count)
         for ell in range(correction_order + 1):
@@ -2869,6 +2881,149 @@ def improved_sugama_equal_temperature_moment_matrices(
     return original_test, original_field + np.asarray(
         correction.tolist(), dtype=np.float64
     )
+
+
+def finite_wavelength_improved_sugama_like_species_moment_matrices(
+    coulomb_test_table: np.ndarray,
+    bessel_arguments: np.ndarray,
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    *,
+    correction_order: int = 3,
+    quadrature_order: int = 80,
+    digits: int = 80,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Build equal-species finite-wavelength improved-Sugama tables.
+
+    The original-Sugama table is augmented by the equal-species field
+    correction in Frei, Ernst & Ricci (2022), equations (61)--(69). The
+    velocity projections are evaluated independently with product
+    Gauss--Hermite/Laguerre quadrature. A second calculation with 16 more
+    nodes must agree before the higher-order result is accepted.
+    """
+
+    if correction_order < 0:
+        raise ValueError("correction_order must be >= 0")
+    if maximum_hermite_order < 2 * correction_order + 1:
+        raise ValueError("maximum_hermite_order must be >= 2 * correction_order + 1")
+    if maximum_laguerre_order < correction_order:
+        raise ValueError("maximum_laguerre_order must be >= correction_order")
+    if quadrature_order < 32:
+        raise ValueError("quadrature_order must be >= 32")
+    if digits < 16:
+        raise ValueError("digits must be >= 16")
+    original_test, original_field = (
+        finite_wavelength_original_sugama_like_species_moment_matrices(
+            coulomb_test_table,
+            bessel_arguments,
+            maximum_hermite_order,
+            maximum_laguerre_order,
+        )
+    )
+    grid = np.asarray(bessel_arguments, dtype=float)
+    import mpmath as mp
+    from scipy.special import (
+        eval_genlaguerre,
+        eval_hermite,
+        eval_laguerre,
+        gammaln,
+        jv,
+        roots_hermite,
+        roots_laguerre,
+    )
+
+    with mp.workdps(digits):
+        delta_n = np.asarray(
+            _improved_sugama_equal_temperature_delta_n_mp(
+                correction_order, mp
+            ).tolist(),
+            dtype=float,
+        )
+    flow_weight = np.asarray(
+        [
+            3.0
+            * 2.0**order
+            * math.factorial(order)
+            / math.prod(range(2 * order + 3, 0, -2))
+            for order in range(correction_order + 1)
+        ]
+    )
+    collision_time = 3.0 * np.sqrt(np.pi) / 4.0
+    correction_kernel = (
+        2.0 / collision_time * flow_weight[:, None] * delta_n * flow_weight[None, :]
+    )
+    n_laguerre = maximum_laguerre_order + 1
+    laguerre_sign = np.asarray(
+        [
+            (-1.0) ** laguerre
+            for _hermite in range(maximum_hermite_order + 1)
+            for laguerre in range(n_laguerre)
+        ]
+    )
+    convention = laguerre_sign[:, None] * laguerre_sign[None, :]
+
+    def correction(bessel_argument: float, node_count: int) -> np.ndarray:
+        hermite_nodes, hermite_weights = roots_hermite(node_count)
+        laguerre_nodes, laguerre_weights = roots_laguerre(node_count)
+        hermite_normalization = np.exp(
+            0.5
+            * (
+                np.arange(maximum_hermite_order + 1) * np.log(2.0)
+                + gammaln(np.arange(maximum_hermite_order + 1) + 1)
+            )
+        )
+        hermite = np.asarray(
+            [
+                eval_hermite(order, hermite_nodes) / hermite_normalization[order]
+                for order in range(maximum_hermite_order + 1)
+            ]
+        )
+        laguerre = np.asarray(
+            [eval_laguerre(order, laguerre_nodes) for order in range(n_laguerre)]
+        )
+        speed_squared = hermite_nodes[:, None] ** 2 + laguerre_nodes[None, :]
+        generalized = np.asarray(
+            [
+                eval_genlaguerre(order, 1.5, speed_squared)
+                for order in range(correction_order + 1)
+            ]
+        )
+        weights = hermite_weights[:, None] * laguerre_weights[None, :] / np.sqrt(np.pi)
+        argument = bessel_argument * np.sqrt(laguerre_nodes)
+        parallel = np.einsum(
+            "ph,jx,khx,hx,x,h->pjk",
+            hermite,
+            laguerre,
+            generalized,
+            weights,
+            jv(0, argument),
+            hermite_nodes,
+            optimize=True,
+        ).reshape(-1, correction_order + 1)
+        perpendicular = np.einsum(
+            "ph,jx,khx,hx,x->pjk",
+            hermite,
+            laguerre,
+            generalized,
+            weights,
+            jv(1, argument) * np.sqrt(laguerre_nodes),
+            optimize=True,
+        ).reshape(-1, correction_order + 1)
+        return (
+            parallel @ correction_kernel @ parallel.T
+            + perpendicular @ correction_kernel @ perpendicular.T
+        )
+
+    field = original_field.copy()
+    for wavelength_index, bessel_argument in enumerate(grid):
+        lower = correction(float(bessel_argument), quadrature_order)
+        accepted = correction(float(bessel_argument), quadrature_order + 16)
+        difference = float(np.linalg.norm(accepted - lower))
+        scale = max(float(np.linalg.norm(accepted)), np.finfo(float).tiny)
+        if difference > 1.0e-12 and difference / scale > 1.0e-11:
+            raise RuntimeError("improved-Sugama velocity quadrature did not converge")
+        field[wavelength_index] += convention * accepted
+    return original_test, field
 
 
 def coulomb_polarization_vectors(
@@ -3975,11 +4130,10 @@ def combine_equal_species_finite_wavelength_tables(
     return metadata
 
 
-def write_equal_species_finite_wavelength_original_sugama_table(
+def _load_complete_equal_species_coulomb_table(
     coulomb_table: Path,
-    out: Path,
-) -> dict[str, Any]:
-    """Convert a complete equal-species Coulomb test table to original Sugama."""
+) -> tuple[dict[str, Any], np.ndarray, np.ndarray]:
+    """Load and validate the Coulomb test data shared by Sugama conversions."""
 
     with np.load(coulomb_table) as archive:
         metadata = json.loads(str(archive["metadata"]))
@@ -3998,29 +4152,45 @@ def write_equal_species_finite_wavelength_original_sugama_table(
         raise ValueError(
             "Coulomb table must use the runtime signed-Laguerre convention"
         )
-    maximum_hermite_order, maximum_laguerre_order = map(int, metadata["resolution"])
-    test, field = finite_wavelength_original_sugama_like_species_moment_matrices(
-        test_table,
-        grid,
-        maximum_hermite_order,
-        maximum_laguerre_order,
+    return metadata, grid, test_table
+
+
+def _write_equal_species_finite_wavelength_sugama_table(
+    out: Path,
+    *,
+    coulomb_metadata: dict[str, Any],
+    grid: np.ndarray,
+    test: np.ndarray,
+    field: np.ndarray,
+    model: str,
+    source: str,
+    extra_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Write one validated original/improved equal-species Sugama archive."""
+
+    maximum_order = int(coulomb_metadata["maximum_angular_bessel_order"])
+    maximum_hermite_order, maximum_laguerre_order = map(
+        int, coulomb_metadata["resolution"]
     )
     checksum = float(np.sum(test) + np.sum(field))
     output_metadata = {
         "schema_version": 1,
         "claim_scope": (
-            "equal_species_diagonal_finite_wavelength_original_sugama_table"
+            f"equal_species_diagonal_finite_wavelength_{model}_sugama_table"
         ),
         "resolution": [maximum_hermite_order, maximum_laguerre_order],
         "bessel_argument_grid": grid.tolist(),
         "maximum_angular_bessel_order": maximum_order,
         "included_angular_orders": list(range(maximum_order + 1)),
-        "maximum_bessel_laguerre_order": int(metadata["maximum_bessel_laguerre_order"]),
-        "precision_decimal_digits": int(metadata["precision_decimal_digits"]),
+        "maximum_bessel_laguerre_order": int(
+            coulomb_metadata["maximum_bessel_laguerre_order"]
+        ),
+        "precision_decimal_digits": int(coulomb_metadata["precision_decimal_digits"]),
         "laguerre_convention": "runtime_signed",
-        "coulomb_table_checksum": float(metadata["checksum"]),
+        "coulomb_table_checksum": float(coulomb_metadata["checksum"]),
         "checksum": checksum,
-        "source": ("Frei et al. (2021), equations (3.72), (3.79), and (3.90)--(3.102)"),
+        "source": source,
+        **({} if extra_metadata is None else extra_metadata),
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
@@ -4031,6 +4201,76 @@ def write_equal_species_finite_wavelength_original_sugama_table(
         field_table=field,
     )
     return output_metadata
+
+
+def write_equal_species_finite_wavelength_original_sugama_table(
+    coulomb_table: Path,
+    out: Path,
+) -> dict[str, Any]:
+    """Convert a complete equal-species Coulomb test table to original Sugama."""
+
+    metadata, grid, test_table = _load_complete_equal_species_coulomb_table(
+        coulomb_table
+    )
+    maximum_hermite_order, maximum_laguerre_order = map(int, metadata["resolution"])
+    test, field = finite_wavelength_original_sugama_like_species_moment_matrices(
+        test_table,
+        grid,
+        maximum_hermite_order,
+        maximum_laguerre_order,
+    )
+    return _write_equal_species_finite_wavelength_sugama_table(
+        out,
+        coulomb_metadata=metadata,
+        grid=grid,
+        test=test,
+        field=field,
+        model="original",
+        source="Frei et al. (2021), equations (3.72), (3.79), and (3.90)--(3.102)",
+    )
+
+
+def write_equal_species_finite_wavelength_improved_sugama_table(
+    coulomb_table: Path,
+    out: Path,
+    *,
+    correction_order: int = 5,
+    quadrature_order: int = 80,
+    digits: int = 80,
+) -> dict[str, Any]:
+    """Convert a complete equal-species Coulomb test table to improved Sugama."""
+
+    metadata, grid, test_table = _load_complete_equal_species_coulomb_table(
+        coulomb_table
+    )
+    maximum_hermite_order, maximum_laguerre_order = map(int, metadata["resolution"])
+    test, field = finite_wavelength_improved_sugama_like_species_moment_matrices(
+        test_table,
+        grid,
+        maximum_hermite_order,
+        maximum_laguerre_order,
+        correction_order=correction_order,
+        quadrature_order=quadrature_order,
+        digits=digits,
+    )
+    return _write_equal_species_finite_wavelength_sugama_table(
+        out,
+        coulomb_metadata=metadata,
+        grid=grid,
+        test=test,
+        field=field,
+        model="improved",
+        source="Frei, Ernst & Ricci (2022), equations (34)--(35) and (61)--(69)",
+        extra_metadata={
+            "improved_correction_order": int(correction_order),
+            "velocity_quadrature_orders": [
+                int(quadrature_order),
+                int(quadrature_order + 16),
+            ],
+            "quadrature_relative_tolerance": 1.0e-11,
+            "quadrature_absolute_tolerance": 1.0e-12,
+        },
+    )
 
 
 def write_shared_precompute_angular_coulomb_table(
@@ -6336,6 +6576,18 @@ def build_collision_original_sugama_table_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_improved_sugama_table_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Build an equal-species improved-Sugama table from Coulomb tests."
+    )
+    parser.add_argument("--coulomb-table", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--correction-order", type=int, default=5)
+    parser.add_argument("--quadrature-order", type=int, default=80)
+    parser.add_argument("--digits", type=int, default=80)
+    return parser
+
+
 def build_collision_shared_angular_table_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate and combine angular shards from one shared speed cache."
@@ -6989,6 +7241,19 @@ def main_collision_original_sugama_table(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_improved_sugama_table(argv: list[str] | None = None) -> int:
+    args = build_collision_improved_sugama_table_parser().parse_args(argv)
+    metadata = write_equal_species_finite_wavelength_improved_sugama_table(
+        args.coulomb_table,
+        args.out,
+        correction_order=int(args.correction_order),
+        quadrature_order=int(args.quadrature_order),
+        digits=int(args.digits),
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main_collision_shared_angular_table(argv: list[str] | None = None) -> int:
     args = build_collision_shared_angular_table_parser().parse_args(argv)
     metadata = write_shared_precompute_angular_coulomb_table(
@@ -7059,6 +7324,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-combine-angular-shards",
                 "collision-combine-wavelength-tables",
                 "collision-original-sugama-table",
+                "collision-improved-sugama-table",
                 "collision-shared-angular-table",
                 "collision-contraction-gate",
             ),
@@ -7090,6 +7356,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_combine_wavelength_tables(rest)
     if command == "collision-original-sugama-table":
         return main_collision_original_sugama_table(rest)
+    if command == "collision-improved-sugama-table":
+        return main_collision_improved_sugama_table(rest)
     if command == "collision-shared-angular-table":
         return main_collision_shared_angular_table(rest)
     if command == "collision-contraction-gate":

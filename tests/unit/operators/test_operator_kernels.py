@@ -41,7 +41,7 @@ from spectraxgk.operators.linear import (
     assemble_drift_kinetic_sugama_matrix,
     DriftKineticMomentCollisionOperator,
     EqualSpeciesFiniteWavelengthCoulombOperator,
-    EqualSpeciesFiniteWavelengthOriginalSugamaOperator,
+    EqualSpeciesFiniteWavelengthSugamaOperator,
     FiniteWavelengthCoulombOperator,
     TabulatedMultispeciesCollisionOperator,
     drift_kinetic_improved_sugama_pair_matrices,
@@ -823,7 +823,7 @@ def test_equal_species_finite_wavelength_sugama_uses_hamiltonian_and_jvp() -> No
     grid = jnp.asarray([0.0, 1.0], dtype=jnp.float32)
     test = jnp.asarray([[[-1.0]], [[-2.0]]], dtype=jnp.float32)
     field = jnp.asarray([[[0.25]], [[0.5]]], dtype=jnp.float32)
-    operator = EqualSpeciesFiniteWavelengthOriginalSugamaOperator(
+    operator = EqualSpeciesFiniteWavelengthSugamaOperator(
         grid,
         jnp.asarray([[0.4]], dtype=jnp.float32),
         test,
