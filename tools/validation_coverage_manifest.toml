@@ -1939,7 +1939,6 @@ artifact_paths = [
 next_tests = [
   "add direct malformed-gradient payload regressions for nonfinite JSON-compatible values and mixed production/startup scope markers",
   "add replicated-window failure regressions for missing statistics and mismatched path lengths",
-  "delete historical campaign launch-policy tests after their accepted numerical evidence is frozen",
 ]
 
 [[modules]]

@@ -112,11 +112,11 @@ def _load_campaign_tool_module():
 
 
 def _load_rank_tool_module():
-    return load_campaign_tool("design_nonlinear_gradient")
+    return load_artifact_tool("build_nonlinear_gradient_evidence")
 
 
 def _load_bracket_tool_module():
-    return load_campaign_tool("design_nonlinear_gradient")
+    return load_artifact_tool("build_nonlinear_gradient_evidence")
 
 
 def _window_report(offset: float, *, case: str) -> dict[str, object]:

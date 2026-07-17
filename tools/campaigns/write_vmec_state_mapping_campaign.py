@@ -25,7 +25,10 @@ if str(ROOT) not in sys.path:
 
 from tools.campaigns.write_nonlinear_turbulence_gradient_campaign import _repo_relative
 from tools.campaigns.write_vmec_boundary_campaigns import (
-    CoefficientSpec, _coefficient_rows, _fortran_float, _json_clean,
+    CoefficientSpec,
+    _coefficient_rows,
+    _fortran_float,
+    _json_clean,
     _parse_coefficient_spec,
     write_perturbation_inputs,
 )
@@ -34,9 +37,14 @@ DEFAULT_SYMMETRIC_OUT_PREFIX = (
     ROOT / "docs" / "_static" / "nonlinear_gradient_state_to_input_mapping_campaign"
 )
 DEFAULT_ASYMMETRIC_OUT_PREFIX = (
-    ROOT / "docs" / "_static" / "nonlinear_gradient_asymmetric_state_to_input_mapping_campaign"
+    ROOT
+    / "docs"
+    / "_static"
+    / "nonlinear_gradient_asymmetric_state_to_input_mapping_campaign"
 )
 ASYMMETRIC_FAMILIES = frozenset({"RBS", "ZBC"})
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -267,7 +275,7 @@ def write_state_to_input_mapping_campaign(
             "extract the admitted VMEC-state controls from each solved equilibrium",
             "form the central finite-difference response matrix d(state_control)/d(input_coefficient)",
             "solve the least-squares state-to-input map and record condition number plus relative residual",
-            "only pass the mapping artifact to design_nonlinear_gradient.py state-control-runbook if the mapping is local, conditioned, and residual-bounded",
+            "use the mapping only when it is local, conditioned, and residual-bounded",
         ],
         "coefficient_convention": (
             "Candidate directions are stored exactly as they appear in the VMEC input file, "
@@ -397,9 +405,7 @@ def _vmec_command(vmec_command: str, input_path: Path | str, extra_args: str) ->
     return f"{vmec_command} {_repo_relative(input_path)}{suffix}"
 
 
-def _vmec_input_coefficient_value(
-    indata: Any, coefficient: CoefficientSpec
-) -> float:
+def _vmec_input_coefficient_value(indata: Any, coefficient: CoefficientSpec) -> float:
     values = np.asarray(getattr(indata, coefficient.family.lower()), dtype=float)
     n_index = int(coefficient.m) + int(indata.ntor)
     m_index = int(coefficient.n)
@@ -780,7 +786,7 @@ def write_asymmetric_state_to_input_mapping_campaign(
             "extract the admitted Rsin/Zcos VMEC-state controls from each solved equilibrium",
             "form the central finite-difference response matrix d(state_control)/d(RBS/ZBC coefficient)",
             "solve the least-squares state-to-input map and record condition number plus relative residual",
-            "only pass the mapping artifact to design_nonlinear_gradient.py state-control-runbook if the map is finite, full row-rank, conditioned, and residual-bounded",
+            "use the mapping only when it is finite, full row-rank, conditioned, and residual-bounded",
         ],
         "coefficient_convention": (
             "Candidate directions are explicit VMEC input coefficients. The stored vmec_m/vmec_n "
@@ -816,7 +822,9 @@ def build_asymmetric_parser() -> argparse.ArgumentParser:
     parser.add_argument("ql_seed_screen", type=Path)
     parser.add_argument("--baseline-input", required=True, type=Path)
     parser.add_argument("--out-dir", required=True, type=Path)
-    parser.add_argument("--out-prefix", type=Path, default=DEFAULT_ASYMMETRIC_OUT_PREFIX)
+    parser.add_argument(
+        "--out-prefix", type=Path, default=DEFAULT_ASYMMETRIC_OUT_PREFIX
+    )
     parser.add_argument("--case", default="qa_lowres_asymmetric_state_to_input_mapping")
     parser.add_argument("--coefficient", action="append", required=True)
     parser.add_argument("--delta", type=float, default=1.0e-3)
@@ -856,6 +864,7 @@ def main_asymmetric(argv: list[str] | None = None) -> int:
     )
     return 0
 
+
 _COMMANDS = {
     "symmetric": main_symmetric,
     "asymmetric": main_asymmetric,
@@ -866,14 +875,18 @@ def main(argv: list[str] | None = None) -> int:
     raw = list(sys.argv[1:] if argv is None else argv)
     if not raw or raw[0] in {"-h", "--help"}:
         choices = ", ".join(_COMMANDS)
-        print(f"usage: write_vmec_state_mapping_campaign.py <command> [options]\ncommands: {choices}")
+        print(
+            f"usage: write_vmec_state_mapping_campaign.py <command> [options]\ncommands: {choices}"
+        )
         return 0
     command, *command_args = raw
     try:
         command_main = _COMMANDS[command]
     except KeyError as exc:
         choices = ", ".join(_COMMANDS)
-        raise SystemExit(f"unknown command {command!r}; choose one of: {choices}") from exc
+        raise SystemExit(
+            f"unknown command {command!r}; choose one of: {choices}"
+        ) from exc
     return command_main(command_args)
 
 

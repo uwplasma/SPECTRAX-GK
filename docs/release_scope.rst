@@ -387,52 +387,20 @@ Quasilinear model-selection state:
   promote the result only if the central finite-difference artifact passes
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
-- ``tools/campaigns/design_nonlinear_gradient.py rank-candidates`` ranks failed
-  central finite-difference candidates without promoting them. The current
-  ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` summary
-  compares the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` campaigns
-  and recommends an overdetermined least-squares/profile-gradient campaign next
-  because the best single-control candidates have complementary locality and
-  uncertainty failures.
-- ``tools/campaigns/design_nonlinear_gradient.py followup-plan`` turns completed central-FD
-  artifacts into a bounded follow-up prescription. For the completed
-  overdetermined QA/ESS campaign it writes
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``:
-  add only two new matched nominal-timestep ``RBC(1,1)`` seed replicas per
-  state, because ``RBC(1,1)`` is local and response-resolved but slightly too
-  uncertain. It refuses more replicas for the nonlocal ``ZBS(1,1)`` bracket
-  and the unresolved ``ZBS(1,0)`` response.
-- ``tools/campaigns/design_nonlinear_gradient.py bracket-sweep`` is the bounded
-  follow-up for a same-control perturbation-amplitude sweep. It writes
-  JSON/CSV/PNG sidecars and an optional PDF from completed central
-  finite-difference artifacts and recommends whether to add replicas,
-  shrink/enlarge the bracket, or switch controls. It is deliberately not a
-  promotion checker; it only promotes when one of the supplied long-window
-  central-FD artifacts already passes all production gates. It now fails closed
-  for mixed-control inputs, and the tracked ``RBC(1,1)`` amplitude sweep
-  confirms that the current larger bracket worsens locality instead of closing
-  the nonlinear turbulence-gradient gate.
-- ``tools/campaigns/design_nonlinear_gradient.py overdetermined-campaign`` is the
-  concrete launch-contract writer for that next campaign shape. The current tracked
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``
-  uses the optimized-QA/ESS baseline input and prepares ``ZBS(1,1)``,
-  ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
-  same ``t=[450,900]`` analysis window. This artifact is planning/provenance
-  only; it does not promote a nonlinear turbulence-gradient claim.
-- ``tools/release/check_nonlinear_optimization_gates.py overdetermined-gradient`` and
-  ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` make that
-  launch contract executable. The current status artifact,
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
-  records that all three VMEC-JAX re-equilibrated controls are ready for
-  runtime, but none has completed the required nine long-window nonlinear
-  outputs or central-FD/ranking gates yet. This keeps the broader gradient
-  claim blocked until real post-transient outputs exist. The status check now
-  requires each runtime NetCDF to reach the analysis-window endpoint, not just
-  exist on disk, so in-progress files remain blocked.
-- ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` is the
-  matching fail-closed post-runtime driver. It runs each nested campaign's
-  output, ensemble, and central-FD gates, then runs the overdetermined
-  candidate ranking and final status checker before any release promotion.
+
+- ``tools/artifacts/build_nonlinear_gradient_evidence.py rank-candidates``
+  compares failed long-window finite-difference candidates without promoting
+  them. ``bracket-sweep`` applies the same response, locality, conditioning,
+  and uncertainty contract across amplitudes of one physical control.
+- The tracked QA/ESS campaign is complete negative evidence, not an unfinished
+  launch plan: all required long-window runtime outputs exist, but no boundary
+  control passes every finite-difference gate. ``ZBS(1,1)`` is nonlocal,
+  ``ZBS(1,0)`` is variance limited, and increasing the ``RBC(1,1)``
+  amplitude worsens asymmetry.
+- ``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan`` and
+  ``control-mean`` own the retained variance-reduction path. The independent
+  21-pair ``ZBS(1,0)`` control-mean audit passes its scoped uncertainty gate,
+  but does not promote a general nonlinear turbulent-flux gradient.
 - ``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` writes a
   launch-contract for a smoother composite VMEC boundary direction. The
   tracked

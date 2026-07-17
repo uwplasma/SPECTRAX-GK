@@ -140,7 +140,7 @@
     "extract the admitted VMEC-state controls from each solved equilibrium",
     "form the central finite-difference response matrix d(state_control)/d(input_coefficient)",
     "solve the least-squares state-to-input map and record condition number plus relative residual",
-    "only pass the mapping artifact to design_nonlinear_gradient_state_control_runbook.py if the mapping is local, conditioned, and residual-bounded"
+    "use the mapping only when it is local, conditioned, and residual-bounded"
   ],
   "ql_seed_screen": "docs/_static/nonlinear_gradient_ql_seed_screen.json",
   "rank_feasibility_precheck_passed": true,

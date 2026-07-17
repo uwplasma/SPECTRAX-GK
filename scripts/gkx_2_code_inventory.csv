@@ -225,7 +225,7 @@ tests/tools/artifacts/test_transport_artifact_tools.py,tests/tools,organized tes
 tests/tools/campaigns/test_campaign_gate_commands.py,tests/tools,organized test,merge-by-domain,.py,8789,271,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/campaigns/test_campaign_manifest_reports.py,tests/tools,organized test,merge-by-domain,.py,6198,167,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/campaigns/test_evaluate_vmec_jax_spectrax_transport_metric.py,tests/tools,organized test,merge-by-domain,.py,8367,255,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py,tests/tools,organized test,merge-by-domain,.py,20179,594,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py,tests/tools,organized test,merge-by-domain,.py,10064,287,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py,tests/tools,organized test,merge-by-domain,.py,23906,690,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py,tests/tools,organized test,merge-by-domain,.py,7340,245,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/campaigns/test_run_nonlinear_gradient_direct_campaign.py,tests/tools,organized test,merge-by-domain,.py,8274,237,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -281,10 +281,8 @@ tests/validation/benchmarks/test_benchmark_contracts.py,tests/validation,organiz
 tests/validation/benchmarks/test_benchmarking.py,tests/validation,organized test,merge-by-domain,.py,45195,1341,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/benchmarks/test_benchmarks_helpers.py,tests/validation,organized test,merge-by-domain,.py,28792,900,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_check_overdetermined_nonlinear_gradient_campaign.py,tests/validation,organized test,merge-by-domain,.py,8676,249,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/validation/nonlinear/test_nonlinear_gradient_evidence.py,tests/validation,organized test,merge-by-domain,.py,54420,1541,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/validation/nonlinear/test_nonlinear_gradient_evidence.py,tests/validation,organized test,merge-by-domain,.py,54436,1541,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_gradient_followup.py,tests/validation,organized test,merge-by-domain,.py,11865,335,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/validation/nonlinear/test_nonlinear_gradient_ql_seed_screen.py,tests/validation,organized test,merge-by-domain,.py,7354,220,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py,tests/validation,organized test,merge-by-domain,.py,7229,207,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,20270,520,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_transport_release_gates.py,tests/validation,organized test,merge-by-domain,.py,13212,391,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py,tests/validation,organized test,merge-by-domain,.py,14850,457,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -304,7 +302,7 @@ tools/artifacts/build_external_vmec_replicate_ensemble.py,tools/artifacts,artifa
 tools/artifacts/build_linear_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,294663,7571,owned by tools/artifacts
 tools/artifacts/build_matched_nonlinear_transport_comparison.py,tools/artifacts,artifact builder,keep-or-merge,.py,10102,286,owned by tools/artifacts
 tools/artifacts/build_matched_nonlinear_transport_matrix.py,tools/artifacts,artifact builder,keep-or-merge,.py,37136,937,owned by tools/artifacts
-tools/artifacts/build_nonlinear_gradient_evidence.py,tools/artifacts,artifact builder,keep-or-merge,.py,22051,586,owned by tools/artifacts
+tools/artifacts/build_nonlinear_gradient_evidence.py,tools/artifacts,artifact builder,keep-or-merge,.py,33826,891,owned by tools/artifacts
 tools/artifacts/build_nonlinear_transport_admission.py,tools/artifacts,artifact builder,keep-or-merge,.py,28404,762,owned by tools/artifacts
 tools/artifacts/build_nonlinear_transport_horizon_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,24902,638,owned by tools/artifacts
 tools/artifacts/build_nonlinear_validation_panels.py,tools/artifacts,artifact builder,keep-or-merge,.py,23458,679,owned by tools/artifacts
@@ -349,9 +347,7 @@ tools/artifacts/plot_vmec_jax_equilibrium_inventory.py,tools/artifacts,artifact 
 tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py,tools/artifacts,artifact builder,keep-or-merge,.py,18430,496,owned by tools/artifacts
 tools/benchmark_atlas_manifest.toml,tools/benchmark_atlas_manifest.toml,tool support file,keep-or-review,.toml,1293,31,non-python tool asset
 tools/benchmark_refresh_manifest.toml,tools/benchmark_refresh_manifest.toml,tool support file,keep-or-review,.toml,4826,82,non-python tool asset
-tools/campaigns/design_nonlinear_gradient.py,tools/campaigns,campaign helper,keep-or-merge,.py,69636,1820,owned by tools/campaigns
 tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py,tools/campaigns,campaign helper,keep-or-merge,.py,22125,587,owned by tools/campaigns
-tools/campaigns/nonlinear_gradient_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,94090,2643,owned by tools/campaigns
 tools/campaigns/nonlinear_replicate_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,43369,1198,owned by tools/campaigns
 tools/campaigns/run_nonlinear_gradient_direct_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,46258,1319,owned by tools/campaigns
 tools/campaigns/run_validation_campaigns.py,tools/campaigns,campaign helper,keep-or-merge,.py,37153,1088,owned by tools/campaigns
@@ -363,7 +359,7 @@ tools/campaigns/write_vmec_boundary_campaigns.py,tools/campaigns,campaign helper
 tools/campaigns/write_vmec_jax_optimizer_comparison_manifest.py,tools/campaigns,campaign helper,keep-or-merge,.py,15656,420,owned by tools/campaigns
 tools/campaigns/write_vmec_jax_spsa_candidate_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,13366,351,owned by tools/campaigns
 tools/campaigns/write_vmec_state_control_short_bracket_launch.py,tools/campaigns,campaign helper,keep-or-merge,.py,23963,619,owned by tools/campaigns
-tools/campaigns/write_vmec_state_mapping_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,34766,881,owned by tools/campaigns
+tools/campaigns/write_vmec_state_mapping_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,34707,894,owned by tools/campaigns
 tools/campaigns/write_w7x_zonal_closure_sweep.py,tools/campaigns,campaign helper,keep-or-merge,.py,11676,359,owned by tools/campaigns
 tools/comparison/build_exact_state_audit.py,tools/comparison,comparison utility,keep-or-merge,.py,21572,647,owned by tools/comparison
 tools/comparison/compare_gx_imported_linear.py,tools/comparison,comparison utility,keep-or-merge,.py,82069,1992,owned by tools/comparison

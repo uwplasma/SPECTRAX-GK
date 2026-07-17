@@ -176,7 +176,7 @@ and compact scalar/array reference hashes remain before destructive core moves.
 Exit: source <=120 files/68,000 lines, tools <=45 files, docs static <=20 MB,
 all frozen gates pass.
 
-Progress: **40%**. Synthetic QA evidence, generated research/optimization
+Progress: **48%**. Synthetic QA evidence, generated research/optimization
 status builders, the nonlinear release finalizer, the external-VMEC launch
 planner, one duplicate roadmap, and 205 duplicate dashboard/runbook/encoding
 assets are gone. The remaining 90-file tool layer and 1,387-file static evidence
@@ -239,7 +239,7 @@ ownership have been consolidated, but the old directory topology remains.
 Exit: <=36 test files/55,000 lines, >=95% package coverage, <=12 scripts/18,000
 lines, and all documentation commands are reproducible.
 
-Progress: **12%**. Suite labels exist and more than 3,100 ownership/planner test
+Progress: **18%**. Suite labels exist and more than 3,500 ownership/planner test
 lines were
 removed with status/planner machinery, but 94 test files and oversized
 tool-test owners still dominate.
@@ -377,7 +377,7 @@ commands move here from the README.
 Exit: README/docs links and image dimensions pass automated gates, all examples
 run, and every displayed value is regenerated from a tracked compact manifest.
 
-Progress: **12%**. The duplicate roadmap, generated status sections, external
+Progress: **14%**. The duplicate roadmap, generated status sections, external
 holdout runbook, and 181 unreferenced PDF/CSV copies are gone. The warning-as-
 error Sphinx build passes, but page and static-asset counts still exceed the
 final budgets.
@@ -490,6 +490,15 @@ Use large coherent commits, each independently green:
   temporary mixed campaign module by 871 lines and its ownership test by 683
   lines; passed 139 nonlinear-gradient consumers, architecture/validation
   manifests, Ruff, and Sphinx ``-W``.
+- 2026-07-17 nonlinear-gradient command tranche: moved candidate ranking and
+  same-control bracket-sweep rendering into the single retained evidence
+  command; deleted the 4,463-line campaign-planning layer, two planner-only test
+  files, and one obsolete follow-up artifact; condensed documentation to the
+  actual finite-difference, locality, and uncertainty results. The tool tree is
+  now 88 Python files / 85,428 lines and the test tree is 92 files / 92,251
+  lines. All 68 focused nonlinear-gradient and VMEC mapping tests, validation
+  ownership, repository-size, architecture, release-readiness, Ruff, and
+  warning-as-error documentation gates passed.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -500,15 +509,15 @@ Use large coherent commits, each independently green:
 | Lane | Completion |
 | --- | ---: |
 | Frozen 1.7 contract | 70% |
-| Deletion/repository trim | 40% |
+| Deletion/repository trim | 48% |
 | Scientific-core simplification | 27% |
-| Test/benchmark/command simplification | 12% |
+| Test/benchmark/command simplification | 18% |
 | QA linear/QL/nonlinear optimization | 15% |
-| README/docs rebuild | 12% |
+| README/docs rebuild | 14% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **23%**. The next implementation tranche remains
-Phase 0 plus Phase 1: add compact promoted scalar/array hashes and refresh a
-bounded representative performance subset, then classify and delete the next
-superseded campaign/figure family before moving scientific-core files.
+Weighted overall completion: **25%**. The next implementation tranche closes
+the remaining compact-contract hashes and representative performance subset,
+then begins Phase 2 by consolidating the case/species/grid owners while the
+next unreferenced campaign and static-evidence families are removed.

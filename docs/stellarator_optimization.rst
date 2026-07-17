@@ -2049,112 +2049,33 @@ sign. The scientific conclusion is therefore fail-closed: the current
 single-control bracket is a useful diagnostic, but it is not efficient to keep
 adding replicas at the same amplitude without a new locality/amplitude sweep or
 a smoother composite profile-gradient direction.
-``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` ranks the
-completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` attempts. Its current
-recommendation is to move to an overdetermined least-squares/profile-gradient
-campaign: the best single-control candidates fail in complementary ways, with
-``ZBS(1,1)`` statistically clean but nonlocal and ``ZBS(1,0)`` local but too
-noisy.
-``tools/campaigns/design_nonlinear_gradient.py bracket-sweep`` is the companion
-amplitude-sweep utility for this decision. It consumes completed central-FD
-artifacts for one control, plots gradient, response, asymmetry, and uncertainty
-against perturbation amplitude, and preserves the same claim boundary: the
-sweep can recommend the next campaign, but it does not promote a nonlinear
-turbulence-gradient claim unless one input artifact already passes the
-production long-window gate. If resolved central finite differences change sign
-across nearby amplitudes, the utility recommends a new locality/amplitude sweep
-or smoother composite profile-gradient control instead of more replicas at one
-amplitude. The tool now also enforces the same-control contract explicitly: a
-mixed-control input set is rejected as a candidate-ranking problem, not a
-bracket sweep. The tracked ``RBC(1,1)`` 5%/8% sweep is a negative but useful
-result: both amplitudes have resolved responses and acceptable-to-marginal
-uncertainty, but the finite-difference asymmetry worsens from about ``0.897``
-to ``1.895`` as the bracket grows. The recommendation is therefore to shrink
-the perturbation or move to a more local/composite profile-gradient control
-before spending more nonlinear GPU time.
-The concrete overdetermined campaign is tracked in
-``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
-It starts from the same optimized-QA/ESS VMEC input, writes matched
-``vmec_jax`` perturbation inputs for ``ZBS(1,1)``, ``ZBS(1,0)``, and
-``RBC(1,1)`` at 3% relative amplitude, and launches identical
-``t=900``, ``n64:64:64:40:40`` nonlinear ladders. That full campaign and the
-targeted ``RBC(1,1)`` seed follow-up have now completed: all 33 relevant
-runtime outputs pass the output gates, all three ``RBC(1,1)``
-baseline/plus/minus five-member replicated ensembles pass, and the central-FD
-artifact is local and response-resolved. It remains fail-closed because the
-propagated gradient uncertainty is still above the promotion gate:
-``gradient_uncertainty_rel = 0.683 > 0.5``. The companion controls fail for
-complementary reasons: ``ZBS(1,1)`` passes uncertainty but is nonlocal
-(``fd_asymmetry_rel = 0.605``), while ``ZBS(1,0)`` is not response-resolved.
-The final status artifact,
-``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
-therefore reports complete runtime coverage but zero promoted controls. The
-post-runtime command
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` is the
-reproducible fail-closed path that produced these output, ensemble,
-central-FD, ranking, and status artifacts.
-The bounded follow-up decision is tracked separately in
-``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``
-and can be regenerated with
-``tools/campaigns/design_nonlinear_gradient.py followup-plan``. That follow-up recommended only
-two new matched nominal-timestep ``RBC(1,1)`` seed replicas per state
-(``seed33`` and ``seed34`` for baseline, plus, and minus), because that was the
-only completed overdetermined candidate whose response and locality already
-passed. Those six office-GPU runs are now folded into the tracked five-member
-state ensembles. The result is scientifically useful but negative: extra
-replicas lowered the individual state SEMs, but the finite-difference response
-remains too uncertain relative to the slope. More blind same-bracket replicas
-are not the best next action; the next candidate should use a larger
-response-resolved but locality-checked perturbation, variance reduction, or a
-better-conditioned composite direction.
-The latest bounded ``ZBS(1,0)`` follow-up uses a larger ``7.5%`` bracket and
-four matched long-window outputs per state. All twelve ``t=900`` office-GPU
-outputs pass the ``t=[450,900]`` runtime-output gates, and the central
-finite-difference bracket now passes the response and locality gates:
-``response_fraction = 0.0319`` and ``fd_asymmetry_rel = 0.044``. The claim still
-fails closed because the plus-state ensemble has excessive spread
-(``mean_rel_spread = 0.196 > 0.15``) and the propagated slope uncertainty is
-too large (``gradient_uncertainty_rel = 1.81 > 0.5``). This is the clearest
-evidence so far that the finite-difference direction can be made local, but it
-also shows that plus-state turbulence variance must be reduced before any
-production nonlinear turbulence-gradient claim is scientifically defensible.
-``tools/campaigns/design_nonlinear_gradient.py next-campaign`` now materializes that
-decision into ``docs/_static/nonlinear_gradient_next_campaign_design.json``.
-The design gate estimates the bracket scale needed to satisfy propagated
-uncertainty, the locality-safe bracket scale implied by the asymmetry gate,
-and the number of extra matched replicas needed after applying that locality
-cap. The refreshed design scans all 16 tracked central-FD artifacts: zero are
-promoted, one legacy candidate still admits a bounded matched-replica class,
-and 15 require replacement, locality repair, or variance reduction. Because
-the newest local ``ZBS(1,0)`` follow-up is plus-state variance limited, the
-planner now recommends paired-seed or control-variate variance reduction
-instead of more same-bracket replicas.
-``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan`` is the concrete
-runbook for that recommendation. Applied to the rel7.5 artifact, it finds four
-common plus/minus seed or timestep labels and estimates the paired response
-uncertainty directly from matched differences. The paired estimator is better
-conditioned than treating all state ensembles as independent, but it is still
-not enough: ``paired_response_uncertainty_rel = 0.984`` and the estimated
-requirement is 18 common pairs. A plus/minus midpoint common-mode screen is
-promising, lowering the apparent residual uncertainty to ``0.238`` with a
-``0.759`` SEM reduction, but the result is not promotable because that control
-mean is not independently known. The next campaign therefore needs an
-independent control-mean estimate or a better-conditioned response, not just a
-few more blind paired seeds.
-``tools/campaigns/design_nonlinear_gradient.py control-variate-campaign`` converts this
-screen into a launch contract for the independent control mean. With the
-current sample variances and a ``1.10`` SEM safety factor, the midpoint
-common-mode needs ``21`` new matched plus/minus pairs (``42`` nonlinear runs)
-to project a combined response uncertainty of ``0.480``. That closes the
-pre-run design question but not the physics claim; the actual runs must still
-pass output, replicated-window, control-mean, and central-response gates.
-The companion
-``tools/artifacts/build_nonlinear_gradient_evidence.py control-mean`` consumes the post-run
-plus/minus ensemble reports and evaluates the full uncertainty budget,
-``SEM_total^2 = SEM_residual^2 + beta^2 SEM_control_mean^2``. This keeps the
-control-variate path auditable: the sample-centered screen can motivate a
-campaign, but only the independent control-mean gate can promote the response
-uncertainty.
+
+``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json``
+summarizes the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)``
+audits. The controls fail in complementary ways: ``ZBS(1,1)`` is
+statistically clean but nonlocal, whereas ``ZBS(1,0)`` can be local but is
+too noisy. The ``bracket-sweep`` subcommand of
+``tools/artifacts/build_nonlinear_gradient_evidence.py`` enforces a
+same-control amplitude comparison. The tracked ``RBC(1,1)`` sweep shows
+finite-difference asymmetry increasing from about ``0.897`` to ``1.895``;
+a larger bracket is therefore not a defensible cure.
+
+The full overdetermined QA/ESS audit completed 33 long-window outputs and
+promoted no control. Its best ``RBC(1,1)`` candidate remains above the
+relative gradient-uncertainty gate (``0.683 > 0.5``). The later 7.5%
+``ZBS(1,0)`` bracket resolves the response and locality
+(``response_fraction = 0.0319``, ``fd_asymmetry_rel = 0.044``) but fails
+the plus-state spread and propagated uncertainty criteria. These are retained
+as negative physics evidence, not as machinery for generating further plans.
+
+The retained variance-reduction workflow is
+``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan``
+followed by ``control-mean``. Four initial matched pairs were insufficient,
+while the independent 21-pair campaign over ``t=[600,1100]`` passed its
+scoped combined-uncertainty gate. This validates the estimator for this
+specific bracket; it does not justify a broad nonlinear turbulent-flux
+optimization claim.
+
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` for a smoother

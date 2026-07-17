@@ -477,171 +477,30 @@ artifact is tracked as
 ``docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_followup_central_fd_gradient_gate.json``.
 It is a regression target for the fail-closed workflow and a design input for
 the next campaign, not promotion evidence.
-``tools/campaigns/design_nonlinear_gradient.py rank-candidates`` is the companion
-planning utility for failed candidates. It ranks completed central-FD artifacts
-by response, locality, conditioning, and propagated uncertainty margins, writes
-a fail-closed JSON summary, and recommends whether the next campaign should add
-replicas, shrink a bracket, or move to an overdetermined
-least-squares/profile-gradient design. The current tracked ranking artifact is
-``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` and is
-not itself promotion evidence.
-``tools/campaigns/design_nonlinear_gradient.py bracket-sweep`` is the next
-same-control locality utility. It consumes one or more central-FD JSON
-artifacts for the same control at different perturbation amplitudes, writes
-JSON/CSV/PNG sidecars plus an optional PDF, and decides whether to promote an already passing
-bracket, shrink/enlarge the amplitude, add statistical power, or abandon the
-single-control direction. It also reads the diagnostic-only paired-replicate
-rows when present. If those same-seed rows show sign reversals or large paired
-uncertainty, the utility explicitly recommends not spending more GPU time on
-more replicas at that same bracket. It also fails the campaign-planning
-recommendation toward a new locality sweep or smoother composite control when
-resolved central finite differences change sign across nearby amplitudes. The
-tracked ``RBC(1,1)`` 5%/8% result,
-``docs/_static/qa_ess_rbc11_bracket_sweep.json``, is a same-control negative
-audit: response is resolved at both amplitudes, but finite-difference
-asymmetry grows with amplitude, so the correct next action is a smaller
-locality sweep or an overdetermined profile-gradient control.
-``tools/campaigns/design_nonlinear_gradient.py overdetermined-campaign`` implements
-that next launch-contract step. It writes multiple matched boundary-control VMEC
-perturbation manifests from one baseline input, records the per-control
-nonlinear campaign commands, and writes the final candidate-ranking command.
-The tracked QA/ESS profile-gradient launch plan is
-``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
-Use ``tools/release/check_nonlinear_optimization_gates.py overdetermined-gradient`` to turn that
-multi-control launch plan into a machine-readable status artifact and
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` to run all
-nested long-window tasks through one shared CPU/GPU worker queue. The checker must
-remain fail-closed until the VMEC states, nonlinear runtime outputs, ensemble
-gates, central finite-difference gates, and candidate ranking all exist and
-pass. Runtime outputs are only counted complete when their recorded
-``Grids/time`` coverage reaches the campaign analysis-window endpoint, so
-in-progress NetCDF files cannot accidentally promote a result.
-After the long runtime queue completes,
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` runs the
-per-control output gates, ensemble gates, central finite-difference gates,
-candidate ranking, and final fail-closed status check in one reproducible
-sequence.
-The completed QA/ESS overdetermined campaign and targeted ``RBC(1,1)``
-follow-up are intentionally tracked as negative gate results: all full-horizon
-nonlinear outputs pass the runtime coverage checks, but no control passes every
-production central-FD gate. The best candidate is ``RBC(1,1)`` with resolved
-response and bounded locality, but ``gradient_uncertainty_rel = 0.683`` remains
-above the ``0.5`` promotion gate after five-member state ensembles.
-The status artifact
-``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``
-therefore reports complete runtime coverage and zero promoted controls. This is
-a regression target for the fail-closed workflow and a design input for future
-variance-reduction or smaller-bracket campaigns, not a nonlinear turbulence
-gradient validation claim.
-``tools/campaigns/design_nonlinear_gradient.py next-campaign`` is the follow-on planning
-gate. It consumes completed central-FD artifacts and writes JSON/CSV/PNG/PDF
-sidecars that compare the uncertainty-required bracket scale, locality-safe
-bracket scale, and extra-replica estimate. The tracked design artifact
-``docs/_static/nonlinear_gradient_next_campaign_design.json`` now summarizes
-all tracked nonlinear central-FD artifacts: ``16`` candidates, zero promoted
-nonlinear-gradient controls, one bounded-replica candidate, and ``15`` controls
-requiring replacement, locality repair, or variance reduction. Its
-recommendation now prioritizes paired-seed or control-variate variance
-reduction for the current plus-state limiter, while keeping the broader
-nonlinear-gradient claim fail-closed.
-``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan`` is the matching
-paired-seed/control-variate runbook. It consumes one central-FD artifact,
-matches common plus/minus seed labels, estimates paired response SEM, records
-the limiting replicated-window state, and writes JSON/CSV/PNG/PDF sidecars. The
-tracked rel7.5 artifact fails closed with paired response relative uncertainty
-about ``0.984`` and an estimated ``18`` common pairs. The same runbook now
-screens two common-mode control variates. The plus/minus midpoint control
-reduces the apparent residual response uncertainty to about ``0.238`` with a
-``0.759`` SEM reduction. The independent control-mean follow-up for that
-screen is now complete: ``21`` matched plus/minus pairs reach
-``t \simeq 1099.93`` and pass the strict late-window postprocessor over
-``t=[600,1100]``. The final gate has
-``combined_response_uncertainty_rel = 0.311 < 0.5``, no failed plus/minus
-window rows, plus ``mean_rel_spread = 0.1268``, and minus
-``mean_rel_spread = 0.1193``.
-``tools/campaigns/design_nonlinear_gradient.py control-variate-campaign`` turns that
-screen into a bounded pre-run contract. For the tracked rel7.5 artifact, the
-midpoint common-mode control needs ``21`` independent matched plus/minus pairs
-(``42`` new nonlinear runs) to reduce the combined response uncertainty to
-about ``0.480``. The tracked post-run campaign now exceeds that pre-run target;
-future use of this result should cite the exact rel7.5 perturbation, the
-``21``-pair campaign, and the ``t=[600,1100]`` window rather than presenting it
-as a generic nonlinear turbulent-flux optimization result.
-``tools/artifacts/build_nonlinear_gradient_evidence.py control-mean`` is the matching
-post-run gate. It consumes the original variance report plus independent plus
-and minus ensemble reports, estimates the held-out mean of
-``0.5 * (Q_plus + Q_minus)``, and combines that uncertainty with the screened
-control-variate residual SEM through ``SEM_total^2 = SEM_residual^2 +
-beta^2 SEM_control_mean^2``. The gate fails if either state ensemble fails, if
-there are too few matched pairs, or if the combined response uncertainty stays
-above target.
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py control-mean-postprocess`` is the
-one-command postprocessor for the long GPU campaign. It discovers completed
-matched ``plus_delta``/``minus_delta`` seed outputs, builds the two nonlinear
-window ensemble gates, and then runs the independent control-mean gate. The
-wrapper is intentionally fail-closed: by default it requires all ``21``
-matched pairs from the rel7.5 run contract and ignores intermediate chunk
-outputs whose time grid does not reach the final-time threshold before writing
-a passing gate. The default threshold is ``0.99 * --tmax`` so fixed-step output
-roundoff and diagnostic sample strides, such as a final stored time of
-``899.927`` for a nominal ``tmax=900`` campaign, are accepted while half-window
-checkpoint chunks are rejected. It uses the replicated-window ensemble
-pass/fail for each state and records the separate timestep-readiness return
-code without letting that advisory hide the independent matched-seed
-control-mean result.
-For live campaign monitoring, the same tool accepts ``--status-only``. That
-mode reads the planned TOML files and output NetCDF files, reports completed
-matched pairs, partial checkpoint chunks, missing seeds, and
-``ready_for_strict_postprocess``, and exits with status ``0`` only once the
-requested matched-pair count is available. It does not build figures or
-ensemble gates, so it is the preferred lightweight polling command while long
-GPU campaigns are still running.
-``tools/campaigns/design_nonlinear_gradient.py composite-control`` is the stricter
-control-admission gate for that next campaign. It consumes the same completed
-central-FD artifacts, admits only VMEC boundary coefficients with resolved
-response, bounded finite-difference locality, acceptable propagated
-uncertainty, and robust paired-replicate sign, and writes JSON/CSV/PNG/PDF
-sidecars. The tracked
-``docs/_static/nonlinear_gradient_composite_control_design.json`` currently
-fails closed: only ``RBC(1,1)`` is admissible, while ``ZBS(1,1)`` is nonlocal
-and ``ZBS(1,0)`` is unresolved/nonlocal. Therefore the next campaign still
-needs a new local/resolved control or an explicit single-control bracket check
-before launching expensive long-window GPU runs.
-``tools/campaigns/design_nonlinear_gradient.py ql-seed-screen`` is the upstream
-linear/quasilinear sensitivity screen for finding those controls. It consumes
-full-chain ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity artifacts
-and groups rows by VMEC-state parameter, not by direct input-file
-``RBC/ZBS`` coefficient. The tracked
-``docs/_static/nonlinear_gradient_ql_seed_screen.json`` now passes the
-upstream seed-admission gate after expanding beyond ``Rcos``.  The tracked
-QH/Li383 quasilinear artifacts cover ``Rcos``, ``Rsin``, ``Zcos``, and
-``Zsin`` semantic mid-surface controls. ``Rcos`` and ``Zsin`` controls remain
-fail-closed because their primary quasilinear-proxy signs are not robust across
-the two equilibria, but ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1``
-are admitted with two-case sign consistency. This identifies candidates for
-short nonlinear bracket-screen design only after a separate state-to-input
-mapping gate passes; it is not a launch artifact, converged
-nonlinear-gradient, or optimization claim.
 
-``tools/campaigns/design_nonlinear_gradient.py state-control-runbook`` is the mandatory
-bridge from those admitted VMEC-state controls to launchable VMEC input
-directions. It consumes the QL seed screen plus optional state-to-input mapping
-artifacts and fails closed unless at least two admitted state controls have a
-conditioned, residual-bounded mapping to explicit VMEC input control
-arguments. The tracked
-``docs/_static/nonlinear_gradient_state_control_runbook.json`` now passes only
-after consuming the symmetry-compatible
-``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json``
-artifact. This is intentional and conservative: a VMEC-state coefficient is not
-automatically a patchable ``RBC/RBS/ZBC/ZBS`` input coefficient. The first
-stellarator-symmetric ``RBC/ZBS`` perturbation family produced zero response in
-the admitted ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls, while
-the follow-up ``LASYM=true`` ``RBS/ZBC`` family gives a full-rank measured
-``2 x 4`` response matrix with condition number about ``1.02`` and residuals
-near machine precision. The next nonlinear campaign is therefore allowed to
-write checked short-bracket launch manifests from these mapped input
-directions, but long-window nonlinear-gradient promotion still requires actual
-nonlinear finite-difference evidence.
+``tools/artifacts/build_nonlinear_gradient_evidence.py rank-candidates``
+compares completed finite-difference artifacts by resolved response, locality,
+conditioning, and propagated uncertainty. The adjacent ``bracket-sweep``
+subcommand accepts only one physical control at several amplitudes and writes
+JSON/CSV/PNG/PDF evidence. Neither operation promotes a result that has not
+already passed the long-window finite-difference gate.
+
+The tracked QA/ESS controls are deliberately negative regression cases.
+``ZBS(1,1)`` is statistically cleaner but nonlocal, ``ZBS(1,0)`` can be
+local but remains variance limited, and the larger ``RBC(1,1)`` bracket
+worsens asymmetry. The completed overdetermined audit records full runtime
+coverage and zero promoted controls; it is evidence against weakening the
+locality or uncertainty criteria, not a missing workflow.
+
+``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan``
+matches common plus/minus labels and quantifies whether paired sampling or a
+control variate can reduce response uncertainty. The corresponding
+``control-mean`` subcommand is the only post-run promotion path for that
+variance-reduced estimator. For the tracked 7.5% ``ZBS(1,0)`` case, 21
+independent matched pairs over ``t=[600,1100]`` pass the control-mean gate
+with combined relative uncertainty ``0.311 < 0.5``. This result is scoped to
+that response estimator; it does not establish a universal nonlinear
+turbulence gradient.
 
 ``tools/campaigns/write_vmec_state_mapping_campaign.py symmetric`` is the launch-plan
 artifact for that missing step. It consumes the QL seed screen, writes
