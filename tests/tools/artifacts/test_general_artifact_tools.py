@@ -2837,6 +2837,74 @@ def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
     np.testing.assert_allclose(collision, collision.T, atol=8.0e-15)
     assert np.linalg.eigvalsh(collision).max() < 2.0e-15
 
+    finite_test, finite_field = (
+        mod.finite_wavelength_original_sugama_like_species_moment_matrices(
+            (convention * test)[None, ...], np.asarray([0.0]), 3, 1
+        )
+    )
+    np.testing.assert_allclose(finite_test[0], convention * original_test, atol=0.0)
+    np.testing.assert_allclose(
+        finite_field[0], convention * original_field, rtol=2.0e-15, atol=3.0e-16
+    )
+
+
+def test_finite_wavelength_original_sugama_restores_published_flow_channels(
+    tmp_path: Path,
+) -> None:
+    """Frei et al. Eqs. (3.79), (3.94) must restore all finite-b flows."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    bessel_argument = 0.2
+    coulomb_path = tmp_path / "coulomb.npz"
+    mod.write_equal_species_finite_wavelength_coulomb_table(
+        coulomb_path,
+        bessel_arguments=(0.1, bessel_argument),
+        maximum_hermite_order=2,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=2,
+        maximum_bessel_laguerre_order=2,
+        digits=32,
+    )
+    sugama_path = tmp_path / "original_sugama.npz"
+    metadata = mod.write_equal_species_finite_wavelength_original_sugama_table(
+        coulomb_path, sugama_path
+    )
+    assert metadata["claim_scope"].endswith("original_sugama_table")
+    with np.load(sugama_path) as archive:
+        test = np.asarray(archive["test_table"])[1]
+        field = np.asarray(archive["field_table"])[1]
+    signs = np.asarray([1.0, -1.0] * 3)
+    radial = 0.25 * bessel_argument**2
+    kernels = np.exp(-radial) * np.asarray([1.0, radial, radial**2 / 2.0])
+    parallel = signs * np.asarray(
+        [0.0, 0.0, kernels[0] / np.sqrt(2.0), kernels[1] / np.sqrt(2.0), 0.0, 0.0]
+    )
+    perpendicular = signs * np.asarray(
+        [
+            0.5 * bessel_argument * kernels[0],
+            0.5 * bessel_argument * (kernels[1] - kernels[0]),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    )
+    temperature = signs * np.asarray(
+        [
+            -2.0 * kernels[1] / 3.0,
+            2.0 * (2.0 * kernels[1] - 2.0 * kernels[2] - kernels[0]) / 3.0,
+            0.0,
+            0.0,
+            2.0 * kernels[0] / (3.0 * np.sqrt(2.0)),
+            2.0 * kernels[1] / (3.0 * np.sqrt(2.0)),
+        ]
+    )
+    collision = test + field
+    for invariant in (parallel, perpendicular, temperature):
+        np.testing.assert_allclose(collision @ invariant, 0.0, atol=2.0e-15)
+        np.testing.assert_allclose(invariant @ collision, 0.0, atol=2.0e-15)
+    assert np.linalg.matrix_rank(field, tol=1.0e-12) <= 3
+
 
 @pytest.mark.parametrize(
     ("matrix", "maximum_hermite", "maximum_laguerre", "message"),

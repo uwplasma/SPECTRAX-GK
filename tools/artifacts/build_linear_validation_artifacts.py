@@ -2627,6 +2627,105 @@ def original_sugama_like_species_moment_matrices(
     return test_paper.copy(), convention * field
 
 
+def finite_wavelength_original_sugama_like_species_moment_matrices(
+    coulomb_test_table: np.ndarray,
+    bessel_arguments: np.ndarray,
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    r"""Build equal-species finite-wavelength original-Sugama tables.
+
+    For like species, Frei et al. (2021), equations (3.72)--(3.76), reduce the
+    original-Sugama test component to the Coulomb test component. Equations
+    (3.79) and (3.90)--(3.102) then make the field component a low-rank
+    restoration of the Bessel-weighted parallel flow, perpendicular flow, and
+    temperature channels in equation (3.94). This function applies the
+    corresponding low-rank projection to each wavelength. Inputs and outputs use the
+    runtime's signed-Laguerre, Hermite-major convention.
+    """
+
+    if maximum_hermite_order < 2:
+        raise ValueError("maximum_hermite_order must be >= 2")
+    if maximum_laguerre_order < 1:
+        raise ValueError("maximum_laguerre_order must be >= 1")
+    grid = np.asarray(bessel_arguments, dtype=float)
+    if grid.ndim != 1 or grid.size == 0:
+        raise ValueError("bessel_arguments must be one-dimensional and nonempty")
+    if np.any(~np.isfinite(grid)) or np.any(grid < 0.0) or np.any(np.diff(grid) <= 0):
+        raise ValueError(
+            "bessel_arguments must be finite, nonnegative, and strictly increasing"
+        )
+    n_laguerre = maximum_laguerre_order + 1
+    mode_count = (maximum_hermite_order + 1) * n_laguerre
+    test = np.asarray(coulomb_test_table, dtype=float)
+    if test.shape != (grid.size, mode_count, mode_count):
+        raise ValueError("coulomb_test_table shape does not match grid and resolution")
+    if not np.all(np.isfinite(test)):
+        raise ValueError("coulomb_test_table must contain only finite values")
+
+    laguerre_sign = np.asarray(
+        [
+            (-1.0) ** laguerre
+            for _hermite in range(maximum_hermite_order + 1)
+            for laguerre in range(n_laguerre)
+        ]
+    )
+    field = np.empty_like(test)
+    epsilon = np.finfo(float).eps
+    for wavelength_index, bessel_argument in enumerate(grid):
+        radial_argument = 0.25 * bessel_argument**2
+        kernels = np.empty(maximum_laguerre_order + 2)
+        kernels[0] = np.exp(-radial_argument)
+        for order in range(1, kernels.size):
+            kernels[order] = kernels[order - 1] * radial_argument / order
+
+        parallel_flow = np.zeros(mode_count)
+        perpendicular_flow = np.zeros(mode_count)
+        temperature = np.zeros(mode_count)
+        for laguerre in range(n_laguerre):
+            previous = kernels[laguerre - 1] if laguerre else 0.0
+            parallel_flow[n_laguerre + laguerre] = kernels[laguerre] / np.sqrt(2.0)
+            perpendicular_flow[laguerre] = (
+                0.5 * bessel_argument * (kernels[laguerre] - previous)
+            )
+            temperature[2 * n_laguerre + laguerre] = (
+                2.0 * kernels[laguerre] / (3.0 * np.sqrt(2.0))
+            )
+            temperature[laguerre] = (2.0 / 3.0) * (
+                2.0 * laguerre * kernels[laguerre]
+                - (laguerre + 1) * kernels[laguerre + 1]
+                - laguerre * previous
+            )
+
+        channels = []
+        for vector in (parallel_flow, perpendicular_flow, temperature):
+            vector = laguerre_sign * vector
+            norm = float(np.linalg.norm(vector))
+            if norm > 64.0 * epsilon:
+                channels.append(vector / norm)
+        invariant_basis = np.column_stack(channels)
+        image = test[wavelength_index] @ invariant_basis
+        gram = invariant_basis.T @ image
+        symmetric_gram = 0.5 * (gram + gram.T)
+        if np.linalg.eigvalsh(symmetric_gram).max() >= 0.0:
+            raise ValueError("Coulomb test table must dissipate Sugama flow channels")
+        condition_number = float(np.linalg.cond(gram))
+        if not np.isfinite(condition_number) or condition_number > 1.0e12:
+            raise ValueError("Sugama flow-channel projection is ill-conditioned")
+        field[wavelength_index] = -image @ np.linalg.solve(
+            gram, invariant_basis.T @ test[wavelength_index]
+        )
+        collision = test[wavelength_index] + field[wavelength_index]
+        scale = max(1.0, float(np.linalg.norm(test[wavelength_index], ord=np.inf)))
+        tolerance = 256.0 * epsilon * mode_count * scale
+        if (
+            np.max(np.abs(collision @ invariant_basis)) > tolerance
+            or np.max(np.abs(invariant_basis.T @ collision)) > tolerance
+        ):
+            raise RuntimeError("Sugama field restoration failed its invariant gate")
+    return test.copy(), field
+
+
 def improved_sugama_equal_temperature_moment_matrices(
     coulomb_test_matrix: np.ndarray,
     maximum_hermite_order: int,
@@ -3874,6 +3973,64 @@ def combine_equal_species_finite_wavelength_tables(
         **dict(zip(array_names, combined, strict=True)),
     )
     return metadata
+
+
+def write_equal_species_finite_wavelength_original_sugama_table(
+    coulomb_table: Path,
+    out: Path,
+) -> dict[str, Any]:
+    """Convert a complete equal-species Coulomb test table to original Sugama."""
+
+    with np.load(coulomb_table) as archive:
+        metadata = json.loads(str(archive["metadata"]))
+        grid = np.asarray(archive["bessel_argument_grid"], dtype=float)
+        test_table = np.asarray(archive["test_table"], dtype=float)
+    if metadata.get("claim_scope") != (
+        "equal_species_diagonal_finite_wavelength_coulomb_table"
+    ):
+        raise ValueError(
+            "input must be an equal-species finite-wavelength Coulomb table"
+        )
+    maximum_order = int(metadata["maximum_angular_bessel_order"])
+    if metadata.get("included_angular_orders") != list(range(maximum_order + 1)):
+        raise ValueError("Coulomb table must contain complete angular coverage")
+    if metadata.get("laguerre_convention") != "runtime_signed":
+        raise ValueError(
+            "Coulomb table must use the runtime signed-Laguerre convention"
+        )
+    maximum_hermite_order, maximum_laguerre_order = map(int, metadata["resolution"])
+    test, field = finite_wavelength_original_sugama_like_species_moment_matrices(
+        test_table,
+        grid,
+        maximum_hermite_order,
+        maximum_laguerre_order,
+    )
+    checksum = float(np.sum(test) + np.sum(field))
+    output_metadata = {
+        "schema_version": 1,
+        "claim_scope": (
+            "equal_species_diagonal_finite_wavelength_original_sugama_table"
+        ),
+        "resolution": [maximum_hermite_order, maximum_laguerre_order],
+        "bessel_argument_grid": grid.tolist(),
+        "maximum_angular_bessel_order": maximum_order,
+        "included_angular_orders": list(range(maximum_order + 1)),
+        "maximum_bessel_laguerre_order": int(metadata["maximum_bessel_laguerre_order"]),
+        "precision_decimal_digits": int(metadata["precision_decimal_digits"]),
+        "laguerre_convention": "runtime_signed",
+        "coulomb_table_checksum": float(metadata["checksum"]),
+        "checksum": checksum,
+        "source": ("Frei et al. (2021), equations (3.72), (3.79), and (3.90)--(3.102)"),
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out,
+        metadata=np.asarray(json.dumps(output_metadata, sort_keys=True)),
+        bessel_argument_grid=grid,
+        test_table=test,
+        field_table=field,
+    )
+    return output_metadata
 
 
 def write_shared_precompute_angular_coulomb_table(
@@ -6170,6 +6327,15 @@ def build_collision_combine_wavelength_tables_parser() -> argparse.ArgumentParse
     return parser
 
 
+def build_collision_original_sugama_table_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Build an equal-species original-Sugama table from Coulomb tests."
+    )
+    parser.add_argument("--coulomb-table", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    return parser
+
+
 def build_collision_shared_angular_table_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate and combine angular shards from one shared speed cache."
@@ -6814,6 +6980,15 @@ def main_collision_combine_wavelength_tables(argv: list[str] | None = None) -> i
     return 0
 
 
+def main_collision_original_sugama_table(argv: list[str] | None = None) -> int:
+    args = build_collision_original_sugama_table_parser().parse_args(argv)
+    metadata = write_equal_species_finite_wavelength_original_sugama_table(
+        args.coulomb_table, args.out
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main_collision_shared_angular_table(argv: list[str] | None = None) -> int:
     args = build_collision_shared_angular_table_parser().parse_args(argv)
     metadata = write_shared_precompute_angular_coulomb_table(
@@ -6883,6 +7058,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-diagonal-table",
                 "collision-combine-angular-shards",
                 "collision-combine-wavelength-tables",
+                "collision-original-sugama-table",
                 "collision-shared-angular-table",
                 "collision-contraction-gate",
             ),
@@ -6912,6 +7088,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_combine_angular_shards(rest)
     if command == "collision-combine-wavelength-tables":
         return main_collision_combine_wavelength_tables(rest)
+    if command == "collision-original-sugama-table":
+        return main_collision_original_sugama_table(rest)
     if command == "collision-shared-angular-table":
         return main_collision_shared_angular_table(rest)
     if command == "collision-contraction-gate":

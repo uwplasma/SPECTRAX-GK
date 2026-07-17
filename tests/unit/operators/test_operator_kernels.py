@@ -41,6 +41,7 @@ from spectraxgk.operators.linear import (
     assemble_drift_kinetic_sugama_matrix,
     DriftKineticMomentCollisionOperator,
     EqualSpeciesFiniteWavelengthCoulombOperator,
+    EqualSpeciesFiniteWavelengthOriginalSugamaOperator,
     FiniteWavelengthCoulombOperator,
     TabulatedMultispeciesCollisionOperator,
     drift_kinetic_improved_sugama_pair_matrices,
@@ -814,6 +815,49 @@ def test_equal_species_finite_wavelength_table_matches_full_pair_diagonal() -> N
     )
     with pytest.raises(ValueError, match="require one species"):
         diagonal.apply(multispecies)
+
+
+def test_equal_species_finite_wavelength_sugama_uses_hamiltonian_and_jvp() -> None:
+    """The finite-b Sugama table acts on H and retains differentiable interpolation."""
+
+    grid = jnp.asarray([0.0, 1.0], dtype=jnp.float32)
+    test = jnp.asarray([[[-1.0]], [[-2.0]]], dtype=jnp.float32)
+    field = jnp.asarray([[[0.25]], [[0.5]]], dtype=jnp.float32)
+    operator = EqualSpeciesFiniteWavelengthOriginalSugamaOperator(
+        grid,
+        jnp.asarray([[0.4]], dtype=jnp.float32),
+        test,
+        field,
+    )
+    distribution = jnp.ones((1, 1, 1, 1, 2), dtype=jnp.complex64)
+    hamiltonian = 3.0 * distribution
+
+    def evaluate(bessel_argument: jnp.ndarray) -> jnp.ndarray:
+        context = CollisionContext(
+            distribution=distribution,
+            hamiltonian=hamiltonian,
+            fields=FieldState(phi=jnp.zeros((1, 1, 2)), apar=None, bpar=None),
+            cache=SimpleNamespace(b=0.5 * bessel_argument[None, None, None, :] ** 2),
+            parameters=SimpleNamespace(),
+        )
+        return operator.apply(context)
+
+    argument = jnp.asarray([0.25, 0.75], dtype=jnp.float32)
+    expected = 0.4 * (-0.75 - 0.75 * argument) * hamiltonian
+    np.testing.assert_allclose(jax.jit(evaluate)(argument), expected, rtol=2.0e-6)
+    direction = jnp.asarray([0.1, -0.2], dtype=jnp.float32)
+    tangent = jax.jvp(evaluate, (argument,), (direction,))[1]
+    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    finite_difference = (
+        evaluate(argument + step * direction) - evaluate(argument - step * direction)
+    ) / (2.0 * step)
+    np.testing.assert_allclose(
+        tangent,
+        finite_difference,
+        rtol=8.0e-4,
+        atol=8.0e-4,
+    )
+    assert len(jax.tree_util.tree_leaves(operator)) == 4
 
 
 def test_finite_wavelength_coulomb_operator_runs_through_linear_rhs() -> None:

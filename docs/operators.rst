@@ -792,6 +792,31 @@ relative errors :math:`1.08\times10^{-31}` and :math:`1.92\times10^{-32}`.
 This is validated hierarchy evidence, but remains below the required
 :math:`(18,6)` ITG endpoint.
 
+The equal-species original-Sugama finite-wavelength slice is now separate from
+that Coulomb field model. At equal mass and temperature, equations (3.72)--
+(3.76) of `Frei et al. (2021) <https://arxiv.org/abs/2104.11480>`_ make its test
+component exactly the Coulomb test component. Equations (3.79) and
+(3.90)--(3.102) make the field component a rank-three restoration of the
+Bessel-weighted parallel-flow, perpendicular-flow, and temperature channels
+in equation (3.94). The offline conversion is therefore exact and does not
+repeat the expensive multiprecision Coulomb contraction::
+
+   python tools/artifacts/build_linear_validation_artifacts.py \
+     collision-original-sugama-table \
+     --coulomb-table finite_b_zonal_P24_J10_diagonal.npz \
+     --out finite_b_zonal_P24_J10_original_sugama.npz
+
+The archive conversion requires complete angular coverage, the signed runtime
+Laguerre convention, finite coefficients, and a negative-definite flow-channel
+Gram matrix. Its equation test reproduces the published drift-kinetic C6
+construction at :math:`B=0`, limits the finite-wavelength field block to rank
+three, and annihilates all retained flow channels from both sides to
+:math:`2\times10^{-15}`. ``EqualSpeciesFiniteWavelengthOriginalSugamaOperator``
+interpolates the resulting table in JAX and acts on the post-field
+nonadiabatic response :math:`H`; JIT/JVP and finite-difference interpolation
+gates remain required before a paper-facing zonal trace is promoted. The
+finite-wavelength improved-Sugama correction is still open.
+
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
 :math:`\nu_{sr}`, it evaluates the pairwise primitive moments

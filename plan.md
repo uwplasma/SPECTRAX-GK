@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Implemented the exact equal-species finite-wavelength
+  original-Sugama slice while office CPU resources were occupied. At equal
+  mass and temperature, the Coulomb test block is reused and the published
+  Bessel-weighted parallel-flow, perpendicular-flow, and temperature channels
+  generate the rank-three field restoration in equations (3.79) and
+  (3.90)--(3.102). The construction reproduces the existing C6 drift-kinetic
+  matrix at ``B=0`` to ``2.2e-16`` and annihilates all three finite-B channels
+  from both sides to ``2e-15``. A provenance-checked archive converter avoids
+  repeating multiprecision Coulomb generation, and a JAX runtime operator
+  applies the table to ``H`` with an interpolation tangent gate. Finite-B
+  improved-Sugama corrections and paper-facing traces remain open.
+
 - 2026-07-16: Replaced the last unbounded P24/J10 table unit with exact
   two-level checkpointing. A direct ``m=4`` attempt across two wavelengths,
   using all 30 office workers split 15 per wavelength, produced no complete
