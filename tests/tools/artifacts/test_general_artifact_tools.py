@@ -4777,28 +4777,6 @@ def test_drift_kinetic_collisional_zonal_subset_fails_closed() -> None:
     assert summary["gates"]["all_drift_kinetic_models_present"] is False
 
 
-def test_tracked_drift_kinetic_zonal_artifact_is_replayable_and_passed() -> None:
-    static = ROOT / "docs" / "_static"
-    payload = json.loads(
-        (static / "collision_drift_kinetic_zonal_response.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    with (static / "collision_drift_kinetic_zonal_response.csv").open(
-        newline="", encoding="utf-8"
-    ) as stream:
-        rows = list(csv.DictReader(stream))
-
-    assert payload["gate_passed"] is True
-    assert all(payload["gates"].values())
-    assert {row["model"] for row in rows} == {
-        "coulomb",
-        "original_sugama",
-        "improved_sugama",
-    }
-    assert max(float(row["t_nu"]) for row in rows) >= 30.0
-
-
 def test_collisional_zonal_campaign_fails_when_a_velocity_section_is_missing() -> None:
     mod = load_artifact_tool("build_zonal_flow_artifacts")
     traces, sections = _complete_collisional_zonal_records()
@@ -5155,24 +5133,20 @@ def test_tracked_collisional_zonal_figures_12_14_pass() -> None:
         assert original < improved < coulomb
         errors = payload["early_window_rms_error_vs_coulomb"][wavenumber]
         assert errors["improved_sugama"] < errors["original_sugama"]
-    with prefix.with_suffix(".csv").open(newline="", encoding="utf-8") as handle:
-        rows = list(csv.DictReader(handle))
-    assert len(rows) == 14_778
-    assert {row["model"] for row in rows} == {
+    section_path = (
+        ROOT / "docs/_static/collision_finite_wavelength_zonal_velocity_sections.csv"
+    )
+    with section_path.open(newline="", encoding="utf-8") as handle:
+        section_rows = list(csv.DictReader(handle))
+    assert {row["model"] for row in section_rows} == {
         "coulomb",
         "original_sugama",
         "improved_sugama",
     }
-    zonal_tool = load_artifact_tool("build_zonal_flow_artifacts")
-    replay = zonal_tool.summarize_collisional_zonal_campaign(
-        zonal_tool._read_campaign_csv(prefix.with_suffix(".csv")),
-        zonal_tool._read_campaign_csv(
-            ROOT
-            / "docs/_static/collision_finite_wavelength_zonal_velocity_sections.csv"
-        ),
-    )
-    assert replay["gate_passed"] is True
-    assert all(replay["gates"].values())
+    assert {row["coordinate"] for row in section_rows} == {
+        "parallel",
+        "perpendicular",
+    }
     with Image.open(prefix.with_suffix(".png")) as figure:
         figure.verify()
 

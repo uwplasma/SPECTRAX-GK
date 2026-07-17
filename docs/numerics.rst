@@ -1182,18 +1182,10 @@ and keeps the generated dense archive outside the repository. Coulomb,
 original-Sugama, and improved-Sugama runs use the same initial state, grid, and
 time discretization.
 
-.. figure:: _static/collision_drift_kinetic_zonal_response.png
-   :alt: Paper-resolution drift-kinetic collisional zonal-response traces
-   :width: 100%
-
-   Drift-kinetic Figure-12 validation at :math:`(P,J)=(24,10)`. The late-window
-   medians are 0.00565 (original Sugama), 0.00572 (Coulomb), and 0.00585
-   (improved Sugama, :math:`K=5`) against the Xiao estimate 0.00508. Original
-   Sugama damps most strongly, while improved Sugama has the smaller RMS error
-   relative to Coulomb over :math:`t\nu\leq10`. The passing JSON gate and
-   replayable traces are :download:`available here
-   <_static/collision_drift_kinetic_zonal_response.json>` and
-   :download:`here <_static/collision_drift_kinetic_zonal_response.csv>`.
+The drift-kinetic Figure-12 subset has late-window medians 0.00565 (original
+Sugama), 0.00572 (Coulomb), and 0.00585 (improved Sugama, :math:`K=5`) against
+the Xiao estimate 0.00508. It is incorporated into the complete panel below
+rather than retained as a duplicate figure and trace bundle.
 
 The acceptance contract is implemented by the existing zonal-artifact owner::
 
@@ -1224,18 +1216,14 @@ and the command exits nonzero while any gate remains open.
    :math:`t\nu=5` velocity sections and the drift-kinetic Xiao-residual gate
    pass.
 
-The full-resolution campaign contains 73,824 trace rows. The tracked
-:download:`compact trace table
-<_static/collision_finite_wavelength_zonal_response.csv>` retains every fifth
-saved sample plus each endpoint (14,778 rows); re-evaluating the gate changes
-tail responses by at most :math:`8.9\times10^{-6}` and early-window RMS errors
-by at most :math:`1.9\times10^{-6}`, without changing any verdict. The exact
-full-resolution verdict is retained in :download:`the JSON report
+The full-resolution campaign contains 73,824 trace rows. Its exact verdict is
+retained in :download:`the JSON report
 <_static/collision_finite_wavelength_zonal_response.json>`, and the compact
 :download:`velocity sections
 <_static/collision_finite_wavelength_zonal_velocity_sections.csv>` are not
-decimated. Dense coefficient archives and raw logs remain external campaign
-artifacts rather than repository data.
+decimated. Dense coefficient archives, raw traces, and logs remain external
+campaign artifacts rather than adding more than six megabytes of duplicative
+data to the repository.
 
 Nonlinear full-distribution Landau collisions are a separate future model, not
 an extension flag on this linearized matrix. A dense precomputed collision
