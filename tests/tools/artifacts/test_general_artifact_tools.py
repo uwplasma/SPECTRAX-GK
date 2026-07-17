@@ -3218,6 +3218,20 @@ def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
         )
         np.testing.assert_array_equal(parallel_component, contracted_component)
 
+    matrix_shards = [
+        mod.coulomb_nonpolarized_moment_matrices(
+            **inputs,
+            included_angular_orders=(angular_order,),
+            float64_final_contraction=True,
+        )
+        for angular_order in range(4)
+    ]
+    for component_index, contracted_component in enumerate(contracted):
+        recombined = sum(shard[component_index] for shard in matrix_shards)
+        np.testing.assert_allclose(
+            recombined, contracted_component, rtol=5.0e-15, atol=1.0e-14
+        )
+
     vector_inputs = dict(
         maximum_hermite_order=3,
         maximum_laguerre_order=1,
@@ -3247,6 +3261,25 @@ def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
         np.testing.assert_allclose(
             decomposed_vector, exact_vector, rtol=5.0e-15, atol=1.0e-14
         )
+
+    vector_shards = [
+        mod.coulomb_polarization_vectors(
+            **vector_inputs,
+            included_angular_orders=(angular_order,),
+            float64_final_contraction=True,
+        )
+        for angular_order in range(4)
+    ]
+    for component_index, fast_vector in enumerate(fast_vectors):
+        recombined = sum(shard[component_index] for shard in vector_shards)
+        np.testing.assert_allclose(recombined, fast_vector, rtol=5.0e-15, atol=1.0e-14)
+
+    with pytest.raises(ValueError, match="unique, and sorted"):
+        mod.coulomb_nonpolarized_moment_matrices(
+            **inputs, included_angular_orders=(1, 0)
+        )
+    with pytest.raises(ValueError, match="exceed the angular truncation"):
+        mod.coulomb_polarization_vectors(**vector_inputs, included_angular_orders=(4,))
 
 
 def test_finite_wavelength_angular_cutoff_retains_complete_basis() -> None:

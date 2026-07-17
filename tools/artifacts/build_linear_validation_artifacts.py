@@ -1385,6 +1385,26 @@ def _forked_ordered_map(
     return sorted(results, key=lambda result: result[0])
 
 
+def _resolve_collision_angular_orders(
+    angular_limit: int,
+    included_angular_orders: tuple[int, ...] | None,
+    *,
+    drift_kinetic: bool,
+) -> tuple[int, ...]:
+    """Return a validated, deterministic angular-harmonic subset."""
+
+    if included_angular_orders is None:
+        return (0,) if drift_kinetic else tuple(range(angular_limit + 1))
+    orders = tuple(included_angular_orders)
+    if not orders or orders != tuple(sorted(set(orders))):
+        raise ValueError("included_angular_orders must be nonempty, unique, and sorted")
+    if any(order < 0 or order > angular_limit for order in orders):
+        raise ValueError("included_angular_orders exceed the angular truncation")
+    if drift_kinetic and orders != (0,):
+        raise ValueError("drift-kinetic generation supports only angular order zero")
+    return orders
+
+
 def _gyroaveraged_spherical_moment_coefficient_mp(
     spherical_order: int,
     spherical_radial_order: int,
@@ -1793,6 +1813,7 @@ def coulomb_nonpolarized_moment_matrices(
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
     maximum_angular_bessel_order: int | None = None,
+    included_angular_orders: tuple[int, ...] | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     float64_final_contraction: bool = False,
@@ -1813,6 +1834,8 @@ def coulomb_nonpolarized_moment_matrices(
     ``maximum_angular_bessel_order`` truncates the angular Bessel harmonic
     :math:`m` independently from the radial Bessel--Laguerre expansion.  The
     default retains every harmonic allowed by the spherical basis.
+    ``included_angular_orders`` selects a sorted subset for resumable offline
+    generation; summing all single-harmonic blocks recovers the full operator.
     ``worker_count`` partitions angular moment-vector blocks and then complete
     output-Hermite rows; one worker is the portable default and multiple
     workers require POSIX ``fork``.
@@ -1878,6 +1901,11 @@ def coulomb_nonpolarized_moment_matrices(
         half_b = target_b / 2
         quarter_b_squared = half_b * half_b
         drift_kinetic = target_b == 0
+        active_angular_orders = _resolve_collision_angular_orders(
+            angular_limit,
+            included_angular_orders,
+            drift_kinetic=drift_kinetic,
+        )
         bessel_orders = (
             (0,) if drift_kinetic else tuple(range(maximum_bessel_laguerre_order + 1))
         )
@@ -2042,7 +2070,8 @@ def coulomb_nonpolarized_moment_matrices(
             (p, j, m)
             for p in range(spherical_limit + 1)
             for j in range(radial_limit + 1)
-            for m in ((0,) if drift_kinetic else range(min(p, angular_limit) + 1))
+            for m in active_angular_orders
+            if m <= p
         )
 
         def build_moment_vector(p: int, j: int, m: int) -> tuple[Any, Any]:
@@ -2076,8 +2105,9 @@ def coulomb_nonpolarized_moment_matrices(
         if float64_final_contraction and worker_count > 1 and not drift_kinetic:
 
             def build_angular_moment_vectors(
-                angular_order: int,
+                angular_index: int,
             ) -> tuple[int, tuple[tuple[tuple[int, int, int], tuple[Any, Any]], ...]]:
+                angular_order = active_angular_orders[angular_index]
                 return angular_order, tuple(
                     ((p, j, m), build_moment_vector(p, j, m))
                     for p, j, m in moment_orders
@@ -2086,8 +2116,8 @@ def coulomb_nonpolarized_moment_matrices(
 
             angular_blocks = _forked_ordered_map(
                 build_angular_moment_vectors,
-                angular_limit + 1,
-                min(worker_count, angular_limit + 1),
+                len(active_angular_orders),
+                min(worker_count, len(active_angular_orders)),
             )
             moment_vectors = {
                 key: values
@@ -2117,7 +2147,7 @@ def coulomb_nonpolarized_moment_matrices(
                 exponential * quarter_b_squared**n * half_b**m / mp.factorial(n + m)
                 for n in bessel_orders
             )
-            for m in range(angular_limit + 1)
+            for m in active_angular_orders
         }
         weighted_products = {
             (m, output_laguerre): _bessel_weighted_laguerre_products_mp(
@@ -2128,7 +2158,7 @@ def coulomb_nonpolarized_moment_matrices(
                 laguerre_product,
                 mp,
             )
-            for m in range(angular_limit + 1)
+            for m in active_angular_orders
             for output_laguerre in range(n_laguerre)
         }
         grouped_moments: dict[tuple[int, int], list[tuple[Any, ...]]] = {}
@@ -2725,6 +2755,7 @@ def coulomb_polarization_vectors(
     maximum_spherical_order: int | None = None,
     maximum_spherical_radial_order: int | None = None,
     maximum_angular_bessel_order: int | None = None,
+    included_angular_orders: tuple[int, ...] | None = None,
     maximum_bessel_laguerre_order: int = 24,
     digits: int = 80,
     float64_final_contraction: bool = False,
@@ -2738,6 +2769,8 @@ def coulomb_polarization_vectors(
     paper's Laguerre convention.  Test vectors multiply ``q_a phi / T_a``;
     field vectors multiply ``q_b phi / T_b``.  Target and source gyroradii are
     separate because unlike-species polarization uses both.
+    ``included_angular_orders`` selects a sorted subset for resumable offline
+    generation; only the order-zero block owns the ``phi1`` contribution.
     On the float64 archive path, ``worker_count > 1`` partitions the additive
     equation-(3.50) contraction by independent angular harmonic ``m``.
     """
@@ -2782,6 +2815,11 @@ def coulomb_polarization_vectors(
         spherical_limit
         if maximum_angular_bessel_order is None
         else min(spherical_limit, maximum_angular_bessel_order)
+    )
+    active_angular_orders = _resolve_collision_angular_orders(
+        angular_limit,
+        included_angular_orders,
+        drift_kinetic=(target_bessel_argument == 0.0),
     )
 
     import mpmath as mp
@@ -2937,7 +2975,7 @@ def coulomb_polarization_vectors(
                 / mp.factorial(n + m)
                 for n in bessel_orders
             )
-            for m in range(angular_limit + 1)
+            for m in active_angular_orders
         }
         weighted_products = {
             (m, output_laguerre): _bessel_weighted_laguerre_products_mp(
@@ -2948,14 +2986,15 @@ def coulomb_polarization_vectors(
                 laguerre_product,
                 mp,
             )
-            for m in range(angular_limit + 1)
+            for m in active_angular_orders
             for output_laguerre in range(n_laguerre)
         }
         if float64_final_contraction and worker_count > 1:
 
             def build_angular_contribution(
-                angular_order: int,
+                angular_index: int,
             ) -> tuple[int, tuple[np.ndarray, ...]]:
+                angular_order = active_angular_orders[angular_index]
                 local_vectors = [mp.matrix(n_modes, 1) for _ in range(4)]
                 radial_groups: list[tuple[int, tuple[tuple[Any, ...], ...]]] = []
                 for p in range(angular_order, spherical_limit + 1):
@@ -3075,8 +3114,8 @@ def coulomb_polarization_vectors(
 
             contributions = _forked_ordered_map(
                 build_angular_contribution,
-                angular_limit + 1,
-                min(worker_count, angular_limit + 1),
+                len(active_angular_orders),
+                min(worker_count, len(active_angular_orders)),
             )
             vectors = [np.zeros(n_modes, dtype=np.float64) for _ in range(4)]
             for _angular_order, components in contributions:
@@ -3097,7 +3136,9 @@ def coulomb_polarization_vectors(
                     * mp.factorial(p) ** 2
                     / (sigma_pj * mp.factorial(2 * p) * (2 * p + 1))
                 )
-                for m in range(min(p, angular_limit) + 1):
+                for m in active_angular_orders:
+                    if m > p:
+                        continue
                     target_polarization = polarization(p, j, m, source=False)
                     source_polarization = polarization(p, j, m, source=True)
                     if target_polarization == 0 and source_polarization == 0:
@@ -3120,29 +3161,32 @@ def coulomb_polarization_vectors(
             )
             for output_laguerre in range(n_laguerre):
                 row = output_hermite * n_laguerre + output_laguerre
-                for product_order, weighted_product in enumerate(
-                    weighted_products[(0, output_laguerre)]
-                ):
-                    if weighted_product == 0:
-                        continue
-                    for speed_order in range(product_order + output_hermite // 2 + 1):
-                        inverse = inverse_transform(
-                            output_hermite,
-                            product_order,
-                            0,
-                            speed_order,
-                            0,
-                        )
-                        if inverse == 0:
+                if 0 in active_angular_orders:
+                    for product_order, weighted_product in enumerate(
+                        weighted_products[(0, output_laguerre)]
+                    ):
+                        if weighted_product == 0:
                             continue
-                        test_speed, field_speed = integrated_speed(
-                            0,
-                            0,
-                            speed_order,
-                        )
-                        common = weighted_product * inverse / output_normalization
-                        test_phi1[row] -= common * test_speed
-                        field_phi1[row] -= common * field_speed
+                        for speed_order in range(
+                            product_order + output_hermite // 2 + 1
+                        ):
+                            inverse = inverse_transform(
+                                output_hermite,
+                                product_order,
+                                0,
+                                speed_order,
+                                0,
+                            )
+                            if inverse == 0:
+                                continue
+                            test_speed, field_speed = integrated_speed(
+                                0,
+                                0,
+                                speed_order,
+                            )
+                            common = weighted_product * inverse / output_normalization
+                            test_phi1[row] -= common * test_speed
+                            field_phi1[row] -= common * field_speed
 
                 for p, m, radial_moments in active_polarization_groups:
                     speed_weights: dict[int, Any] = {}
