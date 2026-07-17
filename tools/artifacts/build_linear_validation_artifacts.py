@@ -2103,25 +2103,53 @@ def coulomb_nonpolarized_moment_matrices(
             )
 
         if float64_final_contraction and worker_count > 1 and not drift_kinetic:
-
-            def build_angular_moment_vectors(
-                angular_index: int,
-            ) -> tuple[int, tuple[tuple[tuple[int, int, int], tuple[Any, Any]], ...]]:
-                angular_order = active_angular_orders[angular_index]
-                return angular_order, tuple(
-                    ((p, j, m), build_moment_vector(p, j, m))
-                    for p, j, m in moment_orders
-                    if m == angular_order
+            if len(active_angular_orders) == 1:
+                angular_order = active_angular_orders[0]
+                for wavelength in {target_b, source_b}:
+                    kernel_key = (
+                        float(wavelength),
+                        angular_order,
+                        maximum_bessel_laguerre_order,
+                    )
+                    bessel_kernel_cache.setdefault(
+                        kernel_key,
+                        _bessel_laguerre_kernels_mp(
+                            wavelength,
+                            angular_order,
+                            maximum_bessel_laguerre_order + 1,
+                            mp,
+                        ),
+                    )
+                moment_worker_count = min(worker_count, len(moment_orders))
+                moment_tasks = tuple(
+                    tuple(moment_orders[index::moment_worker_count])
+                    for index in range(moment_worker_count)
+                )
+            else:
+                moment_worker_count = len(active_angular_orders)
+                moment_tasks = tuple(
+                    tuple(
+                        orders for orders in moment_orders if orders[2] == angular_order
+                    )
+                    for angular_order in active_angular_orders
                 )
 
-            angular_blocks = _forked_ordered_map(
-                build_angular_moment_vectors,
-                len(active_angular_orders),
-                min(worker_count, len(active_angular_orders)),
+            def build_moment_vectors(
+                task_index: int,
+            ) -> tuple[int, tuple[tuple[tuple[int, int, int], tuple[Any, Any]], ...]]:
+                return task_index, tuple(
+                    ((p, j, m), build_moment_vector(p, j, m))
+                    for p, j, m in moment_tasks[task_index]
+                )
+
+            moment_blocks = _forked_ordered_map(
+                build_moment_vectors,
+                len(moment_tasks),
+                moment_worker_count,
             )
             moment_vectors = {
                 key: values
-                for _angular_order, block in angular_blocks
+                for _task_index, block in moment_blocks
                 for key, values in block
             }
         else:
@@ -2990,14 +3018,36 @@ def coulomb_polarization_vectors(
             for output_laguerre in range(n_laguerre)
         }
         if float64_final_contraction and worker_count > 1:
+            angular_tasks: list[tuple[int, tuple[int, ...], bool]] = []
+            if len(active_angular_orders) == 1:
+                angular_order = active_angular_orders[0]
+                p_values = tuple(range(angular_order, spherical_limit + 1))
+                task_count = min(worker_count, len(p_values))
+                angular_tasks.extend(
+                    (
+                        angular_order,
+                        tuple(p_values[index::task_count]),
+                        angular_order == 0 and index == 0,
+                    )
+                    for index in range(task_count)
+                )
+            else:
+                angular_tasks.extend(
+                    (
+                        angular_order,
+                        tuple(range(angular_order, spherical_limit + 1)),
+                        angular_order == 0,
+                    )
+                    for angular_order in active_angular_orders
+                )
 
             def build_angular_contribution(
-                angular_index: int,
+                task_index: int,
             ) -> tuple[int, tuple[np.ndarray, ...]]:
-                angular_order = active_angular_orders[angular_index]
+                angular_order, p_values, owns_phi1 = angular_tasks[task_index]
                 local_vectors = [mp.matrix(n_modes, 1) for _ in range(4)]
                 radial_groups: list[tuple[int, tuple[tuple[Any, ...], ...]]] = []
-                for p in range(angular_order, spherical_limit + 1):
+                for p in p_values:
                     entries = []
                     for j in range(radial_limit + 1):
                         sigma_pj = (
@@ -3028,7 +3078,7 @@ def coulomb_polarization_vectors(
                     )
                     for output_laguerre in range(n_laguerre):
                         row = output_hermite * n_laguerre + output_laguerre
-                        if angular_order == 0:
+                        if owns_phi1:
                             for product_order, weighted_product in enumerate(
                                 weighted_products[(0, output_laguerre)]
                             ):
@@ -3107,15 +3157,15 @@ def coulomb_polarization_vectors(
                                 local_vectors[3][row] += (
                                     angular * source_value * field_coefficient
                                 )
-                return angular_order, tuple(
+                return task_index, tuple(
                     np.asarray(vector.tolist(), dtype=np.float64).reshape(n_modes)
                     for vector in local_vectors
                 )
 
             contributions = _forked_ordered_map(
                 build_angular_contribution,
-                len(active_angular_orders),
-                min(worker_count, len(active_angular_orders)),
+                len(angular_tasks),
+                min(worker_count, len(angular_tasks)),
             )
             vectors = [np.zeros(n_modes, dtype=np.float64) for _ in range(4)]
             for _angular_order, components in contributions:

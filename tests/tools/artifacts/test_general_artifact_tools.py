@@ -3231,6 +3231,18 @@ def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
         np.testing.assert_allclose(
             recombined, contracted_component, rtol=5.0e-15, atol=1.0e-14
         )
+    parallel_matrix_shard = mod.coulomb_nonpolarized_moment_matrices(
+        **inputs,
+        included_angular_orders=(0,),
+        float64_final_contraction=True,
+        worker_count=4,
+    )
+    for serial_shard, parallel_shard in zip(
+        matrix_shards[0], parallel_matrix_shard, strict=True
+    ):
+        np.testing.assert_allclose(
+            parallel_shard, serial_shard, rtol=5.0e-15, atol=1.0e-14
+        )
 
     vector_inputs = dict(
         maximum_hermite_order=3,
@@ -3273,6 +3285,18 @@ def test_finite_wavelength_float_contraction_is_roundoff_equivalent() -> None:
     for component_index, fast_vector in enumerate(fast_vectors):
         recombined = sum(shard[component_index] for shard in vector_shards)
         np.testing.assert_allclose(recombined, fast_vector, rtol=5.0e-15, atol=1.0e-14)
+    parallel_vector_shard = mod.coulomb_polarization_vectors(
+        **vector_inputs,
+        included_angular_orders=(0,),
+        float64_final_contraction=True,
+        worker_count=4,
+    )
+    for serial_shard, parallel_shard in zip(
+        vector_shards[0], parallel_vector_shard, strict=True
+    ):
+        np.testing.assert_allclose(
+            parallel_shard, serial_shard, rtol=5.0e-15, atol=1.0e-14
+        )
 
     with pytest.raises(ValueError, match="unique, and sorted"):
         mod.coulomb_nonpolarized_moment_matrices(
