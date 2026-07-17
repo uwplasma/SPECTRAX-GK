@@ -33,7 +33,7 @@ from spectraxgk.diagnostics.nonlinear_gradient_evidence import (  # noqa: E402
     load_json_artifact,
     nonlinear_turbulence_gradient_finite_difference_report,
 )
-from tools.campaigns.nonlinear_gradient_followup import (  # noqa: E402
+from spectraxgk.diagnostics.nonlinear_gradient_statistics import (  # noqa: E402
     NonlinearGradientControlMeanGateConfig,
     NonlinearGradientVarianceReductionConfig,
     nonlinear_gradient_control_mean_gate,

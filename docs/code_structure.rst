@@ -607,19 +607,12 @@ Completed extractions:
   ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear
   API or import focused developer helpers from the domain packages.
-- nonlinear turbulence-gradient follow-up shared configs, JSON parsing,
-  candidate design, composite-control, matched-replicate, QL-seed,
-  state-runbook, and variance-reduction/control-variate report helpers now live
-  in ``tools/campaigns/nonlinear_gradient_followup.py``. They are campaign
-  planning tools, not runtime package functionality. Variance-reduction,
-  control-mean campaign, and control-mean gate reports share one
-  control-variate candidate parsing/ranking policy and stage paired-label
-  extraction, control-candidate construction, uncertainty propagation,
-  campaign sizing, independent-control pairing, and report packing so noisy
-  follow-up campaign decisions stay deterministic. QL-seed screening,
-  state-control runbooks, matched-replicate follow-up planning, and candidate
-  campaign design are all staged inside that single tools owner so they do not
-  re-enter the installable package as validation-campaign code.
+- nonlinear turbulence-gradient paired-seed statistics, control-variate
+  construction, uncertainty propagation, and independent control-mean gates
+  live in ``diagnostics/nonlinear_gradient_statistics.py`` as pure reusable
+  functions. Historical candidate selection and launch policy remains in a
+  temporary campaign owner pending deletion; it no longer owns scientific
+  uncertainty arithmetic.
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates, and
   artifact classification live in ``diagnostics/metadata.py``. Replicated

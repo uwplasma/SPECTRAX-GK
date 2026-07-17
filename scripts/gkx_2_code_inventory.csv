@@ -34,6 +34,7 @@ src/spectraxgk/diagnostics/metadata.py,src/spectraxgk/diagnostics,promoted libra
 src/spectraxgk/diagnostics/modes.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,11521,345,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/moments.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,27364,903,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/nonlinear_gradient_evidence.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,34834,915,target=gkx.diagnostics; preserve promoted physics and JAX contracts
+src/spectraxgk/diagnostics/nonlinear_gradient_statistics.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,34934,952,target=gkx.solve diagnostics; preserve replicated nonlinear-gradient uncertainty gates
 src/spectraxgk/diagnostics/nonlinear_replicates.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,31233,886,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/nonlinear_transport_optimization.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,34503,932,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/normalization.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,2932,120,target=gkx.diagnostics; preserve promoted physics and JAX contracts
@@ -281,7 +282,7 @@ tests/validation/benchmarks/test_benchmarking.py,tests/validation,organized test
 tests/validation/benchmarks/test_benchmarks_helpers.py,tests/validation,organized test,merge-by-domain,.py,28792,900,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_check_overdetermined_nonlinear_gradient_campaign.py,tests/validation,organized test,merge-by-domain,.py,8676,249,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_gradient_evidence.py,tests/validation,organized test,merge-by-domain,.py,54420,1541,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/validation/nonlinear/test_nonlinear_gradient_followup.py,tests/validation,organized test,merge-by-domain,.py,37813,1018,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/validation/nonlinear/test_nonlinear_gradient_followup.py,tests/validation,organized test,merge-by-domain,.py,11865,335,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_gradient_ql_seed_screen.py,tests/validation,organized test,merge-by-domain,.py,7354,220,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py,tests/validation,organized test,merge-by-domain,.py,7229,207,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/nonlinear/test_nonlinear_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,20270,520,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -350,7 +351,7 @@ tools/benchmark_atlas_manifest.toml,tools/benchmark_atlas_manifest.toml,tool sup
 tools/benchmark_refresh_manifest.toml,tools/benchmark_refresh_manifest.toml,tool support file,keep-or-review,.toml,4826,82,non-python tool asset
 tools/campaigns/design_nonlinear_gradient.py,tools/campaigns,campaign helper,keep-or-merge,.py,69636,1820,owned by tools/campaigns
 tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py,tools/campaigns,campaign helper,keep-or-merge,.py,22125,587,owned by tools/campaigns
-tools/campaigns/nonlinear_gradient_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,127322,3514,owned by tools/campaigns
+tools/campaigns/nonlinear_gradient_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,94090,2643,owned by tools/campaigns
 tools/campaigns/nonlinear_replicate_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,43369,1198,owned by tools/campaigns
 tools/campaigns/run_nonlinear_gradient_direct_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,46258,1319,owned by tools/campaigns
 tools/campaigns/run_validation_campaigns.py,tools/campaigns,campaign helper,keep-or-merge,.py,37153,1088,owned by tools/campaigns

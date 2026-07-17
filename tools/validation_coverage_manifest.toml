@@ -1901,6 +1901,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.diagnostics.nonlinear_gradient_evidence"
 path = "src/spectraxgk/diagnostics/nonlinear_gradient_evidence.py"
+owned_modules = [
+  "spectraxgk.diagnostics.nonlinear_gradient_statistics",
+]
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -1936,7 +1939,7 @@ artifact_paths = [
 next_tests = [
   "add direct malformed-gradient payload regressions for nonfinite JSON-compatible values and mixed production/startup scope markers",
   "add replicated-window failure regressions for missing statistics and mismatched path lengths",
-  "keep campaign follow-up planning tests under tools/campaigns so they do not re-enter the installable package",
+  "delete historical campaign launch-policy tests after their accepted numerical evidence is frozen",
 ]
 
 [[modules]]

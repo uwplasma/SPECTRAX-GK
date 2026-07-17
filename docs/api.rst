@@ -505,10 +505,10 @@ Nonlinear Gradient Evidence Diagnostics
    :members:
    :private-members:
 
-Nonlinear Gradient Campaign Follow-Up Tools
--------------------------------------------
+Nonlinear Gradient Statistics
+-----------------------------
 
-.. automodule:: tools.campaigns.nonlinear_gradient_followup
+.. automodule:: spectraxgk.diagnostics.nonlinear_gradient_statistics
    :members:
    :private-members:
 

@@ -213,9 +213,9 @@ dispatches, transposes, global reconstruction, or recompilation.
 Exit: target package topology, <=45 files/45,000 lines, <=30 public names, no
 module >1,200 lines, frozen physics/derivative/performance contracts pass.
 
-Progress: **25%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
-diagnostic moments/growth, and Krylov ownership have been consolidated, but the
-old directory topology remains.
+Progress: **27%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
+diagnostic moments/growth, Krylov, and replicated nonlinear-gradient statistics
+ownership have been consolidated, but the old directory topology remains.
 
 ### Phase 3 - Simplify Tests, Benchmarks, and Commands
 
@@ -239,7 +239,8 @@ old directory topology remains.
 Exit: <=36 test files/55,000 lines, >=95% package coverage, <=12 scripts/18,000
 lines, and all documentation commands are reproducible.
 
-Progress: **10%**. Suite labels exist and 2,483 ownership-only test lines were
+Progress: **12%**. Suite labels exist and more than 3,100 ownership/planner test
+lines were
 removed with status/planner machinery, but 94 test files and oversized
 tool-test owners still dominate.
 
@@ -483,6 +484,12 @@ Use large coherent commits, each independently green:
   redundant CSV copies only where a JSON sidecar remained; retained all cited
   PDFs, data-only CSV files, final PNG/SVG figures, and compact JSON evidence;
   passed 366 artifact/release tests, validation manifests, and Sphinx ``-W``.
+- 2026-07-17 nonlinear-gradient ownership tranche: extracted paired-seed,
+  control-variate, and independent control-mean uncertainty gates into the pure
+  952-line ``diagnostics/nonlinear_gradient_statistics.py`` owner; reduced the
+  temporary mixed campaign module by 871 lines and its ownership test by 683
+  lines; passed 139 nonlinear-gradient consumers, architecture/validation
+  manifests, Ruff, and Sphinx ``-W``.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -494,14 +501,14 @@ Use large coherent commits, each independently green:
 | --- | ---: |
 | Frozen 1.7 contract | 70% |
 | Deletion/repository trim | 40% |
-| Scientific-core simplification | 25% |
-| Test/benchmark/command simplification | 10% |
+| Scientific-core simplification | 27% |
+| Test/benchmark/command simplification | 12% |
 | QA linear/QL/nonlinear optimization | 15% |
 | README/docs rebuild | 12% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **22%**. The next implementation tranche remains
+Weighted overall completion: **23%**. The next implementation tranche remains
 Phase 0 plus Phase 1: add compact promoted scalar/array hashes and refresh a
 bounded representative performance subset, then classify and delete the next
 superseded campaign/figure family before moving scientific-core files.
