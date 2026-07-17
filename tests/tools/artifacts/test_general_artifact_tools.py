@@ -3595,6 +3595,20 @@ def test_tracked_collision_table_contraction_gate_passes() -> None:
     assert max(row["relative_l2"] for row in payload["arrays"].values()) < 7.0e-16
 
 
+def test_tracked_collision_angular_shard_gate_passes() -> None:
+    """The production shard topology reproduces a monolithic P12 table."""
+
+    payload = json.loads(
+        (
+            ROOT / "docs/_static/collision_finite_wavelength_angular_shard_gate.json"
+        ).read_text()
+    )
+    assert payload["gate_passed"] is True
+    assert payload["resolution"] == [12, 5]
+    assert payload["maximum_relative_l2"] < 6.0e-16
+    assert payload["maximum_absolute_error"] < 8.0e-15
+
+
 def test_coulomb_polarization_coefficients_match_projection_and_cancel() -> None:
     """Frei et al. Eqs. (3.41) and (3.50) must satisfy direct and null gates."""
     from scipy.special import eval_genlaguerre, jv, lpmv

@@ -377,6 +377,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Closed the production-topology identity gate for resumable
+  angular tables. The first P12/J5 continuation reused ``m=1,3,4``, assigned
+  15 workers each to pending ``m=0,2``, and completed in 91 seconds. Against a
+  fresh monolithic four-wavelength table, matrix relative L2 differences are
+  below ``5.8e-16``, maximum coefficient error is ``7.2e-15``, all four
+  polarization vectors are bitwise identical, and checksums differ only by
+  ``4e-14``. A tracked JSON regression preserves this evidence without making
+  a speedup claim.
+
 - 2026-07-16: Made shared-cache angular generation genuinely resumable after a
   P12/J5 production-topology pilot. With ten workers the pilot reached final
   wavelengths but exceeded 180 seconds; with 30 workers it retained valid

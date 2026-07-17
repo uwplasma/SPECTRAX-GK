@@ -940,7 +940,10 @@ The combiner rejects missing/duplicate harmonics, metadata mismatches, and
 non-finite arrays. A unit-level equation gate verifies that the ordered sum of
 single-harmonic matrices and polarization vectors reproduces the monolithic
 archive to roundoff. This is checkpointing of an additive analytical sum, not
-a reduced collision model.
+a reduced collision model. The production-topology P12/J5 check is retained in
+``collision_finite_wavelength_angular_shard_gate.json``: both matrix relative
+:math:`L_2` errors are below :math:`5.8\times10^{-16}`, and all four
+polarization vectors are bitwise identical.
 
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
