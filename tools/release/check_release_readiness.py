@@ -269,8 +269,8 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
     "refactor_modularity": (
         EvidenceCheck(
             "architecture refactor plan",
-            "docs/architecture_refactor_plan.rst",
-            "authoritative refactor plan",
+            "plan.md",
+            "single implementation plan",
         ),
         EvidenceCheck(
             "package architecture manifest",

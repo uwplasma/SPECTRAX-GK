@@ -1,186 +1,15 @@
-# GKX 2.0 Simplification, Optimization, Documentation, and Rename Plan
+# GKX 2.0 Simplification, Optimization, and Rename Plan
 
-Date: 2026-07-17
-Status: implementation active on `refactor/gkx-2.0`
-Baseline: SPECTRAX-GK `v1.7.0` (`644bad30`)
+This file is the single implementation plan and execution log for the 2.0
+release. Older plans, generated status dashboards, and one-off campaign plans
+do not define release scope.
 
-The complete pre-2.0 engineering log is preserved permanently in the `v1.7.0`
-tag. This file is the single execution authority for the next release. Older
-refactor-plan pages are historical input and will be removed once their still
-valid technical requirements are represented here.
+## Mission
 
-## One-Sentence Plan
-
-Delete unpromoted and duplicated machinery first, consolidate the retained
-solver into a shallow physics-first JAX package with substantially fewer files
-and lines, reproduce and then extend the latest VMEC-JAX precise-QA optimization
-with validated linear, quasilinear, and true nonlinear ITG objectives, rebuild
-the README around three consistent evidence-backed figures and a sourced
-capability table, and only then perform the breaking package/repository rename to
-GKX and release version 2.0.
-
-## Non-Negotiable Outcomes
-
-1. Preserve every currently promoted physics, parity, differentiability,
-   restart, plotting, and scoped performance gate from `v1.7.0`.
-2. Reduce code by deletion and unified abstractions, not by moving complexity
-   into giant files, generated code, compatibility layers, or hidden scripts.
-3. Keep the differentiable Python path pure JAX. The executable may use faster
-   non-differentiable orchestration, host I/O, progress reporting, and compiled
-   caches.
-4. Keep comparison-code names out of solver source and user APIs. They may occur
-   only in benchmark provenance, comparison scripts, validation documentation,
-   and citations.
-5. Do not preserve obsolete private imports or legacy output formats. This is a
-   deliberate 2.0 API break; examples and documentation migrate with the code.
-6. Do not publish a transport-optimization result unless the equilibrium,
-   objective derivative/statistics, and independent nonlinear audit all pass.
-7. Do not make runtime or scaling claims without a fresh matched CPU/GPU
-   artifact and numerical-identity gate.
-
-## Measured Baseline and Targets
-
-The previous refactor reduced source modules from 357 at `v1.6.10` to 220 at
-`v1.7.0`, but 200 commits changed about 335,000 lines for only a 5,550-line net
-repository reduction. The next tranche therefore measures deletion and
-navigation cost directly.
-
-| Surface | `v1.7.0` baseline | 2.0 target | Acceptance rule |
-| --- | ---: | ---: | --- |
-| Installable Python source | 220 files / 87,847 lines | <=70 files / <=50,000 lines | Both limits pass; no denominator exclusions |
-| Package nesting | up to three domain levels | one domain level below `gkx` | `gkx/domain/module.py`; no `operators/linear/...` trees |
-| Public root API | large lazy registry plus many facades | <=30 documented names | Every name appears in API docs and one example |
-| Source-file size | many files near 900-1,000 lines | median <=650; hard max 1,200 | Exceptions require equation-level cohesion and review |
-| Tests | 95 files / 96,202 lines | <=45 files / <=60,000 lines | >=95% package coverage and all physics gates retained |
-| Developer tools | 95 files / 97,346 lines | <=15 scripts / <=25,000 lines | One command owner per release, figure, campaign, and profile family |
-| README | about 295 lines / eight unrelated figures | <=180 lines / <=3 figures | Installation and first run visible before technical detail |
-| Documentation pages | 29 top-level RST pages | <=16 user/research pages | No duplicate plan, status, or claim prose |
-| Tracked documentation assets | about 39 MB | <=15 MB | Compact source data + compressed publication previews |
-| Whole tracked repository | 49.2 MB | <=25 MB | Build caches and raw campaigns remain untracked |
-
-The targets are budgets, not incentives to create monoliths. A retained module
-must own one coherent mathematical, physical, numerical, I/O, or user-workflow
-responsibility and have independent consumers or tests.
-
-## Target Repository
-
-```text
-GKX/
-├── src/gkx/
-│   ├── __init__.py          # <=30 stable public names
-│   ├── cli.py               # executable parsing and progress only
-│   ├── config.py            # typed run configuration
-│   ├── model/               # gyrokinetic equations and physical closures
-│   ├── geometry/            # analytic, Miller, VMEC, and flux-tube contracts
-│   ├── numerics/            # grids, bases, fields, time/eigen solves, parallel maps
-│   ├── solve/               # linear, nonlinear, scan, and prepared-run APIs
-│   ├── diagnostics/         # growth, transport, spectra, and convergence statistics
-│   ├── optimize/            # differentiable observables and stellarator objectives
-│   └── io/                  # NetCDF, restart, and plotting
-├── examples/                # short user-owned scripts and TOML inputs
-├── benchmarks/              # scientific cases, frozen references, comparison/plots
-├── tests/                   # unit, integration, physics, and release suites
-├── scripts/                 # <=15 developer/release/profile commands
-├── docs/                    # user guide, equations, validation, and API
-├── README.md
-└── pyproject.toml
-```
-
-No domain contains another domain package. Modules use concrete names such as
-`model/collisions.py`, `numerics/time.py`, `solve/nonlinear.py`, and
-`diagnostics/transport.py`, not historical names such as `runtime_*`,
-`artifacts_*`, `*_reports`, `*_contracts_strategy`, or comparison-code labels.
-
-## Retention and Deletion Test
-
-Every file and public function must answer all four questions:
-
-1. What current user, equation, numerical method, or release gate owns it?
-2. Who imports it outside its own test?
-3. What would fail scientifically or operationally if it were removed?
-4. Why can it not live in the nearest coherent domain owner?
-
-If any answer is missing, delete it. One-off campaign logic is not package code.
-Small frozen reference data belongs in `benchmarks`; raw runs belong in release
-assets or external storage. Generated status dashboards and historical planning
-artifacts are not retained merely because they existed in 1.x.
-
-## Phase 0: Freeze the 1.7 Reference Contract
-
-Deliverables:
-
-- Record hashes and compact outputs for the promoted Cyclone, Cyclone Miller,
-  KBM, W7-X, HSX, collision, restart, geometry, autodiff, and optimization gates.
-- Record cold/warm CPU and office-GPU runtime plus peak-memory baselines for the
-  representative linear and nonlinear cases.
-- Generate one machine-readable inventory mapping each public API name, source
-  owner, test owner, documentation page, benchmark, and claim level.
-- Classify every source/tool/test file as `retain`, `merge`, `move`, or `delete`.
-- Create one implementation branch, `refactor/gkx-2.0`, and one draft PR only.
-
-Exit gate: the frozen 1.7 wheel and the development branch produce equivalent
-promoted observables before any deletion tranche begins.
-
-## Phase 1: Delete Before Refactoring
-
-Delete or move first:
-
-- reduced/synthetic QA models and panels that are not solved VMEC equilibria;
-- superseded campaign admission, status-dashboard, and one-off artifact builders;
-- dormant nonlinear sharding experiments that failed identity or speed gates;
-- duplicate plotting, NetCDF, metadata, policy, and report wrappers;
-- retired compatibility facades and import aliases;
-- generated PDFs, redundant CSV/JSON encodings, and old plan/status images;
-- stale build, egg-info, output, and cache directories from local workflows.
-
-Consolidation priorities from the measured tree:
-
-| Current family | Current files | Target owner count | Decision |
-| --- | ---: | ---: | --- |
-| `objectives` | 34 | 5-7 | Keep physical objectives, eigen derivatives, optimization, and gates; delete campaign-policy plumbing |
-| `operators` | 33 | 8-10 | Organize by equations: fields, streaming/drifts, collisions, nonlinear bracket |
-| `solvers` | 29 | 7-9 | One linear, nonlinear, time, eigen/Krylov, and prepared-run owner each |
-| `geometry` | 25 | 6-8 | Analytic, Miller, VMEC, flux-tube, Boozer, and derivative owners |
-| `diagnostics` | 24 | 5-7 | Growth, transport, spectra, conservation, and validation statistics |
-| `workflows` | 21 | 3-4 | Run, scan, examples, executable orchestration |
-| `artifacts` | 16 | 3-4 in `io` | NetCDF/restart, plotting, benchmark payloads |
-| `parallel` plus parallel solver/operator files | >20 | 3-5 | Independent maps, decomposition, identity/performance gates |
-
-Each commit must reduce both file count and net lines. Temporary duplicate old
-and new implementations may exist only within a single commit.
-
-Exit gate: source <=120 files and <=68,000 lines, tools <=45 files, all frozen
-contracts and >=95% coverage pass.
-
-## Phase 2: Consolidate the Physics and Numerical Core
-
-### Model ownership
-
-- Put the normalized gyrokinetic equation, species coupling, field equations,
-  drive/drift terms, nonlinear bracket, dissipation, and collisions under
-  `gkx.model`.
-- Keep term switches as data, not branches duplicated across linear, nonlinear,
-  diagnostic, and parallel implementations.
-- Make collision operators implement one documented protocol. Retain the
-  validated diagonal finite-wavelength Coulomb/original/improved-Sugama research
-  path without inflating the default executable model claim.
-
-### Numerical ownership
-
-- Keep one spectral-grid type, one Hermite-Laguerre basis owner, one field solve,
-  one linear operator assembly, and one nonlinear bracket implementation.
-- Keep SOLVAX responsible for generic structured linear algebra; GKX owns plasma
-  equations, branch selection, physical preconditioners, and acceptance gates.
-- Express fixed-step differentiable integration with `jax.lax.scan`; keep
-  adaptive Diffrax and IMEX paths only where distinct validated behavior exists.
-- Replace parallel reference/report/strategy modules with one decomposition data
-  model plus pure local kernels and explicit collectives.
-- Profile every consolidation on CPU and GPU; reject abstractions that add
-  dispatches, transposes, global reconstruction, or compilation memory.
-
-### API ownership
-
-The intended public workflow is:
+Turn SPECTRAX-GK into **GKX**: a small, comprehensible, JAX-native local
+gyrokinetic solver that preserves the validated 1.7 physics and comparison
+results, runs efficiently on CPU and GPU, supports end-to-end derivatives for
+Python optimization workflows, and exposes one obvious public workflow:
 
 ```python
 import gkx
@@ -190,381 +19,466 @@ result = gkx.solve(case)
 gkx.plot(result)
 ```
 
-Advanced imports come from one domain, for example `gkx.geometry.vmec` and
-`gkx.optimize`. Internal helpers remain private and are not re-exported through
-registries.
+The executable workflow is equally small:
 
-Exit gate: source <=70 files and <=50,000 lines; public API <=30 names; all
-promoted values, derivatives, restart files, and warm-runtime budgets pass.
+```console
+gkx cyclone.toml
+gkx --plot cyclone.out.nc
+```
 
-## Phase 3: Simplify Tests, Benchmarks, and Developer Commands
+## Measured Starting Point
 
-### Tests
+Measured on `refactor/gkx-2.0` at `0fea14e9` on 2026-07-17:
 
-Use four suites with one file per coherent domain:
+| Area | Current | 2.0 target |
+| --- | ---: | ---: |
+| Solver package | 196 Python files / 86,073 lines | <=45 files / <=45,000 lines |
+| Tests | 94 Python files / 95,986 lines | <=36 files / <=55,000 lines |
+| Developer tools | 94 Python files / 96,264 lines | <=12 commands / <=18,000 lines |
+| Examples | 5,270 Python lines | <=3,500 lines |
+| README | 295 lines / 6 figures | <=180 lines / <=3 figures |
+| Documentation | 30 pages / 1,592 static files / 34.15 MB | <=16 pages / <=250 static files / <=12 MB |
+| Git database | 155 MB | <=35 MB after the 2.0 history rewrite |
+| Public API | registry-driven, broad | <=30 documented names |
 
-- `tests/unit`: equations, grids/bases, geometry, solvers, diagnostics, I/O;
-- `tests/integration`: executable, restart, prepared runs, parallel identity;
-- `tests/physics`: literature limits, convergence, conservation, and benchmark
-  observables;
-- `tests/release`: package, docs, repository, API, and claim gates.
+The final budgets are intentionally stricter than the earlier refactor plan.
+Reducing file count by creating unreviewable giant modules is not acceptable:
+the target median module is <=650 lines, no production module may exceed 1,200
+lines, and each module must have one scientific or operational owner.
 
-Parametrize cases instead of creating files per case. Shared physical fixtures
-must be immutable and explicit. Coverage remains >=95%, but the acceptance
-criterion is detection power: manufactured solutions, observed order,
-conservation/free-energy checks, branch continuity, grid/time convergence,
-AD-vs-FD, and independent comparison results.
+## Non-Negotiable Release Contracts
 
-### Benchmarks
+Every deletion, move, and rewrite must preserve these contracts unless a
+documented bug fix deliberately changes one:
 
-`benchmarks/` owns all scientific comparisons and publication regeneration:
+1. Frozen linear growth rates, frequencies, eigenfunction overlaps, nonlinear
+   window statistics, collision limits, restart trajectories, and geometry
+   arrays remain within their existing promoted tolerances.
+2. The comparison suite remains the only place where comparison-code names are
+   used. Physics and numerical implementation names must describe equations or
+   algorithms rather than provenance.
+3. CPU and GPU warm runtime and peak memory may not regress by more than 5% on
+   the representative linear and nonlinear cases. A claimed speedup requires a
+   fresh profiler artifact and numerical-identity gate.
+4. Package-wide statement coverage remains >=95%. More importantly, literature
+   limits, observed order, conservation, AD-vs-FD, branch continuity, and
+   independent comparison gates retain detection power.
+5. Differentiable Python paths use JAX arrays and pure functions. The executable
+   may choose faster non-differentiable I/O, progress, and adaptive orchestration.
+6. Generated runs, profiler traces, WOUT files, NetCDF outputs, and intermediate
+   figures do not enter Git. Only compact inputs, reference summaries, and final
+   compressed publication figures are tracked.
+7. No reduced, synthetic, startup-window, or saturation-rule proxy is presented
+   as evidence for a production nonlinear heat-flux reduction.
 
-- compact TOML/JSON case definitions;
-- small reference arrays with revision/source hashes;
-- one linear, one nonlinear, one collision, one geometry, and one performance
-  runner;
-- one figure command that applies a shared publication style.
+## Target Repository
 
-Comparison-code names are allowed here because provenance is the purpose.
+The package will be shallow: at most two directory levels below `src/gkx`, no
+parallel hierarchy for “reports”, “contracts”, “strategies”, “runtime”, or
+“artifacts”, and no folder that owns fewer than two coherent modules.
 
-### Scripts
+```text
+src/gkx/
+  __init__.py          # lazy public API only
+  api.py               # load, solve, scan, plot
+  cli.py               # executable parsing and progress
+  case.py              # immutable user configuration pytrees
+  physics/
+    equations.py       # normalized gyrokinetic terms and switches
+    fields.py          # quasineutrality and electromagnetic field solves
+    collisions.py      # collision protocol and promoted operators
+    transport.py       # physical moments and flux definitions
+  geometry/
+    analytic.py        # slab, s-alpha, and simple analytic geometry
+    miller.py          # Miller construction and derivatives
+    vmec.py             # VMEC/VMEC-JAX field-line geometry
+    boozer.py           # Boozer transform bridge and QS observables
+  numerics/
+    grids.py            # spatial and Hermite-Laguerre grids/bases
+    spectral.py         # transforms, dealiasing, nonlinear bracket
+    linear.py           # matrix-free linear operator and eigen solve
+    nonlinear.py        # nonlinear RHS and state operations
+    time.py             # fixed, adaptive, IMEX, and checkpointed stepping
+    parallel.py         # independent maps and accepted decomposition
+  solve/
+    linear.py           # linear run and ky scan
+    nonlinear.py        # nonlinear run and restart
+    diagnostics.py      # growth, spectra, windows, convergence
+  optimize/
+    objectives.py       # growth, QL, nonlinear, and geometry residuals
+    derivatives.py      # eigen, trajectory, implicit, and FD gates
+    stellarator.py      # VMEC-JAX objective composition and campaigns
+  io/
+    config.py           # TOML loading and schema validation
+    results.py          # one NetCDF schema and restart contract
+    plotting.py         # user plots and publication style
+```
 
-Replace `tools/` with at most 15 conventional developer commands under
-`scripts/`: `ci.py`, `release.py`, `repo_audit.py`, `figures.py`,
-`campaign.py`, and focused profiling commands. Reusable science belongs in
-`gkx` or `benchmarks`; shell orchestration does not become importable package
-code.
+The exact final count may be below this tree. A new file is permitted only if
+it removes more code than it adds, creates a real ownership boundary, and does
+not duplicate a nearby domain.
 
-Exit gate: <=45 test files/60,000 lines, <=15 scripts/25,000 lines, bounded
-local shards finish within five minutes each, and CI reproduces the 95% gate.
+Outside the package:
 
-## Phase 4: Rebuild the QA ITG Optimization Evidence
+```text
+tests/{unit,integration,physics,release}/
+benchmarks/{cases,references,run.py,figures.py}
+scripts/{ci.py,release.py,audit.py,figures.py,campaign.py,profile.py}
+examples/{linear,nonlinear,geometry,optimization}/
+docs/
+```
 
-### 4.1 Exact QA baseline
+## Deletion Test
 
-Use the latest `vmec_jax` main branch and reproduce
-`examples/optimization/QA_optimization_ess.py` without modification:
+Before moving code, answer for every file and public function:
 
-- `input.minimal_seed_nfp2` and its `RBC/ZBS(1,1)` perturbation;
-- `nfp=2`, `max_mode=5`, one least-squares call;
-- Exponential Spectral Scaling with `ess_alpha=0.7`;
-- quasisymmetry on ten surfaces, aspect target 6.0, mean-iota target 0.42;
-- implicit equilibrium adjoint and the upstream solve tolerances/budget.
+1. Which current equation, method, user workflow, benchmark, or release gate
+   owns it?
+2. Who imports it outside its own test?
+3. What scientific or operational behavior would fail if it disappeared?
+4. Why can it not live in the nearest domain owner?
 
-Freeze the resulting input, WOUT hash, QS residual, aspect, iota profile,
-boundary coefficients, convergence history, and VMEC-JAX revision. This is the
-only baseline. No reduced surface or synthetic proxy may replace it.
+Delete it if any answer is missing. One-off campaign logic and status rendering
+are not reusable library code. Tests that merely assert that a historical file
+or wrapper exists are deleted with that wrapper.
 
-### 4.2 Shared transport portfolio
+## Execution Order
 
-All three optimizations use the same normalized training portfolio and separate
-holdouts. Initial training points are three radii (`s=0.25, 0.50, 0.75`), two
-field lines per radius, and a resolved positive `ky` spectrum. Resolution and
-spectral ranges are promoted only after `ky`, parallel-grid, Hermite, Laguerre,
-time-window, and timestep convergence. Holdouts use unseen radii, alpha values,
-and gradient values.
+### Phase 0 - Freeze the 1.7 Contract
 
-The equilibrium terms retain the exact baseline targets. Transport weights are
-selected by a Pareto scan, not manually chosen after seeing the final result.
-Accepted geometries must satisfy:
+1. Record package, dependency, VMEC-JAX, Boozer, SOLVAX, and comparison-code
+   revisions in one compact manifest.
+2. Freeze promoted scalar/array hashes for Cyclone, Cyclone Miller, KBM, W7-X,
+   HSX, collision, restart, geometry, derivative, and optimization gates.
+3. Refresh representative cold/warm CPU and office-GPU runtime and memory.
+4. Map public names to implementation, tests, docs, and scientific claims.
 
+Exit: the wheel and branch reproduce the frozen values before further deletion.
+
+Progress: **40%**. Physics and architecture manifests exist; the final compact
+runtime/memory baseline and public-name map remain.
+
+### Phase 1 - Delete Historical Evidence Machinery
+
+1. Classify every `tools` command as release gate, reproducible benchmark,
+   active campaign, profiler, or delete.
+2. Delete generated research-status dashboards, superseded admission planners,
+   historical campaign launchers, failed sharding experiments, duplicate figure
+   builders, and their ownership-only tests.
+3. Retain compact accepted evidence in `benchmarks/references`; move raw runs to
+   release assets and document the checksum/fetch procedure.
+4. Delete duplicate PDF/PNG/CSV/JSON encodings. Keep one compressed PNG or SVG
+   plus one small machine-readable summary per promoted result.
+5. Remove ignored outputs, caches, build products, and `__pycache__` trees.
+
+Exit: source <=120 files/68,000 lines, tools <=45 files, docs static <=20 MB,
+all frozen gates pass.
+
+Progress: **22%**. Synthetic QA evidence and several duplicate owners are gone;
+the 94-file tool layer and historical static evidence remain the main blockers.
+
+### Phase 2 - Build the Shallow Scientific Core
+
+Apply these tranches in order; each commit must reduce both files and lines.
+
+1. **Case/data model:** replace registries, policy wrappers, and duplicated
+   configuration dataclasses with immutable pytrees in `case.py`.
+2. **Physics:** merge term assembly, fields, moments, dissipation, and collision
+   switches into the four `physics` owners. Keep collision implementations
+   selectable through one small protocol.
+3. **Geometry:** merge the 25 current files into analytic, Miller, VMEC, and
+   Boozer owners. Fold report/table wrappers into tests or benchmark scripts.
+4. **Numerics:** retain one grid, basis, field solve, linear operator, nonlinear
+   bracket, time policy, and decomposition model. SOLVAX owns generic Krylov,
+   tridiagonal, preconditioner, and matrix-free linear algebra.
+5. **Solves:** eliminate `runtime.py`, `linear.py`, `nonlinear.py`, nested
+   workflow runtime orchestration, and facade layers in favor of three direct
+   solve modules.
+6. **Diagnostics:** keep physical observables and convergence statistics near
+   `solve/diagnostics.py`; move manuscript model fitting to benchmarks.
+7. **Optimization:** retain only physical residuals, derivative rules, and the
+   VMEC-JAX composition layer. Delete campaign status/report policy code.
+8. **I/O and plotting:** one TOML schema, one result/restart NetCDF schema, one
+   plotting API, and one publication style.
+
+For every tranche run unit/physics parity, AD-vs-FD, CPU/GPU compile and warm
+timing, peak memory, and package coverage. Reject abstractions that add XLA
+dispatches, transposes, global reconstruction, or recompilation.
+
+Exit: target package topology, <=45 files/45,000 lines, <=30 public names, no
+module >1,200 lines, frozen physics/derivative/performance contracts pass.
+
+Progress: **25%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
+diagnostic moments/growth, and Krylov ownership have been consolidated, but the
+old directory topology remains.
+
+### Phase 3 - Simplify Tests, Benchmarks, and Commands
+
+1. Rebuild tests as four suites with one parametrized file per domain:
+   `unit`, `integration`, `physics`, and `release`.
+2. Preserve tests that can catch defects: manufactured solutions, exact limits,
+   free-energy/conservation identities, observed-order sweeps, branch
+   continuity, velocity/grid/time convergence, restart identity, AD-vs-FD,
+   nonlinear window stability, and independent reference comparisons.
+3. Delete tests of private wrapper names, parser plumbing, generated status
+   layout, and historical file ownership.
+4. Make `benchmarks/run.py` own linear, nonlinear, collision, geometry, and
+   performance comparisons from compact case manifests.
+5. Make `benchmarks/figures.py` regenerate every shipped scientific figure with
+   one style and deterministic metadata.
+6. Replace `tools/` with <=12 `scripts` commands. Reusable physics stays in
+   `gkx`; shell orchestration is not importable package code.
+7. Keep each local shard below five minutes and run wide coverage in bounded CI
+   matrix shards.
+
+Exit: <=36 test files/55,000 lines, >=95% package coverage, <=12 scripts/18,000
+lines, and all documentation commands are reproducible.
+
+Progress: **5%**. Suite labels exist, but oversized tool-test files and
+ownership assertions still dominate.
+
+### Phase 4 - Rebuild the QA ITG Optimizations
+
+#### 4.1 Exact VMEC-JAX baseline
+
+Pin the latest reviewed VMEC-JAX revision; the planning reference is
+`adf2d334` (2026-07-17). Reproduce
+[`QA_optimization.py`](https://github.com/uwplasma/vmec_jax/blob/main/examples/optimization/QA_optimization.py)
+without changing its seed, perturbation, staged `max_mode=1..5`, ESS policy,
+least-squares tolerances, QS surfaces, aspect target 6.0, or mean-iota target
+0.42. Freeze the final input, WOUT checksum, QS residual, aspect, iota profile,
+boundary coefficients, convergence history, and VMEC-JAX revision. This solved
+equilibrium is the sole baseline for all three transport campaigns.
+
+#### 4.2 Shared resolved portfolio
+
+Use the same training portfolio for all objectives: at least three radii, two
+field lines per radius, and a resolved positive-`ky` spectrum. Use unseen radii,
+field lines, and gradients as holdouts. Promote resolution only after `ky`,
+parallel-grid, Hermite, Laguerre, timestep, horizon, and statistical-window
+convergence pass.
+
+Each transport residual is dimensionless and normalized by the fixed baseline
+portfolio scale. Optimization weights come from a logged Pareto sweep, not from
+manual tuning after observing the final geometry. Geometry acceptance is:
+
+- QS residual no worse than 5x the precise-QA baseline;
 - aspect within 1% of 6.0;
-- mean iota within 0.01 of 0.42 and no evaluated profile point below 0.39;
-- QS residual no more than 2x the precise-QA baseline and below a fixed absolute
-  publication threshold;
-- solved equilibrium, finite gradients, and unchanged field-line conventions.
+- mean iota in `[0.40, 0.44]` with no resolved surface below 0.39;
+- valid nested equilibrium and Boozer transform;
+- training transport reduction >=20% and held-out reduction >=10%;
+- every claimed derivative passes directional AD-vs-centered-FD agreement.
 
-### 4.3 Linear-growth objective
+#### 4.3 Linear-growth objective
 
-Define a differentiable portfolio residual from the positive part of the
-isolated ITG growth rate over the converged `ky` spectrum. Use a smooth maximum
-or weighted RMS so one branch cannot hide behind stable modes. Differentiate
-with the implicit left/right eigenpair rule and the VMEC fixed-point adjoint.
-Require spectral-gap/branch continuity plus directional JVP/VJP versus centered
-finite differences before optimization.
+Add one normalized residual-vector callable to the exact VMEC-JAX
+`objective_terms`. Use a smooth positive-growth aggregate over the full
+portfolio, not one selected `ky` point. Differentiate VMEC equilibrium
+implicitly and the dominant eigenvalue with the accepted eigenpair rule. Gate
+spectral separation, branch continuity, directional derivatives, and holdouts.
 
-Run one `max_mode=5`, ESS-scaled VMEC-JAX least-squares solve with the added
-linear residual tuple. Promotion requires >=20% training-objective reduction,
->=10% holdout reduction, and no regression in the equilibrium gates.
+#### 4.4 Quasilinear objective
 
-### 4.4 Quasilinear objective
+Choose the saturation rule from the frozen stellarator holdout ranking and
+state the claim as screening/correlation unless absolute-flux gates pass. The
+current value-only eigenvector path is insufficient for a differentiable
+optimization. Implement and test a left/right-eigenvector JVP/VJP with spectral
+gap conditioning, or use a differentiable resolvent observable if the selected
+model supports it. Compare AD, tangent, and centered FD before optimization.
 
-Do not optimize the current single-`ky` uncalibrated scalar. Compare smooth,
-differentiable spectrum-integrated candidates on the existing nonlinear ledger:
-positive-growth mixing length, heat-flux-weighted mixing length, and the fixed
-`spectral_envelope_ridge` coefficients. Select the objective by held-out rank
-skill and local landscape conditioning, not absolute-flux appearance. Keep the
-claim as screening unless absolute-flux gates independently pass.
+#### 4.5 Nonlinear heat-flux objective
 
-Implement a custom implicit eigenpair JVP/VJP for eigenvector-dependent heat
-flux and `k_perp` observables, using biorthogonal left/right eigenvectors and a
-branch-gap fail-closed rule. Only then use the VMEC implicit-Jacobian
-least-squares path. Promotion requires AD/FD agreement, >=20% training reduction,
->=10% held-out screening reduction, and matched nonlinear audits of the final
-geometry.
+Optimize the actual post-transient ion heat-flux mean, not
+`nonlinear_heat_flux_proxy`. Use a deterministic fixed-step differentiable
+trajectory, common-random-number initial states, a smooth late window, and
+checkpointed discrete adjoints. Horizon continuation is allowed, but the final
+objective window must pass running-mean, subwindow, grid, timestep, and replicate
+gates. If chaotic tangent growth makes the gradient unusable, switch the outer
+optimization to an explicitly documented noise-robust trust-region/SPSA/CMA
+method; do not label a proxy or finite startup trace as nonlinear optimization.
 
-### 4.5 True nonlinear heat-flux objective
+#### 4.6 Optimization acceptance and figures
 
-A reduced startup/window formula is not a nonlinear optimization objective.
-Use the actual post-transient ion heat flux from a converged nonlinear run:
+Run matched baseline-versus-final long nonlinear audits for the linear, QL, and
+nonlinear optimized equilibria. Require confidence intervals and report negative
+results honestly. Produce one consistent publication panel containing:
 
-- automatic transient exclusion based on stationarity diagnostics;
-- weighted Birkhoff late-time average as in Kim et al. (2024);
-- common initial phases/random numbers for paired comparisons;
-- at least three replicas for accepted candidates;
-- grid, timestep, and time-horizon convergence with uncertainty bars.
+1. 3D boundaries colored by `|B|` with the same camera and color limits;
+2. unfilled Boozer `|B|` contours with the same levels;
+3. iota profiles excluding the unresolved axis point;
+4. normalized objective and constraint histories;
+5. matched nonlinear `Q_i(t)` traces and late-window means with uncertainty;
+6. training/holdout transport summaries.
 
-Chaotic long-time flux derivatives are not promoted through naive reverse-mode
-unrolling. Use SPSA with common random numbers as the primary optimizer, compare
-against a derivative-free trust-region/CMA-ES fallback, and use the
-linear/quasilinear gradient only as a warm-start proposal. The objective combines
-normalized QS, aspect, iota, and nonlinear-flux residuals in the same physical
-portfolio. Promotion requires a statistically resolved >=15% nonlinear-flux
-reduction on training points and >=10% on holdouts, with confidence intervals
-and all equilibrium gates passing.
+Only this final panel appears in the README. Landscape, conditioning,
+convergence, Pareto, and derivative figures belong in documentation.
 
-### 4.6 Examples and final comparison
+Exit: all three scripts differ from upstream QA only by imports, portfolio
+configuration, one objective term, reporting, and accepted validation; all
+geometry and transport gates pass.
 
-Retain exactly four optimization examples:
+Progress: **15%**. Three examples exist, but they use a fixed one-point weight;
+the QL and nonlinear scripts are value/proxy workflows, and the tracked panel
+does not demonstrate an accepted transport change.
 
-- `QA_baseline.py`;
-- `QA_linear_ITG.py`;
-- `QA_quasilinear_ITG.py`;
-- `QA_nonlinear_ITG.py`.
+### Phase 5 - Rebuild README and Documentation
 
-They follow VMEC-JAX's top-to-bottom example style: parameters at the top,
-visible objective tuples, one optimization call or explicit SPSA loop, output,
-and plotting. Shared solver code stays in packages; examples contain no hidden
-campaign framework.
+#### README structure
 
-The publication panel compares baseline, linear-, QL-, and nonlinear-optimized
-configurations using consistent columns: 3-D boundary colored by `|B|`, Boozer
-LCFS contour lines, iota profile excluding the magnetic-axis plotting artifact,
-objective history, matched nonlinear `Q_i(t)`, and flux-gradient curves with
-uncertainty. Every plotted point links to its input, WOUT, run manifest, and
-convergence gate.
+Keep the README below 180 lines:
 
-## Phase 5: Rebuild README and Documentation
+1. title, badges, and a two-sentence description;
+2. `pip install gkx`, one executable command, and the three-line Python API;
+3. six concise highlights;
+4. one capabilities/comparison table;
+5. one combined validation/performance figure;
+6. one differentiability/QA-optimization figure;
+7. one collision/physics-verification figure;
+8. links to examples, full documentation, contributing, citation, and license.
 
-### README order
+No release policy, detailed equations, convergence discussion, claim matrix,
+or campaign narrative belongs in the README.
 
-1. Name, badges, and a two-sentence purpose statement.
-2. Installation and a working `gkx` first run.
-3. A concise feature comparison table.
-4. One consistent linear/nonlinear validation panel.
-5. One matched runtime/memory panel.
-6. One differentiable QA optimization panel.
-7. Links to examples, documentation, citation, scope, and license.
+#### Comparison table
 
-The README is a product overview, not a manuscript or status ledger. Collision
-derivations, quasilinear caveats, convergence tables, optimizer details,
-parallel decomposition, and open research questions move to documentation.
+Use `yes`, `limited`, and `no` with a visible legend. Compare GKX, GX, and GENE
+only on source-verifiable features: local flux-tube linear/nonlinear physics,
+electrostatic/electromagnetic models, adiabatic/kinetic electrons, tokamak and
+stellarator geometry, collisions, CPU/GPU execution, distributed execution,
+Python API, built-in plotting, automatic differentiation, and equilibrium-to-
+turbulence optimization. Pin the audited revisions and link every column to its
+source/documentation. “Limited” is mandatory for experimental decomposition or
+scoped physics; absence of evidence is not converted to `no`.
 
-### Capability table policy
+Primary comparison sources:
 
-Use `✅` validated, `◐` scoped/partial, `❌` not available, and `—` outside the
-code's purpose. Compare GKX, GX, and GENE only on sourced categories:
+- [GX repository](https://bitbucket.org/gyrokinetics/gx/) and
+  [documentation](https://gx.readthedocs.io/en/latest/)
+- [GENE project and release documentation](https://genecode.org/)
+- [GX method paper](https://arxiv.org/abs/2209.06731)
 
-- local linear and nonlinear flux-tube simulation;
-- tokamak and stellarator geometry;
-- electrostatic and electromagnetic models;
-- adiabatic and kinetic electrons/multispecies;
-- Hermite-Laguerre velocity representation;
-- advanced collision operators;
-- CPU and GPU execution;
-- distributed production execution;
-- differentiable solver/objectives;
-- in-memory differentiable VMEC/Boozer geometry;
-- global and neoclassical models;
-- executable plotting/restart workflow.
+#### Documentation structure
 
-The table is generated from a dated capability manifest with links to official
-code documentation and exact GKX evidence. It must not imply that a scoped GKX
-feature equals a broader production capability in GENE or GX.
+Consolidate 30 pages into <=16 user-facing pages: quickstart, cases/inputs,
+physics/model, geometry, collisions, numerics/solvers, outputs/plotting,
+parallel execution, differentiability, stellarator optimization, benchmarks,
+performance, validation/testing, API, examples, and references. Generated
+status/roadmap pages are removed. Equations, derivations, normalization,
+algorithms, conditioning, convergence, negative evidence, and exact reproduction
+commands move here from the README.
 
-### Visual system
+Exit: README/docs links and image dimensions pass automated gates, all examples
+run, and every displayed value is regenerated from a tracked compact manifest.
 
-All README figures use one typography/style module, matching width, consistent
-aspect ratio (prefer 16:9), panel labels, accessible colors, and raster previews
-<=350 KB. Overlapping curves use line style, markers, z-order, and inset/error
-bands. Publication PDFs and raw arrays are release assets; documentation keeps
-only compact PNG/WebP previews and source data needed to reproduce them.
+Progress: **5%**.
 
-### Documentation consolidation
+### Phase 6 - Atomic Rename to GKX
 
-Keep at most these user-facing pages: quickstart, inputs, model/equations,
-geometry, numerics, collisions, linear/nonlinear workflows, diagnostics/QL,
-optimization/autodiff, parallel/performance, benchmarks/validation, API,
-development/testing, release scope, and references. Merge or delete duplicate
-architecture, roadmap, manuscript-status, and refactor-plan prose.
+This is the final code-change phase, after all scientific and structural gates
+pass. Do not maintain dual internal package trees.
 
-## Phase 6: Final Rename to GKX
+1. Reserve the currently unclaimed PyPI project `gkx` and rename the GitHub
+   repository from `uwplasma/SPECTRAX-GK` to `uwplasma/GKX`.
+2. Rename `src/spectraxgk` to `src/gkx`, imports to `gkx`, executable to `gkx`,
+   project metadata to `gkx`, and user-facing names to GKX.
+3. Rename TOML/output metadata keys only where they are package branding rather
+   than physical schema. Provide a one-shot 1.7-to-2.0 input migration command,
+   not permanent runtime aliases.
+4. Coordinate VMEC-JAX's optional turbulence import from `spectraxgk` to `gkx`
+   and pin mutually compatible release versions.
+5. Update CI, release, Codecov, docs URLs, badges, issue templates, citation,
+   examples, output names, environment names, and benchmark provenance.
+6. Permit “SPECTRAX-GK” only in migration/release-history text and “GX”/“GENE”
+   only in comparison/benchmark provenance.
+7. Build and install the wheel in a clean environment; verify `import gkx`,
+   `gkx`, `gkx --plot`, CPU execution, and GPU execution.
 
-The rename is last because it is disruptive and should touch the final compact
-surface only.
+Exit: repository, package, import, executable, documentation, and generated
+metadata consistently say GKX; no internal legacy alias remains.
 
-Planned names:
+Progress: **0%**. The names are available as of 2026-07-17 but are not reserved.
 
-- project and repository: `uwplasma/GKX`;
-- distribution: `gkx` if still available on PyPI;
-- import package: `gkx`;
-- executable: `gkx`;
-- documentation title and artifact labels: `GKX`;
-- release: `v2.0.0`.
+### Phase 7 - Release and History Rewrite
 
-No `spectraxgk` import or executable compatibility package will remain in the
-2.0 source tree. The final 1.x package stays available on PyPI and its README/
-release notes point users to the 2.0 migration guide. GitHub's repository rename
-redirect handles old repository URLs; citations and archived artifacts retain
-the historical SPECTRAX-GK name where provenance requires it.
+1. Run Ruff, type checks, bounded test shards, >=95% merged coverage, docs build,
+   package build, wheel smoke, frozen physics gates, derivative gates, comparison
+   gates, and CPU/GPU runtime-memory gates.
+2. Confirm no tracked file exceeds 2 MB and no unapproved generated output is
+   present.
+3. Rewrite pre-2.0 history to remove historical figures, plans, raw outputs, and
+   transient artifacts; force-push only after preserving the signed 1.7 tag and
+   publishing a migration notice.
+4. Require fresh-clone `.git` <=35 MB and checkout <=25 MB excluding the local
+   environment.
+5. Merge the single draft refactor PR, tag `v2.0.0`, publish GitHub release notes
+   and PyPI `gkx`, and verify clean installation on CPU and office GPU.
 
-Naming due diligence is mandatory before the irreversible step. As of
-2026-07-17, `uwplasma/GKX` and the PyPI distribution `gkx` are available, but an
-unrelated GitHub project already uses `gkx`, and the plasma code name
-`TRIMEG-GKX` appears in a 2025 preprint. Reserve the namespace, check scientific
-name confusion and trademarks, and use the subtitle “GKX: differentiable
-Hermite-Laguerre gyrokinetics in JAX” consistently. If the collision is judged
-material, stop before renaming rather than creating a second ambiguous plasma
-code.
+Exit: all gates green, release artifacts reproducible, and published claims match
+the evidence.
 
-Rename gates:
+Progress: **0%**.
 
-- zero unintended `SPECTRAX`, `spectraxgk`, or `spectrax-gk` tokens outside the
-  migration guide, historical citations, and benchmark provenance;
-- clean install from PyPI candidate, `import gkx`, `gkx`, and `gkx --plot`;
-- all package, docs, examples, benchmarks, coverage, repository-size, and wheel
-  tests on the renamed tree;
-- GitHub Actions trusted publishing configured for the new project;
-- no duplicate package data or compatibility modules in the wheel.
+## Test and Evidence Matrix
 
-## Phase 7: Release Gate
+| Change | Required gates |
+| --- | --- |
+| Equation/operator consolidation | manufactured solution, exact limit, free-energy identity, reference parity |
+| Geometry consolidation | VMEC array parity, Boozer parity, coordinate identities, AD-vs-FD |
+| Linear solver | observed order, eigen residual, branch continuity, growth/frequency/eigenfunction parity |
+| Nonlinear solver | bracket identities, conservation, timestep/grid convergence, restart identity, window statistics |
+| Collision operator | null space, conservation, entropy production, collisional limits, finite-wavelength convergence |
+| Differentiable objective | primal parity, tangent/adjoint consistency, centered FD, conditioning and step-size sweep |
+| Parallel path | serial identity, deterministic reduction, CPU/GPU memory, strong scaling on a large case |
+| QA optimization | exact baseline, constraint gates, train/holdout reductions, long replicated nonlinear audit |
+| CLI/I/O | clean install, default run, progress/ETA, TOML echo, NetCDF round trip, `--plot` |
 
-Release `v2.0.0` only when:
+## Commit Sequence
 
-- source, test, script, README, docs, and repository budgets all pass;
-- package-wide coverage is >=95%; every retained physics gate passes;
-- frozen 1.7 promoted observables remain within their stated tolerances;
-- the three QA transport optimizations satisfy their separate claim gates;
-- current CPU/GPU runtime and memory artifacts show no unexplained regression;
-- strict documentation and all four examples reproduce from a clean install;
-- one release-candidate CI run is entirely green;
-- GitHub release and PyPI installation are verified in isolated environments.
+Use large coherent commits, each independently green:
 
-## Execution Order and Progress
+1. freeze compact 1.7 manifest and performance baseline;
+2. delete status/campaign/artifact machinery and redundant static evidence;
+3. consolidate case model and physics;
+4. consolidate geometry;
+5. consolidate numerical operators and time integration;
+6. consolidate solve, diagnostics, I/O, and plotting;
+7. consolidate objectives and derivative rules;
+8. rebuild tests, benchmarks, scripts, and coverage shards;
+9. reproduce exact VMEC-JAX QA baseline;
+10. close linear, QL, and nonlinear QA campaigns and final panel;
+11. rebuild README/docs and comparison table;
+12. perform atomic GKX rename, history rewrite, and release.
 
-| Phase | Completion | Next proof |
-| --- | ---: | --- |
-| 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
-| 1. Delete unpromoted/duplicate code | 18% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 23% | <=70 source files / <=50k lines with parity |
-| 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
-| 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
-| 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
-| 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
-| 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
+## Execution Log
 
-Overall completion: 14%.
+- `0ec50924`: added architecture budgets and repository inventory.
+- `b958b6e2`: removed synthetic QA turbulence evidence.
+- `4ad40db9`: unified nonlinear NetCDF schema writing.
+- `949c66ab`: consolidated publication plotting.
+- `b25dc427`: consolidated result and restart I/O.
+- `3dde7313`: consolidated objective portfolio and zonal owners.
+- `9ed4e619`: simplified VMEC transport objective ownership.
+- `5b973d95`: consolidated diagnostic moments and growth owners.
+- `0fea14e9`: unified matrix-free Krylov kernels.
+- 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
+  turbulence objective seam, fixed-weight one-point limitation in current QA
+  examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
+  and atomic rename requirements.
 
-## Evidence Sources
+## Current Completion
 
-- Latest VMEC-JAX precise-QA and ESS workflows:
-  <https://github.com/uwplasma/vmec_jax/tree/main/examples/optimization>
-- GX equations, Hermite-Laguerre representation, GPU/multi-GPU implementation,
-  and benchmark scope: <https://gx.readthedocs.io/en/latest/> and
-  <https://doi.org/10.1017/S0022377824000631>
-- GENE physics and geometry capability scope:
-  <https://genecode.org/details.html>
-- Direct quasilinear microstability optimization:
-  <https://doi.org/10.1103/PhysRevE.110.035201>
-- Direct nonlinear stellarator turbulence optimization, weighted Birkhoff
-  objective, and SPSA:
-  <https://doi.org/10.1017/S0022377824000369>
-- JAX custom/implicit derivative guidance:
-  <https://docs.jax.dev/en/latest/hijax_custom_derivatives.html> and
-  <https://docs.jax.dev/en/latest/advanced_autodiff.html>
+| Lane | Completion |
+| --- | ---: |
+| Frozen 1.7 contract | 40% |
+| Deletion/repository trim | 22% |
+| Scientific-core simplification | 25% |
+| Test/benchmark/command simplification | 5% |
+| QA linear/QL/nonlinear optimization | 15% |
+| README/docs rebuild | 5% |
+| GKX rename | 0% |
+| Release/history rewrite | 0% |
 
-## Implementation Log
-
-- 2026-07-17: Audited `v1.7.0`, measured 220 source files/87,847 lines,
-  95 test files/96,202 lines, 95 tool files/97,346 lines, eight README figures,
-  and 39 MB of tracked documentation assets. Fast-forwarded the clean local
-  VMEC-JAX clone to `a16d399c`, reviewed its precise-QA staged and one-call ESS
-  optimizations plus turbulence bridge, and identified why the current
-  SPECTRAX-GK QA examples do not move transport reliably: old staged workflow,
-  single-point low-resolution objectives, finite-difference eigenvector paths,
-  and a reduced nonlinear proxy rather than a true post-transient flux. Replaced
-  the completed 1.x log with this finite 2.0 execution plan; no solver behavior
-  or repository name changed in this planning tranche.
-- 2026-07-17: Created `refactor/gkx-2.0`; made `plan.md` the sole migration
-  authority; added no-regression topology and aggregate line-budget gates for
-  source, tests, tools, and developer scripts; and generated
-  `scripts/gkx_2_code_inventory.csv` with an explicit 2.0 disposition for every
-  tracked source, test, and tool file. Removed the superseded 2,719-line
-  differentiable-refactor ledger, its 658-line duplicate documentation page,
-  checker command, release tests, and CI/release hooks. The focused release
-  suite, Ruff, architecture policy, release-readiness policy, and validation
-  coverage manifest pass; no numerical implementation changed.
-- 2026-07-17: Deleted the unpromoted synthetic QA low-turbulence envelope from
-  the installable API: three source modules, their dedicated validation file,
-  one 785-line artifact builder, and seven generated figure/data sidecars.
-  Retained the solved VMEC-JAX campaign, VMEC/Boozer objective contracts,
-  RBC(1,1) long-window landscape, and matched nonlinear transport gates. Source
-  is now 217 files/86,516 lines; tests are 94 files/95,997 lines; tools are 94
-  files/96,264 lines. The solved-QA and objective suites, 95 release tests,
-  public API import audit, Ruff, coverage-manifest regeneration, architecture
-  budgets, and warning-free strict documentation build pass.
-- 2026-07-17: Consolidated nonlinear NetCDF geometry, field, diagnostics, and
-  bundle orchestration into one 1,069-line schema owner, reducing the source
-  tree by three files and 106 lines without changing dimensions, axis order,
-  spectral condensation, restart layout, or output variables. Added a reviewed
-  1,000-line target rather than weakening the global module limit. The merge
-  uncovered and fixed a fallback import that looked for the nonlinear
-  diagnostic loader in the writer module instead of its actual owner. All 39
-  runtime/restart artifact tests, 95 release tests, Ruff, architecture policy,
-  coverage ownership, and strict docs pass. Source is now 214 files/86,410
-  lines.
-- 2026-07-17: Replaced the lazy plotting registry plus three implementation
-  modules with one concrete 812-line publication-plotting owner. Benchmark,
-  growth/eigenfunction, saved-runtime, and style functions retain their public
-  names; zonal fitting remains in its physics-specific module and is imported
-  only when requested to avoid a circular dependency. The change removes three
-  source files and 75 net lines. All 26 plotting/example tests, focused release
-  gates, documented API identity checks, Ruff, architecture policy, and strict
-  docs pass. Source is now 211 files/86,335 lines.
-- 2026-07-17: Consolidated linear, quasilinear, nonlinear-table, restart, and
-  nonlinear-diagnostic artifact serialization into one runtime I/O owner.
-  Deleted four format-fragment modules, removed 236 net source lines, retained
-  the separate coherent nonlinear NetCDF schema and spectral-layout owners,
-  and migrated every internal, test, campaign, and documentation import. All
-  43 focused artifact/restart tests, focused release gates, public artifact API
-  identity checks, Ruff, architecture/coverage manifests, and warning-free
-  strict documentation pass. Source is now 207 files/86,265 lines.
-- 2026-07-17: Consolidated objective-portfolio shape/reduction with AD/FD,
-  conditioning, and covariance into ``objectives/portfolio.py``; retained a
-  separate sub-1,000-line persisted-artifact admission owner; and folded zonal
-  record normalization into its sole physical consumer. This removes two more
-  source files and 11 lines without an oversized-module exception. All 123
-  objective/VMEC-Boozer tests, 34 zonal-artifact tests, public API checks,
-  Ruff/format, architecture and coverage manifests, and strict docs pass.
-  Source is now 205 files/86,254 lines.
-- 2026-07-17: Replaced the VMEC transport facade/config/table fragments with
-  one 635-line differentiable objective owner and combined boundary-gradient
-  diagnostics with projected line-search policy in one 562-line optimization
-  owner. Kept the independent eigenbranch-continuity gate separate. The change
-  removes four source files and 60 lines; all 114 VMEC transport/campaign
-  tests, API identity checks, Ruff/format, architecture and coverage manifests,
-  and strict docs pass. Source is now 202 files/86,194 lines.
-- 2026-07-17: Unified diagnostic quadrature/mode weights, scalar energy,
-  transport-channel kernels, and resolved spectra in a 903-line
-  ``diagnostics/moments.py`` physical owner; removed the redundant facade; and
-  moved least-squares growth/frequency fits into the growth diagnostics owner
-  while keeping fit-window selection separate. This removes five source files
-  and 106 lines. Runtime/nonlinear diagnostic tests, 107 growth/benchmark
-  tests, 95 release gates, API identities, architecture/coverage/readiness
-  checks, Ruff/format, and strict docs pass. Source is now 197 files/86,088
-  lines.
-- 2026-07-17: Folded matrix-free eigen-operator application into the compiled
-  Krylov algorithm owner, removing one file and 15 source lines while keeping
-  the module below 1,000 lines. All 73 Krylov/benchmark tests, architecture and
-  coverage checks, Ruff/format, and strict docs pass. Source is now 196
-  files/86,073 lines.
+Weighted overall completion: **17%**. The next implementation tranche is Phase
+0 plus Phase 1: freeze the missing compact performance/public-API contract, then
+remove the historical status/campaign/static-evidence lane before moving more
+source files.

@@ -39,11 +39,10 @@ required_docs = [
   "plan.md",
 ]
 target_domain_packages = [
-  "gkx.model",
+  "gkx.physics",
   "gkx.geometry",
   "gkx.numerics",
   "gkx.solve",
-  "gkx.diagnostics",
   "gkx.optimize",
   "gkx.io",
 ]
@@ -58,7 +57,7 @@ path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
 baseline = 220
-target = 70
+target = 45
 
 [[topology_policy.counts]]
 name = "test_python_files"
@@ -66,7 +65,7 @@ path = "tests"
 pattern = "*.py"
 recursive = true
 baseline = 95
-target = 45
+target = 36
 
 [[topology_policy.counts]]
 name = "tool_python_files"
@@ -82,7 +81,7 @@ path = "scripts"
 pattern = "*.py"
 recursive = true
 baseline = 15
-target = 15
+target = 12
 
 
 [[topology_policy.counts]]
@@ -137,7 +136,7 @@ path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
 baseline = 87847
-target = 50000
+target = 45000
 
 [[line_budget_policy.counts]]
 name = "test_python_lines"
@@ -145,7 +144,7 @@ path = "tests"
 pattern = "*.py"
 recursive = true
 baseline = 96202
-target = 60000
+target = 55000
 
 [[line_budget_policy.counts]]
 name = "tool_python_lines"
@@ -161,4 +160,4 @@ path = "scripts"
 pattern = "*.py"
 recursive = true
 baseline = 25000
-target = 25000
+target = 18000

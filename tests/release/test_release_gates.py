@@ -1438,7 +1438,7 @@ def _architecture_manifest(*, allowed: list[str]) -> dict[str, object]:
         "metadata": {
             "schema_version": 1,
             "title": "test architecture policy",
-            "layout_authority": "docs/architecture_refactor_plan.rst",
+            "layout_authority": "plan.md",
             "status": "active",
         },
         "root_prefix_policy": {
@@ -1447,7 +1447,7 @@ def _architecture_manifest(*, allowed: list[str]) -> dict[str, object]:
         },
         "package_policy": {
             "required_domain_packages": ["spectraxgk.operators"],
-            "required_docs": ["docs/architecture_refactor_plan.rst"],
+            "required_docs": ["plan.md"],
         },
     }
 

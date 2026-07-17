@@ -264,9 +264,9 @@
           "exists": true,
           "name": "architecture refactor plan",
           "passed": true,
-          "path": "docs/architecture_refactor_plan.rst",
+          "path": "plan.md",
           "required": true,
-          "snippet": "authoritative refactor plan"
+          "snippet": "single implementation plan"
         },
         {
           "exists": true,

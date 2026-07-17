@@ -61,7 +61,6 @@ the same order they appear in the code.
    verification_matrix
    release_scope
    code_structure
-   architecture_refactor_plan
    manuscript_figures
    references
    roadmap
