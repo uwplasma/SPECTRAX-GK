@@ -3463,6 +3463,36 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
             (shard_paths[0],), tmp_path / "incomplete.npz"
         )
 
+    shared_path = tmp_path / "diagonal_table_shared.npz"
+    shared_metadata = mod.write_shared_precompute_angular_coulomb_table(
+        shared_path,
+        bessel_arguments=(0.1, 0.2),
+        maximum_hermite_order=1,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=1,
+        maximum_bessel_laguerre_order=1,
+        digits=24,
+        worker_count=2,
+        wavelength_worker_count=1,
+    )
+    assert shared_metadata["shared_precompute_seconds"] >= 0.0
+    assert shared_metadata["shard_worker_count"] == 1
+    assert len(shared_metadata["shard_total_seconds"]) == 2
+    with np.load(out) as serial, np.load(shared_path) as shared:
+        replayed = json.loads(str(shared["metadata"]))
+        assert replayed["shard_worker_count"] == 1
+        for name in (
+            "test_table",
+            "field_table",
+            "test_phi1",
+            "field_phi1",
+            "test_phi2",
+            "field_phi2",
+        ):
+            np.testing.assert_allclose(
+                shared[name], serial[name], rtol=5.0e-15, atol=1.0e-14
+            )
+
     with pytest.raises(ValueError, match="strictly increasing"):
         mod.write_equal_species_finite_wavelength_coulomb_table(
             out,

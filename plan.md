@@ -377,6 +377,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Replaced independent P24 shard launches with a shared-precompute
+  orchestrator. One parent now builds the complete wavelength-independent
+  speed cache, then forks all angular table writers from that read-only
+  copy-on-write state; each writer retains its restartable archive and the
+  final table records shared-precompute and per-shard timings. A nested-fork
+  low-order gate reproduces the monolithic matrices and all polarization
+  vectors to roundoff and confirms the persisted orchestration metadata. The
+  documented production command no longer duplicates the expensive cache.
+
 - 2026-07-16: Rejected the first P24/J10 shard launch configuration before its
   600-second bounds expired. Five independent shard executables each started a
   six-worker copy of the same wavelength-independent speed precompute; after

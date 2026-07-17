@@ -3467,6 +3467,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
     digits: int = 32,
     worker_count: int = 1,
     wavelength_worker_count: int = 1,
+    _coefficient_functions: tuple[Callable[..., Any], ...] | None = None,
 ) -> dict[str, Any]:
     """Write the diagonal finite-wavelength table needed by one ion species.
 
@@ -3510,21 +3511,27 @@ def write_equal_species_finite_wavelength_coulomb_table(
 
     with mp.workdps(digits):
         total_started = time.perf_counter()
-        print(
-            "collision table: preparing wavelength-independent coefficients", flush=True
-        )
-        coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
-        coefficient_functions = _precompute_coulomb_speed_coefficients(
-            coefficient_functions,
-            maximum_spherical_order=maximum_degree,
-            maximum_spherical_radial_order=maximum_degree // 2,
-            maximum_speed_power=(
-                maximum_laguerre_order
-                + maximum_bessel_laguerre_order
-                + (maximum_hermite_order + maximum_angular_bessel_order) // 2
-            ),
-            worker_count=worker_count,
-        )
+        if _coefficient_functions is None:
+            print(
+                "collision table: preparing wavelength-independent coefficients",
+                flush=True,
+            )
+            coefficient_functions = _coulomb_coefficient_functions(
+                mp, mp.mpf(1), mp.mpf(1)
+            )
+            coefficient_functions = _precompute_coulomb_speed_coefficients(
+                coefficient_functions,
+                maximum_spherical_order=maximum_degree,
+                maximum_spherical_radial_order=maximum_degree // 2,
+                maximum_speed_power=(
+                    maximum_laguerre_order
+                    + maximum_bessel_laguerre_order
+                    + (maximum_hermite_order + maximum_angular_bessel_order) // 2
+                ),
+                worker_count=worker_count,
+            )
+        else:
+            coefficient_functions = _coefficient_functions
         speed_precompute_seconds = time.perf_counter() - total_started
         active_wavelength_workers = min(wavelength_worker_count, grid.size)
         inner_worker_count = max(1, worker_count // active_wavelength_workers)
@@ -3649,6 +3656,9 @@ def write_equal_species_finite_wavelength_coulomb_table(
 def combine_equal_species_finite_wavelength_angular_shards(
     shard_paths: tuple[Path, ...],
     out: Path,
+    *,
+    shared_precompute_seconds: float | None = None,
+    orchestration_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Combine complete single-harmonic table shards in angular order."""
 
@@ -3712,6 +3722,10 @@ def combine_equal_species_finite_wavelength_angular_shards(
         ),
         "checksum": float(sum(float(np.sum(array)) for array in combined)),
     }
+    if shared_precompute_seconds is not None:
+        metadata["shared_precompute_seconds"] = float(shared_precompute_seconds)
+    if orchestration_metadata is not None:
+        metadata.update(orchestration_metadata)
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         out,
@@ -3720,6 +3734,79 @@ def combine_equal_species_finite_wavelength_angular_shards(
         **dict(zip(array_names, combined, strict=True)),
     )
     return metadata
+
+
+def write_shared_precompute_angular_coulomb_table(
+    out: Path,
+    *,
+    bessel_arguments: tuple[float, ...],
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+    maximum_angular_bessel_order: int,
+    maximum_bessel_laguerre_order: int,
+    digits: int = 32,
+    worker_count: int = 30,
+    wavelength_worker_count: int = 2,
+) -> dict[str, Any]:
+    """Generate all angular shards from one shared speed-coefficient cache."""
+
+    import mpmath as mp
+
+    shard_count = maximum_angular_bessel_order + 1
+    if worker_count < shard_count:
+        raise ValueError("worker_count must provide at least one worker per shard")
+    workers_per_shard = max(1, worker_count // shard_count)
+    maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
+    with mp.workdps(digits):
+        started = time.perf_counter()
+        print("collision shards: preparing one shared speed cache", flush=True)
+        coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
+        coefficient_functions = _precompute_coulomb_speed_coefficients(
+            coefficient_functions,
+            maximum_spherical_order=maximum_degree,
+            maximum_spherical_radial_order=maximum_degree // 2,
+            maximum_speed_power=(
+                maximum_laguerre_order
+                + maximum_bessel_laguerre_order
+                + (maximum_hermite_order + maximum_angular_bessel_order) // 2
+            ),
+            worker_count=worker_count,
+        )
+        shared_precompute_seconds = time.perf_counter() - started
+        shard_paths = tuple(
+            out.with_name(f"{out.stem}_m{order}{out.suffix}")
+            for order in range(shard_count)
+        )
+
+        def build_shard(order: int) -> tuple[int, dict[str, Any]]:
+            metadata = write_equal_species_finite_wavelength_coulomb_table(
+                shard_paths[order],
+                bessel_arguments=bessel_arguments,
+                maximum_hermite_order=maximum_hermite_order,
+                maximum_laguerre_order=maximum_laguerre_order,
+                maximum_angular_bessel_order=maximum_angular_bessel_order,
+                maximum_bessel_laguerre_order=maximum_bessel_laguerre_order,
+                included_angular_orders=(order,),
+                digits=digits,
+                worker_count=workers_per_shard,
+                wavelength_worker_count=wavelength_worker_count,
+                _coefficient_functions=coefficient_functions,
+            )
+            return order, metadata
+
+        shard_results = _forked_ordered_map(build_shard, shard_count, shard_count)
+    combined = combine_equal_species_finite_wavelength_angular_shards(
+        shard_paths,
+        out,
+        shared_precompute_seconds=shared_precompute_seconds,
+        orchestration_metadata={
+            "shard_worker_count": workers_per_shard,
+            "shard_total_seconds": [
+                result[1]["total_seconds"] for result in shard_results
+            ],
+        },
+    )
+    return combined
 
 
 def write_collision_table_contraction_gate(
@@ -5871,6 +5958,22 @@ def build_collision_combine_angular_shards_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_shared_angular_table_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate and combine angular shards from one shared speed cache."
+    )
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--bessel-argument", action="append", type=float, required=True)
+    parser.add_argument("--maximum-hermite-order", type=int, required=True)
+    parser.add_argument("--maximum-laguerre-order", type=int, required=True)
+    parser.add_argument("--maximum-angular-bessel-order", type=int, default=4)
+    parser.add_argument("--maximum-bessel-laguerre-order", type=int, default=6)
+    parser.add_argument("--digits", type=int, default=32)
+    parser.add_argument("--worker-count", type=int, default=30)
+    parser.add_argument("--wavelength-worker-count", type=int, default=2)
+    return parser
+
+
 def build_collision_diagonal_table_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate an equal-species diagonal finite-wavelength table."
@@ -6490,6 +6593,23 @@ def main_collision_combine_angular_shards(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_shared_angular_table(argv: list[str] | None = None) -> int:
+    args = build_collision_shared_angular_table_parser().parse_args(argv)
+    metadata = write_shared_precompute_angular_coulomb_table(
+        args.out,
+        bessel_arguments=tuple(args.bessel_argument),
+        maximum_hermite_order=int(args.maximum_hermite_order),
+        maximum_laguerre_order=int(args.maximum_laguerre_order),
+        maximum_angular_bessel_order=int(args.maximum_angular_bessel_order),
+        maximum_bessel_laguerre_order=int(args.maximum_bessel_laguerre_order),
+        digits=int(args.digits),
+        worker_count=int(args.worker_count),
+        wavelength_worker_count=int(args.wavelength_worker_count),
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main_collision_diagonal_table(argv: list[str] | None = None) -> int:
     args = build_collision_diagonal_table_parser().parse_args(argv)
     metadata = write_equal_species_finite_wavelength_coulomb_table(
@@ -6541,6 +6661,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-endpoint",
                 "collision-diagonal-table",
                 "collision-combine-angular-shards",
+                "collision-shared-angular-table",
                 "collision-contraction-gate",
             ),
         )
@@ -6567,6 +6688,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_diagonal_table(rest)
     if command == "collision-combine-angular-shards":
         return main_collision_combine_angular_shards(rest)
+    if command == "collision-shared-angular-table":
+        return main_collision_shared_angular_table(rest)
     if command == "collision-contraction-gate":
         return main_collision_contraction_gate(rest)
     raise SystemExit(f"unknown command: {command}")

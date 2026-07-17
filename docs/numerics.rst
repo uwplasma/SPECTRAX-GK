@@ -906,23 +906,32 @@ gates all six stored arrays to roundoff; this is an offline table-generation
 strategy and is not evidence for simulation-runtime strong scaling.
 
 If a complete high-order table cannot finish inside one bounded process, the
-same equations can be generated as resumable angular shards. For each
-``M=0,...,4``, run the diagonal-table command with ``--angular-order M`` and a
-distinct output path, then combine the complete set in deterministic angular
-order::
+same equations can be generated as resumable angular shards. The production
+command constructs the wavelength-independent speed coefficients once, forks
+all ``M=0,...,4`` writers from that copy-on-write cache, and combines the
+complete set in deterministic angular order::
 
    python tools/artifacts/build_linear_validation_artifacts.py \
-     collision-diagonal-table --out p24_m0.npz \
+     collision-shared-angular-table \
+     --out finite_b_zonal_P24_J10_diagonal.npz \
      --bessel-argument 0.12 --bessel-argument 0.16 \
      --bessel-argument 0.24 --bessel-argument 0.32 \
      --maximum-hermite-order 24 --maximum-laguerre-order 10 \
-     --maximum-angular-bessel-order 4 --angular-order 0 \
-     --maximum-bessel-laguerre-order 6 --digits 32 --worker-count 8
+     --maximum-angular-bessel-order 4 \
+     --maximum-bessel-laguerre-order 6 --digits 32 \
+     --worker-count 30 --wavelength-worker-count 2
+
+The command retains sibling ``*_m0.npz`` through ``*_m4.npz`` files as
+restartable evidence. Existing complete shards can be recombined without
+regeneration using::
 
    python tools/artifacts/build_linear_validation_artifacts.py \
      collision-combine-angular-shards \
-     --shard p24_m0.npz --shard p24_m1.npz --shard p24_m2.npz \
-     --shard p24_m3.npz --shard p24_m4.npz \
+     --shard finite_b_zonal_P24_J10_diagonal_m0.npz \
+     --shard finite_b_zonal_P24_J10_diagonal_m1.npz \
+     --shard finite_b_zonal_P24_J10_diagonal_m2.npz \
+     --shard finite_b_zonal_P24_J10_diagonal_m3.npz \
+     --shard finite_b_zonal_P24_J10_diagonal_m4.npz \
      --out finite_b_zonal_P24_J10_diagonal.npz
 
 The combiner rejects missing/duplicate harmonics, metadata mismatches, and
