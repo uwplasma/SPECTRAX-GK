@@ -79,7 +79,7 @@ from spectraxgk.solvers.time.explicit import (
 from spectraxgk.workflows.runtime.diagnostic_arrays import (
     validate_finite_runtime_diagnostics,
 )
-from spectraxgk.core.species import Species, build_linear_params
+from spectraxgk.operators.linear.params import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import FieldState
 

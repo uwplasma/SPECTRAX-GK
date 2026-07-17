@@ -162,7 +162,7 @@ Representative unit checks include:
   :func:`spectraxgk.linear.linear_rhs_cached`.
 
 These tests live in ``tests/unit/linear/test_linear.py`` and
-``tests/unit/core/test_core_contracts.py`` and ``tests/unit/operators/test_terms_assembly.py`` and are
+``tests/unit/core/test_core_numerics.py`` and ``tests/unit/operators/test_terms_assembly.py`` and are
 designed to fail deterministically if a discretization, assembly path, or
 normalization changes.
 

@@ -15,16 +15,10 @@ they need implementation-specific extension points.
    :exclude-members: KrylovConfig
    :no-index:
 
-Core Refactor Contracts
------------------------
+Collision Operator Interface
+----------------------------
 
-.. automodule:: spectraxgk.core.contracts
-   :members:
-
-Core Extension Points
----------------------
-
-.. automodule:: spectraxgk.core.extension_points
+.. automodule:: spectraxgk.operators.collision
    :members:
 
 Velocity-Space Core
@@ -164,11 +158,11 @@ Grids
 .. automodule:: spectraxgk.core.grid
    :members:
 
-Species
--------
+Species and Linear Parameters
+-----------------------------
 
-.. automodule:: spectraxgk.core.species
-   :members:
+.. automodule:: spectraxgk.operators.linear.params
+   :members: Species, build_linear_params
 
 Operators
 ---------

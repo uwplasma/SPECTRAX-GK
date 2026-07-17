@@ -30,7 +30,7 @@ from spectraxgk.solvers.time.diffrax_core import (
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams
-from spectraxgk.core.species import Species, build_linear_params
+from spectraxgk.operators.linear.params import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 from dataclasses import replace
 import jax

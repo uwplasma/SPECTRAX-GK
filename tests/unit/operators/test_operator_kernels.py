@@ -13,7 +13,7 @@ import pytest
 from scipy.special import eval_genlaguerre, eval_laguerre, j0, jv
 
 from spectraxgk.config import GridConfig
-from spectraxgk.core.extension_points import CollisionContext
+from spectraxgk.operators.collision import CollisionContext
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import (
     J_l_all,

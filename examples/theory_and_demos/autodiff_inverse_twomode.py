@@ -18,7 +18,7 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, integrate_linear, build_linear_cache
 from spectraxgk.artifacts.plotting import set_plot_style
-from spectraxgk.core.species import Species, build_linear_params
+from spectraxgk.operators.linear.params import Species, build_linear_params
 
 
 def _estimate_growth(phi_t: jnp.ndarray, t: jnp.ndarray, start_idx: int) -> tuple[jnp.ndarray, jnp.ndarray]:

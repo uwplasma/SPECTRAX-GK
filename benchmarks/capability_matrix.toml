@@ -29,7 +29,7 @@ evidence = "KBM and KAW linear gates; KBM nonlinear window gate"
 id = "boltzmann_and_kinetic_species"
 group = "required_core"
 status = "validated_scoped"
-spectrax_owner = "spectraxgk.core.species and spectraxgk.operators.linear.params"
+spectrax_owner = "spectraxgk.operators.linear.params"
 comparison_owner = "src/parameters.cu and src/moments.cu"
 evidence = "adiabatic-electron ITG atlas plus kinetic-electron Cyclone/TEM stress lanes"
 

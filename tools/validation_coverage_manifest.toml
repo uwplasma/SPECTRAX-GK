@@ -48,7 +48,7 @@ numerics_contracts = [
   "public-object identity for benchmark, objective, parallel, runtime, and validation exports is checked by focused import tests",
 ]
 fast_tests = [
-  "tests/unit/core/test_core_contracts.py",
+  "tests/unit/core/test_core_numerics.py",
   "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/unit/objectives/test_vmec_transport_objectives.py",
   "tests/unit/parallel/test_parallel_core.py",
@@ -63,36 +63,33 @@ next_tests = [
   "move advanced users toward domain imports while keeping top-level imports stable through the next release",
 ]
 [[modules]]
-module = "spectraxgk.core.contracts"
-path = "src/spectraxgk/core/contracts.py"
-owned_modules = [
-  "spectraxgk.core.extension_points",
-]
-owner_lane = "differentiable refactor contracts and community extension-point protocols"
+module = "spectraxgk.operators.collision"
+path = "src/spectraxgk/operators/collision.py"
+owner_lane = "shared gyrokinetic collision-operator interface"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "JAX PyTree/static-dynamic transform contracts",
-  "PEP 257 and scientific-code public API documentation conventions",
+  "Abel et al. (2008) gyrokinetic collision-operator conservation requirements",
+  "structural JAX-compatible operator interfaces",
 ]
 physics_contracts = [
-  "extension points make physics model boundaries explicit before adding new collisions, bases, field solvers, geometry providers, or diagnostics",
-  "refactor contracts preserve validation gates and public facades before numerical kernels are moved",
+  "collision operators receive both evolved distribution G and post-field Hamiltonian response H",
+  "split operators expose a finite-time update only when the collision model supports one",
 ]
 numerics_contracts = [
-  "differentiability contracts separate static model choices from traced array arguments",
-  "validation-gate contracts require evidence paths before refactor claims are promoted",
+  "operator output preserves solver-state shape and JAX transformability",
+  "structural runtime checks distinguish RHS-only and split-step collision models",
 ]
 fast_tests = [
-  "tests/unit/core/test_core_contracts.py",
+  "tests/unit/core/test_core_numerics.py",
+  "tests/unit/operators/test_operator_kernels.py",
 ]
 artifact_paths = [
-  "plan.md",
+  "docs/_static/collision_operator_verification.json",
 ]
 next_tests = [
-  "instantiate contracts from the root migration plan acceptance gates",
-  "add import-identity tests when the first compatibility facade starts forwarding to split modules",
+  "retain conservation, null-space, entropy, and finite-wavelength tests for every new collision model",
 ]
 
 [[modules]]
@@ -118,6 +115,10 @@ owned_modules = [
   "spectraxgk.workflows.runtime.initial_conditions",
   "spectraxgk.workflows.runtime.initial_phi",
   "spectraxgk.workflows.runtime.startup",
+  "spectraxgk.workflows.runtime.commands",
+  "spectraxgk.workflows.demo",
+  "spectraxgk.workflows.linear",
+  "spectraxgk.workflows.nonlinear",
 ]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
 status = "active"
@@ -219,44 +220,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.workflows.cases"
-path = "src/spectraxgk/workflows/cases.py"
-owned_modules = [
-  "spectraxgk.workflows.demo",
-  "spectraxgk.workflows.linear",
-  "spectraxgk.workflows.nonlinear",
-  "spectraxgk.workflows.runtime.commands",
-]
-owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "runtime TOML examples for linear and nonlinear executable workflows",
-  "default executable progress and output provenance contracts",
-]
-physics_contracts = [
-  "case workflows pass fitted linear growth/frequency and nonlinear transport settings through without altering solver physics",
-  "output workflows preserve documented linear and nonlinear artifact paths",
-]
-numerics_contracts = [
-  "TOML overrides preserve solver, time-step, sample-stride, and fit-window semantics",
-  "dependency injection preserves runtime monkeypatch seams used by regression tests",
-]
-fast_tests = [
-  "tests/integration/runtime/test_runtime_runner.py",
-  "tests/integration/runtime/test_runtime_config.py",
-]
-artifact_paths = [
-  "examples/linear/axisymmetric/cyclone.toml",
-  "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml",
-]
-next_tests = [
-  "add executable-level provenance tests for copied input TOML files",
-  "add progress-output contract tests for long nonlinear chunked runs",
-]
-
-[[modules]]
 module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
 owned_modules = [
@@ -268,7 +231,6 @@ owned_modules = [
   "spectraxgk.core.grid",
   "spectraxgk.solvers.linear.krylov_algorithms",
   "spectraxgk.solvers.linear.krylov",
-  "spectraxgk.core.species",
   "spectraxgk.terms.assembly",
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",

@@ -1,8 +1,7 @@
 {
   "high_priority_open": [
-    "spectraxgk.core.contracts",
+    "spectraxgk.operators.collision",
     "spectraxgk.runtime",
-    "spectraxgk.workflows.cases",
     "spectraxgk.linear",
     "spectraxgk.operators.linear.collisions",
     "spectraxgk.operators.linear.collision_tables",
@@ -60,12 +59,12 @@
     "spectraxgk.parallel.__init__",
     "spectraxgk.parallel.decomposition"
   ],
-  "n_direct_modules": 75,
+  "n_direct_modules": 74,
   "n_excluded_modules": 18,
-  "n_high_priority_open": 59,
-  "n_modules": 75,
-  "n_owned_modules": 103,
-  "n_package_modules": 196,
+  "n_high_priority_open": 58,
+  "n_modules": 74,
+  "n_owned_modules": 102,
+  "n_package_modules": 194,
   "owned_modules_by_owner": {
     "spectraxgk.api.__init__": [],
     "spectraxgk.artifacts.__init__": [],
@@ -78,14 +77,13 @@
       "spectraxgk.benchmarks",
       "spectraxgk.diagnostics.normalization"
     ],
-    "spectraxgk.core.contracts": [
-      "spectraxgk.core.extension_points"
-    ],
     "spectraxgk.diagnostics.moments": [
       "spectraxgk.diagnostics.metadata",
       "spectraxgk.diagnostics.transport"
     ],
-    "spectraxgk.diagnostics.nonlinear_gradient_evidence": [],
+    "spectraxgk.diagnostics.nonlinear_gradient_evidence": [
+      "spectraxgk.diagnostics.nonlinear_gradient_statistics"
+    ],
     "spectraxgk.diagnostics.nonlinear_replicates": [],
     "spectraxgk.diagnostics.nonlinear_transport_optimization": [],
     "spectraxgk.diagnostics.quasilinear_calibration": [],
@@ -128,7 +126,6 @@
       "spectraxgk.core.grid",
       "spectraxgk.solvers.linear.krylov_algorithms",
       "spectraxgk.solvers.linear.krylov",
-      "spectraxgk.core.species",
       "spectraxgk.terms.assembly",
       "spectraxgk.terms.config",
       "spectraxgk.terms.fields",
@@ -169,6 +166,7 @@
     "spectraxgk.objectives.vmec_transport_admission": [],
     "spectraxgk.objectives.vmec_transport_branch": [],
     "spectraxgk.objectives.zonal": [],
+    "spectraxgk.operators.collision": [],
     "spectraxgk.operators.linear.cache_builder": [
       "spectraxgk.operators.linear.cache_model",
       "spectraxgk.operators.linear.cache_arrays"
@@ -238,7 +236,11 @@
       "spectraxgk.workflows.runtime.execution",
       "spectraxgk.workflows.runtime.initial_conditions",
       "spectraxgk.workflows.runtime.initial_phi",
-      "spectraxgk.workflows.runtime.startup"
+      "spectraxgk.workflows.runtime.startup",
+      "spectraxgk.workflows.runtime.commands",
+      "spectraxgk.workflows.demo",
+      "spectraxgk.workflows.linear",
+      "spectraxgk.workflows.nonlinear"
     ],
     "spectraxgk.solvers.linear.implicit": [],
     "spectraxgk.solvers.linear.integrators": [
@@ -253,12 +255,6 @@
     "spectraxgk.solvers.nonlinear.explicit": [],
     "spectraxgk.solvers.nonlinear.imex": [
       "spectraxgk.solvers.nonlinear.imex_diagnostics"
-    ],
-    "spectraxgk.workflows.cases": [
-      "spectraxgk.workflows.demo",
-      "spectraxgk.workflows.linear",
-      "spectraxgk.workflows.nonlinear",
-      "spectraxgk.workflows.runtime.commands"
     ],
     "spectraxgk.workflows.runtime.artifacts": [],
     "spectraxgk.workflows.runtime.orchestration_scan": [
@@ -287,15 +283,15 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.core.contracts",
+      "module": "spectraxgk.operators.collision",
       "n_artifacts": 1,
-      "n_fast_tests": 1,
-      "n_next_tests": 2,
+      "n_fast_tests": 2,
+      "n_next_tests": 1,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/core/contracts.py",
+      "path": "src/spectraxgk/operators/collision.py",
       "status": "active"
     },
     {
@@ -306,7 +302,7 @@
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 19,
+      "n_owned_modules": 23,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/runtime.py",
@@ -343,26 +339,12 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.workflows.cases",
-      "n_artifacts": 2,
-      "n_fast_tests": 2,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
-      "n_owned_modules": 4,
-      "n_physics_contracts": 2,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/workflows/cases.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "high",
-      "coverage_target_percent": 95.0,
       "module": "spectraxgk.linear",
       "n_artifacts": 3,
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 15,
+      "n_owned_modules": 14,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/linear.py",
@@ -708,7 +690,7 @@
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.quasilinear",
-      "n_artifacts": 13,
+      "n_artifacts": 11,
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
@@ -962,9 +944,9 @@
       "module": "spectraxgk.diagnostics.nonlinear_gradient_evidence",
       "n_artifacts": 6,
       "n_fast_tests": 3,
-      "n_next_tests": 3,
+      "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 3,
       "path": "src/spectraxgk/diagnostics/nonlinear_gradient_evidence.py",
@@ -1310,7 +1292,7 @@
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.artifacts.plotting",
-      "n_artifacts": 9,
+      "n_artifacts": 4,
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,

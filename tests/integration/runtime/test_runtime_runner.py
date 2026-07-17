@@ -46,7 +46,7 @@ from spectraxgk.runtime import (
     run_runtime_nonlinear,
     run_runtime_scan,
 )
-from spectraxgk.workflows.cases import run_linear_case, run_nonlinear_case
+from spectraxgk.workflows.runtime.commands import run_linear_case, run_nonlinear_case
 from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,

@@ -217,9 +217,12 @@ dispatches, transposes, global reconstruction, or recompilation.
 Exit: target package topology, <=45 files/45,000 lines, <=30 public names, no
 module >1,200 lines, frozen physics/derivative/performance contracts pass.
 
-Progress: **27%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
+Progress: **32%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
 diagnostic moments/growth, Krylov, and replicated nonlinear-gradient statistics
-ownership have been consolidated, but the old directory topology remains.
+ownership have been consolidated. Refactor-only runtime contracts are deleted,
+the collision interface now contains only the protocol used by the equations,
+species construction lives with linear parameters, and programmatic TOML cases
+share the executable command owner. The broader old directory topology remains.
 
 ### Phase 3 - Simplify Tests, Benchmarks, and Commands
 
@@ -243,7 +246,7 @@ ownership have been consolidated, but the old directory topology remains.
 Exit: <=36 test files/55,000 lines, >=95% package coverage, <=12 scripts/18,000
 lines, and all documentation commands are reproducible.
 
-Progress: **18%**. Suite labels exist and more than 3,500 ownership/planner test
+Progress: **20%**. Suite labels exist and more than 3,800 ownership/planner test
 lines were
 removed with status/planner machinery, but 94 test files and oversized
 tool-test owners still dominate.
@@ -516,6 +519,15 @@ Use large coherent commits, each independently green:
   utilization, so their timing rows are explicitly blocked and no speed claim
   changed. Release readiness now recomputes admitted/blocked row counts and
   rejects false promotion; 97 release tests, Ruff, and Sphinx ``-W`` pass.
+- 2026-07-17 first scientific-core tranche: deleted refactor-only contract
+  objects and six unused generic protocols, retained the active collision
+  context/operator contract beside physics operators, moved species assembly
+  beside ``LinearParams``, and folded programmatic TOML cases into the runtime
+  command owner. This removed three source files and 1,319 net lines while
+  preserving top-level user names. The source tree is 194 files / 86,632 lines;
+  153 focused grid, basis, species, collision, linear, runtime, and Diffrax
+  tests pass together with ownership, frozen-output, architecture, and size
+  gates.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -526,16 +538,15 @@ Use large coherent commits, each independently green:
 | Lane | Completion |
 | --- | ---: |
 | Frozen 1.7 contract | 95% |
-| Deletion/repository trim | 48% |
-| Scientific-core simplification | 27% |
-| Test/benchmark/command simplification | 18% |
+| Deletion/repository trim | 50% |
+| Scientific-core simplification | 32% |
+| Test/benchmark/command simplification | 20% |
 | QA linear/QL/nonlinear optimization | 15% |
 | README/docs rebuild | 14% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **28%**. The next implementation tranche begins
-Phase 2 by consolidating the case/species/grid owners while the next
-unreferenced campaign and static-evidence families are removed. The uncontended
-GPU refresh is independent of that critical path and will be repeated only when
-an office device is actually idle.
+Weighted overall completion: **30%**. The next implementation tranche continues
+Phase 2 with term/field/dissipation ownership and removes the next unreferenced
+campaign/static-evidence family. The uncontended GPU refresh is independent of
+that critical path and will be repeated only when an office device is idle.

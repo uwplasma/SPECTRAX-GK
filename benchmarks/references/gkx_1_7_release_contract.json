@@ -928,7 +928,7 @@
         "symbol": "SolverScalarObjective"
       },
       {
-        "module": "spectraxgk.core.species",
+        "module": "spectraxgk.operators.linear.params",
         "name": "Species",
         "symbol": "Species"
       },
@@ -1153,7 +1153,7 @@
         "symbol": "build_linear_cache"
       },
       {
-        "module": "spectraxgk.core.species",
+        "module": "spectraxgk.operators.linear.params",
         "name": "build_linear_params",
         "symbol": "build_linear_params"
       },
@@ -2018,7 +2018,7 @@
         "symbol": "replicated_transport_ensemble_report"
       },
       {
-        "module": "spectraxgk.workflows.cases",
+        "module": "spectraxgk.workflows.runtime.commands",
         "name": "run_linear_case",
         "symbol": "run_linear_case"
       },
@@ -2028,7 +2028,7 @@
         "symbol": "run_linear_scan"
       },
       {
-        "module": "spectraxgk.workflows.cases",
+        "module": "spectraxgk.workflows.runtime.commands",
         "name": "run_nonlinear_case",
         "symbol": "run_nonlinear_case"
       },

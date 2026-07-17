@@ -83,7 +83,7 @@ def test_build_linear_cache_zero_shat_periodic_uses_periodic_fft_without_end_dam
     from spectraxgk.geometry import SlabGeometry, apply_geometry_grid_defaults
     from spectraxgk.config import GeometryConfig
     from spectraxgk.core.grid import select_real_fft_ky_grid
-    from spectraxgk.core.species import Species, build_linear_params
+    from spectraxgk.operators.linear.params import Species, build_linear_params
 
     geom = SlabGeometry.from_config(
         GeometryConfig(model="slab", s_hat=1.0e-8, zero_shat=True)

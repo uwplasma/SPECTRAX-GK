@@ -688,10 +688,10 @@ The root ``plan.md`` is the authoritative migration plan, and
 line budgets. Differentiability, physics, parity, and performance requirements
 are acceptance gates in the root plan rather than a second migration ledger.
 
-The first behavior-preserving contract modules are ``spectraxgk.core.contracts``
-and ``spectraxgk.core.extension_points``. They introduce typed refactor,
-validation-gate, differentiability, and extension-point protocols without
-moving solver kernels or changing public numerical behavior.
+Refactor-only metadata containers have been removed from the runtime package.
+The one structural protocol used by the equations is the compact
+``spectraxgk.operators.collision`` interface; validation and migration policy
+remain in release manifests and tests rather than becoming runtime objects.
 
 Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``,
 with parser registration split by command family, and moves runtime linear,
@@ -706,10 +706,10 @@ spreading executable policy across command bodies. Saved-artifact display order
 and optional artifact writing for linear, scan, quasilinear, and nonlinear
 commands also live in focused command-output helpers so user-facing executable
 messages can be tested without launching solver runs.
-``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and
-re-exports the command helpers only for public executable dispatch; path override, progress,
-quasilinear override, and preload-reuse policies have one canonical workflow
-owner.
+Programmatic TOML case helpers and executable command dispatch now share
+``spectraxgk.workflows.runtime.commands``. Path override, progress,
+quasilinear override, dependency injection, and preload-reuse policies therefore
+have one canonical workflow owner rather than two forwarding modules.
 Runtime initial-condition construction is staged inside
 ``spectraxgk.workflows.runtime.initial_conditions``. Validation of initializer
 options, restart-state scaling, kinetic-species targeting, single-mode profile

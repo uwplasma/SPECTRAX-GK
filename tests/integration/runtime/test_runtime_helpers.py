@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 import spectraxgk.runtime as runtime
-import spectraxgk.workflows.cases as runtime_cases
+import spectraxgk.workflows.runtime.commands as runtime_cases
 import spectraxgk.workflows.runtime.orchestration_artifacts as runtime_artifacts
 import spectraxgk.workflows.runtime.commands as runtime_commands
 import spectraxgk.workflows.runtime.policies as runtime_policies
