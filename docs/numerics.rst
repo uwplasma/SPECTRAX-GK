@@ -914,6 +914,15 @@ and records the parent resolution and checksum::
 This is a Galerkin truncation study of the same generated operator. It cannot
 expand an archive, silently change its wavelength grid, or support a physics
 claim beyond the source archive's declared collision model.
+The resulting paper-endpoint comparison is retained in
+:download:`collision_finite_wavelength_zonal_P21_P24_gate.json
+<_static/collision_finite_wavelength_zonal_P21_P24_gate.json>`. Both traces
+reach :math:`t\nu=30`: the P21/J8-to-P24/J10 relative :math:`L_2` changes are
+4.93% at :math:`k_x=0.1` and 1.72% at :math:`k_x=0.2`, with maximum absolute
+changes 0.0188 and 0.0070. All four values pass the prospectively fixed 5%
+adjacent-hierarchy gate. This closes the moment-resolution question while
+leaving the independent three-operator literature ordering as the physical
+acceptance test.
 
 The bounded archive generator uses a separate, prospectively gated
 optimization. Every transform, collision moment, and projection coefficient is
@@ -1011,10 +1020,29 @@ angular cutoff must pass a nested endpoint or observable-level convergence
 check before use. The current P12/J5 check at
 :math:`B=\sqrt{2}\,0.2` changes the most sensitive matrix norm by
 :math:`1.24\times10^{-7}` between angular orders four and six. The command
-generates exact Coulomb coefficients only; the full finite-wavelength Sugama
-terms in the `2021 gyro-moment collision derivation
-<https://arxiv.org/abs/2104.11480>`_ remain an
-independent implementation and validation requirement.
+generates exact Coulomb coefficients only. Original-Sugama field terms are
+then projected independently from equations (3.65), (3.68)--(3.69), and
+(3.79)--(3.80) of the `2021 gyro-moment collision derivation
+<https://arxiv.org/abs/2104.11480>`_. In the runtime's orthonormal signed-
+Laguerre basis their matrix is assembled as
+
+.. math::
+
+   C^{F,\mathrm{OS}}_{ij}(B)
+   = -\frac{A_i^\parallel(B)A_j^\parallel(B)}{\gamma}
+     -\frac{A_i^\perp(B)A_j^\perp(B)}{\gamma}
+     -\frac{A_i^E(B)A_j^E(B)}{\eta},
+
+where each :math:`A` is a direct velocity projection of the corresponding
+parallel-flow, perpendicular-flow, or energy test response in equation
+(3.65). Product Gauss--Hermite/Laguerre rules with 80 and 96 nodes must agree
+before the higher-order matrix is accepted. At :math:`B=0` this independent
+route recovers the verified drift-kinetic C6 field matrix to roundoff. At
+finite :math:`B` the same channels are not gyrocenter collision invariants:
+their nonzero action is the classical gyro-diffusion expected from the
+gyroaveraged operator. The improved model adds the separate Braginskii-moment
+correction of Frei, Ernst & Ricci (2022), equations (61)--(69), under the same
+quadrature-convergence contract.
 
 An independent homogeneous-slab matrix reconstruction now evaluates equations
 (2.14)--(2.18) directly at :math:`k_\perp=0.5`,

@@ -5108,6 +5108,26 @@ def test_tracked_finite_wavelength_zonal_moment_hierarchy_remains_open() -> None
     assert 0.05 < latest["traces"]["0.2"]["relative_l2"] < 0.06
 
 
+def test_tracked_finite_wavelength_zonal_endpoint_hierarchy_passes() -> None:
+    """The authoritative P21/J8--P24/J10 physical traces pass the fixed gate."""
+
+    payload = json.loads(
+        (
+            ROOT
+            / "docs/_static/collision_finite_wavelength_zonal_P21_P24_gate.json"
+        ).read_text()
+    )
+    assert payload["gate_passed"] is True
+    assert payload["resolutions"] == [[21, 8], [24, 10]]
+    comparison = payload["comparisons"][0]
+    assert comparison["passed"] is True
+    assert all(trace["passed"] for trace in comparison["traces"].values())
+    assert min(
+        trace["maximum_normalized_time"]
+        for trace in comparison["traces"].values()
+    ) >= 30.0
+
+
 def test_plot_zonal_flow_response_output_subcommand(
     tmp_path: Path, monkeypatch
 ) -> None:

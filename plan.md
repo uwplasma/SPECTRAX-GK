@@ -50,7 +50,7 @@ explicitly verified differentiable workflows for analysis and optimization.
 
 ## Current State
 
-Date: 2026-07-14.
+Date: 2026-07-16.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
@@ -370,12 +370,28 @@ That topology is the reference design for the production parallel lane.
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
 | Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic/linked RK2/RK3 trajectory, fixed-step sheared IMEX, canonical heat-flux trace, linear suppression, and transport-objective AD validated; the final fixed-step response audit failed promotion | retain as a Python research API; do not expose an input-file option unless a new, prospectively gated physical campaign overturns the negative fixed-step evidence |
 | Species/Hermite multi-device execution | periodic and linked 2x2 species/Hermite routes cover the complete electrostatic operator and pass identity gates; mixed electromagnetic and four-device evidence are not available | retain the scoped electrostatic production route; require new hardware and identity evidence before broadening the claim |
-| Linearized Landau/Sugama collisions | reduced published original/improved-Sugama and Coulomb matrices, unequal-species pair assembly, relaxation, invariants, dissipation, and AD gates pass through the collision protocol; the complete finite-``b`` multispecies hierarchy is not implemented | retain the Python research boundary and keep TOML promotion fail-closed until arbitrary generated couplings plus conductivity, ITG, zonal, and resolution gates pass |
+| Linearized Landau/Sugama collisions | reduced published original/improved-Sugama and Coulomb matrices, unequal-species pair assembly, relaxation, invariants, dissipation, and AD gates pass through the collision protocol; the complete equal-species diagonal finite-``b`` Coulomb/OS/IS validation path is implemented, while the complete finite-``b`` multispecies hierarchy is not | retain the Python research boundary and keep TOML promotion fail-closed until the active zonal gate and future arbitrary generated multispecies couplings pass |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
 | KREHM, Vlasov--Poisson, collisional-ETG, forcing, Trinity coupling | not complete equations in SPECTRAX-GK | keep out of scope; remove orphan compatibility fragments |
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
+
+- 2026-07-16: Corrected the finite-wavelength original-Sugama field response
+  after the first complete P24/J10 Figure-13/14 run exposed the wrong
+  :math:`k_x=0.2` tail ordering and an unphysical perpendicular-velocity hump.
+  Moment truncation is excluded as the cause: principal P21/J8 projection of
+  the authoritative P24/J10 Coulomb archive changes the full
+  :math:`t\nu=30` traces by 4.93% at :math:`k_x=0.1` and 1.72% at
+  :math:`k_x=0.2`, passing both fixed 5% gates. The root cause was the initial
+  null-space projector, which incorrectly forced finite-wavelength gyrocenter
+  flow channels to be collision invariants. The replacement directly projects
+  the three rank-one responses in Frei et al. (2021), equations (3.65),
+  (3.68)--(3.69), and (3.79)--(3.80), with an 80/96-node fail-closed
+  quadrature check. It recovers the independent drift-kinetic C6 matrix at
+  :math:`B=0` to roundoff and retains finite-:math:`B` gyro-diffusion. The
+  corrected P24/J10 OS/IS physical rerun is active; no promotion is recorded
+  before its literature gate passes.
 
 - 2026-07-16: Closed the executable Figure-13/14 runtime path while the exact
   P24/J10 coefficient campaign continued. The common finite-wavelength zonal
@@ -395,7 +411,7 @@ That topology is the reference design for the production parallel lane.
   independent ``N`` versus ``N+16`` quadrature comparison. At ``B=0``,
   correction orders ``K=1,2,3`` reproduce the existing analytical
   drift-kinetic matrices with relative errors from ``3.4e-15`` to ``1.1e-14``;
-  at P24/J10 and ``K=5``, 80/120-node results differ by at most ``7.1e-14``
+  at P24/J10 and ``K=5``, 80/96-node results differ by at most ``7.1e-14``
   relative across the four production wavelengths. A checksummed archive
   conversion and the same generic differentiable Sugama runtime adapter cover
   original and improved tables. Physical Figure-13/14 traces remain open.
@@ -407,17 +423,14 @@ That topology is the reference design for the production parallel lane.
   RSS. This is comfortably inside the 600-second block bound. The remaining
   19 blocks are running through one shared-cache resumable campaign.
 
-- 2026-07-16: Implemented the exact equal-species finite-wavelength
-  original-Sugama slice while office CPU resources were occupied. At equal
-  mass and temperature, the Coulomb test block is reused and the published
-  Bessel-weighted parallel-flow, perpendicular-flow, and temperature channels
-  generate the rank-three field restoration in equations (3.79) and
-  (3.90)--(3.102). The construction reproduces the existing C6 drift-kinetic
-  matrix at ``B=0`` to ``2.2e-16`` and annihilates all three finite-B channels
-  from both sides to ``2e-15``. A provenance-checked archive converter avoids
-  repeating multiprecision Coulomb generation, and a JAX runtime operator
-  applies the table to ``H`` with an interpolation tangent gate. Finite-B
-  improved-Sugama corrections and paper-facing traces remain open.
+- 2026-07-16: Implemented the first equal-species finite-wavelength
+  original-Sugama slice while office CPU resources were occupied. This initial
+  construction reused the Coulomb test block and imposed a rank-three
+  null-space restoration. It reproduced the C6 drift-kinetic endpoint and
+  passed interpolation tangents, but the later complete physical campaign
+  rejected its finite-:math:`B` null-channel assumption. The correction and
+  replacement equation gate are recorded above; this superseded formulation
+  is not retained as accepted physics.
 
 - 2026-07-16: Replaced the last unbounded P24/J10 table unit with exact
   two-level checkpointing. A direct ``m=4`` attempt across two wavelengths,

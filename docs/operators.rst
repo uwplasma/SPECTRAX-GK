@@ -235,9 +235,11 @@ operations remain differentiable. ``context.fields`` carries ``phi``, ``apar``,
 and ``bpar``; ``context.hamiltonian`` uses the same enabled-field policy as the
 gyrokinetic RHS. This avoids silently replacing a finite-:math:`b`
 field-particle model by a :math:`G`-only approximation.
-This is an extension contract, not a claim that a Sugama or full linearized
-Coulomb model is already shipped. TOML selection and split integration remain
-disabled until an operator passes the conservation and entropy gates below.
+This contract is also used by the generated equal-species finite-wavelength
+Coulomb and Sugama validation operators described below. Those operators are
+research validation paths, not input-file options: TOML selection and split
+integration remain disabled until the full zonal-response acceptance gate
+passes.
 
 The built-in ``collision_split`` policy consequently splits only diagonal
 hypercollisions. The conserving collision term remains in the Runge--Kutta or
@@ -374,15 +376,17 @@ from the implemented Mandell--Dorland--Landreman finite-Larmor-radius collision
 equations, never from the interpolator, and recovers the expected second-order
 table-spacing convergence against direct operator evaluations.
 
-This vertical slice establishes the table format, finite-:math:`b` interpolation,
-and traced spatial application needed by the full operator. Its current table
-contains only the drift-kinetic six-moment matrices, so the advanced-operator
-interpolation is tested with controlled coefficient families and the independent
-finite-:math:`b` Dougherty-like operator rather than presented as finite-
-:math:`b` Sugama/Coulomb physics. Repeating the six-moment matrix at higher
-resolution is not valid.
+This table boundary now supports two deliberately distinct levels. The small
+package-data table contains only the drift-kinetic six-moment matrices and is
+used for fast equation and API tests; repeating it at higher resolution would
+not create finite-:math:`b` physics. The offline generator separately builds
+the complete equal-species diagonal Coulomb test/field matrices and
+polarization vectors at arbitrary retained Hermite--Laguerre order. Original-
+and improved-Sugama field matrices are derived from that exact Coulomb test
+table. These larger archives stay outside the package and are accepted only
+through the slab-ITG and collisional-zonal runtime gates.
 
-The first exact primitive for generating the missing hierarchy is
+The first exact primitive used by that generated hierarchy is
 ``bessel_laguerre_kernels(bessel_argument, n_max)`` in ``core.velocity``. It
 implements Frei et al. (2021), equation (2.13),
 
@@ -796,22 +800,25 @@ The equal-species original-Sugama finite-wavelength slice is now separate from
 that Coulomb field model. At equal mass and temperature, equations (3.72)--
 (3.76) of `Frei et al. (2021) <https://arxiv.org/abs/2104.11480>`_ make its test
 component exactly the Coulomb test component. Equations (3.79) and
-(3.90)--(3.102) make the field component a rank-three restoration of the
-Bessel-weighted parallel-flow, perpendicular-flow, and temperature channels
-in equation (3.94). The offline conversion is therefore exact and does not
-repeat the expensive multiprecision Coulomb contraction::
+(3.65), (3.68)--(3.69), and (3.80) make the field component the sum of three
+explicit rank-one parallel-flow, perpendicular-flow, and energy responses.
+The response vectors are projected directly with product velocity quadrature;
+they are not inferred by forcing finite-wavelength gyrocenter moments into the
+null space. The offline conversion reuses the expensive Coulomb test table::
 
    python tools/artifacts/build_linear_validation_artifacts.py \
      collision-original-sugama-table \
      --coulomb-table finite_b_zonal_P24_J10_diagonal.npz \
-     --out finite_b_zonal_P24_J10_original_sugama.npz
+     --out finite_b_zonal_P24_J10_original_sugama.npz \
+     --quadrature-order 80
 
 The archive conversion requires complete angular coverage, the signed runtime
-Laguerre convention, finite coefficients, and a negative-definite flow-channel
-Gram matrix. Its equation test reproduces the published drift-kinetic C6
-construction at :math:`B=0`, limits the finite-wavelength field block to rank
-three, and annihilates all retained flow channels from both sides to
-:math:`2\times10^{-15}`. ``EqualSpeciesFiniteWavelengthSugamaOperator``
+Laguerre convention, finite coefficients, and agreement between 80- and
+96-node projections. Its equation test reproduces the published drift-kinetic
+C6 construction at :math:`B=0` to roundoff and limits the finite-wavelength
+field block to a symmetric rank-three matrix. At finite :math:`B`, the flow
+channels have the nonzero gyro-diffusive action required by the gyroaveraged
+operator. ``EqualSpeciesFiniteWavelengthSugamaOperator``
 interpolates the resulting table in JAX and acts on the post-field
 nonadiabatic response :math:`H`; JIT/JVP and finite-difference interpolation
 gates pass, but a paper-facing zonal trace is still required for promotion.
@@ -835,7 +842,7 @@ less than :math:`10^{-11}` relative or :math:`10^{-12}` absolute::
 At :math:`B=0`, correction orders :math:`K=1,2,3` reproduce the independent
 drift-kinetic analytical implementation with relative matrix errors from
 :math:`3.4\times10^{-15}` to :math:`1.1\times10^{-14}`. At the production
-P24/J10, :math:`K=5` resolution, nested 80/120-node checks over
+P24/J10, :math:`K=5` resolution, nested 80/96-node checks over
 :math:`B=0.12,0.16,0.24,0.32` differ by at most :math:`7.1\times10^{-14}`
 relative. These are equation and quadrature gates. The Figure-13/14 zonal
 ordering and velocity-section comparisons remain the physical promotion gate.
