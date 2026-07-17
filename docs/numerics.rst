@@ -1213,6 +1213,30 @@ over :math:`t\nu\leq10`, and both velocity sections. Missing data fail closed;
 the tool does not infer a pass from a lower-resolution or collisionless trace,
 and the command exits nonzero while any gate remains open.
 
+.. figure:: _static/collision_finite_wavelength_zonal_response.png
+   :alt: Paper-resolution Coulomb and Sugama collisional zonal responses
+   :width: 100%
+
+   Complete Figures 12--14 protocol at :math:`(P,J)=(24,10)`. The
+   finite-wavelength late responses obey original Sugama < improved Sugama <
+   Coulomb at :math:`k_x\rho_i=0.1` and 0.2; the improved model has the smaller
+   early-window error relative to Coulomb at both wavenumbers. Both
+   :math:`t\nu=5` velocity sections and the drift-kinetic Xiao-residual gate
+   pass.
+
+The full-resolution campaign contains 73,824 trace rows. The tracked
+:download:`compact trace table
+<_static/collision_finite_wavelength_zonal_response.csv>` retains every fifth
+saved sample plus each endpoint (14,778 rows); re-evaluating the gate changes
+tail responses by at most :math:`8.9\times10^{-6}` and early-window RMS errors
+by at most :math:`1.9\times10^{-6}`, without changing any verdict. The exact
+full-resolution verdict is retained in :download:`the JSON report
+<_static/collision_finite_wavelength_zonal_response.json>`, and the compact
+:download:`velocity sections
+<_static/collision_finite_wavelength_zonal_velocity_sections.csv>` are not
+decimated. Dense coefficient archives and raw logs remain external campaign
+artifacts rather than repository data.
+
 Nonlinear full-distribution Landau collisions are a separate future model, not
 an extension flag on this linearized matrix. A dense precomputed collision
 tensor would have prohibitive basis scaling. The planned route follows the

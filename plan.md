@@ -65,6 +65,7 @@ Date: 2026-07-16.
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
 | Public API facade | compact lazy registry | compact registry | closed |
 | Runtime/plot executable path | implemented and tested | stable | closed |
+| Equal-species finite-wavelength collisions | P24/J10 Coulomb/OS/IS Figures 12--14 protocol passes | equation, convergence, and physical gates | closed research boundary |
 | Nonlinear A4000 warm step, 192x64x24 | 109 ms fixed / 160 ms adaptive | <=1.25x matched comparison baseline | active |
 | Nonlinear two-GPU whole-state path | 0.211x and identity failure | no production claim; replace decomposition | blocked from claims |
 
@@ -370,7 +371,7 @@ That topology is the reference design for the production parallel lane.
 | Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
 | Equilibrium ExB flow shear | coordinate/cache/split-phase and canonical compressed brackets, periodic/linked RK2/RK3 trajectory, fixed-step sheared IMEX, canonical heat-flux trace, linear suppression, and transport-objective AD validated; the final fixed-step response audit failed promotion | retain as a Python research API; do not expose an input-file option unless a new, prospectively gated physical campaign overturns the negative fixed-step evidence |
 | Species/Hermite multi-device execution | periodic and linked 2x2 species/Hermite routes cover the complete electrostatic operator and pass identity gates; mixed electromagnetic and four-device evidence are not available | retain the scoped electrostatic production route; require new hardware and identity evidence before broadening the claim |
-| Linearized Landau/Sugama collisions | reduced published original/improved-Sugama and Coulomb matrices, unequal-species pair assembly, relaxation, invariants, dissipation, and AD gates pass through the collision protocol; the complete equal-species diagonal finite-``b`` Coulomb/OS/IS validation path is implemented, while the complete finite-``b`` multispecies hierarchy is not | retain the Python research boundary and keep TOML promotion fail-closed until the active zonal gate and future arbitrary generated multispecies couplings pass |
+| Linearized Landau/Sugama collisions | reduced published original/improved-Sugama and Coulomb matrices, unequal-species pair assembly, relaxation, invariants, dissipation, and AD gates pass through the collision protocol; the complete equal-species diagonal finite-``b`` Coulomb/OS/IS Figures 12--14 path passes, while the complete finite-``b`` multispecies hierarchy is not implemented | retain the validated Python research boundary; keep TOML promotion fail-closed until future arbitrary generated multispecies couplings pass |
 | Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
 | KREHM, Vlasov--Poisson, collisional-ETG, forcing, Trinity coupling | not complete equations in SPECTRAX-GK | keep out of scope; remove orphan compatibility fragments |
 | JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
@@ -390,8 +391,14 @@ That topology is the reference design for the production parallel lane.
   (3.68)--(3.69), and (3.79)--(3.80), with an 80/96-node fail-closed
   quadrature check. It recovers the independent drift-kinetic C6 matrix at
   :math:`B=0` to roundoff and retains finite-:math:`B` gyro-diffusion. The
-  corrected P24/J10 OS/IS physical rerun is active; no promotion is recorded
-  before its literature gate passes.
+  corrected P24/J10 rerun passes every Figures 12--14 gate. At
+  :math:`k_x\rho_i=0.1` and 0.2 the late response is ordered original <
+  improved < Coulomb, improved is closer to Coulomb over :math:`t\nu\leq10`,
+  and both velocity sections are present at :math:`t\nu=5`. Compact replay
+  data, exact full-run JSON, and the publication panel are tracked; raw tables
+  and logs remain external. This closes the equal-species finite-wavelength
+  collision research lane without implying an unimplemented multispecies TOML
+  model.
 
 - 2026-07-16: Closed the executable Figure-13/14 runtime path while the exact
   P24/J10 coefficient campaign continued. The common finite-wavelength zonal

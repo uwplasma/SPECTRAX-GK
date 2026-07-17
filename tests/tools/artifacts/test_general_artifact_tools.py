@@ -2895,6 +2895,7 @@ def test_finite_wavelength_original_sugama_resolves_published_field_channels(
     )
     assert metadata["claim_scope"].endswith("original_sugama_table")
     assert metadata["velocity_quadrature_orders"] == [64, 80]
+    assert "equations (3.65)" in metadata["source"]
     with np.load(sugama_path) as archive:
         test = np.asarray(archive["test_table"])[1]
         field = np.asarray(archive["field_table"])[1]
@@ -2940,11 +2941,21 @@ def test_finite_wavelength_original_sugama_resolves_published_field_channels(
     collision = test + field
     assert np.linalg.matrix_rank(field, tol=1.0e-12) <= 3
     np.testing.assert_allclose(field, field.T, atol=2.0e-14)
+    assert np.linalg.eigvalsh(field).min() > -2.0e-14
+    assert np.linalg.eigvalsh(0.5 * (collision + collision.T)).max() < 0.0
     for invariant in (parallel, perpendicular, temperature):
         # These channels become exact collision invariants only as b -> 0.
         # Their finite-b action is the gyro-diffusive contribution visible in
         # the finite-wavelength zonal-response benchmark.
         assert np.linalg.norm(collision @ invariant) > 1.0e-7
+    with pytest.raises(ValueError, match="quadrature_order"):
+        mod.finite_wavelength_original_sugama_like_species_moment_matrices(
+            test[None, ...],
+            np.asarray([bessel_argument]),
+            3,
+            1,
+            quadrature_order=31,
+        )
 
     improved_path = tmp_path / "improved_sugama.npz"
     improved_metadata = mod.write_equal_species_finite_wavelength_improved_sugama_table(
@@ -5126,6 +5137,44 @@ def test_tracked_finite_wavelength_zonal_endpoint_hierarchy_passes() -> None:
         trace["maximum_normalized_time"]
         for trace in comparison["traces"].values()
     ) >= 30.0
+
+
+def test_tracked_collisional_zonal_figures_12_14_pass() -> None:
+    """The curated P24/J10 traces retain the complete literature verdict."""
+
+    prefix = ROOT / "docs/_static/collision_finite_wavelength_zonal_response"
+    payload = json.loads(prefix.with_suffix(".json").read_text())
+    assert payload["gate_passed"] is True
+    assert all(payload["gates"].values())
+    assert payload["protocol"]["maximum_hermite_order"] == 24
+    assert payload["protocol"]["maximum_laguerre_order"] == 10
+    for wavenumber in ("0.10", "0.20"):
+        original = payload["tail_response"]["original_sugama"][wavenumber]
+        improved = payload["tail_response"]["improved_sugama"][wavenumber]
+        coulomb = payload["tail_response"]["coulomb"][wavenumber]
+        assert original < improved < coulomb
+        errors = payload["early_window_rms_error_vs_coulomb"][wavenumber]
+        assert errors["improved_sugama"] < errors["original_sugama"]
+    with prefix.with_suffix(".csv").open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    assert len(rows) == 14_778
+    assert {row["model"] for row in rows} == {
+        "coulomb",
+        "original_sugama",
+        "improved_sugama",
+    }
+    zonal_tool = load_artifact_tool("build_zonal_flow_artifacts")
+    replay = zonal_tool.summarize_collisional_zonal_campaign(
+        zonal_tool._read_campaign_csv(prefix.with_suffix(".csv")),
+        zonal_tool._read_campaign_csv(
+            ROOT
+            / "docs/_static/collision_finite_wavelength_zonal_velocity_sections.csv"
+        ),
+    )
+    assert replay["gate_passed"] is True
+    assert all(replay["gates"].values())
+    with Image.open(prefix.with_suffix(".png")) as figure:
+        figure.verify()
 
 
 def test_plot_zonal_flow_response_output_subcommand(

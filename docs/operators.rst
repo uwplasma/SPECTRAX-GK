@@ -818,7 +818,9 @@ Laguerre convention, finite coefficients, and agreement between 80- and
 C6 construction at :math:`B=0` to roundoff and limits the finite-wavelength
 field block to a symmetric rank-three matrix. At finite :math:`B`, the flow
 channels have the nonzero gyro-diffusive action required by the gyroaveraged
-operator. ``EqualSpeciesFiniteWavelengthSugamaOperator``
+operator, while the symmetric part of the complete retained collision matrix
+remains strictly dissipative in the equation-level gate.
+``EqualSpeciesFiniteWavelengthSugamaOperator``
 interpolates the resulting table in JAX and acts on the post-field
 nonadiabatic response :math:`H`; JIT/JVP and finite-difference interpolation
 gates pass, but a paper-facing zonal trace is still required for promotion.
@@ -845,7 +847,14 @@ drift-kinetic analytical implementation with relative matrix errors from
 P24/J10, :math:`K=5` resolution, nested 80/96-node checks over
 :math:`B=0.12,0.16,0.24,0.32` differ by at most :math:`7.1\times10^{-14}`
 relative. These are equation and quadrature gates. The Figure-13/14 zonal
-ordering and velocity-section comparisons remain the physical promotion gate.
+ordering and velocity-section comparison is the independent physical gate; it
+now passes at P24/J10 through :math:`t\nu=30`. At
+:math:`k_x\rho_i=0.1`, the late responses are 0.00242 (original), 0.00255
+(improved), and 0.00288 (Coulomb); at :math:`k_x\rho_i=0.2`, they are
+:math:`9.66\times10^{-5}`, :math:`1.15\times10^{-4}`, and
+:math:`1.92\times10^{-4}` in the same order. The improved early-window RMS
+error relative to Coulomb is lower than the original-model error at both
+wavenumbers.
 The common finite-wavelength runner now accepts provenance-matched Coulomb,
 original-Sugama, and improved-Sugama archives. For the :math:`k_x=0.2` trace it
 can checkpoint the physical :math:`t\nu=5` state, reconstruct the equation-(52)
