@@ -3740,6 +3740,9 @@ def test_finite_wavelength_table_projection_preserves_nested_modes(
         "claim_scope": "equal_species_diagonal_finite_wavelength_coulomb_table",
         "resolution": [3, 2],
         "bessel_argument_grid": grid.tolist(),
+        "maximum_angular_bessel_order": 1,
+        "included_angular_orders": [0, 1],
+        "laguerre_convention": "runtime_signed",
         "checksum": float(3 * np.sum(matrix) + 10 * np.sum(vector)),
     }
     np.savez_compressed(
@@ -3776,6 +3779,21 @@ def test_finite_wavelength_table_projection_preserves_nested_modes(
             source,
             tmp_path / "expanded.npz",
             maximum_hermite_order=4,
+            maximum_laguerre_order=1,
+        )
+    incomplete = tmp_path / "incomplete.npz"
+    metadata["included_angular_orders"] = [0]
+    np.savez_compressed(
+        incomplete,
+        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
+        bessel_argument_grid=grid,
+        test_table=matrix,
+    )
+    with pytest.raises(ValueError, match="complete angular coverage"):
+        mod.project_equal_species_finite_wavelength_table(
+            incomplete,
+            tmp_path / "invalid.npz",
+            maximum_hermite_order=2,
             maximum_laguerre_order=1,
         )
 

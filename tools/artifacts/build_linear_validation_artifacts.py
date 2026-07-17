@@ -4161,6 +4161,22 @@ def project_equal_species_finite_wavelength_table(
     claim_scope = str(metadata.get("claim_scope", ""))
     if not claim_scope.startswith("equal_species_diagonal_finite_wavelength_"):
         raise ValueError("source must be a complete equal-species finite-wavelength table")
+    maximum_angular_order = int(metadata.get("maximum_angular_bessel_order", -1))
+    if metadata.get("included_angular_orders") != list(
+        range(maximum_angular_order + 1)
+    ):
+        raise ValueError("source table must contain complete angular coverage")
+    if metadata.get("laguerre_convention") != "runtime_signed":
+        raise ValueError("source table must use the runtime signed-Laguerre convention")
+    grid = np.asarray(arrays["bessel_argument_grid"], dtype=float)
+    if (
+        grid.ndim != 1
+        or grid.size < 2
+        or np.any(~np.isfinite(grid))
+        or np.any(np.diff(grid) <= 0.0)
+        or metadata.get("bessel_argument_grid") != grid.tolist()
+    ):
+        raise ValueError("source wavelength grid and metadata must match")
     source_hermite, source_laguerre = map(int, metadata.get("resolution", ()))
     if (
         maximum_hermite_order > source_hermite
