@@ -113,9 +113,8 @@ Nonlinear matrix release gates
 Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
 portfolio tools rather than manual figure selection.
 ``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` writes the long-window
-matched matrix, ``tools/release/check_nonlinear_transport_gates.py matrix-portfolio`` selects
-only a passing family, and ``tools/campaigns/finalize_nonlinear_transport_matrix_release.py``
-refuses blocked portfolios before importing any release artifacts. The current
+matched matrix, and ``tools/release/check_nonlinear_transport_gates.py matrix-portfolio``
+selects only a passing family before publication artifacts are indexed. The current
 tracked max-mode-5 campaign is negative
 evidence: accepted QA/ESS passed only ``9/18`` samples, projected weight
 ``1e-3`` failed early, and projected weight ``5e-4`` increased heat flux on its
@@ -824,13 +823,6 @@ records strict ``t=1500`` growth/QL/nonlinear-window matched comparisons as
 excluded negative-transfer evidence. This prevents the release process from
 counting negative strict rows or single-point matched audits toward the broad
 nonlinear turbulent-flux optimization claim.
-
-``tools/campaigns/finalize_nonlinear_transport_matrix_release.py`` is the release
-import and dashboard wrapper after a portfolio passes. It refuses blocked or
-malformed portfolio JSON, copies the canonical portfolio artifact and selected
-family matrix report into ``docs/_static``, and then regenerates the
-manuscript-readiness, pre-manuscript closure, and closure runbook artifacts. Use
-``--skip-dashboard-regeneration`` only for import-path debugging or tests.
 
 ``tools/artifacts/build_external_vmec_holdout_runbook.py`` is the single selector
 that feeds that generator. It reads the tracked linear candidate screen and the

@@ -97,7 +97,7 @@ def _calibration_report(
     }
 
 
-def _manuscript_readiness_report(
+def _release_contract(
     *,
     claim_level: str = "scoped_candidate_model_selection_not_runtime_flux_predictor",
     absolute_flux_promoted: bool = False,
@@ -110,8 +110,8 @@ def _manuscript_readiness_report(
     if include_guardrail_artifact:
         artifacts.append("docs/_static/quasilinear_promotion_guardrails.json")
     return {
-        "kind": "manuscript_readiness_status",
-        "lanes": [
+        "kind": "gkx_1_7_frozen_release_contract",
+        "release_lanes": [
             {
                 "lane": "Quasilinear diagnostics and saturation-model selection",
                 "status": "closed",
@@ -297,17 +297,17 @@ def test_wrapped_negative_absolute_flux_phrase_is_not_overclaim(tmp_path: Path) 
     assert doc_rows[str(doc)]["overclaim_lines"] == []
 
 
-def test_manuscript_readiness_ql_lane_requires_scoped_nonabsolute_candidate(
+def test_release_contract_ql_lane_requires_scoped_nonabsolute_candidate(
     tmp_path: Path,
 ) -> None:
     mod = _load_tool_module()
-    report = tmp_path / "manuscript_readiness_status.json"
-    payload = _manuscript_readiness_report(
+    report = tmp_path / "release_contract.json"
+    payload = _release_contract(
         claim_level="calibrated_absolute_flux",
         absolute_flux_promoted=True,
     )
-    payload["lanes"][0]["key_metrics"]["uq_candidate_promotion_passed"] = True
-    payload["lanes"][0]["key_metrics"]["accepted_uq_candidates"] = [
+    payload["release_lanes"][0]["key_metrics"]["uq_candidate_promotion_passed"] = True
+    payload["release_lanes"][0]["key_metrics"]["accepted_uq_candidates"] = [
         "spectral_envelope_ridge"
     ]
     report.write_text(json.dumps(payload), encoding="utf-8")
@@ -320,18 +320,18 @@ def test_manuscript_readiness_ql_lane_requires_scoped_nonabsolute_candidate(
     failed_metrics = {
         gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
     }
-    assert "manuscript_ql_not_absolute_flux" in failed_metrics
-    assert "manuscript_ql_closed_scope_is_non_absolute" in failed_metrics
-    assert "manuscript_ql_candidate_scope_not_runtime" in failed_metrics
+    assert "release_contract_ql_not_absolute_flux" in failed_metrics
+    assert "release_contract_ql_closed_scope_is_non_absolute" in failed_metrics
+    assert "release_contract_ql_candidate_scope_not_runtime" in failed_metrics
 
 
-def test_manuscript_readiness_ql_lane_requires_guardrail_artifact(
+def test_release_contract_ql_lane_requires_guardrail_artifact(
     tmp_path: Path,
 ) -> None:
     mod = _load_tool_module()
-    report = tmp_path / "manuscript_readiness_status.json"
+    report = tmp_path / "release_contract.json"
     report.write_text(
-        json.dumps(_manuscript_readiness_report(include_guardrail_artifact=False)),
+        json.dumps(_release_contract(include_guardrail_artifact=False)),
         encoding="utf-8",
     )
     doc = tmp_path / "doc.rst"
@@ -343,23 +343,23 @@ def test_manuscript_readiness_ql_lane_requires_guardrail_artifact(
     failed_metrics = {
         gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
     }
-    assert "manuscript_ql_guardrail_artifact_listed" in failed_metrics
+    assert "release_contract_ql_guardrail_artifact_listed" in failed_metrics
 
 
-def test_manuscript_readiness_ql_lane_passes_when_candidate_is_scoped(
+def test_release_contract_ql_lane_passes_when_candidate_is_scoped(
     tmp_path: Path,
 ) -> None:
     mod = _load_tool_module()
-    report = tmp_path / "manuscript_readiness_status.json"
-    report.write_text(json.dumps(_manuscript_readiness_report()), encoding="utf-8")
+    report = tmp_path / "release_contract.json"
+    report.write_text(json.dumps(_release_contract()), encoding="utf-8")
     doc = tmp_path / "doc.rst"
     _write_doc(doc)
 
     audit = mod.build_guardrail_audit([str(report)], [doc])
 
     assert audit["passed"] is True
-    assert audit["summary"]["n_manuscript_readiness_reports"] == 1
-    assert audit["manuscript_readiness_reports"][0]["ql_status"] == "closed"
+    assert audit["summary"]["n_release_contracts"] == 1
+    assert audit["release_contracts"][0]["ql_status"] == "closed"
 
 
 def test_manuscript_figure_audit_requires_json_sidecar_and_index_entry(
@@ -583,7 +583,7 @@ def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     assert audit["summary"]["n_calibration_reports"] == 4
     assert audit["summary"]["n_input_validation_reports"] >= 4
     assert audit["summary"]["n_promotion_gate_reports"] >= 4
-    assert audit["summary"]["n_manuscript_readiness_reports"] == 1
+    assert audit["summary"]["n_release_contracts"] == 1
     assert audit["summary"]["n_doc_checks"] == 4
     assert audit["summary"]["n_manuscript_figure_checks"] == len(
         mod.DEFAULT_MANUSCRIPT_FIGURE_BASES

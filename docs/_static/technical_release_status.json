@@ -94,14 +94,6 @@
         },
         {
           "exists": true,
-          "name": "roadmap",
-          "passed": true,
-          "path": "docs/roadmap.rst",
-          "required": true,
-          "snippet": "Release-ready"
-        },
-        {
-          "exists": true,
           "name": "examples docs",
           "passed": true,
           "path": "docs/examples.rst",
@@ -119,8 +111,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 7,
-      "required": 7
+      "passed_required": 6,
+      "required": 6
     },
     "parallelization_release_surface": {
       "checks": [
@@ -462,17 +454,9 @@
         },
         {
           "exists": true,
-          "name": "manuscript readiness",
+          "name": "frozen 1.7 release contract",
           "passed": true,
-          "path": "docs/_static/manuscript_readiness_status.json",
-          "required": true,
-          "snippet": null
-        },
-        {
-          "exists": true,
-          "name": "open lane status",
-          "passed": true,
-          "path": "docs/_static/open_research_lane_status.json",
+          "path": "benchmarks/references/gkx_1_7_release_contract.json",
           "required": true,
           "snippet": null
         },
@@ -495,8 +479,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 10,
-      "required": 10
+      "passed_required": 9,
+      "required": 9
     }
   },
   "passed": true,

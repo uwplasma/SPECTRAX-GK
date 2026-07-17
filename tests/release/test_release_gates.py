@@ -450,6 +450,7 @@ def _write_release_ready_tree(root: Path) -> None:
     (root / "src" / "spectraxgk").mkdir(parents=True)
     (root / ".github" / "workflows").mkdir(parents=True)
     (root / "docs" / "_static").mkdir(parents=True)
+    (root / "benchmarks" / "references").mkdir(parents=True)
     (root / "pyproject.toml").write_text(
         """
 [project]
@@ -631,12 +632,21 @@ coverage:
 """.lstrip(),
         encoding="utf-8",
     )
-    (root / "docs" / "_static" / "manuscript_readiness_status.json").write_text(
+    (
+        root / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
+    ).write_text(
         """
 {
-  "claim_scope": "release_scope",
-  "kind": "manuscript_readiness_status",
-  "lanes": [
+  "kind": "gkx_1_7_frozen_release_contract",
+  "performance": {
+    "row_count": 1,
+    "rows": [{"case": "test", "backend": "cpu", "status": "success"}]
+  },
+  "public_api": {
+    "count": 1,
+    "exports": [{"name": "solve", "module": "spectraxgk", "symbol": "solve"}]
+  },
+  "release_lanes": [
     {
       "claim_level": "release_claim",
       "lane": "CI/release hygiene and status automation",
@@ -647,34 +657,7 @@ coverage:
       "lane": "Future physics extension",
       "status": "deferred"
     }
-  ],
-  "summary": {
-    "active_fraction_closed": 1.0,
-    "n_active": 1,
-    "n_blocked": 0,
-    "n_closed": 1,
-    "n_deferred": 1,
-    "n_lanes": 2,
-    "n_open": 0,
-    "n_partial": 0
-  }
-}
-""".lstrip(),
-        encoding="utf-8",
-    )
-    (root / "docs" / "_static" / "open_research_lane_status.json").write_text(
-        """
-{
-  "claim_scope": "post_release_tracking",
-  "kind": "open_research_lane_status",
-  "lanes": [
-    {
-      "claim_level": "open_research_not_release_claim",
-      "lane": "Open research lane",
-      "status": "open"
-    }
-  ],
-  "summary": {"n_open": 1}
+  ]
 }
 """.lstrip(),
         encoding="utf-8",
@@ -724,7 +707,7 @@ def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
         is True
     )
     assert report["lane_status"]["status_artifacts"][
-        "docs/_static/manuscript_readiness_status.json"
+        "benchmarks/references/gkx_1_7_release_contract.json"
     ]["status_counts"] == {"closed": 1, "deferred": 1}
 
 
@@ -794,32 +777,18 @@ def test_release_readiness_rejects_below_target_release_completion(
     tmp_path: Path,
 ) -> None:
     _write_release_ready_tree(tmp_path)
-    (tmp_path / "docs" / "_static" / "manuscript_readiness_status.json").write_text(
-        """
-{
-  "claim_scope": "release_scope",
-  "kind": "manuscript_readiness_status",
-  "lanes": [
-    {
-      "claim_level": "release_claim",
-      "lane": "CI/release hygiene and status automation",
-      "status": "partial"
-    }
-  ],
-  "summary": {
-    "active_fraction_closed": 0.97,
-    "n_active": 1,
-    "n_blocked": 0,
-    "n_closed": 0,
-    "n_deferred": 0,
-    "n_lanes": 1,
-    "n_open": 0,
-    "n_partial": 1
-  }
-}
-""".lstrip(),
-        encoding="utf-8",
+    contract = (
+        tmp_path / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
     )
+    payload = json.loads(contract.read_text(encoding="utf-8"))
+    payload["release_lanes"] = [
+        {
+            "claim_level": "release_claim",
+            "lane": "CI/release hygiene and status automation",
+            "status": "partial",
+        }
+    ]
+    contract.write_text(json.dumps(payload), encoding="utf-8")
 
     with pytest.raises(
         ReleaseReadinessError,
@@ -833,7 +802,7 @@ def test_release_readiness_rejects_failed_technical_status(tmp_path: Path) -> No
     (tmp_path / "docs" / "_static" / "technical_release_status.json").write_text(
         """
 {
-  "failed_required": ["docs_release_hygiene: roadmap"],
+  "failed_required": ["docs_release_hygiene: release scope"],
   "kind": "spectraxgk_technical_release_status",
   "lanes": {},
   "passed": false,

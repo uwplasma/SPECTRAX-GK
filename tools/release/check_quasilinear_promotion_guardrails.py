@@ -23,7 +23,7 @@ DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_candidate_regularization_sweep.json"),
     str(ROOT / "docs/_static/quasilinear_dataset_sufficiency.json"),
     str(ROOT / "docs/_static/quasilinear_validated_calibration_inputs.json"),
-    str(ROOT / "docs/_static/manuscript_readiness_status.json"),
+    str(ROOT / "benchmarks/references/gkx_1_7_release_contract.json"),
 )
 DEFAULT_DOCS = (
     ROOT / "README.md",
@@ -455,13 +455,13 @@ def _audit_promotion_gate(
     }
 
 
-def _audit_manuscript_readiness(
+def _audit_release_contract(
     path: Path, data: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-    if data.get("kind") != "manuscript_readiness_status":
+    if data.get("kind") != "gkx_1_7_frozen_release_contract":
         return [], None
 
-    lanes = data.get("lanes", [])
+    lanes = data.get("release_lanes", [])
     ql_lane = None
     if isinstance(lanes, list):
         for lane in lanes:
@@ -471,7 +471,7 @@ def _audit_manuscript_readiness(
 
     gates = [
         _gate(
-            "manuscript_ql_lane_present",
+            "release_contract_ql_lane_present",
             ql_lane is not None,
             f"{_repo_relative(path)} contains {MANUSCRIPT_QL_LANE!r}",
         )
@@ -505,24 +505,24 @@ def _audit_manuscript_readiness(
     gates.extend(
         [
             _gate(
-                "manuscript_ql_not_absolute_flux",
+                "release_contract_ql_not_absolute_flux",
                 not absolute_flux_promoted and claim_level != PROMOTED_CLAIM,
                 f"claim_level={claim_level} absolute_flux_promoted={absolute_flux_promoted}",
             ),
             _gate(
-                "manuscript_ql_closed_scope_is_non_absolute",
+                "release_contract_ql_closed_scope_is_non_absolute",
                 status != "closed" or claim_is_scoped,
                 f"status={status} claim_level={claim_level}",
             ),
             _gate(
-                "manuscript_ql_candidate_scope_not_runtime",
+                "release_contract_ql_candidate_scope_not_runtime",
                 not candidate_selected or claim_is_scoped,
                 f"candidate_selected={candidate_selected} claim_level={claim_level}",
             ),
             _gate(
-                "manuscript_ql_guardrail_artifact_listed",
+                "release_contract_ql_guardrail_artifact_listed",
                 "docs/_static/quasilinear_promotion_guardrails.json" in artifacts,
-                "manuscript QL lane should list the promotion guardrail audit artifact",
+                "release QL lane should list the promotion guardrail audit artifact",
             ),
         ]
     )
@@ -1105,7 +1105,7 @@ def build_guardrail_audit(
     report_rows: list[dict[str, Any]] = []
     input_rows: list[dict[str, Any]] = []
     promotion_rows: list[dict[str, Any]] = []
-    manuscript_rows: list[dict[str, Any]] = []
+    release_contract_rows: list[dict[str, Any]] = []
     figure_rows: list[dict[str, Any]] = []
 
     for path in report_paths:
@@ -1122,10 +1122,10 @@ def build_guardrail_audit(
         gates.extend(promotion_gates)
         if promotion_summary is not None:
             promotion_rows.append(promotion_summary)
-        manuscript_gates, manuscript_summary = _audit_manuscript_readiness(path, data)
-        gates.extend(manuscript_gates)
-        if manuscript_summary is not None:
-            manuscript_rows.append(manuscript_summary)
+        contract_gates, contract_summary = _audit_release_contract(path, data)
+        gates.extend(contract_gates)
+        if contract_summary is not None:
+            release_contract_rows.append(contract_summary)
 
     doc_gates, doc_rows = _audit_docs([Path(path) for path in doc_paths])
     gates.extend(doc_gates)
@@ -1155,7 +1155,7 @@ def build_guardrail_audit(
             "n_calibration_reports": len(report_rows),
             "n_input_validation_reports": len(input_rows),
             "n_promotion_gate_reports": len(promotion_rows),
-            "n_manuscript_readiness_reports": len(manuscript_rows),
+            "n_release_contracts": len(release_contract_rows),
             "n_doc_checks": len(doc_rows),
             "n_manuscript_figure_checks": len(figure_rows),
             "n_failed_gates": len(failed),
@@ -1163,12 +1163,12 @@ def build_guardrail_audit(
         "calibration_reports": report_rows,
         "input_validation_reports": input_rows,
         "promotion_gate_reports": promotion_rows,
-        "manuscript_readiness_reports": manuscript_rows,
+        "release_contracts": release_contract_rows,
         "manuscript_figure_provenance": figure_rows,
         "doc_checks": doc_rows,
         "notes": (
             "Fast metadata guardrail only: it verifies finite nonlinear window statistics, "
-            "train/holdout provenance, absolute-flux promotion gates, manuscript-readiness QL scope, "
+            "train/holdout provenance, absolute-flux promotion gates, release-contract QL scope, "
             "manuscript figure JSON sidecars, explicit failed-baseline metadata, "
             "and conservative README/docs wording. "
             "It does not replace nonlinear convergence simulations."

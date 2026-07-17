@@ -282,9 +282,7 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
             assert 'JAC="implicit"' in text, path
             assert "JAC=None" in text, path
             assert "not a nonlinear time average" in normalized, path
-            assert (
-                "tools/campaigns/finalize_nonlinear_transport_matrix_release.py" in text
-            ), path
+            assert "matrix-portfolio" in text, path
 
 
 def test_optimization_examples_document_user_customization_knobs() -> None:
@@ -342,17 +340,14 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
 def test_reduced_surface_comparison_is_not_current_primary_optimization_figure() -> (
     None
 ):
-    readiness_source = (
-        ROOT / "tools" / "artifacts" / "build_research_status.py"
+    release_contract = (
+        ROOT / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
     ).read_text(encoding="utf-8")
     examples_readme = (EXAMPLES / "README.md").read_text(encoding="utf-8")
     docs = (ROOT / "docs" / "stellarator_optimization.rst").read_text(encoding="utf-8")
 
     reduced_png = '"docs/_static/stellarator_itg_optimization_comparison.png"'
-    primary_block = readiness_source.split('"supporting_artifacts"', maxsplit=1)[0]
-
-    assert reduced_png not in primary_block
-    assert "Do not use the reduced synthetic surface comparison" in readiness_source
+    assert reduced_png not in release_contract
     assert "stellarator_itg_growth_optimization.py" not in examples_readme
     assert "reduced_stellarator_itg" not in examples_readme
     assert "development diagnostics only" in re.sub(r"\s+", " ", docs)

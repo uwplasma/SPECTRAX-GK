@@ -31,9 +31,9 @@ Claim-scope synchronization
 
 Validation status and scientific claims are intentionally separate from raw
 coverage. Use :doc:`release_scope` as the human-readable claim ledger, and keep
-it synchronized with ``docs/_static/manuscript_readiness_status.json``,
-``docs/_static/open_research_lane_status.json``, and the validation coverage
-manifest. A passing test or coverage line is not enough to promote a physics or
+it synchronized with ``benchmarks/references/gkx_1_7_release_contract.json``
+and the validation coverage manifest. A passing test or coverage line is not
+enough to promote a physics or
 performance claim unless the relevant artifact also records the observable,
 reference, tolerance, and accepted claim level. Likewise, an example that runs
 successfully is still only a release claim when it is labeled as release-gated

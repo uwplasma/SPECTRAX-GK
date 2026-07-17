@@ -23,9 +23,8 @@ optimization examples, and linear/quasilinear VMEC/Boozer AD-vs-finite-
 difference gradient gates on QH and Li383. The required release CI stack is the
 quick-shard, docs/packaging, mypy, repo-hygiene, fast-coverage, and
 wide-coverage matrix; treat the latest ``main`` run as the source of truth before
-tagging. The companion ``docs/_static/manuscript_readiness_status.json`` report
-currently has five active manuscript lanes closed and two lanes explicitly
-deferred: W7-X zonal recurrence/damping and TEM / kinetic-electron stellarator
+tagging. The frozen ``benchmarks/references/gkx_1_7_release_contract.json``
+records five active release lanes as closed and two lanes as explicitly deferred: W7-X zonal recurrence/damping and TEM / kinetic-electron stellarator
 extension.
 
 The broader plan is not fully closed. The current quasilinear figures are
@@ -41,37 +40,6 @@ turbulence-gradient or robust finite-difference gates, local-gradient
 conditioning, and nonlinear audits of additional optimized equilibria. W7-X
 zonal recurrence and TEM/kinetic-electron stellarator validation remain
 deferred from the current manuscript scope.
-
-Before manuscript drafting, four stricter promotion lanes must close. The
-machine-readable dashboard
-``docs/_static/pre_manuscript_closure_status.json`` and companion figure below
-track those lanes separately from release-safe scoped diagnostics. The current
-strict status is not ready for manuscript drafting: the scoped core
-quasilinear heat-flux diagnostic is closed at ``100.0%``; broad end-to-end
-nonlinear turbulent-flux stellarator optimization is partial at ``94.0%``;
-production nonlinear domain-decomposition speedup is partial at ``70.0%``; and
-VMEC/Boozer holdout optimization is closed at ``100.0%``. Mean strict closure
-is ``91.0%``. These percentages are strict closure metrics for the current
-scoped and production gates, not older release-lane completion estimates.
-
-.. image:: _static/pre_manuscript_closure_status.png
-   :alt: Strict pre-manuscript closure status for scoped and production gates
-
-The actionable companion runbook
-``docs/_static/pre_manuscript_closure_runbook.json`` records what can be
-launched now versus what is scientifically blocked. The current runbook freezes
-additional QL holdout collection because the scoped core diagnostic is closed
-for this tranche; declared stress outliers remain deferred until a new
-saturation-physics lane is opened. It also records the office-launched
-``t=1500`` seed queues for three
-optimized QA equilibria
-(``growth_scalar_trust_from_strict_baseline``,
-``growth_lbfgs_adjoint_from_strict_baseline``, and
-``quasilinear_scalar_trust_from_strict_baseline``), with the ``dt=0.04``
-variants deferred until the seed outputs are finite.
-
-.. image:: _static/pre_manuscript_closure_runbook.png
-   :alt: Actionable pre-manuscript closure runbook
 
 The latest manuscript-stack additions are deliberately contract-level figures:
 ``docs/_static/quasilinear_holdout_gap_report.png`` with CSV/JSON/PDF
@@ -217,14 +185,6 @@ Core Validation Figures
      - ``tools/release/check_validation_coverage_manifest.py gate-index``
      - Current release-gate audit with quasilinear model-selection deliberately open
      - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for materialized release-window gates. The current index records ``17/18`` passed: the shaped-pressure external-VMEC high-grid admission gate is included as a passed scoped holdout, while ``docs/_static/quasilinear_model_selection_status.json`` remains open because the required spectral-envelope candidate misses the strict transport-error gate and is not promoted as an absolute-flux predictor.
-   * - Open research lane status
-     - ``tools/artifacts/build_research_status.py open-lanes``
-     - Closed as a claim-scope audit; underlying physics lanes remain scoped
-     - current artifact base: ``docs/_static/open_research_lane_status.png`` with CSV/JSON/PDF companions. It reads the W7-X zonal recurrence, W7-X hypercollision probe, W7-X fluctuation/TEM extension status, quasilinear holdout, differentiable-geometry, and nonlinear-profiler artifacts and records which lanes are closed, partial, open, or blocked. The current status is intentionally conservative: nonlinear holdouts for the scoped quasilinear model-development claim and profiler-backed nonlinear hot-path localization are closed; W7-X fluctuation/TEM and differentiable geometry are partial bounded diagnostics; and W7-X long-window zonal recurrence/damping remains open. This panel is useful for the paper plan and release notes because it prevents partial diagnostics from being described as completed physics claims.
-   * - Manuscript-readiness status panel
-     - ``tools/artifacts/build_research_status.py manuscript-readiness``
-     - Current manuscript scope with W7-X zonal and TEM deferred
-     - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates on QH and Li383. The compact nonlinear FD audits are retained only as startup plumbing checks with false transport-average gates. The production nonlinear optimization guard adds the D-shaped and circular long post-transient replicated holdout ensembles plus the selected optimized-equilibrium ``t=[350,700]`` seed/timestep replicated audit. Broader nonlinear turbulence-gradient, absolute-flux prediction, and multi-surface stellarator optimization claims remain separate gates.
    * - Quasilinear spectrum panel
      - ``tools/artifacts/plot_quasilinear_diagnostics.py spectrum``
      - Electrostatic diagnostic closed; absolute-flux prediction not promoted
@@ -273,14 +233,10 @@ Core Validation Figures
      - ``tools/artifacts/build_external_vmec_holdout_runbook.py``
      - Solovev replicated holdout admitted as negative absolute-QL evidence; QH remains negative evidence
      - current artifact base: ``docs/_static/external_vmec_next_holdout_runbook.png`` with CSV/JSON companions. It converts the holdout-gap report and external-VMEC linear screen into a fail-closed nonlinear launch plan. The CTH-like modified-protocol harvest is admitted only through ``tools/release/check_vmec_boozer_gates.py high-grid-admission``: the full ``n48/n64/n80`` sidecar fails due to the coarse grid, the retained ``n64/n80`` high-grid gates, late time-horizon gate, and ``n80`` seed/timestep ensemble pass. The shaped-tokamak-pressure repair now follows the same policy: the full ``n48/n64/n80`` ``t=450`` sidecar fails only coarse-grid agreement with pairwise heat-flux shift about ``0.469``, while retained ``n64/n80`` gates pass at ``t=450``/``t=650`` and the ``n80`` seed/timestep ensemble passes on ``t=[325,650]`` with mean heat flux about ``7.16``. Both are scoped high-grid holdouts, not full coarse-to-high-grid convergence claims. The corrected ``nfp4_QH_warm_start`` modified-protocol ladder reached ``t=250``, ``t=450``, and ``t=700`` at ``n64/n80`` and ``dt=0.04``, but all relaxed 20% high-grid gates fail; the final ``t=700`` common-window and least-window heat-flux differences are about ``0.349`` and ``0.367``. A new bounded linear screen added ``wout_solovev_reference.nc`` with ``gamma≈0.0944`` at ``ky≈0.2857`` and ``wout_up_down_asymmetric_tokamak_reference.nc`` with ``gamma≈0.0360`` at ``ky≈0.4762``. Since up-down asymmetric is already represented, Solovev was run as the next independent nonlinear holdout. Its repaired ``n48/t250`` seed/timestep ensemble passes with ``<Q_i>=1.409`` and mean-relative spread ``0.1599`` under the explicit ``20%`` gate. This is not an absolute-flux promotion; Solovev enters calibration as negative transfer evidence.
-   * - Pre-manuscript closure action runbook
-     - ``tools/artifacts/build_research_status.py runbook``
-     - Actionable campaign ledger added; claim promotion remains blocked by strict gates
-     - current artifact base: ``docs/_static/pre_manuscript_closure_runbook.png`` with CSV/JSON/PDF companions. It combines the strict closure dashboard, the external-VMEC fail-closed holdout runbook, the refreshed VMEC inventory, and optimizer-ladder metadata into one operational ledger. The artifact records Solovev as the harvested independent external-VMEC nonlinear holdout for this tranche, keeps remaining unscreened VMEC candidates behind the linear-screen gate, records the three production-scope optimized-equilibrium nonlinear audit commands generated on office, and logs the detached ``t=1500`` seed queues. It is an action artifact only: launched commands do not promote universal absolute quasilinear flux prediction, broad nonlinear turbulent-flux optimization, VMEC/Boozer optimization, or production nonlinear speedup without the corresponding convergence, replicate, and identity/profiler gates.
    * - Quasilinear promotion guardrail audit
      - ``tools/release/check_quasilinear_promotion_guardrails.py``
      - Fast metadata gate closed; nonlinear simulation validation remains delegated to the source gates
-     - current artifact: ``docs/_static/quasilinear_promotion_guardrails.json``. It scans the train/holdout calibration reports, saturation-model reports, nonlinear input-validation blocks, promotion gates, claim-scope README/docs wording, the quasilinear row in ``docs/_static/manuscript_readiness_status.json``, and the manuscript quasilinear model-development figure index. It requires finite nonlinear window means and standard deviations for train/holdout calibration points, explicit nonlinear and quasilinear artifact provenance, JSON sidecars for the tracked model-development figures, scoped non-absolute claim levels, explicit failed-baseline or blocker metadata, passed held-out gates before any ``calibrated_absolute_flux`` claim, and a manuscript-readiness quasilinear lane that remains scoped as diagnostic/model-selection evidence rather than a runtime absolute-flux predictor. This is deliberately a wording and metadata guard, not a calibrated absolute-flux claim or a replacement for nonlinear convergence simulations.
+     - current artifact: ``docs/_static/quasilinear_promotion_guardrails.json``. It scans the train/holdout calibration reports, saturation-model reports, nonlinear input-validation blocks, promotion gates, claim-scope README/docs wording, the quasilinear lane in ``benchmarks/references/gkx_1_7_release_contract.json``, and the manuscript quasilinear model-development figure index. It requires finite nonlinear window means and standard deviations for train/holdout calibration points, explicit nonlinear and quasilinear artifact provenance, JSON sidecars for the tracked model-development figures, scoped non-absolute claim levels, explicit failed-baseline or blocker metadata, passed held-out gates before any ``calibrated_absolute_flux`` claim, and a frozen release-contract quasilinear lane that remains scoped as diagnostic/model-selection evidence rather than a runtime absolute-flux predictor. This is deliberately a wording and metadata guard, not a calibrated absolute-flux claim or a replacement for nonlinear convergence simulations.
    * - Release claim-scope ledger
      - ``docs/release_scope.rst``
      - Closed as documentation guardrail

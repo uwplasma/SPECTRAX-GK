@@ -261,13 +261,11 @@ README claims, or manuscript claims.
        gradients, direct VMEC-state launches, or optimized-equilibrium nonlinear
        audits beyond the selected QA candidate documented below.
    * - Scope guardrails
-     - ``technical_release_status.json``,
-       ``parallelization_completion_status.*``,
-       ``release_readiness.json``, ``manuscript_readiness_status.*``,
-       ``open_research_lane_status.*``, and
-       ``w7x_tem_extension_status.*``
-     - These panels record what is closed, deferred, partial, or open; they do
-       not promote the underlying deferred physics lanes by themselves.
+     - ``benchmarks/references/gkx_1_7_release_contract.json``,
+       ``technical_release_status.json``, ``release_readiness.json``, and
+       ``w7x_tem_extension_status.json``
+     - The frozen contract records release-scoped claims and baseline API and
+       performance evidence. It does not promote deferred physics by itself.
    * - Performance and parallelization
      - ``runtime_memory_benchmark.*``,
        ``independent_ky_scan_scaling_large.*``,
@@ -632,12 +630,10 @@ The current manuscript/readme scope intentionally defers:
 - experimental W7-X fluctuation-spectrum claims through diagnostic transfer
   functions.
 
-These are tracked in ``docs/_static/manuscript_readiness_status.json``,
-``docs/_static/open_research_lane_status.json``, and
-``docs/_static/w7x_tem_extension_status.json``. In the narrower manuscript
-readiness report, W7-X zonal recurrence and TEM/kinetic-electron extension are
-``deferred``. In the broader research tracker, W7-X zonal recurrence remains
-``open`` and W7-X fluctuation/TEM remains ``partial``. The W7-X
+These release-scope decisions are frozen in
+``benchmarks/references/gkx_1_7_release_contract.json``; detailed W7-X extension
+state remains in ``docs/_static/w7x_tem_extension_status.json``. W7-X zonal
+recurrence and TEM/kinetic-electron extension are explicitly deferred. The W7-X
 fluctuation-spectrum panel is a validated simulation diagnostic only; it is not
 an experimental density-spectrum validation.
 
@@ -652,8 +648,7 @@ Before tagging a new public release:
    that ``coverage-wide-shard-manifest.json`` has labeled data for every wide
    coverage shard.
 3. Confirm README and this page agree with
-   ``docs/_static/manuscript_readiness_status.json`` and
-   ``docs/_static/open_research_lane_status.json``.
+   ``benchmarks/references/gkx_1_7_release_contract.json``.
 4. Confirm runtime/performance claims point to fresh profiler artifacts for
    the exact backend, device count, problem size, and identity tolerance being
    claimed.

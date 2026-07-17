@@ -67,6 +67,7 @@ REQUIRED_README_SNIPPETS = (
     "MIT",
 )
 REQUIRED_STATIC_ARTIFACTS = (
+    "benchmarks/references/gkx_1_7_release_contract.json",
     "docs/_static/runtime_memory_benchmark.png",
     "docs/_static/runtime_memory_summary_ship_refresh.json",
     "docs/_static/runtime_memory_results_ship_refresh.csv",
@@ -78,8 +79,6 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
     "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
     "docs/_static/technical_release_status.json",
-    "docs/_static/manuscript_readiness_status.json",
-    "docs/_static/open_research_lane_status.json",
     "docs/_static/w7x_tem_extension_status.json",
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
@@ -142,11 +141,7 @@ REQUIRED_PRELAUNCH_GATE_ROWS = (
         "min_sample_count": 18.0,
     },
 )
-LANE_STATUS_ARTIFACTS = (
-    "docs/_static/manuscript_readiness_status.json",
-    "docs/_static/open_research_lane_status.json",
-    "docs/_static/w7x_tem_extension_status.json",
-)
+RELEASE_CONTRACT_ARTIFACT = "benchmarks/references/gkx_1_7_release_contract.json"
 
 
 class ReleaseReadinessError(RuntimeError):
@@ -351,7 +346,6 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("readme executable", "README.md", "spectraxgk"),
         EvidenceCheck("MIT license in README", "README.md", "MIT"),
         EvidenceCheck("release scope ledger", "docs/release_scope.rst", "Claim scope"),
-        EvidenceCheck("roadmap", "docs/roadmap.rst", "Release-ready"),
         EvidenceCheck("examples docs", "docs/examples.rst", "parallelization"),
         EvidenceCheck(
             "release workflow",
@@ -407,10 +401,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "shaped_tokamak_pressure",
         ),
         EvidenceCheck(
-            "manuscript readiness", "docs/_static/manuscript_readiness_status.json"
-        ),
-        EvidenceCheck(
-            "open lane status", "docs/_static/open_research_lane_status.json"
+            "frozen 1.7 release contract", RELEASE_CONTRACT_ARTIFACT
         ),
         EvidenceCheck(
             "stellarator optimization docs",
@@ -794,32 +785,42 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
 
 
 def _lane_status_summary(root: Path) -> dict[str, Any]:
-    artifacts: dict[str, Any] = {}
-    for artifact in LANE_STATUS_ARTIFACTS:
-        payload = _read_json(root / artifact)
-        lane_key = "lanes" if "lanes" in payload else "rows"
-        lanes = payload.get(lane_key)
-        if not isinstance(lanes, list):
-            raise ReleaseReadinessError(f"{artifact} missing lanes/rows list")
-        artifacts[artifact] = {
-            "kind": payload.get("kind"),
-            "claim_scope": payload.get("claim_scope"),
-            "summary": payload.get("summary", {}),
-            "lane_source_key": lane_key,
-            "status_counts": _status_counts(lanes),
-            "lanes": [
-                {
-                    "lane": lane.get("lane"),
-                    "status": lane.get("status"),
-                    "claim_level": lane.get("claim_level"),
-                }
-                for lane in lanes
-                if isinstance(lane, dict)
-            ],
-        }
-
-    manuscript = artifacts["docs/_static/manuscript_readiness_status.json"]
-    recomputed = _recomputed_active_summary(manuscript["lanes"])
+    payload = _read_json(root / RELEASE_CONTRACT_ARTIFACT)
+    if payload.get("kind") != "gkx_1_7_frozen_release_contract":
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} has an invalid kind"
+        )
+    lanes = payload.get("release_lanes")
+    if not isinstance(lanes, list) or not lanes:
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing release_lanes"
+        )
+    public_api = payload.get("public_api")
+    if not isinstance(public_api, dict) or not isinstance(
+        public_api.get("exports"), list
+    ):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing public_api.exports"
+        )
+    exports = public_api["exports"]
+    export_names = [row.get("name") for row in exports if isinstance(row, dict)]
+    if public_api.get("count") != len(exports) or len(set(export_names)) != len(exports):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} public API count/names are inconsistent"
+        )
+    performance = payload.get("performance")
+    if not isinstance(performance, dict) or not isinstance(
+        performance.get("rows"), list
+    ):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing performance.rows"
+        )
+    performance_rows = performance["rows"]
+    if performance.get("row_count") != len(performance_rows):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} performance row count is inconsistent"
+        )
+    recomputed = _recomputed_active_summary(lanes)
     active_fraction_closed = float(recomputed["active_fraction_closed"])
     release_scoped_incomplete = int(recomputed["n_incomplete"])
     target_passed = (
@@ -828,13 +829,21 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
     )
     return {
         "target_fraction": TECHNICAL_COMPLETION_TARGET,
-        "source": "docs/_static/manuscript_readiness_status.json:lanes",
+        "source": f"{RELEASE_CONTRACT_ARTIFACT}:release_lanes",
         "active_fraction_closed": active_fraction_closed,
         "release_scoped_open_or_blocked": release_scoped_incomplete,
         "release_scoped_incomplete": release_scoped_incomplete,
         "recomputed_active_summary": recomputed,
         "passed": target_passed,
-        "status_artifacts": artifacts,
+        "status_artifacts": {
+            RELEASE_CONTRACT_ARTIFACT: {
+                "kind": payload.get("kind"),
+                "status_counts": _status_counts(lanes),
+                "public_api_count": len(exports),
+                "performance_row_count": len(performance_rows),
+                "lanes": lanes,
+            }
+        },
     }
 
 
@@ -1018,7 +1027,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     except ReleaseReadinessError as exc:
         lane_status = {
             "target_fraction": TECHNICAL_COMPLETION_TARGET,
-            "source": "docs/_static/manuscript_readiness_status.json:lanes",
+            "source": f"{RELEASE_CONTRACT_ARTIFACT}:release_lanes",
             "active_fraction_closed": 0.0,
             "release_scoped_open_or_blocked": None,
             "release_scoped_incomplete": None,

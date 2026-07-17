@@ -68,28 +68,28 @@
     "case": "quasilinear_absolute_flux_promotion_guardrails",
     "gates": [
       {
-        "detail": "docs/_static/manuscript_readiness_status.json contains 'Quasilinear diagnostics and saturation-model selection'",
-        "metric": "manuscript_ql_lane_present",
+        "detail": "benchmarks/references/gkx_1_7_release_contract.json contains 'Quasilinear diagnostics and saturation-model selection'",
+        "metric": "release_contract_ql_lane_present",
         "passed": true
       },
       {
         "detail": "claim_level=validated_diagnostics_negative_absolute_flux_promotion absolute_flux_promoted=False",
-        "metric": "manuscript_ql_not_absolute_flux",
+        "metric": "release_contract_ql_not_absolute_flux",
         "passed": true
       },
       {
         "detail": "status=closed claim_level=validated_diagnostics_negative_absolute_flux_promotion",
-        "metric": "manuscript_ql_closed_scope_is_non_absolute",
+        "metric": "release_contract_ql_closed_scope_is_non_absolute",
         "passed": true
       },
       {
         "detail": "candidate_selected=False claim_level=validated_diagnostics_negative_absolute_flux_promotion",
-        "metric": "manuscript_ql_candidate_scope_not_runtime",
+        "metric": "release_contract_ql_candidate_scope_not_runtime",
         "passed": true
       },
       {
-        "detail": "manuscript QL lane should list the promotion guardrail audit artifact",
-        "metric": "manuscript_ql_guardrail_artifact_listed",
+        "detail": "release QL lane should list the promotion guardrail audit artifact",
+        "metric": "release_contract_ql_guardrail_artifact_listed",
         "passed": true
       },
       {
@@ -832,18 +832,7 @@
       "runtime_absolute_overclaim_lines": []
     }
   ],
-  "manuscript_readiness_reports": [
-    {
-      "absolute_flux_promoted": false,
-      "accepted_uq_candidates": [],
-      "artifact": "docs/_static/manuscript_readiness_status.json",
-      "kind": "manuscript_readiness_status",
-      "ql_claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
-      "ql_lane_present": true,
-      "ql_status": "closed"
-    }
-  ],
-  "notes": "Fast metadata guardrail only: it verifies finite nonlinear window statistics, train/holdout provenance, absolute-flux promotion gates, manuscript-readiness QL scope, manuscript figure JSON sidecars, explicit failed-baseline metadata, and conservative README/docs wording. It does not replace nonlinear convergence simulations.",
+  "notes": "Fast metadata guardrail only: it verifies finite nonlinear window statistics, train/holdout provenance, absolute-flux promotion gates, release-contract QL scope, manuscript figure JSON sidecars, explicit failed-baseline metadata, and conservative README/docs wording. It does not replace nonlinear convergence simulations.",
   "passed": true,
   "promotion_gate_reports": [
     {
@@ -891,14 +880,25 @@
       "promotion_gate_passed": false
     }
   ],
+  "release_contracts": [
+    {
+      "absolute_flux_promoted": false,
+      "accepted_uq_candidates": [],
+      "artifact": "benchmarks/references/gkx_1_7_release_contract.json",
+      "kind": "gkx_1_7_frozen_release_contract",
+      "ql_claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
+      "ql_lane_present": true,
+      "ql_status": "closed"
+    }
+  ],
   "summary": {
     "n_calibration_reports": 4,
     "n_doc_checks": 4,
     "n_failed_gates": 0,
     "n_input_validation_reports": 4,
     "n_manuscript_figure_checks": 10,
-    "n_manuscript_readiness_reports": 1,
     "n_promotion_gate_reports": 5,
+    "n_release_contracts": 1,
     "n_reports_scanned": 11
   }
 }

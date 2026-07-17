@@ -1471,7 +1471,7 @@ artifact_paths = [
   "docs/_static/w7x_zonal_state_convention_audit.json",
   "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
   "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
-  "docs/_static/open_research_lane_status.json",
+  "benchmarks/references/gkx_1_7_release_contract.json",
 ]
 next_tests = [
   "promote the final W7-X recurrence/closure method into a release gate when it matches the literature trace",
@@ -2916,12 +2916,7 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth_summary.json",
   "docs/_static/autodiff_inverse_twomode_summary.json",
-  "docs/_static/manuscript_readiness_status.json",
-  "docs/_static/manuscript_readiness_status.png",
-  "docs/_static/pre_manuscript_closure_status.json",
-  "docs/_static/pre_manuscript_closure_status.png",
-  "docs/_static/pre_manuscript_closure_runbook.json",
-  "docs/_static/pre_manuscript_closure_runbook.png",
+  "benchmarks/references/gkx_1_7_release_contract.json",
   "docs/_static/comparison/reference_publication_panel.png",
 ]
 next_tests = [

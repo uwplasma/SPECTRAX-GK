@@ -313,7 +313,6 @@ tools/artifacts/build_parallelization_completion_status.py,tools/artifacts,artif
 tools/artifacts/build_qa_optimizer_strategy_report.py,tools/artifacts,artifact builder,keep-or-merge,.py,22850,575,owned by tools/artifacts
 tools/artifacts/build_qi_branch_refinement_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,11453,329,owned by tools/artifacts
 tools/artifacts/build_quasilinear_holdout_gap_report.py,tools/artifacts,artifact builder,keep-or-merge,.py,69948,1782,owned by tools/artifacts
-tools/artifacts/build_research_status.py,tools/artifacts,artifact builder,keep-or-merge,.py,166685,3771,owned by tools/artifacts
 tools/artifacts/build_solver_objective_gradient_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,13958,358,owned by tools/artifacts
 tools/artifacts/build_tem_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,26432,670,owned by tools/artifacts
 tools/artifacts/build_vmec_boozer_aggregate_holdout_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,30732,777,owned by tools/artifacts
@@ -353,7 +352,6 @@ tools/benchmark_atlas_manifest.toml,tools/benchmark_atlas_manifest.toml,tool sup
 tools/benchmark_refresh_manifest.toml,tools/benchmark_refresh_manifest.toml,tool support file,keep-or-review,.toml,4826,82,non-python tool asset
 tools/campaigns/design_nonlinear_gradient.py,tools/campaigns,campaign helper,keep-or-merge,.py,69636,1820,owned by tools/campaigns
 tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py,tools/campaigns,campaign helper,keep-or-merge,.py,22125,587,owned by tools/campaigns
-tools/campaigns/finalize_nonlinear_transport_matrix_release.py,tools/campaigns,campaign helper,keep-or-merge,.py,9342,255,owned by tools/campaigns
 tools/campaigns/nonlinear_gradient_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,127322,3514,owned by tools/campaigns
 tools/campaigns/nonlinear_replicate_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,43369,1198,owned by tools/campaigns
 tools/campaigns/run_nonlinear_gradient_direct_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,46258,1319,owned by tools/campaigns

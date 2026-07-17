@@ -155,8 +155,10 @@ or wrapper exists are deleted with that wrapper.
 
 Exit: the wheel and branch reproduce the frozen values before further deletion.
 
-Progress: **40%**. Physics and architecture manifests exist; the final compact
-runtime/memory baseline and public-name map remain.
+Progress: **70%**. ``gkx_1_7_release_contract.json`` now freezes dependency
+revisions, the 362-name legacy public surface, 30 compact CPU/GPU performance
+records, and the seven promoted release lanes. Fresh representative timings
+and compact scalar/array reference hashes remain before destructive core moves.
 
 ### Phase 1 - Delete Historical Evidence Machinery
 
@@ -174,8 +176,10 @@ runtime/memory baseline and public-name map remain.
 Exit: source <=120 files/68,000 lines, tools <=45 files, docs static <=20 MB,
 all frozen gates pass.
 
-Progress: **22%**. Synthetic QA evidence and several duplicate owners are gone;
-the 94-file tool layer and historical static evidence remain the main blockers.
+Progress: **30%**. Synthetic QA evidence, the generated research-status builder,
+the nonlinear release finalizer, one duplicate roadmap, 16 dashboard assets,
+and their ownership-only tests are gone. The remaining 92-file tool layer and
+1,576-file static evidence tree are the main blockers.
 
 ### Phase 2 - Build the Shallow Scientific Core
 
@@ -234,8 +238,9 @@ old directory topology remains.
 Exit: <=36 test files/55,000 lines, >=95% package coverage, <=12 scripts/18,000
 lines, and all documentation commands are reproducible.
 
-Progress: **5%**. Suite labels exist, but oversized tool-test files and
-ownership assertions still dominate.
+Progress: **8%**. Suite labels exist and 1,637 ownership-only test lines were
+removed with the status machinery, but 94 test files and oversized tool-test
+owners still dominate.
 
 ### Phase 4 - Rebuild the QA ITG Optimizations
 
@@ -370,7 +375,9 @@ commands move here from the README.
 Exit: README/docs links and image dimensions pass automated gates, all examples
 run, and every displayed value is regenerated from a tracked compact manifest.
 
-Progress: **5%**.
+Progress: **8%**. The duplicate roadmap and generated status sections are gone,
+and the warning-as-error Sphinx build passes; page and static-asset counts still
+exceed the final budgets.
 
 ### Phase 6 - Atomic Rename to GKX
 
@@ -460,6 +467,11 @@ Use large coherent commits, each independently green:
 - `9ed4e619`: simplified VMEC transport objective ownership.
 - `5b973d95`: consolidated diagnostic moments and growth owners.
 - `0fea14e9`: unified matrix-free Krylov kernels.
+- 2026-07-17 compact-contract tranche: froze the 1.7 dependency/API/performance
+  and release-lane contract, deleted 7,505 lines of status/finalizer machinery,
+  removed 16 duplicate dashboard assets and the duplicate roadmap, retained the
+  numerical QL evidence, and passed 238 focused tests plus release, validation,
+  Ruff, and warning-as-error documentation gates.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -469,16 +481,16 @@ Use large coherent commits, each independently green:
 
 | Lane | Completion |
 | --- | ---: |
-| Frozen 1.7 contract | 40% |
-| Deletion/repository trim | 22% |
+| Frozen 1.7 contract | 70% |
+| Deletion/repository trim | 30% |
 | Scientific-core simplification | 25% |
-| Test/benchmark/command simplification | 5% |
+| Test/benchmark/command simplification | 8% |
 | QA linear/QL/nonlinear optimization | 15% |
-| README/docs rebuild | 5% |
+| README/docs rebuild | 8% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **17%**. The next implementation tranche is Phase
-0 plus Phase 1: freeze the missing compact performance/public-API contract, then
-remove the historical status/campaign/static-evidence lane before moving more
-source files.
+Weighted overall completion: **20%**. The next implementation tranche remains
+Phase 0 plus Phase 1: add compact promoted scalar/array hashes and refresh a
+bounded representative performance subset, then classify and delete the next
+superseded campaign/figure family before moving scientific-core files.
