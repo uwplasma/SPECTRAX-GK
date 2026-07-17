@@ -16,7 +16,6 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.workflows.runtime.artifacts as runtime_artifacts
 import spectraxgk.artifacts.spectral_layout as spectral_layout
 import spectraxgk.artifacts.nonlinear_netcdf as nonlinear_netcdf
-import spectraxgk.artifacts.nonlinear_netcdf_diagnostics as nonlinear_netcdf_diagnostics
 import spectraxgk.artifacts as artifact_package
 import spectraxgk.artifacts.io as artifact_io
 import spectraxgk.artifacts.linear as artifact_linear
@@ -171,10 +170,6 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert (
         runtime_artifacts._write_input_parameters_group
         is nonlinear_netcdf._write_input_parameters_group
-    )
-    assert (
-        nonlinear_netcdf._write_diagnostics_group
-        is nonlinear_netcdf_diagnostics._write_diagnostics_group
     )
     assert (
         runtime_artifacts._write_nonlinear_netcdf_outputs

@@ -456,14 +456,14 @@ Release `v2.0.0` only when:
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
 | 1. Delete unpromoted/duplicate code | 15% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 0% | <=70 source files / <=50k lines with parity |
+| 2. Consolidate package core and API | 3% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
 | 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
 | 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
 | 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
 
-Overall completion: 8%.
+Overall completion: 9%.
 
 ## Evidence Sources
 
@@ -513,3 +513,13 @@ Overall completion: 8%.
   files/96,264 lines. The solved-QA and objective suites, 95 release tests,
   public API import audit, Ruff, coverage-manifest regeneration, architecture
   budgets, and warning-free strict documentation build pass.
+- 2026-07-17: Consolidated nonlinear NetCDF geometry, field, diagnostics, and
+  bundle orchestration into one 1,069-line schema owner, reducing the source
+  tree by three files and 106 lines without changing dimensions, axis order,
+  spectral condensation, restart layout, or output variables. Added a reviewed
+  1,000-line target rather than weakening the global module limit. The merge
+  uncovered and fixed a fallback import that looked for the nonlinear
+  diagnostic loader in the writer module instead of its actual owner. All 39
+  runtime/restart artifact tests, 95 release tests, Ruff, architecture policy,
+  coverage ownership, and strict docs pass. Source is now 214 files/86,410
+  lines.

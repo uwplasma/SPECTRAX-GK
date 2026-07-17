@@ -640,20 +640,15 @@ Completed extractions:
   or single-window artifacts.
 - runtime artifact read/write, generic I/O and finite-value validation helpers,
   linear/quasilinear artifact writers, generic nonlinear table writers, dealiased-axis
-  layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema
-  writing with staged Phi2, base species-history, split electromagnetic,
-  zonal-field, resolved species-spectra, and turbulent-heating helpers, NetCDF
-  output geometry,
-  restart-file writing, final-field big-file writing, nonlinear diagnostic
+  layout, unified NetCDF output-bundle and diagnostic-history schema writing
+  with Phi2, species-history, split electromagnetic, zonal-field, resolved
+  spectra, geometry, restart, and final-field helpers, nonlinear diagnostic
   reload helpers, and restart-append schema coverage:
   ``workflows/runtime/artifacts.py``, ``artifacts/io.py``,
   ``artifacts/linear.py``,
   ``artifacts/nonlinear.py``,
   ``artifacts/spectral_layout.py``,
   ``artifacts/nonlinear_netcdf.py``,
-  ``artifacts/nonlinear_netcdf_diagnostics.py``,
-  ``artifacts/nonlinear_netcdf_geometry.py``,
-  ``artifacts/nonlinear_netcdf_fields.py``,
   ``artifacts/nonlinear_diagnostics.py``. The old root
   ``runtime_artifact_*`` helper modules were removed; import implementation
   helpers from ``spectraxgk.artifacts`` instead.

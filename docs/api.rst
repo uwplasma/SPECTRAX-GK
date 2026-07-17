@@ -857,29 +857,8 @@ NetCDF Spectral Layout
    :members:
    :private-members:
 
-Nonlinear Output NetCDF Geometry
---------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_geometry
-   :members:
-   :private-members:
-
-Nonlinear Output NetCDF Field Writer
-------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_fields
-   :members:
-   :private-members:
-
-Nonlinear Output NetCDF Diagnostics Writer
-------------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_diagnostics
-   :members:
-   :private-members:
-
-Nonlinear Output NetCDF Facade
-------------------------------
+Nonlinear Output NetCDF
+-----------------------
 
 .. automodule:: spectraxgk.artifacts.nonlinear_netcdf
    :members:

@@ -9,10 +9,7 @@ src/spectraxgk/artifacts/io.py,src/spectraxgk/artifacts,promoted library code,me
 src/spectraxgk/artifacts/linear.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,12794,412,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/nonlinear.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,5603,162,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/nonlinear_diagnostics.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,10265,320,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/nonlinear_netcdf.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,10798,343,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/nonlinear_netcdf_diagnostics.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,13874,435,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/nonlinear_netcdf_fields.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,6570,211,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/nonlinear_netcdf_geometry.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,7304,186,target=gkx.io; preserve promoted physics and JAX contracts
+src/spectraxgk/artifacts/nonlinear_netcdf.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,35335,1069,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/plotting.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,3293,81,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/restart.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,5393,154,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/runtime_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,9275,240,target=gkx.io; preserve promoted physics and JAX contracts
@@ -229,7 +226,7 @@ tests/integration/examples/test_examples.py,tests/integration,organized test,mer
 tests/integration/runtime/test_cli.py,tests/integration,organized test,merge-by-domain,.py,47154,1936,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_restart.py,tests/integration,organized test,merge-by-domain,.py,5498,139,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_restart_gate.py,tests/integration,organized test,merge-by-domain,.py,10081,380,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/integration/runtime/test_runtime_artifacts.py,tests/integration,organized test,merge-by-domain,.py,77000,2069,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/integration/runtime/test_runtime_artifacts.py,tests/integration,organized test,merge-by-domain,.py,76777,2064,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_chunks.py,tests/integration,organized test,merge-by-domain,.py,5739,180,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_config.py,tests/integration,organized test,merge-by-domain,.py,25192,801,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_diagnostics.py,tests/integration,organized test,merge-by-domain,.py,65595,1924,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -403,7 +400,7 @@ tools/device_parity_lanes.office.toml,tools/device_parity_lanes.office.toml,tool
 tools/exact_state_lanes.office.toml,tools/exact_state_lanes.office.toml,tool support file,keep-or-review,.toml,3113,81,non-python tool asset
 tools/exact_state_lanes.template.toml,tools/exact_state_lanes.template.toml,tool support file,keep-or-review,.toml,1259,34,non-python tool asset
 tools/miller_comparison_example.toml,tools/miller_comparison_example.toml,tool support file,keep-or-review,.toml,1143,82,non-python tool asset
-tools/package_architecture_manifest.toml,tools/package_architecture_manifest.toml,tool support file,keep-or-review,.toml,3169,153,non-python tool asset
+tools/package_architecture_manifest.toml,tools/package_architecture_manifest.toml,tool support file,keep-or-review,.toml,3452,158,non-python tool asset
 tools/performance_optimization_manifest.toml,tools/performance_optimization_manifest.toml,tool support file,keep-or-review,.toml,18749,373,non-python tool asset
 tools/profiling/_profiler_options.py,tools/profiling,profiling/performance tool,keep-or-merge,.py,1427,47,owned by tools/profiling
 tools/profiling/profile_device_z_pencil_transport_window.py,tools/profiling,profiling/performance tool,keep-or-merge,.py,36568,953,owned by tools/profiling
@@ -414,7 +411,7 @@ tools/profiling/profile_parallel_workloads.py,tools/profiling,profiling/performa
 tools/profiling/profile_runtime_kernels.py,tools/profiling,profiling/performance tool,keep-or-merge,.py,34739,1009,owned by tools/profiling
 tools/profiling/profile_startup_and_cache.py,tools/profiling,profiling/performance tool,keep-or-merge,.py,35072,943,owned by tools/profiling
 tools/release/check_nonlinear_optimization_gates.py,tools/release,release gate,keep-or-merge,.py,34081,883,owned by tools/release
-tools/release/check_nonlinear_transport_gates.py,tools/release,release gate,keep-or-merge,.py,50687,1357,owned by tools/release
+tools/release/check_nonlinear_transport_gates.py,tools/release,release gate,keep-or-merge,.py,50680,1357,owned by tools/release
 tools/release/check_package_architecture_manifest.py,tools/release,release gate,keep-or-merge,.py,30102,828,owned by tools/release
 tools/release/check_parallel_scaling_artifacts.py,tools/release,release gate,keep-or-merge,.py,53573,1400,owned by tools/release
 tools/release/check_quasilinear_promotion_guardrails.py,tools/release,release gate,keep-or-merge,.py,67927,1757,owned by tools/release
@@ -427,5 +424,5 @@ tools/release_artifact_manifest.toml,tools/release_artifact_manifest.toml,tool s
 tools/repository_size_manifest.toml,tools/repository_size_manifest.toml,tool support file,keep-or-review,.toml,343,7,non-python tool asset
 tools/restart_gate_lanes.office.toml,tools/restart_gate_lanes.office.toml,tool support file,keep-or-review,.toml,1041,31,non-python tool asset
 tools/runtime_memory_manifest.toml,tools/runtime_memory_manifest.toml,tool support file,keep-or-review,.toml,18058,241,non-python tool asset
-tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,149753,3252,non-python tool asset
+tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,146166,3164,non-python tool asset
 tools/vmec_roundtrip_lanes.office.toml,tools/vmec_roundtrip_lanes.office.toml,tool support file,keep-or-review,.toml,438,9,non-python tool asset

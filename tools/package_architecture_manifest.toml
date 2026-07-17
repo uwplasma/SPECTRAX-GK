@@ -114,7 +114,12 @@ public_facades = [
   "quasilinear.py",
   "runtime.py",
 ]
-exceptions = []
+
+[[complexity_policy.exceptions]]
+path = "artifacts/nonlinear_netcdf.py"
+baseline_lines = 1069
+target_lines = 1000
+reason = "One NetCDF schema owner keeps dimensions, geometry, diagnostics, restart, and final-field variables consistent; reduce helper repetition without splitting the schema again."
 
 [line_budget_policy]
 mode = "no_regression_until_target"
