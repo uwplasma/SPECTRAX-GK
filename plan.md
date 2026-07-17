@@ -377,6 +377,16 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Made shared-cache angular generation genuinely resumable after a
+  P12/J5 production-topology pilot. With ten workers the pilot reached final
+  wavelengths but exceeded 180 seconds; with 30 workers it retained valid
+  ``m=1,3,4`` shards while the heavier ``m=0,2`` blocks remained open. The
+  orchestrator now validates existing shard resolution, B grid, precision,
+  convention, angular ownership, and finiteness; reuses accepted blocks; and
+  redistributes the full worker budget over pending harmonics. A no-op resume
+  performs no precompute and preserves actual per-shard worker metadata. No
+  duplicate P24 work is needed after a bounded interruption.
+
 - 2026-07-16: Replaced independent P24 shard launches with a shared-precompute
   orchestrator. One parent now builds the complete wavelength-independent
   speed cache, then forks all angular table writers from that read-only

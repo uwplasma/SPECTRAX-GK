@@ -3753,32 +3753,85 @@ def write_shared_precompute_angular_coulomb_table(
     import mpmath as mp
 
     shard_count = maximum_angular_bessel_order + 1
-    if worker_count < shard_count:
-        raise ValueError("worker_count must provide at least one worker per shard")
-    workers_per_shard = max(1, worker_count // shard_count)
+    if worker_count < 1:
+        raise ValueError("worker_count must be >= 1")
     maximum_degree = maximum_hermite_order + 2 * maximum_laguerre_order
-    with mp.workdps(digits):
-        started = time.perf_counter()
-        print("collision shards: preparing one shared speed cache", flush=True)
-        coefficient_functions = _coulomb_coefficient_functions(mp, mp.mpf(1), mp.mpf(1))
-        coefficient_functions = _precompute_coulomb_speed_coefficients(
-            coefficient_functions,
-            maximum_spherical_order=maximum_degree,
-            maximum_spherical_radial_order=maximum_degree // 2,
-            maximum_speed_power=(
-                maximum_laguerre_order
-                + maximum_bessel_laguerre_order
-                + (maximum_hermite_order + maximum_angular_bessel_order) // 2
-            ),
-            worker_count=worker_count,
-        )
-        shared_precompute_seconds = time.perf_counter() - started
-        shard_paths = tuple(
-            out.with_name(f"{out.stem}_m{order}{out.suffix}")
-            for order in range(shard_count)
-        )
+    shard_paths = tuple(
+        out.with_name(f"{out.stem}_m{order}{out.suffix}")
+        for order in range(shard_count)
+    )
+    expected_grid = list(bessel_arguments)
+    array_names = (
+        "test_table",
+        "field_table",
+        "test_phi1",
+        "field_phi1",
+        "test_phi2",
+        "field_phi2",
+    )
 
-        def build_shard(order: int) -> tuple[int, dict[str, Any]]:
+    def reusable_metadata(order: int) -> dict[str, Any] | None:
+        path = shard_paths[order]
+        if not path.is_file():
+            return None
+        try:
+            with np.load(path) as archive:
+                metadata = json.loads(str(archive["metadata"]))
+                finite = all(np.all(np.isfinite(archive[name])) for name in array_names)
+        except (OSError, ValueError, KeyError, json.JSONDecodeError):
+            return None
+        expected = {
+            "resolution": [maximum_hermite_order, maximum_laguerre_order],
+            "bessel_argument_grid": expected_grid,
+            "maximum_angular_bessel_order": maximum_angular_bessel_order,
+            "included_angular_orders": [order],
+            "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
+            "precision_decimal_digits": digits,
+            "laguerre_convention": "runtime_signed",
+        }
+        if not finite or any(
+            metadata.get(key) != value for key, value in expected.items()
+        ):
+            return None
+        return metadata
+
+    retained_metadata = {
+        order: metadata
+        for order in range(shard_count)
+        if (metadata := reusable_metadata(order)) is not None
+    }
+    pending_orders = tuple(
+        order for order in range(shard_count) if order not in retained_metadata
+    )
+    if pending_orders and worker_count < len(pending_orders):
+        raise ValueError(
+            "worker_count must provide at least one worker per pending shard"
+        )
+    workers_per_shard = max(1, worker_count // max(1, len(pending_orders)))
+    shared_precompute_seconds = 0.0
+    generated_results: list[tuple[int, dict[str, Any]]] = []
+    with mp.workdps(digits):
+        if pending_orders:
+            started = time.perf_counter()
+            print("collision shards: preparing one shared speed cache", flush=True)
+            coefficient_functions = _coulomb_coefficient_functions(
+                mp, mp.mpf(1), mp.mpf(1)
+            )
+            coefficient_functions = _precompute_coulomb_speed_coefficients(
+                coefficient_functions,
+                maximum_spherical_order=maximum_degree,
+                maximum_spherical_radial_order=maximum_degree // 2,
+                maximum_speed_power=(
+                    maximum_laguerre_order
+                    + maximum_bessel_laguerre_order
+                    + (maximum_hermite_order + maximum_angular_bessel_order) // 2
+                ),
+                worker_count=worker_count,
+            )
+            shared_precompute_seconds = time.perf_counter() - started
+
+        def build_shard(pending_index: int) -> tuple[int, dict[str, Any]]:
+            order = pending_orders[pending_index]
             metadata = write_equal_species_finite_wavelength_coulomb_table(
                 shard_paths[order],
                 bessel_arguments=bessel_arguments,
@@ -3794,16 +3847,26 @@ def write_shared_precompute_angular_coulomb_table(
             )
             return order, metadata
 
-        shard_results = _forked_ordered_map(build_shard, shard_count, shard_count)
+        if pending_orders:
+            generated_results = _forked_ordered_map(
+                build_shard, len(pending_orders), len(pending_orders)
+            )
+    all_metadata = {**retained_metadata, **dict(generated_results)}
     combined = combine_equal_species_finite_wavelength_angular_shards(
         shard_paths,
         out,
         shared_precompute_seconds=shared_precompute_seconds,
         orchestration_metadata={
-            "shard_worker_count": workers_per_shard,
-            "shard_total_seconds": [
-                result[1]["total_seconds"] for result in shard_results
+            "shard_worker_count": max(
+                all_metadata[order]["worker_count"] for order in range(shard_count)
+            ),
+            "shard_worker_counts": [
+                all_metadata[order]["worker_count"] for order in range(shard_count)
             ],
+            "shard_total_seconds": [
+                all_metadata[order]["total_seconds"] for order in range(shard_count)
+            ],
+            "reused_angular_orders": sorted(retained_metadata),
         },
     )
     return combined

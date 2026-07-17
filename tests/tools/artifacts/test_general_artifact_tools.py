@@ -3478,6 +3478,19 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
     assert shared_metadata["shared_precompute_seconds"] >= 0.0
     assert shared_metadata["shard_worker_count"] == 1
     assert len(shared_metadata["shard_total_seconds"]) == 2
+    resumed_metadata = mod.write_shared_precompute_angular_coulomb_table(
+        shared_path,
+        bessel_arguments=(0.1, 0.2),
+        maximum_hermite_order=1,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=1,
+        maximum_bessel_laguerre_order=1,
+        digits=24,
+        worker_count=2,
+        wavelength_worker_count=1,
+    )
+    assert resumed_metadata["reused_angular_orders"] == [0, 1]
+    assert resumed_metadata["shared_precompute_seconds"] == 0.0
     with np.load(out) as serial, np.load(shared_path) as shared:
         replayed = json.loads(str(shared["metadata"]))
         assert replayed["shard_worker_count"] == 1

@@ -922,8 +922,10 @@ complete set in deterministic angular order::
      --worker-count 30 --wavelength-worker-count 2
 
 The command retains sibling ``*_m0.npz`` through ``*_m4.npz`` files as
-restartable evidence. Existing complete shards can be recombined without
-regeneration using::
+restartable evidence. Repeating the shared-table command validates and reuses
+matching finite shards, skips precomputation when all are complete, and
+redistributes the total worker budget across only the missing harmonics.
+Existing complete shards can also be recombined without regeneration using::
 
    python tools/artifacts/build_linear_validation_artifacts.py \
      collision-combine-angular-shards \
