@@ -265,7 +265,11 @@ README claims, or manuscript claims.
        ``technical_release_status.json``, ``release_readiness.json``, and
        ``w7x_tem_extension_status.json``
      - The frozen contract records release-scoped claims and baseline API and
-       performance evidence. It does not promote deferred physics by itself.
+       performance evidence. It also release-gates canonical numeric
+       fingerprints for the promoted nonlinear, KBM branch, collision,
+       restart, geometry, derivative, and optimization references, so textual
+       renaming cannot hide a numerical change. It does not promote deferred
+       physics by itself.
    * - Performance and parallelization
      - ``runtime_memory_benchmark.*``,
        ``independent_ky_scan_scaling_large.*``,

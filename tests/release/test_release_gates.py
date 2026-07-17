@@ -442,6 +442,7 @@ import pytest
 from tools.release.check_release_readiness import TECHNICAL_COMPLETION_TARGET
 from tools.release.check_release_readiness import (
     ReleaseReadinessError,
+    build_frozen_output_fingerprint,
     check_release_readiness,
 )
 
@@ -651,6 +652,20 @@ coverage:
 """.lstrip(),
         encoding="utf-8",
     )
+    contract_path = root / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    frozen_path = "docs/_static/validation_gate_index.json"
+    contract["baseline"] = {"git_tag": "v1.7.0"}
+    contract["frozen_output_fingerprints"] = {
+        "algorithm": "test contract",
+        "entries": [
+            {
+                "label": "validation gate index",
+                **build_frozen_output_fingerprint(root, frozen_path),
+            }
+        ],
+    }
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
     (root / "docs" / "_static" / "w7x_tem_extension_status.json").write_text(
         """
 {
@@ -693,6 +708,7 @@ def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
         == TECHNICAL_COMPLETION_TARGET
     )
     assert report["lane_status"]["passed"] is True
+    assert report["lane_status"]["frozen_outputs"]["count"] == 1
     assert report["lane_status"]["active_fraction_closed"] == 1.0
     assert report["lane_status"]["release_scoped_open_or_blocked"] == 0
     assert report["technical_status"]["passed"] is True
@@ -705,6 +721,18 @@ def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
     assert report["lane_status"]["status_artifacts"][
         "benchmarks/references/gkx_1_7_release_contract.json"
     ]["status_counts"] == {"closed": 1, "deferred": 1}
+
+
+def test_release_readiness_rejects_changed_frozen_output(tmp_path: Path) -> None:
+    _write_release_ready_tree(tmp_path)
+    (tmp_path / "docs" / "_static" / "validation_gate_index.json").write_text(
+        '{"changed": 1}', encoding="utf-8"
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError, match="frozen numerical output fingerprints changed"
+    ):
+        check_release_readiness(tmp_path)
 
 
 def test_release_readiness_rejects_missing_ci_guardrails(tmp_path: Path) -> None:

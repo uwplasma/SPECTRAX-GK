@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -139,6 +141,8 @@ REQUIRED_PRELAUNCH_GATE_ROWS = (
         "min_sample_count": 18.0,
     },
 )
+
+
 class ReleaseReadinessError(RuntimeError):
     """Raised when a release-readiness contract is not satisfied."""
 
@@ -395,9 +399,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
             "shaped_tokamak_pressure",
         ),
-        EvidenceCheck(
-            "frozen 1.7 release contract", RELEASE_CONTRACT_ARTIFACT
-        ),
+        EvidenceCheck("frozen 1.7 release contract", RELEASE_CONTRACT_ARTIFACT),
         EvidenceCheck(
             "stellarator optimization docs",
             "docs/stellarator_optimization.rst",
@@ -779,12 +781,133 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
     return failures
 
 
+def _canonical_json_sha256(payload: object) -> str:
+    encoded = json.dumps(
+        payload, allow_nan=False, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _normalized_fingerprint_number(value: int | float) -> int | float | str:
+    if isinstance(value, int):
+        return value
+    if math.isnan(value):
+        return "NaN"
+    if math.isinf(value):
+        return "Infinity" if value > 0 else "-Infinity"
+    return value
+
+
+def _numeric_array_payload(value: object) -> object | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return _normalized_fingerprint_number(value)
+    if not isinstance(value, list):
+        return None
+    rows = [_numeric_array_payload(item) for item in value]
+    if any(row is None for row in rows):
+        return None
+    return rows
+
+
+def _numeric_json_fingerprints(payload: object) -> dict[str, object]:
+    scalars: dict[str, int | float | str] = {}
+    arrays: dict[str, object] = {}
+
+    def walk(value: object, path: str) -> None:
+        if isinstance(value, dict):
+            for key in sorted(value):
+                walk(value[key], f"{path}.{key}" if path else str(key))
+            return
+        if isinstance(value, list):
+            numeric = _numeric_array_payload(value)
+            if numeric is not None:
+                arrays[path or "$root"] = numeric
+                return
+            for index, item in enumerate(value):
+                walk(item, f"{path}[{index}]")
+            return
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return
+        scalars[path or "$root"] = _normalized_fingerprint_number(value)
+
+    walk(payload, "")
+    return {
+        "scalar_count": len(scalars),
+        "scalar_sha256": _canonical_json_sha256(scalars),
+        "array_count": len(arrays),
+        "array_sha256": _canonical_json_sha256(arrays),
+    }
+
+
+def build_frozen_output_fingerprint(
+    root: Path, relative_path: str
+) -> dict[str, object]:
+    path = root / relative_path
+    if not path.is_file():
+        raise ReleaseReadinessError(f"frozen output missing: {relative_path}")
+    report: dict[str, object] = {
+        "path": relative_path,
+        "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+    if path.suffix == ".json":
+        report.update(_numeric_json_fingerprints(_read_json(path)))
+    return report
+
+
+def _frozen_output_fingerprint_summary(
+    root: Path, release_contract: dict[str, Any]
+) -> dict[str, object]:
+    frozen = release_contract.get("frozen_output_fingerprints")
+    baseline = release_contract.get("baseline")
+    requires_fingerprints = isinstance(baseline, dict) and bool(baseline.get("git_tag"))
+    if not isinstance(frozen, dict):
+        if requires_fingerprints:
+            raise ReleaseReadinessError(
+                f"{RELEASE_CONTRACT_ARTIFACT} missing frozen_output_fingerprints"
+            )
+        return {"count": 0, "passed": True, "rows": []}
+    rows = frozen.get("entries")
+    if not isinstance(rows, list) or not rows:
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} has no frozen output fingerprint entries"
+        )
+    checked: list[dict[str, object]] = []
+    failures: list[str] = []
+    for index, expected in enumerate(rows):
+        if not isinstance(expected, dict) or not isinstance(expected.get("path"), str):
+            failures.append(f"entry {index}: invalid path")
+            continue
+        observed = build_frozen_output_fingerprint(root, str(expected["path"]))
+        fields = ["content_sha256"]
+        if str(expected["path"]).endswith(".json"):
+            # Textual provenance can change during a rename; the frozen contract
+            # protects numerical values and array layout rather than JSON formatting.
+            fields = ["scalar_count", "scalar_sha256", "array_count", "array_sha256"]
+        mismatches = [
+            field for field in fields if observed.get(field) != expected.get(field)
+        ]
+        if mismatches:
+            failures.append(f"{expected['path']}: {', '.join(mismatches)}")
+        checked.append(
+            {
+                "label": expected.get("label"),
+                **observed,
+                "passed": not mismatches,
+            }
+        )
+    if failures:
+        raise ReleaseReadinessError(
+            "frozen numerical output fingerprints changed: " + "; ".join(failures)
+        )
+    return {"count": len(checked), "passed": True, "rows": checked}
+
+
 def _lane_status_summary(root: Path) -> dict[str, Any]:
     payload = _read_json(root / RELEASE_CONTRACT_ARTIFACT)
     if payload.get("kind") != "gkx_1_7_frozen_release_contract":
-        raise ReleaseReadinessError(
-            f"{RELEASE_CONTRACT_ARTIFACT} has an invalid kind"
-        )
+        raise ReleaseReadinessError(f"{RELEASE_CONTRACT_ARTIFACT} has an invalid kind")
     lanes = payload.get("release_lanes")
     if not isinstance(lanes, list) or not lanes:
         raise ReleaseReadinessError(
@@ -799,7 +922,9 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
         )
     exports = public_api["exports"]
     export_names = [row.get("name") for row in exports if isinstance(row, dict)]
-    if public_api.get("count") != len(exports) or len(set(export_names)) != len(exports):
+    if public_api.get("count") != len(exports) or len(set(export_names)) != len(
+        exports
+    ):
         raise ReleaseReadinessError(
             f"{RELEASE_CONTRACT_ARTIFACT} public API count/names are inconsistent"
         )
@@ -815,6 +940,7 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
         raise ReleaseReadinessError(
             f"{RELEASE_CONTRACT_ARTIFACT} performance row count is inconsistent"
         )
+    fingerprint_summary = _frozen_output_fingerprint_summary(root, payload)
     recomputed = _recomputed_active_summary(lanes)
     active_fraction_closed = float(recomputed["active_fraction_closed"])
     release_scoped_incomplete = int(recomputed["n_incomplete"])
@@ -836,9 +962,11 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
                 "status_counts": _status_counts(lanes),
                 "public_api_count": len(exports),
                 "performance_row_count": len(performance_rows),
+                "frozen_output_fingerprint_count": fingerprint_summary["count"],
                 "lanes": lanes,
             }
         },
+        "frozen_outputs": fingerprint_summary,
     }
 
 

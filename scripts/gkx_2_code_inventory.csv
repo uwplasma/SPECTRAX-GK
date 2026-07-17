@@ -216,7 +216,7 @@ tests/integration/runtime/test_runtime_diagnostics.py,tests/integration,organize
 tests/integration/runtime/test_runtime_helpers.py,tests/integration,organized test,merge-by-domain,.py,75890,2379,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_policies.py,tests/integration,organized test,merge-by-domain,.py,8752,271,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/integration/runtime/test_runtime_runner.py,tests/integration,organized test,merge-by-domain,.py,129194,4088,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/release/test_release_gates.py,tests/release,organized test,merge-by-domain,.py,103767,3065,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/release/test_release_gates.py,tests/release,organized test,merge-by-domain,.py,105143,3042,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/support/paths.py,tests/support,organized test,merge-by-domain,.py,2597,84,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/artifacts/test_general_artifact_tools.py,tests/tools,organized test,merge-by-domain,.py,236019,6735,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/artifacts/test_quasilinear_artifact_tools.py,tests/tools,organized test,merge-by-domain,.py,68064,1857,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -390,7 +390,7 @@ tools/release/check_nonlinear_transport_gates.py,tools/release,release gate,keep
 tools/release/check_package_architecture_manifest.py,tools/release,release gate,keep-or-merge,.py,30102,828,owned by tools/release
 tools/release/check_parallel_scaling_artifacts.py,tools/release,release gate,keep-or-merge,.py,53573,1400,owned by tools/release
 tools/release/check_quasilinear_promotion_guardrails.py,tools/release,release gate,keep-or-merge,.py,67927,1757,owned by tools/release
-tools/release/check_release_readiness.py,tools/release,release gate,keep-or-merge,.py,44054,1178,owned by tools/release
+tools/release/check_release_readiness.py,tools/release,release gate,keep-or-merge,.py,49404,1315,owned by tools/release
 tools/release/check_repository_size_manifest.py,tools/release,release gate,keep-or-merge,.py,26057,739,owned by tools/release
 tools/release/check_validation_coverage_manifest.py,tools/release,release gate,keep-or-merge,.py,27428,709,owned by tools/release
 tools/release/check_vmec_boozer_gates.py,tools/release,release gate,keep-or-merge,.py,74748,1879,owned by tools/release

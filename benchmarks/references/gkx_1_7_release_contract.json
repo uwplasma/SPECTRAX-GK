@@ -16,6 +16,119 @@
     "solvax": "005ca3873b2a31b0da70f84a4a80d2adb0cbf062",
     "vmec_jax": "adf2d334122999bdaafb47aaa15653d047560ef8"
   },
+  "frozen_output_fingerprints": {
+    "algorithm": "canonical numeric JSON paths are release-gated with sorted keys, compact separators, and nonfinite values encoded as strings; file SHA256 is provenance-only",
+    "entries": [
+      {
+        "array_count": 0,
+        "array_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "content_sha256": "111fd81afa2635624acff6510f4b3bc3576889b7a3f7a02d27fbaa4e53ab10fe",
+        "label": "Cyclone nonlinear transport",
+        "path": "docs/_static/nonlinear_cyclone_gate_summary.json",
+        "scalar_count": 47,
+        "scalar_sha256": "7665be891175cb69248e03ce4c9533fe3219157a15494021bc768e5e97f8e09c"
+      },
+      {
+        "array_count": 0,
+        "array_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "content_sha256": "9167f43d8141769d884ac05159f69def12f9fcf42696c74cb3c66dd14a385755",
+        "label": "Cyclone Miller nonlinear transport",
+        "path": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+        "scalar_count": 46,
+        "scalar_sha256": "543dcfca549952e5b2c7b551ffaf6d291e2969792b0e5133b1aa498a6772aecc"
+      },
+      {
+        "array_count": 0,
+        "array_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "content_sha256": "7a1dcdbc3c752a8b2968edbb68ef53a9ecf0df5896353c54c478e0eac43d3f24",
+        "label": "KBM linear branch continuity",
+        "path": "docs/_static/kbm_branch_gate_summary.json",
+        "scalar_count": 73,
+        "scalar_sha256": "8626867c9fcf1dde6ae1749e091e65c8d3b9e9e34fe04ab48d764702af9d5d86"
+      },
+      {
+        "array_count": 0,
+        "array_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "content_sha256": "ab66d23fddbe19e8a8ca3700cd30d476514301da3d156c7bfa71a80f37b24b00",
+        "label": "KBM nonlinear transport",
+        "path": "docs/_static/nonlinear_kbm_gate_summary.json",
+        "scalar_count": 43,
+        "scalar_sha256": "bd9e56d774d6cbc8507ae37dd6dcceda497133d03184fa64deed94e2a8f8a17e"
+      },
+      {
+        "array_count": 0,
+        "array_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "content_sha256": "813ccc5be4916cc1678c2b5382784d6d276e8a03e05f9796ab1be3b3305f4f85",
+        "label": "W7-X nonlinear transport",
+        "path": "docs/_static/nonlinear_w7x_gate_summary.json",
+        "scalar_count": 53,
+        "scalar_sha256": "5d6291a2d1060d767875d7f50e108bca6ffb3e798f1a8e19b507d2ee05c04e39"
+      },
+      {
+        "array_count": 0,
+        "array_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "content_sha256": "ed9518e3f9c20c05605a1b392d32b676bd16bc7fe0eb2be840cb5622ee8f1d09",
+        "label": "HSX nonlinear transport",
+        "path": "docs/_static/nonlinear_hsx_gate_summary.json",
+        "scalar_count": 46,
+        "scalar_sha256": "81d5ec138ee9412acae61ad13cd89f2f6a416de29b3516221824fbd499cb42dd"
+      },
+      {
+        "array_count": 16,
+        "array_sha256": "2adc015631a0211d3e567f4c9de97fa8580860044c133eef8fa7c027eb498c9d",
+        "content_sha256": "5429454bbc5b726c4ff0c175203babbf956d8d3fc115d4989b8b46793be46ac2",
+        "label": "collision operator invariants",
+        "path": "docs/_static/collision_operator_verification.json",
+        "scalar_count": 46,
+        "scalar_sha256": "a53f1ac5ce7679f01f3bb40f01a5a65c1e5ffae2ce958308253caf77d8d05986"
+      },
+      {
+        "array_count": 3,
+        "array_sha256": "856810e35d5d9503efa1df798edbbee83c3d67df66b4cf2b775b6912cda2b3f0",
+        "content_sha256": "63fa8d86745eb257ab298430c19317ac2690822fdce9ef3194a5ed970eea453e",
+        "label": "restart and append identity contract",
+        "path": "benchmarks/references/gkx_1_7_restart_identity.json",
+        "scalar_count": 1,
+        "scalar_sha256": "94a81f09f7fc9692b1df0b33fe2f8d4a3b4787b656782aaba66d762ce65a055a"
+      },
+      {
+        "array_count": 145,
+        "array_sha256": "a23b1cea554c79e8172d4688d7c242c5a81d30d966bf94bc711c233112a7fc06",
+        "content_sha256": "1c4585575c72f19cd19dabf146a06a1a0a1a1c8804686220e6faa575ea375aa3",
+        "label": "VMEC/Boozer geometry bridge",
+        "path": "docs/_static/differentiable_geometry_bridge.json",
+        "scalar_count": 418,
+        "scalar_sha256": "941b3d2517439a4bde6ab7755bd72142689c27e4420286bb7c62c554ddba83d6"
+      },
+      {
+        "array_count": 5,
+        "array_sha256": "da0405020935abbf2863591449488a7aa5b9e5cc83f56c59fcb6c899f2469c7e",
+        "content_sha256": "7981d19a31a25b93f3aa843f27b0870dfd766ef1f4677d7ef699910adf1991c1",
+        "label": "solver objective derivatives",
+        "path": "docs/_static/solver_objective_gradient_gate.json",
+        "scalar_count": 91,
+        "scalar_sha256": "3a3a72313ed2c25b7816fd25d4b7c557e5ad71a42e884aebbefc671898ab4ae0"
+      },
+      {
+        "array_count": 24,
+        "array_sha256": "786a6efb9d6d8f05376bebfbd6a39976c39ad3fb843ab068916cc0d8a7c23607",
+        "content_sha256": "1029086e191a9d54f57c5ded44a47a3ca0ed33b15c30ca75fed06d9b437f4f4b",
+        "label": "stellarator ITG objective portfolio",
+        "path": "docs/_static/stellarator_itg_portfolio_gate.json",
+        "scalar_count": 123,
+        "scalar_sha256": "07d1a0630b426b0c5c7861ae5bd667e527f79b89df042926788cf67b96bc5564"
+      },
+      {
+        "array_count": 5,
+        "array_sha256": "0e0356407780c89ad32d6147d726954f4131af1605978148bd77f0b36bab6523",
+        "content_sha256": "efa5bcab21450cf3fcd1387070216ab1ef3f542ce9365ca195b5a1341321a568",
+        "label": "nonlinear optimization claim guard",
+        "path": "docs/_static/production_nonlinear_optimization_guard.json",
+        "scalar_count": 90,
+        "scalar_sha256": "c2875a13c5cd0dbdfa0e001d6cc5cf57f6ccfa85e7b09c50911c84e05596a504"
+      }
+    ]
+  },
   "kind": "gkx_1_7_frozen_release_contract",
   "optimization_policy": {
     "claim_scope": "max_mode=5 VMEC-JAX QA/SPECTRAX-GK optimization status; solved-equilibrium gates, reduced line searches, quasilinear model-development diagnostics, and long-window nonlinear audit anchors are reported separately",
