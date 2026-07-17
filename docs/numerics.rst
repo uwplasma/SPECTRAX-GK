@@ -858,7 +858,9 @@ gyrocenter perturbation from Frei, Ernst & Ricci (2022), equation (52),
 with the runtime's equivalent signed-Laguerre convention. The output contains
 the cuts in :math:`s_{\parallel i}` at :math:`x_i=0` and in :math:`x_i` at
 :math:`s_{\parallel i}=0`, each normalized to its maximum. A density-only
-manufactured state independently recovers the two Maxwellian cuts.
+manufactured state independently recovers the two Maxwellian cuts. The
+publication panel overlays those analytical Maxwellians as dashed references,
+following Figure 14 of the source paper.
 
 The tracked lower-hierarchy interpolation pilot is
 ``docs/_static/collision_finite_wavelength_zonal_b_grid_pilot.json``. At

@@ -1302,6 +1302,24 @@ def write_collisional_zonal_artifacts(
                     lw=1.6,
                     label=labels[model],
                 )
+        reference_abscissa = (
+            np.linspace(-3.0, 3.0, 161)
+            if coordinate == "parallel"
+            else np.linspace(0.0, 4.0, 161)
+        )
+        maxwellian = np.exp(
+            -(reference_abscissa**2)
+            if coordinate == "parallel"
+            else -reference_abscissa
+        )
+        axis.plot(
+            reference_abscissa,
+            maxwellian,
+            color="#20272E",
+            lw=1.2,
+            ls="--",
+            label="Maxwellian",
+        )
         axis.set_title(rf"$t\nu=5$: {coordinate} section")
         axis.set_xlabel(r"$s_\parallel$" if coordinate == "parallel" else r"$x$")
         if column == 0:
