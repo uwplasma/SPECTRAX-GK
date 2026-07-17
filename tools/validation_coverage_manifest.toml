@@ -1224,8 +1224,6 @@ artifact_paths = [
   "docs/_static/quasilinear_model_selection_status.png",
   "docs/_static/quasilinear_holdout_gap_report.json",
   "docs/_static/quasilinear_holdout_gap_report.png",
-  "docs/_static/external_vmec_next_holdout_runbook.json",
-  "docs/_static/external_vmec_next_holdout_runbook.png",
 ]
 next_tests = [
   "add at least two more converged electrostatic nonlinear holdout windows before promoting richer saturation candidates",

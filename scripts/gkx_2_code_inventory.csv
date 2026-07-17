@@ -299,7 +299,6 @@ tests/validation/stellarator/test_vmec_example_inventory.py,tests/validation,org
 tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,18522,539,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tools/README.md,tools/README.md,tool documentation,keep,.md,3668,77,documents maintenance-tool ownership
 tools/artifacts/build_baseline_optimized_nonlinear_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,18216,499,owned by tools/artifacts
-tools/artifacts/build_external_vmec_holdout_runbook.py,tools/artifacts,artifact builder,keep-or-merge,.py,29163,790,owned by tools/artifacts
 tools/artifacts/build_external_vmec_replicate_ensemble.py,tools/artifacts,artifact builder,keep-or-merge,.py,18125,504,owned by tools/artifacts
 tools/artifacts/build_linear_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,294663,7571,owned by tools/artifacts
 tools/artifacts/build_matched_nonlinear_transport_comparison.py,tools/artifacts,artifact builder,keep-or-merge,.py,10102,286,owned by tools/artifacts
@@ -323,7 +322,6 @@ tools/artifacts/build_vmec_boozer_parity_matrix.py,tools/artifacts,artifact buil
 tools/artifacts/build_vmec_boundary_transport_landscape.py,tools/artifacts,artifact builder,keep-or-merge,.py,35942,980,owned by tools/artifacts
 tools/artifacts/build_vmec_jax_qa_full_sweep_panel.py,tools/artifacts,artifact builder,keep-or-merge,.py,48686,1332,owned by tools/artifacts
 tools/artifacts/build_vmec_jax_qa_transport_candidate_comparison.py,tools/artifacts,artifact builder,keep-or-merge,.py,20775,571,owned by tools/artifacts
-tools/artifacts/build_vmec_jax_qa_transport_optimization_status.py,tools/artifacts,artifact builder,keep-or-merge,.py,39480,1013,owned by tools/artifacts
 tools/artifacts/build_vmec_state_to_input_mapping_response.py,tools/artifacts,artifact builder,keep-or-merge,.py,28471,718,owned by tools/artifacts
 tools/artifacts/build_w7x_zonal_recurrence_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,48590,1399,owned by tools/artifacts
 tools/artifacts/build_w7x_zonal_reference_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,28171,804,owned by tools/artifacts

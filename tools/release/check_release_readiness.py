@@ -86,7 +86,6 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
     "docs/_static/nonlinear_spectral_communication_identity_gate.json",
-    "docs/_static/vmec_jax_qa_transport_optimization_status.json",
     "docs/_static/vmec_boundary_transport_landscape_admission.json",
     "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
     "docs/_static/nonlinear_campaign_admission_report.json",
@@ -94,9 +93,8 @@ REQUIRED_STATIC_ARTIFACTS = (
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
 TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
-OPTIMIZATION_STATUS_ARTIFACT = (
-    "docs/_static/vmec_jax_qa_transport_optimization_status.json"
-)
+RELEASE_CONTRACT_ARTIFACT = "benchmarks/references/gkx_1_7_release_contract.json"
+OPTIMIZATION_STATUS_ARTIFACT = RELEASE_CONTRACT_ARTIFACT
 REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
     "qa_baseline_gate_passed": True,
     "quasilinear_model_selection_passed": False,
@@ -141,9 +139,6 @@ REQUIRED_PRELAUNCH_GATE_ROWS = (
         "min_sample_count": 18.0,
     },
 )
-RELEASE_CONTRACT_ARTIFACT = "benchmarks/references/gkx_1_7_release_contract.json"
-
-
 class ReleaseReadinessError(RuntimeError):
     """Raised when a release-readiness contract is not satisfied."""
 
@@ -849,15 +844,20 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
 
 def _optimization_status_summary(root: Path) -> dict[str, Any]:
     payload = _read_json(root / OPTIMIZATION_STATUS_ARTIFACT)
-    summary = payload.get("summary")
+    policy = payload.get("optimization_policy")
+    if not isinstance(policy, dict):
+        raise ReleaseReadinessError(
+            f"{OPTIMIZATION_STATUS_ARTIFACT} missing optimization_policy object"
+        )
+    summary = policy.get("summary")
     if not isinstance(summary, dict):
         raise ReleaseReadinessError(
-            f"{OPTIMIZATION_STATUS_ARTIFACT} missing summary object"
+            f"{OPTIMIZATION_STATUS_ARTIFACT} optimization_policy missing summary object"
         )
-    prelaunch_gates = payload.get("prelaunch_gates")
+    prelaunch_gates = policy.get("prelaunch_gates")
     if not isinstance(prelaunch_gates, list):
         raise ReleaseReadinessError(
-            f"{OPTIMIZATION_STATUS_ARTIFACT} missing prelaunch_gates list"
+            f"{OPTIMIZATION_STATUS_ARTIFACT} optimization_policy missing prelaunch_gates list"
         )
 
     failed_flags = []

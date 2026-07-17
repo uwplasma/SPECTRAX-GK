@@ -824,20 +824,11 @@ excluded negative-transfer evidence. This prevents the release process from
 counting negative strict rows or single-point matched audits toward the broad
 nonlinear turbulent-flux optimization claim.
 
-``tools/artifacts/build_external_vmec_holdout_runbook.py`` is the single selector
-that feeds that generator. It reads the tracked linear candidate screen and the
-current calibration-gap report, rejects stable, near-marginal, failed, and
-already-represented families according to the documented policy, and emits the
-replayable ``write_external_vmec_holdout_configs.py`` command. This keeps
-candidate selection deterministic without maintaining a second, weaker
-largest-growth selector.
-
-``tools/artifacts/build_external_vmec_holdout_runbook.py`` is stricter than a positive
-growth-rate sorter. It requires a configurable minimum screened growth rate
-(``gamma >= 0.02`` by default) before writing nonlinear launch commands. This
-keeps near-marginal branches in the manuscript evidence chain as linear/QI
-feasibility data without silently promoting them to expensive nonlinear
-transport holdout campaigns.
+External-VMEC holdouts are retained only after the high-grid admission,
+time-window, and replicate gates pass. Candidate launch planning is not release
+evidence and is no longer a tracked artifact. Stable and near-marginal branches
+remain useful linear evidence, but cannot enter nonlinear calibration without a
+separate converged transport audit.
 
 ``tools/artifacts/build_qi_branch_refinement_gate.py`` is the focused companion for that
 near-marginal QI evidence. It checks finite low-``k_y`` branch rows, contiguous

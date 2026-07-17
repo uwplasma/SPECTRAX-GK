@@ -247,7 +247,7 @@
     "failed_flags": [],
     "failed_prelaunch_contracts": [],
     "failed_prelaunch_rows": [],
-    "kind": "vmec_jax_qa_transport_optimization_status",
+    "kind": "gkx_1_7_frozen_release_contract",
     "passed": true,
     "prelaunch_gate_count": 4,
     "required_flags": {
@@ -289,7 +289,7 @@
         "required_blocker": null
       }
     ],
-    "source": "docs/_static/vmec_jax_qa_transport_optimization_status.json",
+    "source": "benchmarks/references/gkx_1_7_release_contract.json",
     "summary": {
       "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
       "claim_promotion_blockers": [
@@ -388,7 +388,6 @@
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
     "docs/_static/nonlinear_spectral_communication_identity_gate.json",
-    "docs/_static/vmec_jax_qa_transport_optimization_status.json",
     "docs/_static/vmec_boundary_transport_landscape_admission.json",
     "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
     "docs/_static/nonlinear_campaign_admission_report.json",

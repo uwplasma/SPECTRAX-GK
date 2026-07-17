@@ -176,10 +176,11 @@ and compact scalar/array reference hashes remain before destructive core moves.
 Exit: source <=120 files/68,000 lines, tools <=45 files, docs static <=20 MB,
 all frozen gates pass.
 
-Progress: **30%**. Synthetic QA evidence, the generated research-status builder,
-the nonlinear release finalizer, one duplicate roadmap, 16 dashboard assets,
-and their ownership-only tests are gone. The remaining 92-file tool layer and
-1,576-file static evidence tree are the main blockers.
+Progress: **35%**. Synthetic QA evidence, generated research/optimization
+status builders, the nonlinear release finalizer, the external-VMEC launch
+planner, one duplicate roadmap, and 24 dashboard/runbook assets are gone. The
+remaining 90-file tool layer and 1,568-file static evidence tree are the main
+blockers.
 
 ### Phase 2 - Build the Shallow Scientific Core
 
@@ -238,9 +239,9 @@ old directory topology remains.
 Exit: <=36 test files/55,000 lines, >=95% package coverage, <=12 scripts/18,000
 lines, and all documentation commands are reproducible.
 
-Progress: **8%**. Suite labels exist and 1,637 ownership-only test lines were
-removed with the status machinery, but 94 test files and oversized tool-test
-owners still dominate.
+Progress: **10%**. Suite labels exist and 2,483 ownership-only test lines were
+removed with status/planner machinery, but 94 test files and oversized
+tool-test owners still dominate.
 
 ### Phase 4 - Rebuild the QA ITG Optimizations
 
@@ -375,9 +376,9 @@ commands move here from the README.
 Exit: README/docs links and image dimensions pass automated gates, all examples
 run, and every displayed value is regenerated from a tracked compact manifest.
 
-Progress: **8%**. The duplicate roadmap and generated status sections are gone,
-and the warning-as-error Sphinx build passes; page and static-asset counts still
-exceed the final budgets.
+Progress: **9%**. The duplicate roadmap, generated status sections, and external
+holdout runbook are gone, and the warning-as-error Sphinx build passes; page and
+static-asset counts still exceed the final budgets.
 
 ### Phase 6 - Atomic Rename to GKX
 
@@ -472,6 +473,11 @@ Use large coherent commits, each independently green:
   removed 16 duplicate dashboard assets and the duplicate roadmap, retained the
   numerical QL evidence, and passed 238 focused tests plus release, validation,
   Ruff, and warning-as-error documentation gates.
+- 2026-07-17 planner-removal tranche: folded QA optimization claim/prelaunch
+  policy into the compact contract; deleted the 1,013-line status renderer, the
+  790-line external-VMEC launch planner, eight duplicate renderings, and 828
+  ownership-only test lines; retained all converged holdout and matched-audit
+  evidence; passed 232 focused tests and all release/docs checks.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -482,15 +488,15 @@ Use large coherent commits, each independently green:
 | Lane | Completion |
 | --- | ---: |
 | Frozen 1.7 contract | 70% |
-| Deletion/repository trim | 30% |
+| Deletion/repository trim | 35% |
 | Scientific-core simplification | 25% |
-| Test/benchmark/command simplification | 8% |
+| Test/benchmark/command simplification | 10% |
 | QA linear/QL/nonlinear optimization | 15% |
-| README/docs rebuild | 8% |
+| README/docs rebuild | 9% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **20%**. The next implementation tranche remains
+Weighted overall completion: **21%**. The next implementation tranche remains
 Phase 0 plus Phase 1: add compact promoted scalar/array hashes and refresh a
 bounded representative performance subset, then classify and delete the next
 superseded campaign/figure family before moving scientific-core files.

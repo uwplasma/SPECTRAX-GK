@@ -550,7 +550,6 @@ coverage:
         "nonlinear_sharding_strong_scaling_large.json",
         "nonlinear_domain_parallel_identity_gate.json",
         "nonlinear_spectral_communication_identity_gate.json",
-        "vmec_jax_qa_transport_optimization_status.json",
         "vmec_boundary_transport_landscape_admission.json",
         "vmec_boundary_transport_prelaunch_gate.json",
         "nonlinear_campaign_admission_report.json",
@@ -570,74 +569,64 @@ coverage:
 """.lstrip(),
         encoding="utf-8",
     )
-    (
-        root / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
-    ).write_text(
-        """
-{
-  "kind": "vmec_jax_qa_transport_optimization_status",
-  "prelaunch_gates": [
-    {
-      "label": "replicated landscape admission",
-      "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 12.0,
-      "blockers": []
-    },
-    {
-      "label": "selected reduced prelaunch",
-      "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 18.0,
-      "blockers": []
-    },
-    {
-      "label": "weak reduced-margin reference",
-      "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
-      "passed": true,
-      "expected_raw_passed": false,
-      "raw_passed": false,
-      "sample_count": 18.0,
-      "blockers": ["insufficient_reduced_margin_for_nonlinear_audit"]
-    },
-    {
-      "label": "next nonlinear campaign admission",
-      "path": "docs/_static/nonlinear_campaign_admission_report.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 18.0,
-      "blockers": []
-    }
-  ],
-  "summary": {
-    "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": false,
-    "simple_quasilinear_absolute_flux_promoted": false,
-    "long_window_nonlinear_audit_passed": true,
-    "nonlinear_prelaunch_policy_ready": true,
-    "nonlinear_campaign_admission_ready": true,
-    "negative_reference_blocks_weak_margin": true,
-    "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
-    "claim_promotion_blockers": [
-      "quasilinear_model_selection_not_promoted",
-      "simple_quasilinear_absolute_flux_not_promoted"
-    ]
-  }
-}
-""".lstrip(),
-        encoding="utf-8",
-    )
-    (
-        root / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
-    ).write_text(
+    (root / "benchmarks" / "references" / "gkx_1_7_release_contract.json").write_text(
         """
 {
   "kind": "gkx_1_7_frozen_release_contract",
+  "optimization_policy": {
+    "prelaunch_gates": [
+      {
+        "label": "replicated landscape admission",
+        "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+        "passed": true,
+        "expected_raw_passed": true,
+        "raw_passed": true,
+        "sample_count": 12.0,
+        "blockers": []
+      },
+      {
+        "label": "selected reduced prelaunch",
+        "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+        "passed": true,
+        "expected_raw_passed": true,
+        "raw_passed": true,
+        "sample_count": 18.0,
+        "blockers": []
+      },
+      {
+        "label": "weak reduced-margin reference",
+        "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+        "passed": true,
+        "expected_raw_passed": false,
+        "raw_passed": false,
+        "sample_count": 18.0,
+        "blockers": ["insufficient_reduced_margin_for_nonlinear_audit"]
+      },
+      {
+        "label": "next nonlinear campaign admission",
+        "path": "docs/_static/nonlinear_campaign_admission_report.json",
+        "passed": true,
+        "expected_raw_passed": true,
+        "raw_passed": true,
+        "sample_count": 18.0,
+        "blockers": []
+      }
+    ],
+    "summary": {
+      "qa_baseline_gate_passed": true,
+      "quasilinear_model_selection_passed": false,
+      "simple_quasilinear_absolute_flux_promoted": false,
+      "long_window_nonlinear_audit_passed": true,
+      "nonlinear_prelaunch_policy_ready": true,
+      "nonlinear_campaign_admission_ready": true,
+      "negative_reference_blocks_weak_margin": true,
+      "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+      "claim_promotion_blockers": [
+        "quasilinear_model_selection_not_promoted",
+        "simple_quasilinear_absolute_flux_not_promoted"
+      ]
+    }
+  },
   "performance": {
     "row_count": 1,
     "rows": [{"case": "test", "backend": "cpu", "status": "success"}]
@@ -679,6 +668,13 @@ coverage:
 """.lstrip(),
         encoding="utf-8",
     )
+
+
+def _replace_release_optimization_policy(root: Path, policy: dict[str, object]) -> None:
+    contract = root / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
+    payload = json.loads(contract.read_text(encoding="utf-8"))
+    payload["optimization_policy"] = policy
+    contract.write_text(json.dumps(payload), encoding="utf-8")
 
 
 def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
@@ -777,9 +773,7 @@ def test_release_readiness_rejects_below_target_release_completion(
     tmp_path: Path,
 ) -> None:
     _write_release_ready_tree(tmp_path)
-    contract = (
-        tmp_path / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
-    )
+    contract = tmp_path / "benchmarks" / "references" / "gkx_1_7_release_contract.json"
     payload = json.loads(contract.read_text(encoding="utf-8"))
     payload["release_lanes"] = [
         {
@@ -824,24 +818,20 @@ def test_release_readiness_rejects_missing_optimization_prelaunch_policy(
     tmp_path: Path,
 ) -> None:
     _write_release_ready_tree(tmp_path)
-    (
-        tmp_path / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
-    ).write_text(
-        """
-{
-  "kind": "vmec_jax_qa_transport_optimization_status",
-  "prelaunch_gates": [],
-  "summary": {
-    "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": false,
-    "simple_quasilinear_absolute_flux_promoted": false,
-    "long_window_nonlinear_audit_passed": true,
-    "nonlinear_prelaunch_policy_ready": false,
-    "negative_reference_blocks_weak_margin": false
-  }
-}
-""".lstrip(),
-        encoding="utf-8",
+    _replace_release_optimization_policy(
+        tmp_path,
+        {
+            "prelaunch_gates": [],
+            "summary": {
+                "qa_baseline_gate_passed": True,
+                "quasilinear_model_selection_passed": False,
+                "simple_quasilinear_absolute_flux_promoted": False,
+                "long_window_nonlinear_audit_passed": True,
+                "nonlinear_prelaunch_policy_ready": False,
+                "nonlinear_campaign_admission_ready": True,
+                "negative_reference_blocks_weak_margin": False,
+            },
+        },
     )
 
     with pytest.raises(
@@ -855,27 +845,22 @@ def test_release_readiness_requires_explicit_optimization_status_booleans(
     tmp_path: Path,
 ) -> None:
     _write_release_ready_tree(tmp_path)
-    (
-        tmp_path / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
-    ).write_text(
-        """
-{
-  "kind": "vmec_jax_qa_transport_optimization_status",
-  "prelaunch_gates": [
-    {"label": "landscape", "passed": true},
-    {"label": "positive", "passed": true},
-    {"label": "negative", "passed": true}
-  ],
-  "summary": {
-    "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": false,
-    "long_window_nonlinear_audit_passed": true,
-    "nonlinear_prelaunch_policy_ready": true,
-    "negative_reference_blocks_weak_margin": true
-  }
-}
-""".lstrip(),
-        encoding="utf-8",
+    _replace_release_optimization_policy(
+        tmp_path,
+        {
+            "prelaunch_gates": [
+                {"label": "landscape", "passed": True},
+                {"label": "positive", "passed": True},
+                {"label": "negative", "passed": True},
+            ],
+            "summary": {
+                "qa_baseline_gate_passed": True,
+                "quasilinear_model_selection_passed": False,
+                "long_window_nonlinear_audit_passed": True,
+                "nonlinear_prelaunch_policy_ready": True,
+                "negative_reference_blocks_weak_margin": True,
+            },
+        },
     )
 
     with pytest.raises(
@@ -889,67 +874,62 @@ def test_release_readiness_rejects_stale_prelaunch_gate_rows(
     tmp_path: Path,
 ) -> None:
     _write_release_ready_tree(tmp_path)
-    (
-        tmp_path / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
-    ).write_text(
-        """
-{
-  "kind": "vmec_jax_qa_transport_optimization_status",
-  "prelaunch_gates": [
-    {
-      "label": "replicated landscape admission",
-      "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 12.0,
-      "blockers": []
-    },
-    {
-      "label": "selected reduced prelaunch",
-      "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 1.0,
-      "blockers": []
-    },
-    {
-      "label": "weak reduced-margin reference",
-      "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 18.0,
-      "blockers": []
-    },
-    {
-      "label": "next nonlinear campaign admission",
-      "path": "docs/_static/nonlinear_campaign_admission_report.json",
-      "passed": true,
-      "expected_raw_passed": true,
-      "raw_passed": true,
-      "sample_count": 18.0,
-      "blockers": []
-    }
-  ],
-  "summary": {
-    "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": false,
-    "simple_quasilinear_absolute_flux_promoted": false,
-    "long_window_nonlinear_audit_passed": true,
-    "nonlinear_prelaunch_policy_ready": true,
-    "nonlinear_campaign_admission_ready": true,
-    "negative_reference_blocks_weak_margin": true,
-    "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
-    "claim_promotion_blockers": [
-      "quasilinear_model_selection_not_promoted",
-      "simple_quasilinear_absolute_flux_not_promoted"
-    ]
-  }
-}
-""".lstrip(),
-        encoding="utf-8",
+    _replace_release_optimization_policy(
+        tmp_path,
+        {
+            "prelaunch_gates": [
+                {
+                    "label": "replicated landscape admission",
+                    "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+                    "passed": True,
+                    "expected_raw_passed": True,
+                    "raw_passed": True,
+                    "sample_count": 12.0,
+                    "blockers": [],
+                },
+                {
+                    "label": "selected reduced prelaunch",
+                    "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+                    "passed": True,
+                    "expected_raw_passed": True,
+                    "raw_passed": True,
+                    "sample_count": 1.0,
+                    "blockers": [],
+                },
+                {
+                    "label": "weak reduced-margin reference",
+                    "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+                    "passed": True,
+                    "expected_raw_passed": True,
+                    "raw_passed": True,
+                    "sample_count": 18.0,
+                    "blockers": [],
+                },
+                {
+                    "label": "next nonlinear campaign admission",
+                    "path": "docs/_static/nonlinear_campaign_admission_report.json",
+                    "passed": True,
+                    "expected_raw_passed": True,
+                    "raw_passed": True,
+                    "sample_count": 18.0,
+                    "blockers": [],
+                },
+            ],
+            "summary": {
+                "qa_baseline_gate_passed": True,
+                "quasilinear_model_selection_passed": False,
+                "simple_quasilinear_absolute_flux_promoted": False,
+                "long_window_nonlinear_audit_passed": True,
+                "nonlinear_prelaunch_policy_ready": True,
+                "nonlinear_campaign_admission_ready": True,
+                "negative_reference_blocks_weak_margin": True,
+                "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+                "claim_promotion_blockers": [
+                    "quasilinear_model_selection_not_promoted",
+                    "simple_quasilinear_absolute_flux_not_promoted",
+                ],
+            },
+        },
     )
 
     with pytest.raises(

@@ -1413,53 +1413,19 @@ useful negative audit evidence and a command-generation regression test; they
 are not nonlinear holdouts, are not used to refit the quasilinear calibration,
 and do not change the screening/absolute-flux promotion status above.
 
-External-VMEC next-holdout runbook
-----------------------------------
+External-VMEC holdout results
+-----------------------------
 
-The gap report intentionally stops at metadata ranking. The launch runbook
-turns that ranking plus the linear external-VMEC candidate screen into a
-reproducible next-run contract. It does not run simulations and does not
-promote an absolute-flux model; it records which nonlinear runs should be
-launched next, which grids and horizons should be used, and which acceptance
-gate must pass before a new point can enter the calibration set.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_external_vmec_holdout_runbook.py \
-     --out docs/_static/external_vmec_next_holdout_runbook.png
-
-.. image:: _static/external_vmec_next_holdout_runbook.png
-   :alt: External-VMEC nonlinear holdout launch runbook
-   :width: 100%
-
-The current runbook remains fail-closed for unchanged replays. The ITERModel
-preferred-family audit has now passed, so replaying the same
-``wout_ITERModel_reference.nc`` ladder would not create independent holdout
-leverage. The unchanged shaped-tokamak pressure case is also demoted because it
-is already admitted as a scoped high-grid holdout. Families with a recent
-failed external-VMEC convergence gate are demoted unless the rerun protocol is
-materially changed by changing the candidate and/or the nonlinear validation
-ladder. The previous modified-protocol QH attempt is now closed as negative
-evidence: ``nfp4_QH_warm_start`` has a weak but finite screened branch
-(``gamma = 0.022949`` at ``ky = 0.4762``), but the corrected staged
-``n64/n80``, ``dt=0.04`` ladder fails the relaxed 20% high-grid heat-flux gate
-at ``t=250``, ``t=450``, and ``t=700``. The final ``t=700`` common-window and
-least-window symmetric differences are about ``0.349`` and ``0.367``.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_external_vmec_holdout_runbook.py \
-     --horizons 250,450,700 \
-     --grid n64:64:64:40:40 \
-     --grid n80:80:80:48:48 \
-     --dt 0.04 \
-     --out docs/_static/external_vmec_next_holdout_runbook.png
-
-The generated sidecar currently contains no launch command. That is intentional:
-after the QH failure, the next quasilinear-calibration holdout needs a genuinely
-independent VMEC candidate or a materially higher-resolution protocol with new
-grid/window/replicate acceptance evidence. This is a nonlinear holdout runbook,
-not transport validation or a quasilinear absolute-flux promotion.
+The tracked evidence keeps completed validation results rather than a generated
+campaign planner. ITERModel and shaped-pressure cases are already represented,
+and replaying them would not add independent holdout leverage. The modified QH
+ladder remains negative evidence: its weak finite branch
+(``gamma = 0.022949`` at ``ky = 0.4762``) was followed to ``t=700`` on
+``n64/n80`` with ``dt=0.04``, but the common- and least-window heat-flux
+differences, about ``0.349`` and ``0.367``, fail the relaxed 20% gate. The
+independent Solovev seed/timestep ensemble passes with mean heat flux ``1.409``
+and relative spread ``0.1599``. These high-grid admission and ensemble JSON
+artifacts are calibration evidence, not a universal absolute-flux promotion.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------

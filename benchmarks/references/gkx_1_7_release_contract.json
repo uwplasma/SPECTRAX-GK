@@ -17,6 +17,98 @@
     "vmec_jax": "adf2d334122999bdaafb47aaa15653d047560ef8"
   },
   "kind": "gkx_1_7_frozen_release_contract",
+  "optimization_policy": {
+    "claim_scope": "max_mode=5 VMEC-JAX QA/SPECTRAX-GK optimization status; solved-equilibrium gates, reduced line searches, quasilinear model-development diagnostics, and long-window nonlinear audit anchors are reported separately",
+    "prelaunch_gates": [
+      {
+        "blockers": [],
+        "claim_scope": "selected replicated nonlinear landscape admission; not a multi-coefficient or multi-flux-tube turbulent-optimization claim",
+        "expected_raw_passed": true,
+        "kind": "nonlinear_landscape_admission_report",
+        "label": "replicated landscape admission",
+        "metric": 0.2665094629036129,
+        "next_action": "use selected direction for the next uncertainty-aware optimizer admission step",
+        "passed": true,
+        "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+        "raw_passed": true,
+        "sample_count": 12.0,
+        "threshold": 0.02
+      },
+      {
+        "blockers": [],
+        "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
+        "expected_raw_passed": true,
+        "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+        "label": "selected reduced prelaunch",
+        "metric": 0.04678021840887033,
+        "next_action": "launch replicated long-window nonlinear audit only with baseline/candidate ensembles",
+        "passed": true,
+        "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+        "raw_passed": true,
+        "required_blocker": null,
+        "sample_count": 18.0,
+        "threshold": 0.04
+      },
+      {
+        "blockers": [
+          "insufficient_reduced_margin_for_nonlinear_audit"
+        ],
+        "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
+        "expected_raw_passed": false,
+        "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+        "label": "weak reduced-margin reference",
+        "metric": 0.022875996934833345,
+        "next_action": "do not launch an expensive nonlinear audit; increase reduced-objective margin or broaden the objective before spending GPU time",
+        "passed": true,
+        "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+        "raw_passed": false,
+        "required_blocker": "insufficient_reduced_margin_for_nonlinear_audit",
+        "sample_count": 18.0,
+        "threshold": 0.04
+      },
+      {
+        "blockers": [],
+        "claim_scope": "next nonlinear optimizer-campaign admission only; not a production multi-coefficient turbulent-flux optimization claim",
+        "expected_raw_passed": true,
+        "kind": "vmec_jax_nonlinear_campaign_admission_report",
+        "label": "next nonlinear campaign admission",
+        "metric": 0.2665094629036129,
+        "next_action": "launch a bounded multi-control optimizer campaign from the admitted landscape direction, with matched baseline/candidate t=[350,700] replicated nonlinear audits before promotion",
+        "passed": true,
+        "path": "docs/_static/nonlinear_campaign_admission_report.json",
+        "raw_passed": true,
+        "sample_count": 18.0,
+        "threshold": 0.1
+      }
+    ],
+    "summary": {
+      "blocked_candidates": [
+        "direct scalar transport"
+      ],
+      "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+      "claim_promotion_blockers": [
+        "direct_scalar_transport_branch_blocked",
+        "projected_transport_metric_not_improved",
+        "quasilinear_model_selection_not_promoted",
+        "simple_quasilinear_absolute_flux_not_promoted"
+      ],
+      "direct_scalar_transport_blocked": true,
+      "direct_scalar_transport_gate_passed": false,
+      "landscape_admission_passed": true,
+      "long_window_nonlinear_audit_passed": true,
+      "negative_reference_blocks_weak_margin": true,
+      "next_action": "Use the passing QA baseline and any constraint-preserving candidates that also pass the prelaunch/admission policy for long-window nonlinear audits; do not promote direct scalar transport branches that fail aspect/iota/QS gates or weak reduced-margin candidates that the negative prelaunch reference blocks.",
+      "nonlinear_campaign_admission_ready": true,
+      "nonlinear_prelaunch_policy_ready": true,
+      "positive_prelaunch_gate_passed": true,
+      "projected_transport_gate_passed": true,
+      "projected_transport_improved": false,
+      "projected_transport_relative_metric_change": 0.0038143971469909088,
+      "qa_baseline_gate_passed": true,
+      "quasilinear_model_selection_passed": false,
+      "simple_quasilinear_absolute_flux_promoted": false
+    }
+  },
   "performance": {
     "claim_scope": "tracked historical wall-time and peak-RSS rows; not a cross-machine universal speed claim",
     "row_count": 30,
