@@ -284,12 +284,12 @@ for a higher-level physical result.
    moment states, published low-order coefficients, Maxwellian/density nulls,
    total momentum and energy invariants, adjointness, and non-positive entropy
    production. The tracked JSON/PNG artifact passes all six numerical gates.
-2. **Finite-truncation convergence (drift-kinetic response closed; finite-b hierarchy open).** Track
-   Bessel--Laguerre convergence at finite :math:`k_\perp\rho`, then repeat the
-   assembled operator over increasing Hermite, Laguerre, spherical, and Bessel
-   cutoffs. Require stable low-order matrix entries, drift-kinetic invariant
-   residuals, equation-(3.5) finite-wavelength gyro-diffusion, and entropy
-   spectrum.
+2. **Finite-truncation convergence (equal-species diagonal hierarchy closed;
+   arbitrary multispecies hierarchy future scope).** Track Bessel--Laguerre
+   convergence at finite :math:`k_\perp\rho`, then repeat the assembled operator
+   over increasing Hermite, Laguerre, spherical, and Bessel cutoffs. Require
+   stable low-order matrix entries, drift-kinetic invariant residuals,
+   equation-(3.5) finite-wavelength gyro-diffusion, and entropy spectrum.
    Runtime tables are admitted only where interpolation and truncation errors
    are separately below the stated tolerance. The direct drift-kinetic Coulomb
    hierarchy now reaches :math:`(P,J)=(20,5)` and changes its current by at
@@ -299,7 +299,10 @@ for a higher-level physical result.
    :math:`k_\perp\rho=0.5`, the exact :math:`(7,3)\rightarrow(9,4)` and
    :math:`(9,4)\rightarrow(12,5)` common blocks now pass a prospective 5%
    intermediate matrix gate, with much smaller polarization changes. This
-   establishes a controlled path to :math:`(18,6)` but does not replace it.
+   established the controlled path that was subsequently completed by the
+   P21/J8-to-P24/J10 physical-trace gate and full Figures 12--14 protocol. This
+   closes the equal-species diagonal research hierarchy only; it does not
+   establish arbitrary finite-:math:`b` target/source-species coefficients.
 3. **Multispecies runtime assembly.** Couple the four polarization vectors
    through quasineutrality without collapsing target/source
    :math:`q_s\phi/T_s` factors. Do not impose local density, momentum, or energy
@@ -342,10 +345,13 @@ for a higher-level physical result.
    / IS ordering, the Xiao long-time estimate, and the :math:`t\nu=5`
    parallel/perpendicular velocity-space sections. Admit a claim only after
    damping-window and velocity-resolution convergence.
-8. **Publication and release.** Put the algebra/convergence panel in README and
-   all operator, transport, ITG, and zonal panels in the collision docs. Promote
-   the full operator to input files only after steps 3--7 pass; until then it
-   remains an explicitly scoped Python research boundary.
+8. **Publication and release (closed for the scoped Python boundary).** Put the
+   algebra/convergence and complete zonal panel in README and all operator,
+   transport, ITG, and zonal evidence in the collision docs. Keep input-file
+   selection fail-closed until the future arbitrary finite-:math:`b`
+   multispecies work in step 3 and the remaining broad transport coefficients
+   pass; the equal-species diagonal operator remains an explicitly scoped Python
+   research boundary.
 
 9. **Nonlinear full-distribution extension (post-release research).** Do not
    materialize the dense Landau collision tensor. Follow Jorge et al. (2026),
@@ -378,6 +384,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Fixed the final CI portability failure in the finite-wavelength
+  Sugama reconstruction. SciPy/BLAS-dependent product quadrature populated
+  analytically zero density-channel entries at about ``1.1e-14`` on the Linux
+  runner although the macOS gate stayed below ``6e-15``. Both original and
+  improved Sugama builders now route exactly zero Bessel argument through the
+  independently verified closed-form drift-kinetic field block; nonzero
+  wavelengths retain the nested product-quadrature convergence gate. The
+  complete 272-test release/artifact shard passes without relaxing any physics
+  tolerance.
 - 2026-07-16: Corrected the finite-wavelength original-Sugama field response
   after the first complete P24/J10 Figure-13/14 run exposed the wrong
   :math:`k_x=0.2` tail ordering and an unphysical perpendicular-velocity hump.

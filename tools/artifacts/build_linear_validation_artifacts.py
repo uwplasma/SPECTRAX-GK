@@ -2686,6 +2686,7 @@ def finite_wavelength_original_sugama_like_species_moment_matrices(
             for laguerre in range(n_laguerre)
         ]
     )
+    convention = laguerre_sign[:, None] * laguerre_sign[None, :]
     hermite_normalization = np.exp(
         0.5
         * (
@@ -2706,19 +2707,13 @@ def finite_wavelength_original_sugama_like_species_moment_matrices(
         common_flow = -8.0 * np.sqrt(2.0) * chandrasekhar / speed
         responses = (
             common_flow * parallel_speed * jv(0, bessel_argument_grid),
-            common_flow
-            * np.sqrt(perpendicular_energy)
-            * jv(1, bessel_argument_grid),
+            common_flow * np.sqrt(perpendicular_energy) * jv(1, bessel_argument_grid),
             -4.0
             * (erf(speed) - 2.0 * speed * erf_prime)
             / speed
             * jv(0, bessel_argument_grid),
         )
-        weights = (
-            hermite_weights[:, None]
-            * laguerre_weights[None, :]
-            / np.sqrt(np.pi)
-        )
+        weights = hermite_weights[:, None] * laguerre_weights[None, :] / np.sqrt(np.pi)
         hermite = np.asarray(
             [
                 eval_hermite(order, hermite_nodes) / hermite_normalization[order]
@@ -2753,6 +2748,17 @@ def finite_wavelength_original_sugama_like_species_moment_matrices(
 
     field = np.empty_like(test)
     for wavelength_index, bessel_argument in enumerate(grid):
+        if bessel_argument == 0.0:
+            # At b=0 the finite-wavelength equations reduce exactly to the
+            # drift-kinetic field block. Avoid backend-dependent quadrature
+            # leakage into analytically vanishing density channels.
+            _paper_test, paper_field = original_sugama_like_species_moment_matrices(
+                convention * test[wavelength_index],
+                maximum_hermite_order,
+                maximum_laguerre_order,
+            )
+            field[wavelength_index] = convention * paper_field
+            continue
         lower = field_at_wavelength(float(bessel_argument), quadrature_order)
         accepted = field_at_wavelength(float(bessel_argument), quadrature_order + 16)
         difference = float(np.linalg.norm(accepted - lower))
@@ -3054,6 +3060,21 @@ def finite_wavelength_improved_sugama_like_species_moment_matrices(
 
     field = original_field.copy()
     for wavelength_index, bessel_argument in enumerate(grid):
+        if bessel_argument == 0.0:
+            # Preserve the exact drift-kinetic limit instead of allowing the
+            # independent quadrature route to populate zero invariant entries
+            # at a SciPy/BLAS-dependent roundoff level.
+            _paper_test, paper_field = (
+                improved_sugama_equal_temperature_moment_matrices(
+                    convention * np.asarray(coulomb_test_table[wavelength_index]),
+                    maximum_hermite_order,
+                    maximum_laguerre_order,
+                    correction_order=correction_order,
+                    digits=digits,
+                )
+            )
+            field[wavelength_index] = convention * paper_field
+            continue
         lower = correction(float(bessel_argument), quadrature_order)
         accepted = correction(float(bessel_argument), quadrature_order + 16)
         difference = float(np.linalg.norm(accepted - lower))
@@ -4196,7 +4217,9 @@ def project_equal_species_finite_wavelength_table(
         }
     claim_scope = str(metadata.get("claim_scope", ""))
     if not claim_scope.startswith("equal_species_diagonal_finite_wavelength_"):
-        raise ValueError("source must be a complete equal-species finite-wavelength table")
+        raise ValueError(
+            "source must be a complete equal-species finite-wavelength table"
+        )
     maximum_angular_order = int(metadata.get("maximum_angular_bessel_order", -1))
     if metadata.get("included_angular_orders") != list(
         range(maximum_angular_order + 1)
@@ -4242,7 +4265,9 @@ def project_equal_species_finite_wavelength_table(
         elif values.ndim >= 1 and values.shape[-1] == source_mode_count:
             projected[name] = np.take(values, mode_indices, axis=-1)
         else:
-            raise ValueError(f"unsupported coefficient shape for {name}: {values.shape}")
+            raise ValueError(
+                f"unsupported coefficient shape for {name}: {values.shape}"
+            )
     coefficient_arrays = [
         values for name, values in projected.items() if name != "bessel_argument_grid"
     ]
@@ -4256,9 +4281,7 @@ def project_equal_species_finite_wavelength_table(
         "derivation": "principal_hermite_laguerre_galerkin_projection",
         "parent_resolution": [source_hermite, source_laguerre],
         "parent_checksum": float(metadata["checksum"]),
-        "checksum": float(
-            sum(float(np.sum(values)) for values in coefficient_arrays)
-        ),
+        "checksum": float(sum(float(np.sum(values)) for values in coefficient_arrays)),
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
