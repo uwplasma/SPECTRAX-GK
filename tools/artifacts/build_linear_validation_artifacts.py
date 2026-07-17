@@ -3463,6 +3463,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
     maximum_laguerre_order: int,
     maximum_angular_bessel_order: int,
     maximum_bessel_laguerre_order: int,
+    included_angular_orders: tuple[int, ...] | None = None,
     digits: int = 32,
     worker_count: int = 1,
     wavelength_worker_count: int = 1,
@@ -3501,6 +3502,11 @@ def write_equal_species_finite_wavelength_coulomb_table(
         ]
     )
     matrix_convention = laguerre_sign[:, None] * laguerre_sign[None, :]
+    active_angular_orders = _resolve_collision_angular_orders(
+        maximum_angular_bessel_order,
+        included_angular_orders,
+        drift_kinetic=False,
+    )
 
     with mp.workdps(digits):
         total_started = time.perf_counter()
@@ -3538,6 +3544,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
                 "maximum_spherical_order": maximum_degree,
                 "maximum_spherical_radial_order": maximum_degree // 2,
                 "maximum_angular_bessel_order": maximum_angular_bessel_order,
+                "included_angular_orders": active_angular_orders,
                 "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
                 "digits": digits,
                 "_coefficient_functions": coefficient_functions,
@@ -3610,6 +3617,7 @@ def write_equal_species_finite_wavelength_coulomb_table(
         "resolution": [maximum_hermite_order, maximum_laguerre_order],
         "bessel_argument_grid": grid.tolist(),
         "maximum_angular_bessel_order": maximum_angular_bessel_order,
+        "included_angular_orders": list(active_angular_orders),
         "maximum_bessel_laguerre_order": maximum_bessel_laguerre_order,
         "precision_decimal_digits": digits,
         "worker_count": worker_count,
@@ -3634,6 +3642,82 @@ def write_equal_species_finite_wavelength_coulomb_table(
         field_phi1=vectors[1],
         test_phi2=vectors[2],
         field_phi2=vectors[3],
+    )
+    return metadata
+
+
+def combine_equal_species_finite_wavelength_angular_shards(
+    shard_paths: tuple[Path, ...],
+    out: Path,
+) -> dict[str, Any]:
+    """Combine complete single-harmonic table shards in angular order."""
+
+    if not shard_paths:
+        raise ValueError("at least one angular shard is required")
+    array_names = (
+        "test_table",
+        "field_table",
+        "test_phi1",
+        "field_phi1",
+        "test_phi2",
+        "field_phi2",
+    )
+    records = []
+    for path in shard_paths:
+        with np.load(path) as archive:
+            metadata = json.loads(str(archive["metadata"]))
+            orders = tuple(metadata.get("included_angular_orders", ()))
+            if len(orders) != 1:
+                raise ValueError("each archive must contain exactly one angular order")
+            arrays = tuple(np.asarray(archive[name]) for name in array_names)
+        records.append((orders[0], metadata, arrays))
+    records.sort(key=lambda record: record[0])
+    first = records[0][1]
+    maximum_order = int(first["maximum_angular_bessel_order"])
+    if [record[0] for record in records] != list(range(maximum_order + 1)):
+        raise ValueError("angular shards must provide complete contiguous coverage")
+    identity_fields = (
+        "resolution",
+        "bessel_argument_grid",
+        "maximum_angular_bessel_order",
+        "maximum_bessel_laguerre_order",
+        "precision_decimal_digits",
+        "laguerre_convention",
+        "source",
+    )
+    for _order, metadata, arrays in records:
+        if any(metadata[field] != first[field] for field in identity_fields):
+            raise ValueError("angular shard metadata mismatch")
+        if any(not np.all(np.isfinite(array)) for array in arrays):
+            raise ValueError("angular shard contains non-finite values")
+    combined = tuple(
+        sum(
+            (record[2][index] for record in records),
+            np.zeros_like(records[0][2][index]),
+        )
+        for index in range(len(array_names))
+    )
+    metadata = {
+        **{field: first[field] for field in identity_fields},
+        "schema_version": 1,
+        "claim_scope": "equal_species_diagonal_finite_wavelength_coulomb_table",
+        "included_angular_orders": list(range(maximum_order + 1)),
+        "float64_final_contraction": True,
+        "angular_shard_checksums": [record[1]["checksum"] for record in records],
+        "sum_shard_seconds": float(
+            sum(record[1]["total_seconds"] for record in records)
+        ),
+        "maximum_shard_seconds": float(
+            max(record[1]["total_seconds"] for record in records)
+        ),
+        "checksum": float(sum(float(np.sum(array)) for array in combined)),
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out,
+        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
+        bessel_argument_grid=np.asarray(first["bessel_argument_grid"], dtype=float),
+        **dict(zip(array_names, combined, strict=True)),
     )
     return metadata
 
@@ -5778,6 +5862,15 @@ def build_collision_endpoint_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_combine_angular_shards_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Combine complete finite-wavelength angular table shards."
+    )
+    parser.add_argument("--shard", action="append", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    return parser
+
+
 def build_collision_diagonal_table_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate an equal-species diagonal finite-wavelength table."
@@ -5787,6 +5880,7 @@ def build_collision_diagonal_table_parser() -> argparse.ArgumentParser:
     parser.add_argument("--maximum-hermite-order", type=int, required=True)
     parser.add_argument("--maximum-laguerre-order", type=int, required=True)
     parser.add_argument("--maximum-angular-bessel-order", type=int, default=4)
+    parser.add_argument("--angular-order", action="append", type=int)
     parser.add_argument("--maximum-bessel-laguerre-order", type=int, default=6)
     parser.add_argument("--digits", type=int, default=32)
     parser.add_argument("--worker-count", type=int, default=1)
@@ -6387,6 +6481,15 @@ def main_collision_endpoint(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_combine_angular_shards(argv: list[str] | None = None) -> int:
+    args = build_collision_combine_angular_shards_parser().parse_args(argv)
+    metadata = combine_equal_species_finite_wavelength_angular_shards(
+        tuple(args.shard), args.out
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main_collision_diagonal_table(argv: list[str] | None = None) -> int:
     args = build_collision_diagonal_table_parser().parse_args(argv)
     metadata = write_equal_species_finite_wavelength_coulomb_table(
@@ -6396,6 +6499,9 @@ def main_collision_diagonal_table(argv: list[str] | None = None) -> int:
         maximum_laguerre_order=int(args.maximum_laguerre_order),
         maximum_angular_bessel_order=int(args.maximum_angular_bessel_order),
         maximum_bessel_laguerre_order=int(args.maximum_bessel_laguerre_order),
+        included_angular_orders=(
+            None if args.angular_order is None else tuple(sorted(args.angular_order))
+        ),
         digits=int(args.digits),
         worker_count=int(args.worker_count),
         wavelength_worker_count=int(args.wavelength_worker_count),
@@ -6434,6 +6540,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-itg",
                 "collision-endpoint",
                 "collision-diagonal-table",
+                "collision-combine-angular-shards",
                 "collision-contraction-gate",
             ),
         )
@@ -6458,6 +6565,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_endpoint(rest)
     if command == "collision-diagonal-table":
         return main_collision_diagonal_table(rest)
+    if command == "collision-combine-angular-shards":
+        return main_collision_combine_angular_shards(rest)
     if command == "collision-contraction-gate":
         return main_collision_contraction_gate(rest)
     raise SystemExit(f"unknown command: {command}")

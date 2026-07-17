@@ -377,6 +377,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Added resumable angular-harmonic generation for the exact
+  finite-wavelength Coulomb table. Both equations (3.48)--(3.49) and equation
+  (3.50) accept a validated sorted subset of ``m``; only ``m=0`` owns the
+  ``phi1`` term. Ordered sums of all single-harmonic matrices and polarization
+  vectors reproduce the monolithic float64 archive to the existing roundoff
+  gate. Diagonal-table shards record their angular ownership, and a dedicated
+  combiner requires complete contiguous coverage, matching physics metadata,
+  and finite arrays before writing a runtime-ready table. This converts P24
+  from one uncheckpointed >600-second process into five independently bounded,
+  restartable equation blocks without changing the operator.
+
 - 2026-07-16: Rejected the analogous eager Bessel/radial projection cache for
   equation (3.50) after its required high-order benchmark. P10/J4 appeared to
   improve by 4%, with vector differences below ``1.4e-17`` absolute, but the

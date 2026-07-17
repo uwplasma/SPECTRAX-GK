@@ -3427,6 +3427,42 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
                 parallel[name], serial[name], rtol=5.0e-15, atol=1.0e-14
             )
 
+    shard_paths = []
+    for angular_order in (0, 1):
+        shard_path = tmp_path / f"diagonal_table_m{angular_order}.npz"
+        mod.write_equal_species_finite_wavelength_coulomb_table(
+            shard_path,
+            bessel_arguments=(0.1, 0.2),
+            maximum_hermite_order=1,
+            maximum_laguerre_order=1,
+            maximum_angular_bessel_order=1,
+            maximum_bessel_laguerre_order=1,
+            included_angular_orders=(angular_order,),
+            digits=24,
+        )
+        shard_paths.append(shard_path)
+    combined_path = tmp_path / "diagonal_table_combined.npz"
+    combined_metadata = mod.combine_equal_species_finite_wavelength_angular_shards(
+        tuple(shard_paths), combined_path
+    )
+    assert combined_metadata["included_angular_orders"] == [0, 1]
+    with np.load(out) as serial, np.load(combined_path) as combined:
+        for name in (
+            "test_table",
+            "field_table",
+            "test_phi1",
+            "field_phi1",
+            "test_phi2",
+            "field_phi2",
+        ):
+            np.testing.assert_allclose(
+                combined[name], serial[name], rtol=5.0e-15, atol=1.0e-14
+            )
+    with pytest.raises(ValueError, match="complete contiguous coverage"):
+        mod.combine_equal_species_finite_wavelength_angular_shards(
+            (shard_paths[0],), tmp_path / "incomplete.npz"
+        )
+
     with pytest.raises(ValueError, match="strictly increasing"):
         mod.write_equal_species_finite_wavelength_coulomb_table(
             out,

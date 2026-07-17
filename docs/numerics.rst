@@ -905,6 +905,32 @@ algebra cache remains process-local. A serial-versus-decomposed archive test
 gates all six stored arrays to roundoff; this is an offline table-generation
 strategy and is not evidence for simulation-runtime strong scaling.
 
+If a complete high-order table cannot finish inside one bounded process, the
+same equations can be generated as resumable angular shards. For each
+``M=0,...,4``, run the diagonal-table command with ``--angular-order M`` and a
+distinct output path, then combine the complete set in deterministic angular
+order::
+
+   python tools/artifacts/build_linear_validation_artifacts.py \
+     collision-diagonal-table --out p24_m0.npz \
+     --bessel-argument 0.12 --bessel-argument 0.16 \
+     --bessel-argument 0.24 --bessel-argument 0.32 \
+     --maximum-hermite-order 24 --maximum-laguerre-order 10 \
+     --maximum-angular-bessel-order 4 --angular-order 0 \
+     --maximum-bessel-laguerre-order 6 --digits 32 --worker-count 8
+
+   python tools/artifacts/build_linear_validation_artifacts.py \
+     collision-combine-angular-shards \
+     --shard p24_m0.npz --shard p24_m1.npz --shard p24_m2.npz \
+     --shard p24_m3.npz --shard p24_m4.npz \
+     --out finite_b_zonal_P24_J10_diagonal.npz
+
+The combiner rejects missing/duplicate harmonics, metadata mismatches, and
+non-finite arrays. A unit-level equation gate verifies that the ordered sum of
+single-harmonic matrices and polarization vectors reproduces the monolithic
+archive to roundoff. This is checkpointing of an additive analytical sum, not
+a reduced collision model.
+
 The radial order six follows the convergence statement in
 `Frei, Ernst & Ricci (2022) <https://arxiv.org/abs/2202.06293>`_; the separate
 angular cutoff must pass a nested endpoint or observable-level convergence
