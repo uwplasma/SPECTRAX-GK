@@ -898,6 +898,23 @@ Reproduce the report with::
      --level 21 8 p21_kx010.csv p21_kx020.csv \
      --out-json collision_finite_wavelength_zonal_moment_hierarchy.json
 
+An adjacent hierarchy can be derived from one authoritative high-order table
+without recomputing or interpolating any coefficient. The projection keeps the
+principal Hermite--Laguerre subspace in the runtime's Hermite-major ordering,
+projects every collision matrix and polarization vector with the same indices,
+and records the parent resolution and checksum::
+
+   python tools/artifacts/build_linear_validation_artifacts.py \
+     collision-project-table \
+     --source P24_J10_coulomb.npz \
+     --out P21_J8_coulomb.npz \
+     --maximum-hermite-order 21 \
+     --maximum-laguerre-order 8
+
+This is a Galerkin truncation study of the same generated operator. It cannot
+expand an archive, silently change its wavelength grid, or support a physics
+claim beyond the source archive's declared collision model.
+
 The bounded archive generator uses a separate, prospectively gated
 optimization. Every transform, collision moment, and projection coefficient is
 still evaluated at the requested multiprecision; only the final dense

@@ -10,6 +10,8 @@ Subcommands:
   collision-itg   Build the finite-wavelength slab-ITG convergence panel.
   collision-endpoint
                   Generate one equal-species finite-wavelength Coulomb archive.
+  collision-project-table
+                  Project a complete table onto a smaller moment basis.
   figures         Build Cyclone, ETG, and KBM comparison figures.
   observed-order  Build a convergence observed-order JSON/plot gate.
   kbm-branch      Build a KBM branch-continuity JSON gate.
@@ -4130,6 +4132,91 @@ def combine_equal_species_finite_wavelength_tables(
     return metadata
 
 
+def project_equal_species_finite_wavelength_table(
+    source: Path,
+    out: Path,
+    *,
+    maximum_hermite_order: int,
+    maximum_laguerre_order: int,
+) -> dict[str, Any]:
+    """Project a complete finite-wavelength archive onto a nested moment basis.
+
+    Hermite-major mode ordering is preserved exactly: mode ``(p, j)`` has
+    flattened index ``p * (J + 1) + j``. The operation is therefore the
+    principal Galerkin projection of every matrix and polarization vector, not
+    interpolation or coefficient regeneration.
+    """
+
+    if maximum_hermite_order < 0 or maximum_laguerre_order < 0:
+        raise ValueError("target moment orders must be >= 0")
+    with np.load(source) as archive:
+        if "metadata" not in archive or "bessel_argument_grid" not in archive:
+            raise ValueError("source must be a finite-wavelength table archive")
+        metadata = json.loads(str(archive["metadata"]))
+        arrays = {
+            name: np.asarray(archive[name])
+            for name in archive.files
+            if name != "metadata"
+        }
+    claim_scope = str(metadata.get("claim_scope", ""))
+    if not claim_scope.startswith("equal_species_diagonal_finite_wavelength_"):
+        raise ValueError("source must be a complete equal-species finite-wavelength table")
+    source_hermite, source_laguerre = map(int, metadata.get("resolution", ()))
+    if (
+        maximum_hermite_order > source_hermite
+        or maximum_laguerre_order > source_laguerre
+    ):
+        raise ValueError("target resolution must not exceed the source resolution")
+    source_mode_count = (source_hermite + 1) * (source_laguerre + 1)
+    mode_indices = np.asarray(
+        [
+            hermite * (source_laguerre + 1) + laguerre
+            for hermite in range(maximum_hermite_order + 1)
+            for laguerre in range(maximum_laguerre_order + 1)
+        ],
+        dtype=int,
+    )
+    projected: dict[str, np.ndarray] = {}
+    for name, values in arrays.items():
+        if name == "bessel_argument_grid":
+            projected[name] = values
+        elif values.ndim >= 2 and values.shape[-2:] == (
+            source_mode_count,
+            source_mode_count,
+        ):
+            projected[name] = np.take(
+                np.take(values, mode_indices, axis=-2), mode_indices, axis=-1
+            )
+        elif values.ndim >= 1 and values.shape[-1] == source_mode_count:
+            projected[name] = np.take(values, mode_indices, axis=-1)
+        else:
+            raise ValueError(f"unsupported coefficient shape for {name}: {values.shape}")
+    coefficient_arrays = [
+        values for name, values in projected.items() if name != "bessel_argument_grid"
+    ]
+    if not coefficient_arrays or any(
+        not np.all(np.isfinite(values)) for values in coefficient_arrays
+    ):
+        raise ValueError("projected table must contain finite coefficients")
+    output_metadata = {
+        **metadata,
+        "resolution": [maximum_hermite_order, maximum_laguerre_order],
+        "derivation": "principal_hermite_laguerre_galerkin_projection",
+        "parent_resolution": [source_hermite, source_laguerre],
+        "parent_checksum": float(metadata["checksum"]),
+        "checksum": float(
+            sum(float(np.sum(values)) for values in coefficient_arrays)
+        ),
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out,
+        metadata=np.asarray(json.dumps(output_metadata, sort_keys=True)),
+        **projected,
+    )
+    return output_metadata
+
+
 def _load_complete_equal_species_coulomb_table(
     coulomb_table: Path,
 ) -> tuple[dict[str, Any], np.ndarray, np.ndarray]:
@@ -6576,6 +6663,17 @@ def build_collision_original_sugama_table_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_project_table_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Project a finite-wavelength table onto a nested moment basis."
+    )
+    parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--maximum-hermite-order", type=int, required=True)
+    parser.add_argument("--maximum-laguerre-order", type=int, required=True)
+    return parser
+
+
 def build_collision_improved_sugama_table_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Build an equal-species improved-Sugama table from Coulomb tests."
@@ -7241,6 +7339,18 @@ def main_collision_original_sugama_table(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_project_table(argv: list[str] | None = None) -> int:
+    args = build_collision_project_table_parser().parse_args(argv)
+    metadata = project_equal_species_finite_wavelength_table(
+        args.source,
+        args.out,
+        maximum_hermite_order=int(args.maximum_hermite_order),
+        maximum_laguerre_order=int(args.maximum_laguerre_order),
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main_collision_improved_sugama_table(argv: list[str] | None = None) -> int:
     args = build_collision_improved_sugama_table_parser().parse_args(argv)
     metadata = write_equal_species_finite_wavelength_improved_sugama_table(
@@ -7325,6 +7435,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-combine-wavelength-tables",
                 "collision-original-sugama-table",
                 "collision-improved-sugama-table",
+                "collision-project-table",
                 "collision-shared-angular-table",
                 "collision-contraction-gate",
             ),
@@ -7358,6 +7469,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_original_sugama_table(rest)
     if command == "collision-improved-sugama-table":
         return main_collision_improved_sugama_table(rest)
+    if command == "collision-project-table":
+        return main_collision_project_table(rest)
     if command == "collision-shared-angular-table":
         return main_collision_shared_angular_table(rest)
     if command == "collision-contraction-gate":

@@ -3721,6 +3721,65 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
         )
 
 
+def test_finite_wavelength_table_projection_preserves_nested_modes(
+    tmp_path: Path,
+) -> None:
+    """A lower hierarchy is the exact principal Hermite-Laguerre subspace."""
+
+    mod = load_artifact_tool("build_linear_validation_artifacts")
+    source = tmp_path / "source.npz"
+    out = tmp_path / "projected.npz"
+    grid = np.asarray([0.1, 0.2])
+    source_shape = (3 + 1) * (2 + 1)
+    matrix = np.arange(2 * source_shape**2, dtype=float).reshape(
+        2, source_shape, source_shape
+    )
+    vector = np.arange(2 * source_shape, dtype=float).reshape(2, source_shape)
+    metadata = {
+        "schema_version": 1,
+        "claim_scope": "equal_species_diagonal_finite_wavelength_coulomb_table",
+        "resolution": [3, 2],
+        "bessel_argument_grid": grid.tolist(),
+        "checksum": float(3 * np.sum(matrix) + 10 * np.sum(vector)),
+    }
+    np.savez_compressed(
+        source,
+        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
+        bessel_argument_grid=grid,
+        test_table=matrix,
+        field_table=2 * matrix,
+        test_phi1=vector,
+        field_phi1=2 * vector,
+        test_phi2=3 * vector,
+        field_phi2=4 * vector,
+    )
+    report = mod.project_equal_species_finite_wavelength_table(
+        source,
+        out,
+        maximum_hermite_order=2,
+        maximum_laguerre_order=1,
+    )
+    indices = np.asarray([0, 1, 3, 4, 6, 7])
+    assert report["resolution"] == [2, 1]
+    assert report["parent_resolution"] == [3, 2]
+    assert report["parent_checksum"] == metadata["checksum"]
+    assert report["derivation"] == "principal_hermite_laguerre_galerkin_projection"
+    with np.load(out) as archive:
+        np.testing.assert_array_equal(
+            archive["test_table"], matrix[:, indices][:, :, indices]
+        )
+        np.testing.assert_array_equal(archive["test_phi1"], vector[:, indices])
+        replay = json.loads(str(archive["metadata"]))
+        assert replay["checksum"] == report["checksum"]
+    with pytest.raises(ValueError, match="must not exceed"):
+        mod.project_equal_species_finite_wavelength_table(
+            source,
+            tmp_path / "expanded.npz",
+            maximum_hermite_order=4,
+            maximum_laguerre_order=1,
+        )
+
+
 def test_collision_table_contraction_gate_checks_coefficients_and_speed(
     tmp_path: Path,
 ) -> None:
