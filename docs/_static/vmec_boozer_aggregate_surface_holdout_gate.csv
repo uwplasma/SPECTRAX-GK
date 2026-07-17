@@ -1,3 +1,0 @@
-split,surface_indices,passed,initial_objective,final_objective,relative_reduction,n_samples
-training,18,True,0.8045688627302391,0.8035154074860971,0.0013093413043194415,2
-heldout_surface,19,True,0.720557454021897,0.7202268145538959,0.0004588662099816408,2

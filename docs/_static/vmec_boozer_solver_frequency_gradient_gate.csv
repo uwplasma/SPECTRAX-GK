@@ -1,3 +1,0 @@
-objective,parameter,implicit,finite_difference,abs_error,rel_error,passed
-gamma,Rcos_mid_surface_m1,0.0,0.0,0.0,0.0,True
-omega,Rcos_mid_surface_m1,5022.395135437662,4997.941489648106,24.453645789556504,0.004892743510544424,True

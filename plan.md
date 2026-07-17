@@ -176,11 +176,11 @@ and compact scalar/array reference hashes remain before destructive core moves.
 Exit: source <=120 files/68,000 lines, tools <=45 files, docs static <=20 MB,
 all frozen gates pass.
 
-Progress: **35%**. Synthetic QA evidence, generated research/optimization
+Progress: **40%**. Synthetic QA evidence, generated research/optimization
 status builders, the nonlinear release finalizer, the external-VMEC launch
-planner, one duplicate roadmap, and 24 dashboard/runbook assets are gone. The
-remaining 90-file tool layer and 1,568-file static evidence tree are the main
-blockers.
+planner, one duplicate roadmap, and 205 duplicate dashboard/runbook/encoding
+assets are gone. The remaining 90-file tool layer and 1,387-file static evidence
+tree are the main blockers.
 
 ### Phase 2 - Build the Shallow Scientific Core
 
@@ -376,9 +376,10 @@ commands move here from the README.
 Exit: README/docs links and image dimensions pass automated gates, all examples
 run, and every displayed value is regenerated from a tracked compact manifest.
 
-Progress: **9%**. The duplicate roadmap, generated status sections, and external
-holdout runbook are gone, and the warning-as-error Sphinx build passes; page and
-static-asset counts still exceed the final budgets.
+Progress: **12%**. The duplicate roadmap, generated status sections, external
+holdout runbook, and 181 unreferenced PDF/CSV copies are gone. The warning-as-
+error Sphinx build passes, but page and static-asset counts still exceed the
+final budgets.
 
 ### Phase 6 - Atomic Rename to GKX
 
@@ -478,6 +479,10 @@ Use large coherent commits, each independently green:
   790-line external-VMEC launch planner, eight duplicate renderings, and 828
   ownership-only test lines; retained all converged holdout and matched-audit
   evidence; passed 232 focused tests and all release/docs checks.
+- 2026-07-17 static-encoding tranche: removed 59 unreferenced PDFs and 122
+  redundant CSV copies only where a JSON sidecar remained; retained all cited
+  PDFs, data-only CSV files, final PNG/SVG figures, and compact JSON evidence;
+  passed 366 artifact/release tests, validation manifests, and Sphinx ``-W``.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -488,15 +493,15 @@ Use large coherent commits, each independently green:
 | Lane | Completion |
 | --- | ---: |
 | Frozen 1.7 contract | 70% |
-| Deletion/repository trim | 35% |
+| Deletion/repository trim | 40% |
 | Scientific-core simplification | 25% |
 | Test/benchmark/command simplification | 10% |
 | QA linear/QL/nonlinear optimization | 15% |
-| README/docs rebuild | 9% |
+| README/docs rebuild | 12% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **21%**. The next implementation tranche remains
+Weighted overall completion: **22%**. The next implementation tranche remains
 Phase 0 plus Phase 1: add compact promoted scalar/array hashes and refresh a
 bounded representative performance subset, then classify and delete the next
 superseded campaign/figure family before moving scientific-core files.

@@ -1,3 +1,0 @@
-state_parameter,vmec_expected,vmec_completed,vmec_normal,nonlinear_configs_prepared,nonlinear_manifest,mapping_condition_number,mapping_relative_residual
-Rsin_mid_surface_m1,3,3,3,9,tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1/nonlinear_campaign/gradient_campaign_manifest.json,1.0175602609935996,2.2711134634690797e-16
-Zcos_mid_surface_m1,3,3,3,9,tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1/nonlinear_campaign/gradient_campaign_manifest.json,1.0175602609935996,5.204170427930421e-18

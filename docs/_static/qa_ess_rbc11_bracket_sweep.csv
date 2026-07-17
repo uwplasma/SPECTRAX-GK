@@ -1,3 +1,0 @@
-label,path,parameter_name,delta_parameter,passed,central_gradient,response_fraction,fd_asymmetry_rel,gradient_uncertainty_rel,paired_gradient_uncertainty_rel,paired_same_sign_fraction,repeated_bracket_stable
-rbc_1_1:delta=0.005019,docs/_static/qa_ess_rbc11_rel5_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json,rbc_1_1,0.005019025170715541,False,-191.2303874346187,0.1177175188295207,0.8967394893830681,0.4022549849200881,,,False
-rbc_1_1:delta=0.00803,docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json,rbc_1_1,0.00803044027314,False,-98.70583851422431,0.09923000947114798,1.8946500665295756,0.5065121189058193,,,False

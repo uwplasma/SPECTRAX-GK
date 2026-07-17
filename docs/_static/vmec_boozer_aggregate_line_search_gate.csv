@@ -1,2 +1,0 @@
-step,delta,objective,central_derivative,curvature_ratio,accepted,candidate_delta,candidate_objective
-0,0.0,1.0292810942308668,79309.20402218877,0.0028446089424795707,True,-1e-08,1.0284882765018737
