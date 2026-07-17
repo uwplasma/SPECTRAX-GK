@@ -377,6 +377,16 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Rejected the first P24/J10 shard launch configuration before its
+  600-second bounds expired. Five independent shard executables each started a
+  six-worker copy of the same wavelength-independent speed precompute; after
+  five minutes none had entered wavelength assembly and host available memory
+  fell to about 2.9 GiB. All processes were terminated and no partial artifact
+  was accepted. The shard equations and low-order recombination gate remain
+  valid, but production orchestration must precompute the speed coefficients
+  once in a parent and fork the five harmonic writers from that shared
+  copy-on-write state. Repeating five independent precomputes is prohibited.
+
 - 2026-07-16: Added resumable angular-harmonic generation for the exact
   finite-wavelength Coulomb table. Both equations (3.48)--(3.49) and equation
   (3.50) accept a validated sorted subset of ``m``; only ``m=0`` owns the
