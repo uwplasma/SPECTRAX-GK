@@ -936,6 +936,28 @@ Existing complete shards can also be recombined without regeneration using::
      --shard finite_b_zonal_P24_J10_diagonal_m4.npz \
      --out finite_b_zonal_P24_J10_diagonal.npz
 
+At P24/J10, even one angular harmonic evaluated at two wavelengths exceeded
+the 600-second campaign bound. The bounded production checkpoint is therefore
+one ``(B,m)`` equation block. Generate each block with a single
+``--bessel-argument``, ``--angular-order m``, and
+``--wavelength-worker-count 1``; combine the five harmonics at each wavelength
+with ``collision-combine-angular-shards``. Finally concatenate the complete
+single-wavelength tables without recomputing coefficients::
+
+   python tools/artifacts/build_linear_validation_artifacts.py \
+     collision-combine-wavelength-tables \
+     --table finite_b_zonal_P24_J10_B012.npz \
+     --table finite_b_zonal_P24_J10_B016.npz \
+     --table finite_b_zonal_P24_J10_B024.npz \
+     --table finite_b_zonal_P24_J10_B032.npz \
+     --out finite_b_zonal_P24_J10_diagonal.npz
+
+Both combiners verify complete angular ownership, matching equation and
+resolution metadata, finite arrays, and a strictly ordered nonoverlapping
+wavelength grid. This 20-block layout is exact additive checkpointing of the
+published equations; it neither changes the collision model nor weakens the
+P24/J10 acceptance criteria.
+
 The combiner rejects missing/duplicate harmonics, metadata mismatches, and
 non-finite arrays. A unit-level equation gate verifies that the ordered sum of
 single-harmonic matrices and polarization vectors reproduces the monolithic

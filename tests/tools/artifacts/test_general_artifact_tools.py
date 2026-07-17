@@ -3487,6 +3487,52 @@ def test_equal_species_finite_wavelength_table_is_runtime_ready(
             (shard_paths[0],), tmp_path / "incomplete.npz"
         )
 
+    wavelength_tables = []
+    for wavelength_index, bessel_argument in enumerate((0.1, 0.2)):
+        point_shards = []
+        for angular_order in (0, 1):
+            point_shard = tmp_path / f"point_{wavelength_index}_m{angular_order}.npz"
+            mod.write_equal_species_finite_wavelength_coulomb_table(
+                point_shard,
+                bessel_arguments=(bessel_argument,),
+                maximum_hermite_order=1,
+                maximum_laguerre_order=1,
+                maximum_angular_bessel_order=1,
+                maximum_bessel_laguerre_order=1,
+                included_angular_orders=(angular_order,),
+                digits=24,
+            )
+            point_shards.append(point_shard)
+        point_table = tmp_path / f"point_{wavelength_index}.npz"
+        mod.combine_equal_species_finite_wavelength_angular_shards(
+            tuple(point_shards), point_table
+        )
+        wavelength_tables.append(point_table)
+    wavelength_combined = tmp_path / "wavelength_combined.npz"
+    mod.combine_equal_species_finite_wavelength_tables(
+        tuple(reversed(wavelength_tables)), wavelength_combined
+    )
+    with np.load(out) as serial, np.load(wavelength_combined) as combined:
+        np.testing.assert_array_equal(
+            combined["bessel_argument_grid"], serial["bessel_argument_grid"]
+        )
+        for name in (
+            "test_table",
+            "field_table",
+            "test_phi1",
+            "field_phi1",
+            "test_phi2",
+            "field_phi2",
+        ):
+            np.testing.assert_allclose(
+                combined[name], serial[name], rtol=5.0e-15, atol=1.0e-14
+            )
+    with pytest.raises(ValueError, match="strictly increasing"):
+        mod.combine_equal_species_finite_wavelength_tables(
+            (wavelength_tables[0], wavelength_tables[0]),
+            tmp_path / "duplicate_wavelength.npz",
+        )
+
     shared_path = tmp_path / "diagonal_table_shared.npz"
     shared_metadata = mod.write_shared_precompute_angular_coulomb_table(
         shared_path,

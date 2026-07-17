@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Replaced the last unbounded P24/J10 table unit with exact
+  two-level checkpointing. A direct ``m=4`` attempt across two wavelengths,
+  using all 30 office workers split 15 per wavelength, produced no complete
+  archive inside 600 seconds. The generator now permits one wavelength only
+  for a declared single-angular-harmonic shard. Five such ``(B,m)`` blocks are
+  summed into a complete one-wavelength table, and a second fail-closed
+  combiner concatenates complete tables onto the ordered four-point Bessel
+  grid. The low-order regression reconstructs the monolithic table through
+  both levels to roundoff and rejects overlapping grids. P24 production is now
+  20 independently restartable equation blocks; no acceptance tolerance or
+  collision equation changed.
+
 - 2026-07-16: Closed the production-topology identity gate for resumable
   angular tables. The first P12/J5 continuation reused ``m=1,3,4``, assigned
   15 workers each to pending ``m=0,2``, and completed in 91 seconds. Against a

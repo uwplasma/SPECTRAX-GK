@@ -3533,8 +3533,11 @@ def write_equal_species_finite_wavelength_coulomb_table(
     import mpmath as mp
 
     grid = np.asarray(bessel_arguments, dtype=float)
-    if grid.ndim != 1 or grid.size < 2:
-        raise ValueError("bessel_arguments must contain at least two points")
+    minimum_grid_size = 1 if included_angular_orders is not None else 2
+    if grid.ndim != 1 or grid.size < minimum_grid_size:
+        raise ValueError(
+            f"bessel_arguments must contain at least {minimum_grid_size} point(s)"
+        )
     if np.any(~np.isfinite(grid)) or np.any(grid < 0.0) or np.any(np.diff(grid) <= 0.0):
         raise ValueError(
             "bessel_arguments must be finite, nonnegative, and strictly increasing"
@@ -3781,6 +3784,93 @@ def combine_equal_species_finite_wavelength_angular_shards(
         out,
         metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
         bessel_argument_grid=np.asarray(first["bessel_argument_grid"], dtype=float),
+        **dict(zip(array_names, combined, strict=True)),
+    )
+    return metadata
+
+
+def combine_equal_species_finite_wavelength_tables(
+    table_paths: tuple[Path, ...],
+    out: Path,
+) -> dict[str, Any]:
+    """Concatenate complete angular tables on a strictly ordered B grid."""
+
+    if len(table_paths) < 2:
+        raise ValueError("at least two wavelength tables are required")
+    array_names = (
+        "test_table",
+        "field_table",
+        "test_phi1",
+        "field_phi1",
+        "test_phi2",
+        "field_phi2",
+    )
+    records = []
+    for path in table_paths:
+        with np.load(path) as archive:
+            metadata = json.loads(str(archive["metadata"]))
+            grid = np.asarray(archive["bessel_argument_grid"], dtype=float)
+            arrays = tuple(np.asarray(archive[name]) for name in array_names)
+        if grid.ndim != 1 or grid.size == 0:
+            raise ValueError(
+                "wavelength table grid must be one-dimensional and nonempty"
+            )
+        if np.any(~np.isfinite(grid)) or np.any(np.diff(grid) <= 0.0):
+            raise ValueError("each wavelength table grid must be strictly increasing")
+        if metadata.get("bessel_argument_grid") != grid.tolist():
+            raise ValueError("wavelength table grid metadata mismatch")
+        if any(array.shape[0] != grid.size for array in arrays):
+            raise ValueError("wavelength table array length does not match its grid")
+        records.append((metadata, grid, arrays))
+    first = records[0][0]
+    identity_fields = (
+        "resolution",
+        "maximum_angular_bessel_order",
+        "included_angular_orders",
+        "maximum_bessel_laguerre_order",
+        "precision_decimal_digits",
+        "laguerre_convention",
+        "source",
+    )
+    reference_shapes = tuple(array.shape[1:] for array in records[0][2])
+    for metadata, _grid, arrays in records:
+        if any(metadata[field] != first[field] for field in identity_fields):
+            raise ValueError("wavelength table metadata mismatch")
+        if metadata["included_angular_orders"] != list(
+            range(int(metadata["maximum_angular_bessel_order"]) + 1)
+        ):
+            raise ValueError("wavelength tables must contain complete angular coverage")
+        if any(not np.all(np.isfinite(array)) for array in arrays):
+            raise ValueError("wavelength table contains non-finite values")
+        if tuple(array.shape[1:] for array in arrays) != reference_shapes:
+            raise ValueError("wavelength table array shape mismatch")
+    order = sorted(
+        range(len(records)),
+        key=lambda index: float(records[index][1][0]),
+    )
+    grid = np.concatenate([records[index][1] for index in order])
+    if np.any(np.diff(grid) <= 0.0):
+        raise ValueError("combined Bessel-argument grid must be strictly increasing")
+    combined = tuple(
+        np.concatenate([records[index][2][array_index] for index in order], axis=0)
+        for array_index in range(len(array_names))
+    )
+    metadata = {
+        **{field: first[field] for field in identity_fields},
+        "schema_version": 1,
+        "claim_scope": "equal_species_diagonal_finite_wavelength_coulomb_table",
+        "bessel_argument_grid": grid.tolist(),
+        "float64_final_contraction": True,
+        "wavelength_table_checksums": [
+            records[index][0]["checksum"] for index in order
+        ],
+        "checksum": float(sum(float(np.sum(array)) for array in combined)),
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out,
+        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
+        bessel_argument_grid=grid,
         **dict(zip(array_names, combined, strict=True)),
     )
     return metadata
@@ -6071,6 +6161,15 @@ def build_collision_combine_angular_shards_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_collision_combine_wavelength_tables_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Combine complete angular tables on an ordered wavelength grid."
+    )
+    parser.add_argument("--table", action="append", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    return parser
+
+
 def build_collision_shared_angular_table_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate and combine angular shards from one shared speed cache."
@@ -6706,6 +6805,15 @@ def main_collision_combine_angular_shards(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main_collision_combine_wavelength_tables(argv: list[str] | None = None) -> int:
+    args = build_collision_combine_wavelength_tables_parser().parse_args(argv)
+    metadata = combine_equal_species_finite_wavelength_tables(
+        tuple(args.table), args.out
+    )
+    print(json.dumps(metadata, indent=2, sort_keys=True))
+    return 0
+
+
 def main_collision_shared_angular_table(argv: list[str] | None = None) -> int:
     args = build_collision_shared_angular_table_parser().parse_args(argv)
     metadata = write_shared_precompute_angular_coulomb_table(
@@ -6774,6 +6882,7 @@ def main(argv: list[str] | None = None) -> int:
                 "collision-endpoint",
                 "collision-diagonal-table",
                 "collision-combine-angular-shards",
+                "collision-combine-wavelength-tables",
                 "collision-shared-angular-table",
                 "collision-contraction-gate",
             ),
@@ -6801,6 +6910,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_collision_diagonal_table(rest)
     if command == "collision-combine-angular-shards":
         return main_collision_combine_angular_shards(rest)
+    if command == "collision-combine-wavelength-tables":
+        return main_collision_combine_wavelength_tables(rest)
     if command == "collision-shared-angular-table":
         return main_collision_shared_angular_table(rest)
     if command == "collision-contraction-gate":
