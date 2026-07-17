@@ -377,6 +377,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Factored the Bessel/Laguerre projection shared across spherical,
+  radial, and Hermite indices on the gated float64 archive path. The exact
+  multiprecision oracle is unchanged. P10/J4 coefficient differences stay
+  below ``9.2e-16`` absolute and ``1.8e-16`` relative L2. On the decisive
+  matched P18/J7, B=0.16 office endpoint, the checksum remains exactly
+  ``-604.0543094294402``; matrix time falls from 141.18 to 138.91 seconds and
+  total time from 235.12 to 229.70 seconds. The optimization is retained but
+  explicitly insufficient by itself for P24/J10.
+
 - 2026-07-16: Rejected a finer mixed-moment process partition after a matched
   P18/J7, B=0.16 office benchmark. Although the checksum remained exactly
   ``-604.0543094294402``, distributing individual spherical moments across 16

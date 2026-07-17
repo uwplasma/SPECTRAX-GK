@@ -888,6 +888,12 @@ polarization vectors, and reduces eight-worker generation from 86.79 to 40.67
 seconds (2.13x). The matched P12/J5 :math:`k_x=0.1` physical trace is bitwise
 identical in every saved real and imaginary sample. This optimization affects
 offline table generation, not the collision equations or runtime operator.
+The same archive path factors the Bessel/Laguerre projection that is independent
+of spherical and Hermite indices. A matched P18/J7, :math:`B=0.16` endpoint
+retains checksum ``-604.0543094294402`` while reducing matrix assembly from
+141.18 to 138.91 seconds and total generation from 235.12 to 229.70 seconds.
+This measured but modest reduction is retained; it does not by itself make the
+P24/J10 campaign tractable.
 
 For high-order tables, independent Bessel-argument points can also be assigned
 to separate processes. The default ``--wavelength-worker-count 1`` retains the
