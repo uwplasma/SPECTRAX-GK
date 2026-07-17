@@ -1481,7 +1481,6 @@ def _gyroaveraged_polarization_coefficient_mp(
     laguerre_product: Callable[[int, int, int, int, int], Any] | None = None,
     bessel_kernels: tuple[Any, ...] | None = None,
     radial_kernels: tuple[Any, ...] | None = None,
-    polarization_projection: Callable[[int], Any] | None = None,
     float64_final_contraction: bool = False,
 ) -> Any:
     b = mp.mpf(bessel_argument)
@@ -1530,11 +1529,6 @@ def _gyroaveraged_polarization_coefficient_mp(
             auxiliary_laguerre_order,
         )
         if transform == 0:
-            continue
-        if polarization_projection is not None:
-            total += float(transform) * float(
-                polarization_projection(auxiliary_laguerre_order)
-            )
             continue
         for bessel_laguerre_order in range(maximum_bessel_laguerre_order + 1):
             leading = (
@@ -2814,9 +2808,6 @@ def coulomb_polarization_vectors(
         polarization_radial_cache = assembly_cache.setdefault(
             "polarization_radial_kernel", {}
         )
-        polarization_projection_cache = assembly_cache.setdefault(
-            "polarization_projection", {}
-        )
         product_cache = assembly_cache.setdefault("laguerre_product", {})
         inverse_cache = assembly_cache.setdefault("inverse_transform", {})
         coefficient_functions = (
@@ -2882,46 +2873,6 @@ def coulomb_polarization_vectors(
                         radial_count,
                         mp,
                     )
-
-                def projected_polarization(auxiliary_laguerre_order: int) -> float:
-                    projection_key = (
-                        float(wavelength),
-                        m,
-                        auxiliary_laguerre_order,
-                    )
-                    if projection_key not in polarization_projection_cache:
-                        projection = 0.0
-                        for bessel_laguerre_order in range(
-                            maximum_bessel_laguerre_order + 1
-                        ):
-                            leading = float(
-                                polarization_bessel_cache[bessel_key][
-                                    bessel_laguerre_order
-                                ]
-                            )
-                            for output_order in range(
-                                bessel_laguerre_order + m + auxiliary_laguerre_order + 1
-                            ):
-                                projection += (
-                                    leading
-                                    * float(
-                                        polarization_radial_cache[radial_key][
-                                            output_order
-                                        ]
-                                    )
-                                    * float(
-                                        inverse_product(
-                                            m,
-                                            bessel_laguerre_order,
-                                            auxiliary_laguerre_order,
-                                            output_order,
-                                            m,
-                                        )
-                                    )
-                                )
-                        polarization_projection_cache[projection_key] = projection
-                    return float(polarization_projection_cache[projection_key])
-
                 polarization_cache[key] = _gyroaveraged_polarization_coefficient_mp(
                     p,
                     j,
@@ -2933,9 +2884,6 @@ def coulomb_polarization_vectors(
                     laguerre_product=inverse_product,
                     bessel_kernels=polarization_bessel_cache[bessel_key],
                     radial_kernels=polarization_radial_cache[radial_key],
-                    polarization_projection=(
-                        projected_polarization if float64_final_contraction else None
-                    ),
                     float64_final_contraction=float64_final_contraction,
                 )
             return polarization_cache[key]
