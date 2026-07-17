@@ -832,6 +832,7 @@ Run one table through the common zonal integrator with::
      simulate-collisional-zonal-finite-b \
      --config benchmarks/collisional_zonal_response.toml \
      --table-archive finite_b_zonal_P24_J10_diagonal.npz \
+     --model coulomb \
      --kx 0.1 --out-csv finite_b_zonal_kx010.csv \
      --dt 0.005 --maximum-normalized-time 30 --sample-stride 10 --nz 32
 
@@ -839,7 +840,25 @@ The runner rejects the wrong archive scope or Laguerre convention, malformed
 resolution metadata, non-finite coefficients, and tables that do not cover the
 actual field-line Bessel-argument range. The same command with ``--kx 0.2``
 produces the second Figure-13 wavelength once the table and moment hierarchy
-have passed their nested convergence gates.
+have passed their nested convergence gates. Select ``--model original_sugama``
+or ``--model improved_sugama`` with the corresponding converted archive; a
+model/archive mismatch fails before integration.
+
+For the :math:`k_x=0.2` run, add ``--out-sections-csv sections.csv``. The
+integrator advances first to :math:`t\nu=5`, retains that state, and then
+continues to :math:`t\nu=30`, so producing Figure 14 does not repeat the first
+part of the trace. At the outboard midplane it reconstructs the modulus of the
+gyrocenter perturbation from Frei, Ernst & Ricci (2022), equation (52),
+
+.. math::
+
+   g_i/F_{Mi} = \sum_{p,j} N_i^{pj}
+      \frac{H_p(s_{\parallel i})}{\sqrt{2^p p!}}L_j(x_i),
+
+with the runtime's equivalent signed-Laguerre convention. The output contains
+the cuts in :math:`s_{\parallel i}` at :math:`x_i=0` and in :math:`x_i` at
+:math:`s_{\parallel i}=0`, each normalized to its maximum. A density-only
+manufactured state independently recovers the two Maxwellian cuts.
 
 The tracked lower-hierarchy interpolation pilot is
 ``docs/_static/collision_finite_wavelength_zonal_b_grid_pilot.json``. At
@@ -1144,7 +1163,8 @@ all three radial wavenumbers, normalized-time coverage through 30, the
 :math:`(24,10)` hierarchy, the Xiao residual at :math:`k_x=0.05`, OS/IS/Coulomb
 late-time ordering at finite wavelength, improved-Sugama proximity to Coulomb
 over :math:`t\nu\leq10`, and both velocity sections. Missing data fail closed;
-the tool does not infer a pass from a lower-resolution or collisionless trace.
+the tool does not infer a pass from a lower-resolution or collisionless trace,
+and the command exits nonzero while any gate remains open.
 
 Nonlinear full-distribution Landau collisions are a separate future model, not
 an extension flag on this linearized matrix. A dense precomputed collision

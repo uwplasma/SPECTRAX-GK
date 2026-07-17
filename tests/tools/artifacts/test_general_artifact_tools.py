@@ -2865,8 +2865,10 @@ def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
     np.testing.assert_allclose(
         finite_improved_field[0],
         convention * improved_field,
-        rtol=3.0e-15,
-        atol=8.0e-16,
+        # Independent quadrature and closed-form routes differ by a few
+        # binary64 ulps across SciPy/BLAS builds; this remains a roundoff gate.
+        rtol=1.0e-13,
+        atol=3.0e-15,
     )
 
 
@@ -4851,6 +4853,77 @@ def test_finite_wavelength_collisional_zonal_table_runs_through_integrator(
         out_json=tmp_path / "grid_gate.json",
     )
     assert gate["gate_passed"] is True
+
+
+def test_finite_wavelength_sugama_table_runs_through_integrator(
+    tmp_path: Path,
+) -> None:
+    """The finite-B Sugama archive uses the same physical zonal integrator."""
+
+    linear_tool = load_artifact_tool("build_linear_validation_artifacts")
+    zonal_tool = load_artifact_tool("build_zonal_flow_artifacts")
+    coulomb = tmp_path / "finite_b_coulomb.npz"
+    original = tmp_path / "finite_b_original_sugama.npz"
+    linear_tool.write_equal_species_finite_wavelength_coulomb_table(
+        coulomb,
+        bessel_arguments=(0.10, 0.20),
+        maximum_hermite_order=2,
+        maximum_laguerre_order=1,
+        maximum_angular_bessel_order=1,
+        maximum_bessel_laguerre_order=1,
+        digits=24,
+    )
+    linear_tool.write_equal_species_finite_wavelength_original_sugama_table(
+        coulomb, original
+    )
+    report = zonal_tool.run_finite_wavelength_collisional_zonal_trace(
+        config=ROOT / "benchmarks" / "collisional_zonal_response.toml",
+        table_archive=original,
+        model="original_sugama",
+        kx=0.1,
+        out_csv=tmp_path / "original_trace.csv",
+        dt=0.005,
+        maximum_normalized_time=0.001,
+        sample_stride=1,
+        nz=8,
+    )
+
+    assert report["model"] == "original_sugama"
+    assert report["finite"] is True
+
+
+def test_collisional_zonal_velocity_sections_reconstruct_maxwellian() -> None:
+    """Equation (52) reduces to Maxwellian cuts for the density moment."""
+
+    mod = load_artifact_tool("build_zonal_flow_artifacts")
+    problem = mod._build_collisional_zonal_problem(
+        config=ROOT / "benchmarks" / "collisional_zonal_response.toml",
+        kx=0.2,
+        nz=8,
+        n_laguerre=2,
+        n_hermite=3,
+    )
+    state = np.zeros((2, 3, 1, 3, 8), dtype=complex)
+    state[0, 0, 0, problem.kx_index, :] = 2.0 + 3.0j
+    rows = mod.reconstruct_collisional_zonal_velocity_sections(
+        state,
+        problem,
+        model="coulomb",
+        normalized_time=5.0,
+        point_count=41,
+    )
+
+    for coordinate, expected in (
+        ("parallel", lambda x: np.exp(-(x**2))),
+        ("perpendicular", lambda x: np.exp(-x)),
+    ):
+        section = [row for row in rows if row["coordinate"] == coordinate]
+        abscissa = np.asarray([row["abscissa"] for row in section])
+        values = np.asarray([row["normalized_distribution"] for row in section])
+        reference = expected(abscissa)
+        reference /= np.max(reference)
+        np.testing.assert_allclose(values, reference, rtol=2.0e-13, atol=2.0e-13)
+        assert section[0]["t_nu"] == pytest.approx(5.0)
 
 
 def test_tracked_finite_wavelength_zonal_b_grid_pilot_passes() -> None:

@@ -458,8 +458,11 @@ def _integrate_collisional_zonal_trace(
     dt: float,
     maximum_normalized_time: float,
     sample_stride: int,
-) -> tuple[np.ndarray, np.ndarray, float, int]:
-    """Advance one collision model and return the common normalized observable."""
+    snapshot_normalized_time: float | None = None,
+) -> tuple[
+    np.ndarray, np.ndarray, float, int, np.ndarray | None, float | None
+]:
+    """Advance one collision model and optionally retain one physical state."""
 
     import time
 
@@ -479,21 +482,59 @@ def _integrate_collisional_zonal_trace(
     initial_response = jnp.sum(initial_phi[0, problem.kx_index] * problem.volume_weight)
     requested_steps = int(np.ceil(maximum_normalized_time / collision_frequency / dt))
     steps = int(np.ceil(requested_steps / sample_stride) * sample_stride)
+    if snapshot_normalized_time is not None:
+        if not 0.0 < snapshot_normalized_time < maximum_normalized_time:
+            raise ValueError(
+                "snapshot_normalized_time must lie inside the integration window"
+            )
+        requested_snapshot_steps = int(
+            np.ceil(snapshot_normalized_time / collision_frequency / dt)
+        )
+        snapshot_steps = int(
+            np.ceil(requested_snapshot_steps / sample_stride) * sample_stride
+        )
+        if snapshot_steps >= steps:
+            raise ValueError(
+                "snapshot must precede the final sampled integration state"
+            )
+    else:
+        snapshot_steps = 0
+
+    def integrate_segment(initial: Any, segment_steps: int):
+        return integrate_linear(
+            initial,
+            problem.grid,
+            problem.geometry,
+            problem.parameters,
+            dt=dt,
+            steps=segment_steps,
+            method="rk2",
+            cache=problem.cache,
+            terms=terms,
+            sample_stride=sample_stride,
+            show_progress=True,
+            collision_operator=collision_operator,
+        )
+
     started = time.perf_counter()
-    _final, field_history = integrate_linear(
-        problem.initial,
-        problem.grid,
-        problem.geometry,
-        problem.parameters,
-        dt=dt,
-        steps=steps,
-        method="rk2",
-        terms=terms,
-        sample_stride=sample_stride,
-        show_progress=True,
-        collision_operator=collision_operator,
-    )
-    jax.block_until_ready(field_history)
+    if snapshot_steps:
+        snapshot_state, first_history = integrate_segment(
+            problem.initial, snapshot_steps
+        )
+        remaining_steps = steps - snapshot_steps
+        if remaining_steps:
+            final_state, second_history = integrate_segment(
+                snapshot_state, remaining_steps
+            )
+            field_history = jnp.concatenate((first_history, second_history), axis=0)
+        else:
+            final_state, field_history = snapshot_state, first_history
+        snapshot_time = snapshot_steps * dt * collision_frequency
+    else:
+        final_state, field_history = integrate_segment(problem.initial, steps)
+        snapshot_state = None
+        snapshot_time = None
+    jax.block_until_ready((final_state, field_history))
     elapsed_seconds = time.perf_counter() - started
     history = np.asarray(field_history)
     response = np.einsum(
@@ -506,7 +547,14 @@ def _integrate_collisional_zonal_trace(
     normalized_time = np.concatenate(([0.0], times)) * collision_frequency
     if not np.all(np.isfinite(response)):
         raise RuntimeError("collisional-zonal trace contains non-finite values")
-    return normalized_time, response, elapsed_seconds, steps
+    return (
+        normalized_time,
+        response,
+        elapsed_seconds,
+        steps,
+        None if snapshot_state is None else np.asarray(snapshot_state),
+        snapshot_time,
+    )
 
 
 def run_drift_kinetic_collisional_zonal_trace(
@@ -601,7 +649,7 @@ def run_drift_kinetic_collisional_zonal_trace(
         apar=0.0,
         bpar=0.0,
     )
-    normalized_time, response, elapsed_seconds, steps = (
+    normalized_time, response, elapsed_seconds, steps, _snapshot, _snapshot_time = (
         _integrate_collisional_zonal_trace(
             problem,
             collision_operator=operator,
@@ -674,29 +722,121 @@ def run_drift_kinetic_collisional_zonal_trace(
     return report
 
 
+def reconstruct_collisional_zonal_velocity_sections(
+    state: np.ndarray,
+    problem: _CollisionalZonalProblem,
+    *,
+    model: str,
+    normalized_time: float,
+    point_count: int = 81,
+) -> list[dict[str, object]]:
+    r"""Reconstruct the Figure-14 ``|g_i|`` cuts from gyro-moments.
+
+    Frei, Ernst & Ricci (2022), equation (52), expands the perturbed
+    distribution in physicists' Hermite and ordinary Laguerre polynomials.
+    SPECTRAX-GK stores the equivalent signed-Laguerre coefficients. The two
+    cuts are evaluated at the outboard midplane and normalized independently,
+    as required by the paper-facing comparison gate.
+    """
+
+    from scipy.special import eval_hermite, eval_laguerre, gammaln
+
+    values = np.asarray(state)
+    if values.ndim == 6:
+        if values.shape[0] != 1:
+            raise ValueError("collisional zonal sections require one species")
+        values = values[0]
+    if values.ndim != 5:
+        raise ValueError("zonal state must have Laguerre, Hermite, ky, kx, z axes")
+    if point_count < 21:
+        raise ValueError("velocity sections require at least 21 points")
+    z_index = int(np.argmin(np.abs(np.asarray(problem.grid.z, dtype=float))))
+    moments = values[:, :, 0, problem.kx_index, z_index]
+    if not np.all(np.isfinite(moments)) or not np.any(np.abs(moments) > 0.0):
+        raise ValueError("velocity-section moments must be finite and nonzero")
+
+    n_laguerre, n_hermite = moments.shape
+    hermite_order = np.arange(n_hermite)
+    hermite_norm = np.exp(
+        0.5 * (hermite_order * np.log(2.0) + gammaln(hermite_order + 1.0))
+    )
+    laguerre_sign = (-1.0) ** np.arange(n_laguerre)
+    parallel = np.linspace(-3.0, 3.0, point_count)
+    perpendicular = np.linspace(0.0, 4.0, point_count)
+    hermite_parallel = np.asarray(
+        [eval_hermite(order, parallel) for order in hermite_order]
+    ) / hermite_norm[:, None]
+    hermite_zero = np.asarray(
+        [eval_hermite(order, 0.0) for order in hermite_order]
+    ) / hermite_norm
+    laguerre_zero = laguerre_sign * np.asarray(
+        [eval_laguerre(order, 0.0) for order in range(n_laguerre)]
+    )
+    laguerre_perpendicular = laguerre_sign[:, None] * np.asarray(
+        [eval_laguerre(order, perpendicular) for order in range(n_laguerre)]
+    )
+    distributions = {
+        "parallel": np.exp(-(parallel**2))
+        * np.abs(np.einsum("lm,ma,l->a", moments, hermite_parallel, laguerre_zero)),
+        "perpendicular": np.exp(-perpendicular)
+        * np.abs(
+            np.einsum(
+                "lm,m,la->a", moments, hermite_zero, laguerre_perpendicular
+            )
+        ),
+    }
+    coordinates = {"parallel": parallel, "perpendicular": perpendicular}
+    rows: list[dict[str, object]] = []
+    for coordinate, distribution in distributions.items():
+        maximum = float(np.max(distribution))
+        if not np.isfinite(maximum) or maximum <= 0.0:
+            raise ValueError("velocity section cannot be normalized")
+        for abscissa, value in zip(
+            coordinates[coordinate], distribution / maximum, strict=True
+        ):
+            rows.append(
+                {
+                    "model": model,
+                    "coordinate": coordinate,
+                    "kx": float(np.asarray(problem.grid.kx)[problem.kx_index]),
+                    "t_nu": float(normalized_time),
+                    "abscissa": float(abscissa),
+                    "normalized_distribution": float(value),
+                    "p_max": n_hermite - 1,
+                    "j_max": n_laguerre - 1,
+                }
+            )
+    return rows
+
+
 def run_finite_wavelength_collisional_zonal_trace(
     *,
     config: Path,
     table_archive: Path,
+    model: str = "coulomb",
     kx: float,
     out_csv: Path,
+    out_sections_csv: Path | None = None,
     dt: float = 0.005,
     maximum_normalized_time: float = 30.0,
     sample_stride: int = 10,
     nz: int = 32,
 ) -> dict[str, object]:
-    """Run one equal-species finite-wavelength Coulomb zonal trace."""
+    """Run one equal-species finite-wavelength Coulomb or Sugama trace."""
 
     import jax
     import jax.numpy as jnp
 
     from spectraxgk.operators.linear import (
         EqualSpeciesFiniteWavelengthCoulombOperator,
+        EqualSpeciesFiniteWavelengthSugamaOperator,
     )
     from spectraxgk.operators.linear.params import LinearTerms
 
     if kx not in {0.1, 0.2}:
         raise ValueError("finite-wavelength zonal kx must be 0.1 or 0.2")
+    if model not in {"coulomb", "original_sugama", "improved_sugama"}:
+        raise ValueError("unknown finite-wavelength collision model")
     if not np.isfinite(dt) or dt <= 0.0:
         raise ValueError("dt must be finite and > 0")
     if not np.isfinite(maximum_normalized_time) or maximum_normalized_time <= 0.0:
@@ -704,35 +844,37 @@ def run_finite_wavelength_collisional_zonal_trace(
     if sample_stride < 1 or nz < 8:
         raise ValueError("sample_stride must be >= 1 and nz must be >= 8")
 
-    required = {
-        "metadata",
-        "bessel_argument_grid",
-        "test_table",
-        "field_table",
+    if out_sections_csv is not None and (
+        kx != 0.2 or maximum_normalized_time <= 5.0
+    ):
+        raise ValueError(
+            "velocity sections require kx=0.2 and maximum normalized time > 5"
+        )
+    matrix_names = ("test_table", "field_table")
+    polarization_names = (
         "test_phi1",
         "field_phi1",
         "test_phi2",
         "field_phi2",
-    }
+    )
+    array_names = matrix_names + (polarization_names if model == "coulomb" else ())
+    required = {"metadata", "bessel_argument_grid", *array_names}
     with np.load(table_archive) as archive:
         if missing := required - set(archive.files):
             raise ValueError(f"collision table archive is missing {sorted(missing)}")
         metadata = json.loads(str(archive["metadata"]))
         grid = np.asarray(archive["bessel_argument_grid"], dtype=float)
-        arrays = tuple(
-            np.asarray(archive[name], dtype=float)
-            for name in (
-                "test_table",
-                "field_table",
-                "test_phi1",
-                "field_phi1",
-                "test_phi2",
-                "field_phi2",
-            )
-        )
-    if metadata.get("claim_scope") != (
-        "equal_species_diagonal_finite_wavelength_coulomb_table"
-    ):
+        arrays = tuple(np.asarray(archive[name], dtype=float) for name in array_names)
+    expected_scope = {
+        "coulomb": "equal_species_diagonal_finite_wavelength_coulomb_table",
+        "original_sugama": (
+            "equal_species_diagonal_finite_wavelength_original_sugama_table"
+        ),
+        "improved_sugama": (
+            "equal_species_diagonal_finite_wavelength_improved_sugama_table"
+        ),
+    }[model]
+    if metadata.get("claim_scope") != expected_scope:
         raise ValueError("collision table archive has the wrong claim scope")
     if metadata.get("laguerre_convention") != "runtime_signed":
         raise ValueError("collision table archive must use runtime Laguerre signs")
@@ -741,15 +883,18 @@ def run_finite_wavelength_collisional_zonal_trace(
         raise ValueError("collision table archive has invalid resolution metadata")
     maximum_hermite, maximum_laguerre = map(int, resolution)
     mode_count = (maximum_hermite + 1) * (maximum_laguerre + 1)
-    expected_shapes = (
+    expected_shapes: tuple[tuple[int, ...], ...] = (
         (grid.size, mode_count, mode_count),
         (grid.size, mode_count, mode_count),
-        (grid.size, mode_count),
-        (grid.size, mode_count),
-        (grid.size, mode_count),
-        (grid.size, mode_count),
     )
-    if grid.ndim != 1 or grid.size < 2 or not np.all(np.diff(grid) > 0.0):
+    if model == "coulomb":
+        expected_shapes += ((grid.size, mode_count),) * 4
+    if (
+        grid.ndim != 1
+        or grid.size < 2
+        or not np.all(np.isfinite(grid))
+        or not np.all(np.diff(grid) > 0.0)
+    ):
         raise ValueError("collision table Bessel grid must be strictly increasing")
     if any(
         array.shape != shape
@@ -784,7 +929,12 @@ def run_finite_wavelength_collisional_zonal_trace(
         raise ValueError(
             "collision table does not cover the field-line Bessel-argument range"
         )
-    operator = EqualSpeciesFiniteWavelengthCoulombOperator(
+    operator_type = (
+        EqualSpeciesFiniteWavelengthCoulombOperator
+        if model == "coulomb"
+        else EqualSpeciesFiniteWavelengthSugamaOperator
+    )
+    operator = operator_type(
         jnp.asarray(grid),
         jnp.asarray([[collision_frequency]]),
         *(jnp.asarray(array) for array in arrays),
@@ -802,7 +952,14 @@ def run_finite_wavelength_collisional_zonal_trace(
         apar=0.0,
         bpar=0.0,
     )
-    normalized_time, response, elapsed_seconds, steps = (
+    (
+        normalized_time,
+        response,
+        elapsed_seconds,
+        steps,
+        snapshot_state,
+        snapshot_time,
+    ) = (
         _integrate_collisional_zonal_trace(
             problem,
             collision_operator=operator,
@@ -811,6 +968,7 @@ def run_finite_wavelength_collisional_zonal_trace(
             dt=dt,
             maximum_normalized_time=maximum_normalized_time,
             sample_stride=sample_stride,
+            snapshot_normalized_time=(5.0 if out_sections_csv is not None else None),
         )
     )
     out_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -831,7 +989,7 @@ def run_finite_wavelength_collisional_zonal_trace(
         for time_value, value in zip(normalized_time, response, strict=True):
             writer.writerow(
                 {
-                    "model": "coulomb",
+                    "model": model,
                     "kx": kx,
                     "t_nu": float(time_value),
                     "response": float(value.real),
@@ -840,10 +998,24 @@ def run_finite_wavelength_collisional_zonal_trace(
                     "j_max": maximum_laguerre,
                 }
             )
+    if out_sections_csv is not None:
+        if snapshot_state is None or snapshot_time is None:
+            raise RuntimeError("requested velocity-section state was not captured")
+        section_rows = reconstruct_collisional_zonal_velocity_sections(
+            snapshot_state,
+            problem,
+            model=model,
+            normalized_time=snapshot_time,
+        )
+        out_sections_csv.parent.mkdir(parents=True, exist_ok=True)
+        with out_sections_csv.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=tuple(section_rows[0]))
+            writer.writeheader()
+            writer.writerows(section_rows)
     report: dict[str, object] = {
         "schema_version": 1,
         "claim_scope": "finite_wavelength_collisional_zonal_trace",
-        "model": "coulomb",
+        "model": model,
         "config": _repo_relative(config),
         "table_archive": str(table_archive),
         "collision_frequency": collision_frequency,
@@ -857,6 +1029,10 @@ def run_finite_wavelength_collisional_zonal_trace(
         "bessel_argument_grid": grid.tolist(),
         "fieldline_bessel_argument_range": list(local_range),
         "elapsed_seconds": elapsed_seconds,
+        "velocity_sections_csv": (
+            None if out_sections_csv is None else str(out_sections_csv)
+        ),
+        "velocity_section_normalized_time": snapshot_time,
         "maximum_imaginary_fraction": float(
             np.max(np.abs(response.imag)) / max(np.max(np.abs(response.real)), 1.0e-300)
         ),
@@ -1364,7 +1540,7 @@ def _main_collisional_zonal(argv: list[str]) -> int:
         "collisional zonal literature gate: "
         f"{'PASS' if summary['gate_passed'] else 'OPEN'}"
     )
-    return 0
+    return 0 if summary["gate_passed"] else 1
 
 
 def _main_simulate_collisional_zonal_dk(argv: list[str]) -> int:
@@ -1400,12 +1576,18 @@ def _main_simulate_collisional_zonal_dk(argv: list[str]) -> int:
 
 def _main_simulate_collisional_zonal_finite_b(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
-        description="Run one finite-wavelength Coulomb zonal trace."
+        description="Run one finite-wavelength Coulomb or Sugama zonal trace."
     )
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--table-archive", type=Path, required=True)
+    parser.add_argument(
+        "--model",
+        choices=("coulomb", "original_sugama", "improved_sugama"),
+        default="coulomb",
+    )
     parser.add_argument("--kx", type=float, choices=(0.1, 0.2), required=True)
     parser.add_argument("--out-csv", type=Path, required=True)
+    parser.add_argument("--out-sections-csv", type=Path)
     parser.add_argument("--dt", type=float, default=0.005)
     parser.add_argument("--maximum-normalized-time", type=float, default=30.0)
     parser.add_argument("--sample-stride", type=int, default=10)
@@ -1414,8 +1596,10 @@ def _main_simulate_collisional_zonal_finite_b(argv: list[str]) -> int:
     report = run_finite_wavelength_collisional_zonal_trace(
         config=args.config,
         table_archive=args.table_archive,
+        model=str(args.model),
         kx=float(args.kx),
         out_csv=args.out_csv,
+        out_sections_csv=args.out_sections_csv,
         dt=float(args.dt),
         maximum_normalized_time=float(args.maximum_normalized_time),
         sample_stride=int(args.sample_stride),

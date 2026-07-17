@@ -377,6 +377,18 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Closed the executable Figure-13/14 runtime path while the exact
+  P24/J10 coefficient campaign continued. The common finite-wavelength zonal
+  runner now validates and advances provenance-matched Coulomb,
+  original-Sugama, and improved-Sugama archives. A segmented integration
+  retains the ``t*nu=5`` state without storing a state history or repeating
+  startup, reconstructs the two outboard-midplane ``|g_i|`` cuts directly from
+  equation (52), and continues to ``t*nu=30``. A density-only manufactured
+  state recovers both Maxwellian cuts, Coulomb and original-Sugama archives run
+  through the physical integrator, and the final literature gate now exits
+  nonzero when incomplete. The remaining blocker is evidence generation, not
+  missing runtime or postprocessing plumbing.
+
 - 2026-07-16: Implemented the finite-wavelength equal-species
   improved-Sugama field correction from Frei, Ernst & Ricci (2022), equations
   (61)--(69). Product Gauss--Hermite/Laguerre projection is guarded by an

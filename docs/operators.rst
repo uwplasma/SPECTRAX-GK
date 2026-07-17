@@ -839,6 +839,11 @@ P24/J10, :math:`K=5` resolution, nested 80/120-node checks over
 :math:`B=0.12,0.16,0.24,0.32` differ by at most :math:`7.1\times10^{-14}`
 relative. These are equation and quadrature gates. The Figure-13/14 zonal
 ordering and velocity-section comparisons remain the physical promotion gate.
+The common finite-wavelength runner now accepts provenance-matched Coulomb,
+original-Sugama, and improved-Sugama archives. For the :math:`k_x=0.2` trace it
+can checkpoint the physical :math:`t\nu=5` state, reconstruct the equation-(52)
+parallel and perpendicular gyrocenter-distribution cuts at the outboard
+midplane, and continue the same integration to :math:`t\nu=30`.
 
 As a separate full-distribution reference utility,
 ``conservative_full_f_dougherty_cross_moments``. For directed collision rates
