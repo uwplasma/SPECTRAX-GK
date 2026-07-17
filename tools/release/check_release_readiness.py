@@ -940,6 +940,65 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
         raise ReleaseReadinessError(
             f"{RELEASE_CONTRACT_ARTIFACT} performance row count is inconsistent"
         )
+    refresh = performance.get("representative_refresh")
+    if not isinstance(refresh, dict) or not isinstance(refresh.get("path"), str):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing performance.representative_refresh"
+        )
+    refresh_path = str(refresh["path"])
+    refresh_payload = _read_json(root / refresh_path)
+    if refresh_payload.get("kind") != "gkx_representative_performance_refresh":
+        raise ReleaseReadinessError(f"{refresh_path} has an invalid kind")
+    workloads = refresh_payload.get("workloads")
+    summary = refresh_payload.get("summary")
+    if (
+        not isinstance(workloads, list)
+        or len(workloads) < 2
+        or not isinstance(summary, dict)
+    ):
+        raise ReleaseReadinessError(
+            f"{refresh_path} must contain at least two workloads and a summary"
+        )
+    cpu_rows = [row.get("cpu") for row in workloads if isinstance(row, dict)]
+    gpu_rows = [row.get("gpu") for row in workloads if isinstance(row, dict)]
+    cpu_admitted = sum(
+        isinstance(row, dict) and row.get("admitted") is True for row in cpu_rows
+    )
+    gpu_admitted = sum(
+        isinstance(row, dict) and row.get("admitted") is True for row in gpu_rows
+    )
+    gpu_blocked = sum(
+        isinstance(row, dict)
+        and row.get("admitted") is False
+        and bool(row.get("blocker"))
+        for row in gpu_rows
+    )
+    observed_refresh = {
+        "correctness_passed": all(
+            isinstance(row, dict)
+            and isinstance(row.get("correctness"), dict)
+            and row["correctness"].get("cpu_finite") is True
+            and row["correctness"].get("gpu_finite") is True
+            for row in workloads
+        ),
+        "cpu_rows_admitted": cpu_admitted,
+        "gpu_rows_admitted": gpu_admitted,
+        "gpu_rows_blocked": gpu_blocked,
+        "performance_claim_updated": bool(summary.get("performance_claim_updated")),
+    }
+    for field, value in observed_refresh.items():
+        if summary.get(field) != value or refresh.get(field) != value:
+            raise ReleaseReadinessError(
+                f"{refresh_path} has inconsistent representative-refresh field {field}"
+            )
+    if cpu_admitted < 2 or not observed_refresh["correctness_passed"]:
+        raise ReleaseReadinessError(
+            f"{refresh_path} does not admit the bounded CPU correctness/performance subset"
+        )
+    if observed_refresh["performance_claim_updated"] and gpu_admitted == 0:
+        raise ReleaseReadinessError(
+            f"{refresh_path} cannot update a performance claim without an admitted GPU row"
+        )
     fingerprint_summary = _frozen_output_fingerprint_summary(root, payload)
     recomputed = _recomputed_active_summary(lanes)
     active_fraction_closed = float(recomputed["active_fraction_closed"])
@@ -962,6 +1021,7 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
                 "status_counts": _status_counts(lanes),
                 "public_api_count": len(exports),
                 "performance_row_count": len(performance_rows),
+                "representative_performance_refresh": observed_refresh,
                 "frozen_output_fingerprint_count": fingerprint_summary["count"],
                 "lanes": lanes,
             }

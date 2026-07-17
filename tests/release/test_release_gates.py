@@ -629,6 +629,14 @@ coverage:
     }
   },
   "performance": {
+    "representative_refresh": {
+      "path": "benchmarks/references/gkx_2_representative_performance_refresh.json",
+      "correctness_passed": true,
+      "cpu_rows_admitted": 2,
+      "gpu_rows_admitted": 0,
+      "gpu_rows_blocked": 2,
+      "performance_claim_updated": false
+    },
     "row_count": 1,
     "rows": [{"case": "test", "backend": "cpu", "status": "success"}]
   },
@@ -666,6 +674,33 @@ coverage:
         ],
     }
     contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    (root / "benchmarks" / "references" / "gkx_2_representative_performance_refresh.json").write_text(
+        json.dumps(
+            {
+                "kind": "gkx_representative_performance_refresh",
+                "summary": {
+                    "correctness_passed": True,
+                    "cpu_rows_admitted": 2,
+                    "gpu_rows_admitted": 0,
+                    "gpu_rows_blocked": 2,
+                    "performance_claim_updated": False,
+                },
+                "workloads": [
+                    {
+                        "case": case,
+                        "correctness": {"cpu_finite": True, "gpu_finite": True},
+                        "cpu": {"admitted": True},
+                        "gpu": {
+                            "admitted": False,
+                            "blocker": "contended test device",
+                        },
+                    }
+                    for case in ("linear", "nonlinear")
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     (root / "docs" / "_static" / "w7x_tem_extension_status.json").write_text(
         """
 {
@@ -732,6 +767,22 @@ def test_release_readiness_rejects_changed_frozen_output(tmp_path: Path) -> None
     with pytest.raises(
         ReleaseReadinessError, match="frozen numerical output fingerprints changed"
     ):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_false_performance_promotion(tmp_path: Path) -> None:
+    _write_release_ready_tree(tmp_path)
+    refresh = (
+        tmp_path
+        / "benchmarks"
+        / "references"
+        / "gkx_2_representative_performance_refresh.json"
+    )
+    payload = json.loads(refresh.read_text(encoding="utf-8"))
+    payload["summary"]["performance_claim_updated"] = True
+    refresh.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ReleaseReadinessError, match="performance_claim_updated"):
         check_release_readiness(tmp_path)
 
 

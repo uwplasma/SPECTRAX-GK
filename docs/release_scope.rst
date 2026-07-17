@@ -561,6 +561,10 @@ Differentiable-geometry state:
 
 Parallelization and performance state:
 
+- The current-branch representative linear/nonlinear refresh admits two local
+  CPU rows and passes CPU/GPU numerical checks. Its office-GPU timing rows are
+  explicitly blocked by measured device contention, so this refresh does not
+  promote a new speed claim.
 - ``docs/_static/independent_ky_scan_scaling_large.json`` and
   ``docs/_static/quasilinear_uq_ensemble_scaling_large.json`` support
   production independent-work parallelization for scans and ensembles.

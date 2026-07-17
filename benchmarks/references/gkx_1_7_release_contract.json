@@ -224,6 +224,15 @@
   },
   "performance": {
     "claim_scope": "tracked historical wall-time and peak-RSS rows; not a cross-machine universal speed claim",
+    "representative_refresh": {
+      "correctness_passed": true,
+      "cpu_rows_admitted": 2,
+      "gpu_rows_admitted": 0,
+      "gpu_rows_blocked": 2,
+      "next_action": "repeat the same commands when one office A4000 is idle",
+      "path": "benchmarks/references/gkx_2_representative_performance_refresh.json",
+      "performance_claim_updated": false
+    },
     "row_count": 30,
     "rows": [
       {

@@ -4,6 +4,16 @@ Performance
 JAX performance model
 ---------------------
 
+Current-branch representative refresh
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The compact refresh in
+``benchmarks/references/gkx_2_representative_performance_refresh.json`` admits
+two bounded local-CPU rows after finite CPU/GPU numerical checks. The matching
+office-GPU timings are retained as rejected provenance because both A4000s were
+already at 100% utilization; they do not update the published speed claim. An
+uncontended rerun is required before replacing the historical GPU panel.
+
 SPECTRAX-GK uses JAX to compile array kernels ahead of time, enabling
 vectorized, accelerator-ready performance while retaining automatic
 differentiation. The linear operator and time integrator are designed to be

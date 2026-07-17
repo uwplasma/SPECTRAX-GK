@@ -155,12 +155,14 @@ or wrapper exists are deleted with that wrapper.
 
 Exit: the wheel and branch reproduce the frozen values before further deletion.
 
-Progress: **85%**. ``gkx_1_7_release_contract.json`` now freezes dependency
+Progress: **95%**. ``gkx_1_7_release_contract.json`` now freezes dependency
 revisions, the 362-name legacy public surface, 30 compact CPU/GPU performance
 records, seven promoted release lanes, and 12 canonical numerical fingerprints
 covering nonlinear cases, KBM branch continuity, collisions, restart, geometry,
-derivatives, and optimization. Fresh representative timings remain before
-destructive core moves.
+derivatives, and optimization. The current-branch refresh also admits two
+bounded CPU rows with CPU/GPU numerical agreement; office GPU timings are
+retained but rejected because both devices were already saturated. One
+uncontended GPU refresh remains before the final release claim update.
 
 ### Phase 1 - Delete Historical Evidence Machinery
 
@@ -507,6 +509,13 @@ Use large coherent commits, each independently green:
   contract. Release readiness now recomputes those numerical hashes while
   allowing text-only provenance changes, and a mutation regression proves that
   altered numerical evidence fails closed.
+- 2026-07-17 representative-performance tranche: refreshed 1,000-step linear
+  and 200-step prepared nonlinear workloads on the current branch. Local CPU
+  warm medians were 7.219 s and 41.444 s; CPU/GPU output differences were
+  5.35e-6 and 4.45e-4, respectively. Both office A4000s were already at 100%
+  utilization, so their timing rows are explicitly blocked and no speed claim
+  changed. Release readiness now recomputes admitted/blocked row counts and
+  rejects false promotion; 97 release tests, Ruff, and Sphinx ``-W`` pass.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -516,7 +525,7 @@ Use large coherent commits, each independently green:
 
 | Lane | Completion |
 | --- | ---: |
-| Frozen 1.7 contract | 85% |
+| Frozen 1.7 contract | 95% |
 | Deletion/repository trim | 48% |
 | Scientific-core simplification | 27% |
 | Test/benchmark/command simplification | 18% |
@@ -525,7 +534,8 @@ Use large coherent commits, each independently green:
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **27%**. The next implementation tranche refreshes
-the bounded representative performance subset, then begins Phase 2 by
-consolidating the case/species/grid owners while the next unreferenced campaign
-and static-evidence families are removed.
+Weighted overall completion: **28%**. The next implementation tranche begins
+Phase 2 by consolidating the case/species/grid owners while the next
+unreferenced campaign and static-evidence families are removed. The uncontended
+GPU refresh is independent of that critical path and will be repeated only when
+an office device is actually idle.
