@@ -2843,9 +2843,7 @@ def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
         )
     )
     np.testing.assert_allclose(finite_test[0], convention * original_test, atol=0.0)
-    np.testing.assert_allclose(
-        finite_field[0], convention * original_field, rtol=3.0e-14, atol=1.2e-14
-    )
+    np.testing.assert_array_equal(finite_field[0], convention * original_field)
     _improved_test, improved_field = (
         mod.improved_sugama_equal_temperature_moment_matrices(
             test, 3, 1, correction_order=1, digits=60
@@ -2862,13 +2860,8 @@ def test_original_sugama_reconstruction_matches_c6_and_invariants() -> None:
             digits=60,
         )
     )
-    np.testing.assert_allclose(
-        finite_improved_field[0],
-        convention * improved_field,
-        # Independent quadrature and closed-form routes differ by a few
-        # binary64 ulps across SciPy/BLAS builds; this remains a roundoff gate.
-        rtol=1.0e-13,
-        atol=6.0e-15,
+    np.testing.assert_array_equal(
+        finite_improved_field[0], convention * improved_field
     )
 
 

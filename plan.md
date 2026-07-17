@@ -61,7 +61,7 @@ Date: 2026-07-16.
 | Test Python files | 95 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
-| Fast release-surface coverage | compile-heavy nonlinear owner retained in bounded node batches; exact x64 coverage passes locally | pass | active pending CI |
+| Fast release-surface coverage | compile-heavy nonlinear owner retained in bounded node batches; exact x64 coverage and all CI shards pass | pass | closed |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
 | Public API facade | compact lazy registry | compact registry | closed |
 | Runtime/plot executable path | implemented and tested | stable | closed |
@@ -214,7 +214,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Production parallelization | 98% | Periodic and linked 2x2 species-Hermite routes cover the complete electrostatic operator; four-device GPU evidence and mixed electromagnetic integration remain hardware/future scope. |
 | Performance/release claims | 100% | Release checks and scoped CPU/GPU artifacts pass; the mixed operator records 3.11x RHS but 0.97x integration, and two-GPU nonlinear sharding records 0.586x, so no unsupported end-to-end or nonlinear multi-GPU speedup is claimed. |
 | Docs/readme release pass | 100% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
-| CI/release hygiene | 99% | The exact MyPy command passes and installed-wheel smoke coverage now guards both executable names, plotting help, and lazy parallel imports. Confirm the latest queued CI run while preserving the bounded 95% package gate. |
+| CI/release hygiene | 100% | The exact MyPy command, installed-wheel smoke coverage, bounded quick/fast/wide coverage shards, strict documentation build, package build, and release-artifact gates pass on the release candidate. |
 
 ## Prioritized Implementation Steps
 
@@ -3823,3 +3823,15 @@ under 5 minutes.
   operator, including collision-term weighting; malformed table rank fails
   closed. This completes end-to-end table routing but deliberately leaves the
   unavailable arbitrary-moment finite-:math:`b` coefficients unpromoted.
+
+- 2026-07-16: Closed the release-candidate portability regression in the
+  finite-wavelength original/improved-Sugama artifact builder. The exact
+  zero-wavelength endpoint now uses the independently verified closed-form
+  drift-kinetic field matrices instead of allowing platform-dependent
+  quadrature roundoff to leak into analytically zero entries; nonzero
+  wavelengths retain nested product quadrature and convergence checks. The
+  focused endpoint gates, all 272 release-artifact tests, Ruff, strict Sphinx,
+  repository-size and release-readiness policy, clean package build, isolated
+  wheel smoke test, and the complete GitHub quick/fast/wide coverage matrix
+  pass at commit ``ee4a1373``. The scoped technical, documentation, and release
+  lanes are therefore closed for the 1.7.0 candidate.
