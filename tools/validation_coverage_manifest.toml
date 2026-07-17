@@ -88,10 +88,10 @@ fast_tests = [
   "tests/unit/core/test_core_contracts.py",
 ]
 artifact_paths = [
-  "tools/differentiable_refactor_manifest.toml",
+  "plan.md",
 ]
 next_tests = [
-  "instantiate contracts from the differentiable refactor manifest rows",
+  "instantiate contracts from the root migration plan acceptance gates",
   "add import-identity tests when the first compatibility facade starts forwarding to split modules",
 ]
 

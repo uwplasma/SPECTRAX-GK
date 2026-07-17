@@ -700,15 +700,11 @@ source module with at least 2,000 non-comment source lines to have a direct
 manifest row, so large modules cannot be hidden under another owner's
 ``owned_modules`` list.
 
-The authoritative target package layout, naming policy, and conflict-resolution
-rules live in :doc:`architecture_refactor_plan`. The executable migration ledger
-is ``tools/differentiable_refactor_manifest.toml``, checked by
-``tools/release/check_package_architecture_manifest.py differentiable-refactor``. See
-:doc:`differentiable_refactor_plan` for differentiability contracts, extension
-points, active manifest rows, and physics/autodiff/parity gates. If this page or
-the manifest conflicts with :doc:`architecture_refactor_plan`, update the
-current-tree documentation or manifest rather than adding another root-level
-prefix module.
+The root ``plan.md`` is the authoritative migration plan. The target package
+layout and naming policy are summarized in :doc:`architecture_refactor_plan`,
+and ``tools/package_architecture_manifest.toml`` enforces topology and aggregate
+line budgets. Differentiability, physics, parity, and performance requirements
+are acceptance gates in the root plan rather than a second migration ledger.
 
 The first behavior-preserving contract modules are ``spectraxgk.core.contracts``
 and ``spectraxgk.core.extension_points``. They introduce typed refactor,

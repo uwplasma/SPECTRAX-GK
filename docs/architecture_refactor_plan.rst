@@ -26,16 +26,11 @@ layout, naming rules, and acceptance gates, but it should be updated whenever
 
 - :doc:`code_structure` documents the current source tree and public facades.
   It should not be read as the target architecture.
-- :doc:`differentiable_refactor_plan` is now a technical appendix for
-  differentiability contracts, completed split inventory, and validation-gate
-  traceability. It does not override this page's target package layout or
-  naming rules.
-- ``tools/differentiable_refactor_manifest.toml`` remains the executable
-  migration ledger for active tranches. When a manifest row conflicts with this
-  page, update the manifest row rather than adding a new root-level module.
+- ``tools/package_architecture_manifest.toml`` enforces current topology and
+  aggregate line budgets while the migration is in progress.
 - ``plan.md`` records priority, current status, recent checkpoints, and the
   current execution order. If this page conflicts with ``plan.md``, update this
-  page or the relevant manifest rather than creating another plan.
+  page or the architecture manifest rather than creating another plan.
 - README and user docs should describe stable user workflows, not internal
   migration scaffolding.
 

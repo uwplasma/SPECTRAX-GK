@@ -478,7 +478,6 @@ spectrax-gk = "spectraxgk.cli:main"
                 "codecov/codecov-action",
                 "tools/release/check_parallel_scaling_artifacts.py",
                 "tools/release/check_package_architecture_manifest.py",
-                "tools/release/check_package_architecture_manifest.py differentiable-refactor",
                 "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
                 "tools/release/check_quasilinear_promotion_guardrails.py",
                 "tools/release/check_vmec_boozer_gates.py differentiability-claim",
@@ -517,7 +516,6 @@ coverage:
         "tools/release/check_repository_size_manifest.py\n"
         "tools/release/check_repository_size_manifest.py release-artifacts\n"
         "tools/release/check_package_architecture_manifest.py\n"
-        "tools/release/check_package_architecture_manifest.py differentiable-refactor\n"
         "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only\n"
         "tools/release/check_parallel_scaling_artifacts.py\n"
         "tools/release/check_quasilinear_promotion_guardrails.py\n"
@@ -1427,10 +1425,6 @@ PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {
 }
 
 
-def _load_differentiable_refactor_tool():
-    return load_release_tool("check_package_architecture_manifest")
-
-
 def _load_performance_manifest_tool():
     return load_release_tool("check_parallel_scaling_artifacts")
 
@@ -1495,6 +1489,27 @@ def _architecture_manifest_with_complexity(
                 "baseline_lines": baseline,
                 "target_lines": target,
                 "reason": "test facade migration",
+            }
+        ],
+    }
+    return data
+
+
+def _architecture_manifest_with_line_budget(
+    *, count_path: str, baseline: int, target: int
+) -> dict[str, object]:
+    data = _architecture_manifest(allowed=[])
+    data["line_budget_policy"] = {
+        "mode": "no_regression_until_target",
+        "description": "test aggregate line budget",
+        "counts": [
+            {
+                "name": "test_python_lines",
+                "path": count_path,
+                "pattern": "*.py",
+                "recursive": True,
+                "baseline": baseline,
+                "target": target,
             }
         ],
     }
@@ -1635,92 +1650,6 @@ def _source_line_count(path: Path) -> int:
     )
 
 
-def test_differentiable_refactor_manifest_is_well_formed() -> None:
-    mod = _load_differentiable_refactor_tool()
-    manifest = mod.load_differentiable_refactor_manifest()
-    summary = mod.validate_differentiable_refactor_manifest(manifest)
-    assert summary["required_package_coverage_percent"] >= 95.0
-    assert manifest["global_acceptance"]["require_adaptive_derivative_policy"] is True
-    assert (
-        "adaptive-branch derivative policy"
-        in manifest["validation_policy"]["autodiff_gate_scope"]
-    )
-    assert summary["n_architecture_layers"] >= 8
-    assert summary["n_phase1_contract_modules"] >= 2
-    assert summary["n_phase1_split_modules"] >= 16
-    assert summary["n_hotspots"] >= 9
-    assert "spectraxgk.core.contracts" in summary["phase1_contract_modules"]
-    assert "spectraxgk.core.extension_points" in summary["phase1_contract_modules"]
-    assert "spectraxgk.diagnostics.growth_rates" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.backend_discovery" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.autodiff_checks" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.numerics" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.flux_tube_contract" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.sensitivity" in summary["phase1_split_modules"]
-    assert "spectraxgk.geometry.booz_xform_bridge" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.geometry.vmec_state_sensitivity" in summary["phase1_split_modules"]
-    )
-    assert "spectraxgk.geometry.vmec_boozer_core" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.geometry.vmec_flux_tube_reports" in summary["phase1_split_modules"]
-    )
-    assert "spectraxgk.geometry.vmec_tensor_mapping" in summary["phase1_split_modules"]
-    assert "spectraxgk.objectives.gradient_gates" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.objectives.vmec_boozer_gradients" in summary["phase1_split_modules"]
-    )
-    assert "spectraxgk.objectives.vmec_boozer_fd" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.objectives.vmec_boozer_line_search"
-        in summary["phase1_split_modules"]
-    )
-    assert "spectraxgk.objectives.vmec_boozer" in summary["phase1_split_modules"]
-    assert "spectraxgk.operators.nonlinear.rhs" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.operators.nonlinear.diagnostic_state"
-        in summary["phase1_split_modules"]
-    )
-    assert "spectraxgk.solvers.nonlinear.explicit" in summary["phase1_split_modules"]
-    assert "spectraxgk.solvers.nonlinear.imex" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.operators.linear.cache_builder" in summary["phase1_split_modules"]
-    )
-    assert "spectraxgk.operators.linear.moments" in summary["phase1_split_modules"]
-    assert "spectraxgk.operators.linear.params" in summary["phase1_split_modules"]
-    assert "spectraxgk.solvers.linear.krylov" in summary["phase1_split_modules"]
-    assert "spectraxgk.solvers.linear.parallel" in summary["phase1_split_modules"]
-    assert "spectraxgk.workflows.cases" in summary["phase1_split_modules"]
-    assert "spectraxgk.artifacts.io" in summary["phase1_split_modules"]
-    assert "spectraxgk.artifacts.linear" in summary["phase1_split_modules"]
-    assert "spectraxgk.artifacts.nonlinear" in summary["phase1_split_modules"]
-    assert (
-        "spectraxgk.artifacts.nonlinear_diagnostics" in summary["phase1_split_modules"]
-    )
-    for module in (
-        "spectraxgk.benchmarks",
-        "spectraxgk.geometry.differentiable",
-        "spectraxgk.operators.nonlinear.parallel",
-        "spectraxgk.nonlinear",
-        "spectraxgk.workflows.runtime.artifacts",
-        "spectraxgk.runtime",
-        "spectraxgk.linear",
-        "spectraxgk.cli",
-    ):
-        assert module in summary["hotspot_modules"]
-
-
-def test_differentiable_refactor_manifest_main_writes_summary_json(
-    tmp_path: Path,
-) -> None:
-    mod = _load_differentiable_refactor_tool()
-    out_json = tmp_path / "summary.json"
-    assert mod.main_differentiable_refactor(["--out-json", str(out_json)]) == 0
-    payload = out_json.read_text(encoding="utf-8")
-    assert "Differentiable architecture refactor plan" in payload
-    assert "spectraxgk.geometry.differentiable" in payload
-
-
 def test_validate_architecture_policy_accepts_manifested_root_facade(tmp_path):
     source_root = tmp_path / "spectraxgk"
     (source_root / "operators").mkdir(parents=True)
@@ -1826,6 +1755,58 @@ def test_validate_architecture_policy_can_require_topology_targets(tmp_path):
     assert summary["topology_targets_met"] is True
 
 
+def test_validate_architecture_policy_tracks_aggregate_line_budget(tmp_path):
+    source_root = tmp_path / "spectraxgk"
+    count_root = tmp_path / "counted"
+    (source_root / "operators").mkdir(parents=True)
+    (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
+    count_root.mkdir()
+    (count_root / "a.py").write_text("a\nb\n", encoding="utf-8")
+    (count_root / "b.py").write_text("c\n", encoding="utf-8")
+
+    summary = validate_architecture_policy(
+        _architecture_manifest_with_line_budget(
+            count_path=str(count_root), baseline=5, target=2
+        ),
+        source_root=source_root,
+        check_paths=False,
+    )
+
+    row = summary["line_budget_counts"][0]
+    assert row["files"] == 2
+    assert row["lines"] == 3
+    assert row["remaining_to_target"] == 1
+    assert summary["line_budget_targets_met"] is False
+
+    with pytest.raises(ValueError, match="line-budget target not met"):
+        validate_architecture_policy(
+            _architecture_manifest_with_line_budget(
+                count_path=str(count_root), baseline=5, target=2
+            ),
+            source_root=source_root,
+            check_paths=False,
+            require_line_targets=True,
+        )
+
+
+def test_validate_architecture_policy_rejects_line_budget_regression(tmp_path):
+    source_root = tmp_path / "spectraxgk"
+    count_root = tmp_path / "counted"
+    (source_root / "operators").mkdir(parents=True)
+    (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
+    count_root.mkdir()
+    (count_root / "a.py").write_text("a\nb\nc\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="line count regressed"):
+        validate_architecture_policy(
+            _architecture_manifest_with_line_budget(
+                count_path=str(count_root), baseline=2, target=1
+            ),
+            source_root=source_root,
+            check_paths=False,
+        )
+
+
 def test_validate_architecture_policy_tracks_complexity_exceptions(tmp_path):
     source_root = tmp_path / "spectraxgk"
     (source_root / "operators").mkdir(parents=True)
@@ -1903,10 +1884,11 @@ def test_package_architecture_inventory_classifies_repository_areas() -> None:
     )
 
     assert role == "promoted library code"
-    assert action == "keep-and-consolidate"
+    assert action == "merge-to-2.0-domain"
+    assert "target=gkx.model" in notes
     assert tool_role == "artifact builder"
     assert tool_action == "keep-or-merge"
-    assert summary["keep-and-consolidate"] == {"files": 1, "bytes": 12}
+    assert summary["merge-to-2.0-domain"] == {"files": 1, "bytes": 12}
     assert summary["keep-or-merge"] == {"files": 1, "bytes": 8}
 
 

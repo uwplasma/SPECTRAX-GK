@@ -1,7 +1,7 @@
 [metadata]
 schema_version = 1
 title = "Package architecture policy"
-layout_authority = "docs/architecture_refactor_plan.rst"
+layout_authority = "plan.md"
 status = "active"
 
 [root_prefix_policy]
@@ -36,9 +36,16 @@ required_domain_packages = [
   "spectraxgk.workflows.runtime",
 ]
 required_docs = [
-  "docs/architecture_refactor_plan.rst",
-  "docs/code_structure.rst",
-  "docs/differentiable_refactor_plan.rst",
+  "plan.md",
+]
+target_domain_packages = [
+  "gkx.model",
+  "gkx.geometry",
+  "gkx.numerics",
+  "gkx.solve",
+  "gkx.diagnostics",
+  "gkx.optimize",
+  "gkx.io",
 ]
 
 [topology_policy]
@@ -50,8 +57,8 @@ name = "installable_source_python_files"
 path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
-baseline = 223
-target = 223
+baseline = 220
+target = 70
 
 [[topology_policy.counts]]
 name = "test_python_files"
@@ -59,7 +66,7 @@ path = "tests"
 pattern = "*.py"
 recursive = true
 baseline = 95
-target = 95
+target = 45
 
 [[topology_policy.counts]]
 name = "tool_python_files"
@@ -67,7 +74,15 @@ path = "tools"
 pattern = "*.py"
 recursive = true
 baseline = 95
-target = 95
+target = 0
+
+[[topology_policy.counts]]
+name = "developer_script_python_files"
+path = "scripts"
+pattern = "*.py"
+recursive = true
+baseline = 15
+target = 15
 
 
 [[topology_policy.counts]]
@@ -100,3 +115,39 @@ public_facades = [
   "runtime.py",
 ]
 exceptions = []
+
+[line_budget_policy]
+mode = "no_regression_until_target"
+description = "Track real code deletion rather than file reshuffling."
+
+[[line_budget_policy.counts]]
+name = "installable_source_python_lines"
+path = "src/spectraxgk"
+pattern = "*.py"
+recursive = true
+baseline = 87847
+target = 50000
+
+[[line_budget_policy.counts]]
+name = "test_python_lines"
+path = "tests"
+pattern = "*.py"
+recursive = true
+baseline = 96202
+target = 60000
+
+[[line_budget_policy.counts]]
+name = "tool_python_lines"
+path = "tools"
+pattern = "*.py"
+recursive = true
+baseline = 97346
+target = 0
+
+[[line_budget_policy.counts]]
+name = "developer_script_python_lines"
+path = "scripts"
+pattern = "*.py"
+recursive = true
+baseline = 25000
+target = 25000
