@@ -377,6 +377,16 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-16: Rejected the analogous eager Bessel/radial projection cache for
+  equation (3.50) after its required high-order benchmark. P10/J4 appeared to
+  improve by 4%, with vector differences below ``1.4e-17`` absolute, but the
+  matched P18/J7 endpoint spent almost the full 300-second bound in
+  polarization instead of the accepted 54.02 seconds and wrote no archive.
+  Eager auxiliary-order projections erase the structural-transform sparsity
+  that avoids most high-order products. The provisional commit was reverted;
+  any future polarization optimization must construct products only after a
+  nonzero transform is observed.
+
 - 2026-07-16: Factored the Bessel/Laguerre projection shared across spherical,
   radial, and Hermite indices on the gated float64 archive path. The exact
   multiprecision oracle is unchanged. P10/J4 coefficient differences stay
