@@ -3,16 +3,13 @@ src/spectraxgk/__init__.py,src/spectraxgk,promoted library code,merge-to-2.0-dom
 src/spectraxgk/_version.py,src/spectraxgk,promoted library code,merge-to-2.0-domain,.py,22,1,target=gkx public API or nearest domain; preserve promoted physics and JAX contracts
 src/spectraxgk/api/__init__.py,src/spectraxgk/api,promoted library code,merge-to-2.0-domain,.py,42029,393,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/__init__.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,821,29,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/benchmark_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,11914,398,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/diagnostic_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,5715,168,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/io.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,3096,110,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/linear.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,12794,412,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/nonlinear.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,5603,162,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/nonlinear_diagnostics.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,10265,320,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/nonlinear_netcdf.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,35335,1069,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/plotting.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,3293,81,target=gkx.io; preserve promoted physics and JAX contracts
+src/spectraxgk/artifacts/plotting.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,27181,812,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/restart.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,5393,154,target=gkx.io; preserve promoted physics and JAX contracts
-src/spectraxgk/artifacts/runtime_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,9275,240,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/spectral_layout.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,10137,310,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/zonal_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,7745,248,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/benchmarking/__init__.py,src/spectraxgk/benchmarking,promoted library code,merge-to-2.0-domain,.py,71,2,target=benchmarks; preserve promoted physics and JAX contracts
@@ -424,5 +421,5 @@ tools/release_artifact_manifest.toml,tools/release_artifact_manifest.toml,tool s
 tools/repository_size_manifest.toml,tools/repository_size_manifest.toml,tool support file,keep-or-review,.toml,343,7,non-python tool asset
 tools/restart_gate_lanes.office.toml,tools/restart_gate_lanes.office.toml,tool support file,keep-or-review,.toml,1041,31,non-python tool asset
 tools/runtime_memory_manifest.toml,tools/runtime_memory_manifest.toml,tool support file,keep-or-review,.toml,18058,241,non-python tool asset
-tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,146166,3164,non-python tool asset
+tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,143503,3082,non-python tool asset
 tools/vmec_roundtrip_lanes.office.toml,tools/vmec_roundtrip_lanes.office.toml,tool support file,keep-or-review,.toml,438,9,non-python tool asset

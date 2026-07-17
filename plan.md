@@ -456,14 +456,14 @@ Release `v2.0.0` only when:
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
 | 1. Delete unpromoted/duplicate code | 15% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 3% | <=70 source files / <=50k lines with parity |
+| 2. Consolidate package core and API | 6% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
 | 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
 | 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
 | 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
 
-Overall completion: 9%.
+Overall completion: 10%.
 
 ## Evidence Sources
 
@@ -523,3 +523,11 @@ Overall completion: 9%.
   runtime/restart artifact tests, 95 release tests, Ruff, architecture policy,
   coverage ownership, and strict docs pass. Source is now 214 files/86,410
   lines.
+- 2026-07-17: Replaced the lazy plotting registry plus three implementation
+  modules with one concrete 812-line publication-plotting owner. Benchmark,
+  growth/eigenfunction, saved-runtime, and style functions retain their public
+  names; zonal fitting remains in its physics-specific module and is imported
+  only when requested to avoid a circular dependency. The change removes three
+  source files and 75 net lines. All 26 plotting/example tests, focused release
+  gates, documented API identity checks, Ruff, architecture policy, and strict
+  docs pass. Source is now 211 files/86,335 lines.
