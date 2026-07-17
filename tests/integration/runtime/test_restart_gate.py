@@ -12,7 +12,7 @@ from spectraxgk.config import (
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.artifacts.restart import (
+from spectraxgk.artifacts.io import (
     load_netcdf_restart_state,
     write_netcdf_restart_state,
 )

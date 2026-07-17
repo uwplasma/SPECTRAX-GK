@@ -645,11 +645,8 @@ Completed extractions:
   spectra, geometry, restart, and final-field helpers, nonlinear diagnostic
   reload helpers, and restart-append schema coverage:
   ``workflows/runtime/artifacts.py``, ``artifacts/io.py``,
-  ``artifacts/linear.py``,
-  ``artifacts/nonlinear.py``,
-  ``artifacts/spectral_layout.py``,
-  ``artifacts/nonlinear_netcdf.py``,
-  ``artifacts/nonlinear_diagnostics.py``. The old root
+  ``artifacts/spectral_layout.py``, and ``artifacts/nonlinear_netcdf.py``.
+  The old root
   ``runtime_artifact_*`` helper modules were removed; import implementation
   helpers from ``spectraxgk.artifacts`` instead.
 

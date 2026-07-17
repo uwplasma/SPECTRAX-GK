@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.artifacts.restart import write_netcdf_restart_state
+from spectraxgk.artifacts.io import write_netcdf_restart_state
 from spectraxgk.geometry import load_imported_geometry_netcdf
 from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
 from spectraxgk.runtime import RuntimeNonlinearResult, run_runtime_nonlinear

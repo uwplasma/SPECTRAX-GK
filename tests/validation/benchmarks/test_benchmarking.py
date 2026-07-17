@@ -18,7 +18,7 @@ from spectraxgk.diagnostics.modes import (
     phase_align_eigenfunction,
     save_eigenfunction_reference_bundle,
 )
-from spectraxgk.artifacts.nonlinear_diagnostics import load_diagnostic_time_series
+from spectraxgk.artifacts.io import load_diagnostic_time_series
 from spectraxgk.artifacts.spectral_layout import infer_triple_dealiased_ny
 from spectraxgk.diagnostics.analysis import (
     BranchContinuationMetrics,

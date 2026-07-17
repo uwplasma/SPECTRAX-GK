@@ -8,7 +8,7 @@ import numpy as np
 from netCDF4 import Dataset
 import pytest
 
-from spectraxgk.artifacts.restart import (
+from spectraxgk.artifacts.io import (
     _expand_netcdf_restart_state_full_ky,
     _expand_netcdf_restart_state_to_full_positive_ky,
     _expand_positive_ky_to_full,

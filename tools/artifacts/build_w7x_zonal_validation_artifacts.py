@@ -29,7 +29,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.artifacts.nonlinear_diagnostics import (  # noqa: E402
+from spectraxgk.artifacts.io import (  # noqa: E402
     load_diagnostic_time_series,
 )
 from spectraxgk.core.grid import SpectralGrid, build_spectral_grid  # noqa: E402

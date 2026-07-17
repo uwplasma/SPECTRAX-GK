@@ -455,15 +455,15 @@ Release `v2.0.0` only when:
 | Phase | Completion | Next proof |
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
-| 1. Delete unpromoted/duplicate code | 15% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 6% | <=70 source files / <=50k lines with parity |
+| 1. Delete unpromoted/duplicate code | 18% | <=120 source and <=45 tool files |
+| 2. Consolidate package core and API | 10% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
 | 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
 | 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
 | 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
 
-Overall completion: 10%.
+Overall completion: 11%.
 
 ## Evidence Sources
 
@@ -531,3 +531,11 @@ Overall completion: 10%.
   source files and 75 net lines. All 26 plotting/example tests, focused release
   gates, documented API identity checks, Ruff, architecture policy, and strict
   docs pass. Source is now 211 files/86,335 lines.
+- 2026-07-17: Consolidated linear, quasilinear, nonlinear-table, restart, and
+  nonlinear-diagnostic artifact serialization into one runtime I/O owner.
+  Deleted four format-fragment modules, removed 236 net source lines, retained
+  the separate coherent nonlinear NetCDF schema and spectral-layout owners,
+  and migrated every internal, test, campaign, and documentation import. All
+  43 focused artifact/restart tests, focused release gates, public artifact API
+  identity checks, Ruff, architecture/coverage manifests, and warning-free
+  strict documentation pass. Source is now 207 files/86,265 lines.

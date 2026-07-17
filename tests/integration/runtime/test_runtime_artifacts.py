@@ -18,9 +18,9 @@ import spectraxgk.artifacts.spectral_layout as spectral_layout
 import spectraxgk.artifacts.nonlinear_netcdf as nonlinear_netcdf
 import spectraxgk.artifacts as artifact_package
 import spectraxgk.artifacts.io as artifact_io
-import spectraxgk.artifacts.linear as artifact_linear
-import spectraxgk.artifacts.nonlinear as artifact_nonlinear
-import spectraxgk.artifacts.nonlinear_diagnostics as artifact_nonlinear_diag
+import spectraxgk.artifacts.io as artifact_linear
+import spectraxgk.artifacts.io as artifact_nonlinear
+import spectraxgk.artifacts.io as artifact_nonlinear_diag
 from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.workflows.runtime.artifacts import (
     _ensure_parent,

@@ -121,6 +121,12 @@ baseline_lines = 1069
 target_lines = 1000
 reason = "One NetCDF schema owner keeps dimensions, geometry, diagnostics, restart, and final-field variables consistent; reduce helper repetition without splitting the schema again."
 
+[[complexity_policy.exceptions]]
+path = "artifacts/io.py"
+baseline_lines = 1088
+target_lines = 1000
+reason = "One runtime I/O owner keeps summaries, tables, restart packing, and diagnostic reload consistent; reduce repeated serializers without restoring format-specific modules."
+
 [line_budget_policy]
 mode = "no_regression_until_target"
 description = "Track real code deletion rather than file reshuffling."

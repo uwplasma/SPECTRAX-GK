@@ -110,7 +110,6 @@ owned_modules = [
   "spectraxgk.solvers.time.explicit_cfl",
   "spectraxgk.solvers.time.explicit_steps",
   "spectraxgk.workflows.runtime.toml",
-  "spectraxgk.artifacts.restart",
   "spectraxgk.solvers.time.runners",
   "spectraxgk.workflows.runtime.config",
   "spectraxgk.workflows.runtime.diagnostic_arrays",
@@ -1691,7 +1690,7 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.workflows.runtime.artifacts"
 path = "src/spectraxgk/workflows/runtime/artifacts.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+owner_lane = "runtime orchestration of artifact serialization"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -1718,14 +1717,14 @@ artifact_paths = [
   "docs/_static/runtime_memory_benchmark.png",
 ]
 next_tests = [
-  "split serialization schema from writer implementation",
-  "add backward-compatibility tests for reading shipped artifacts",
+  "add compatibility tests for reading the current shipped artifact schema",
+  "keep orchestration free of format-specific serialization policy",
 ]
 
 [[modules]]
 module = "spectraxgk.artifacts.__init__"
 path = "src/spectraxgk/artifacts/__init__.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+owner_lane = "linear, nonlinear, restart, and diagnostic artifact IO"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
@@ -1740,6 +1739,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/integration/runtime/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_restart_gate.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -1768,9 +1768,12 @@ numerics_contracts = [
   "CSV writers preserve column order and finite numeric arrays used by plotting reload tests",
   "series flattening preserves scalar time traces and averages higher-rank diagnostic channels only along non-time axes",
   "finite-value checks cover optional arrays without forcing diagnostics-free runs to materialize missing data",
+  "restart packing and diagnostic reload preserve dealiased spectral dimensions and complex phase",
 ]
 fast_tests = [
   "tests/integration/runtime/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_restart.py",
+  "tests/integration/runtime/test_restart_gate.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -1780,68 +1783,6 @@ next_tests = [
   "add backward-compatible reload tests for older linear summary and quasilinear spectrum bundles",
   "add a direct malformed-shape flattening test for multi-channel diagnostic CSV output",
   "add direct finite-value rejection tests for future field containers",
-]
-
-[[modules]]
-module = "spectraxgk.artifacts.linear"
-path = "src/spectraxgk/artifacts/linear.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "runtime examples for linear scans, quasilinear spectra, and plotting from saved output",
-  "publication panel scripts and docs artifact refresh workflow",
-]
-physics_contracts = [
-  "linear artifact summaries preserve fitted growth rates, frequencies, eigenfunction metadata, and selected mode indices",
-  "quasilinear spectra preserve mode ky, kperp, species weights, and saturated flux channels used by screening figures",
-]
-numerics_contracts = [
-  "complex linear signals are serialized as real, imaginary, and absolute-value columns in deterministic order",
-  "ky-scan and quasilinear-spectrum rows preserve solver ordering for serial and parallel scan comparisons",
-]
-fast_tests = [
-  "tests/integration/runtime/test_runtime_artifacts.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_readme_panel.png",
-  "docs/_static/quasilinear_runtime_parallel_gate.png",
-]
-next_tests = [
-  "add a plot reload regression for a saved linear eigenfunction bundle",
-  "add a quasilinear-spectrum roundtrip test with missing optional saturation fields",
-]
-
-[[modules]]
-module = "spectraxgk.artifacts.nonlinear"
-path = "src/spectraxgk/artifacts/nonlinear.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "runtime examples for nonlinear CSV/JSON output and plotting from saved output",
-  "publication panel scripts and docs artifact refresh workflow",
-]
-physics_contracts = [
-  "nonlinear summaries preserve selected kx/ky, sample counts, energies, and late-time transport channels",
-  "species-resolved heat, particle, and turbulent-heating channels are serialized without changing solver reductions",
-]
-numerics_contracts = [
-  "higher-rank diagnostic channels flatten deterministically for CSV table output",
-  "scalar phi2-only nonlinear results still emit finite JSON summaries when diagnostics are disabled",
-]
-fast_tests = [
-  "tests/integration/runtime/test_runtime_artifacts.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_readme_panel.png",
-  "docs/_static/runtime_memory_benchmark.png",
-]
-next_tests = [
-  "add plot reload regression for saved nonlinear CSV diagnostics",
-  "add malformed species-channel shape rejection tests before publication artifact regeneration",
 ]
 
 [[modules]]
@@ -1903,37 +1844,6 @@ artifact_paths = [
 next_tests = [
   "add an end-to-end NetCDF reload-to-plot regression for a shipped nonlinear fixture",
   "add multi-species finite-beta NetCDF schema tests before publication artifact freeze",
-]
-
-[[modules]]
-module = "spectraxgk.artifacts.nonlinear_diagnostics"
-path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "nonlinear NetCDF diagnostic reload used by restart append and comparison artifacts",
-  "publication panel scripts and docs artifact refresh workflow",
-]
-physics_contracts = [
-  "loaded nonlinear diagnostics preserve species-resolved heat, particle, turbulent-heating, and resolved spectral traces",
-  "restart-append diagnostics drop transient monitored-mode traces that are not persisted on disk",
-]
-numerics_contracts = [
-  "real/imag NetCDF variables reload as complex arrays before comparison metrics are computed",
-  "missing optional turbulent-heating channels are filled with finite zero traces rather than NaNs",
-]
-fast_tests = [
-  "tests/integration/runtime/test_runtime_artifacts.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_readme_panel.png",
-  "docs/_static/runtime_memory_benchmark.png",
-]
-next_tests = [
-  "add a restart-append roundtrip test with multiple resolved diagnostic fields",
-  "add a malformed optional-variable schema rejection test for invalid real/imag dimensions",
 ]
 
 [[modules]]

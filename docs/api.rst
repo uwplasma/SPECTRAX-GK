@@ -809,27 +809,6 @@ Runtime Artifact IO
    :members:
    :private-members:
 
-Runtime Restart Artifacts
--------------------------
-
-.. automodule:: spectraxgk.artifacts.restart
-   :members:
-   :private-members:
-
-Runtime Artifact Linear Writers
--------------------------------
-
-.. automodule:: spectraxgk.artifacts.linear
-   :members:
-   :private-members:
-
-Runtime Artifact Nonlinear Writers
-----------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear
-   :members:
-   :private-members:
-
 NetCDF Spectral Layout
 ----------------------
 
@@ -841,13 +820,6 @@ Nonlinear Output NetCDF
 -----------------------
 
 .. automodule:: spectraxgk.artifacts.nonlinear_netcdf
-   :members:
-   :private-members:
-
-Runtime Artifact Nonlinear Diagnostics
---------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_diagnostics
    :members:
    :private-members:
 

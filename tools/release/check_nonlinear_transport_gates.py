@@ -124,7 +124,7 @@ def _read_output_tmax(path: Path) -> float | None:
     except Exception:
         pass
     try:
-        from spectraxgk.artifacts.nonlinear_diagnostics import (  # noqa: PLC0415
+        from spectraxgk.artifacts.io import (  # noqa: PLC0415
             load_nonlinear_netcdf_diagnostics,
         )
 

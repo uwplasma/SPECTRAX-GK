@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import netCDF4 as nc  # noqa: E402
 import numpy as np  # noqa: E402
 
-from spectraxgk.artifacts.nonlinear_diagnostics import (  # noqa: E402
+from spectraxgk.artifacts.io import (  # noqa: E402
     load_diagnostic_time_series,
 )
 from spectraxgk.artifacts.plotting import (  # noqa: E402
