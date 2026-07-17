@@ -602,8 +602,8 @@ Completed extractions:
   drift diagonal assembly, linked Hermite-line solves, coarse kx projection,
   preconditioner selection, and matrix-free matvec construction as separate
   private stages;
-  focused developer helpers live in ``eigen_operator.py`` and
-  ``krylov_algorithms.py``. The old root
+  matrix-free operator application and compiled iterations share the focused
+  ``krylov_algorithms.py`` owner. The old root
   ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear
   API or import focused developer helpers from the domain packages.

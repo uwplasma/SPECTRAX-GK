@@ -456,7 +456,7 @@ Release `v2.0.0` only when:
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
 | 1. Delete unpromoted/duplicate code | 18% | <=120 source and <=45 tool files |
-| 2. Consolidate package core and API | 22% | <=70 source files / <=50k lines with parity |
+| 2. Consolidate package core and API | 23% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
 | 5. README/docs/figure redesign | 2% | <=180-line README and three standardized figures |
@@ -563,3 +563,8 @@ Overall completion: 14%.
   tests, 95 release gates, API identities, architecture/coverage/readiness
   checks, Ruff/format, and strict docs pass. Source is now 197 files/86,088
   lines.
+- 2026-07-17: Folded matrix-free eigen-operator application into the compiled
+  Krylov algorithm owner, removing one file and 15 source lines while keeping
+  the module below 1,000 lines. All 73 Krylov/benchmark tests, architecture and
+  coverage checks, Ruff/format, and strict docs pass. Source is now 196
+  files/86,073 lines.

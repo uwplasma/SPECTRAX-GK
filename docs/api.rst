@@ -312,11 +312,6 @@ Linear Eigenmode Solver Internals
 status-reporting wrapper, while the focused helper modules below own operator
 application, branch selection, shift-invert preconditioning, and Arnoldi iterations.
 
-.. automodule:: spectraxgk.solvers.linear.eigen_operator
-   :members:
-   :private-members:
-   :no-index:
-
 .. automodule:: spectraxgk.solvers.linear.krylov_algorithms
    :members:
    :private-members:

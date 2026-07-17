@@ -32,6 +32,7 @@ src/spectraxgk/diagnostics/growth_rates.py,src/spectraxgk/diagnostics,promoted l
 src/spectraxgk/diagnostics/growth_windows.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,20490,617,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/metadata.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,30461,898,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/modes.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,11521,345,target=gkx.diagnostics; preserve promoted physics and JAX contracts
+src/spectraxgk/diagnostics/moments.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,27364,903,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/nonlinear_gradient_evidence.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,34834,915,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/nonlinear_replicates.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,31233,886,target=gkx.diagnostics; preserve promoted physics and JAX contracts
 src/spectraxgk/diagnostics/nonlinear_transport_optimization.py,src/spectraxgk/diagnostics,promoted library code,merge-to-2.0-domain,.py,34503,932,target=gkx.diagnostics; preserve promoted physics and JAX contracts
@@ -146,12 +147,11 @@ src/spectraxgk/quasilinear.py,src/spectraxgk,promoted library code,merge-to-2.0-
 src/spectraxgk/runtime.py,src/spectraxgk,promoted library code,merge-to-2.0-domain,.py,15425,472,target=gkx public API or nearest domain; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/__init__.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,55,1,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/__init__.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,1244,38,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
-src/spectraxgk/solvers/linear/eigen_operator.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,2223,79,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/implicit.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,23679,781,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/integrator_diagnostics.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,10462,367,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/integrators.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,24836,803,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
-src/spectraxgk/solvers/linear/krylov.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,19263,625,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
-src/spectraxgk/solvers/linear/krylov_algorithms.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,25937,847,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
+src/spectraxgk/solvers/linear/krylov.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,19282,627,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
+src/spectraxgk/solvers/linear/krylov_algorithms.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,27718,909,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/parallel.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,10952,334,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/parallel_common.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,2708,76,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
 src/spectraxgk/solvers/linear/parallel_electrostatic.py,src/spectraxgk/solvers,promoted library code,merge-to-2.0-domain,.py,29143,945,target=gkx.solve or gkx.numerics; preserve promoted physics and JAX contracts
@@ -406,5 +406,5 @@ tools/release_artifact_manifest.toml,tools/release_artifact_manifest.toml,tool s
 tools/repository_size_manifest.toml,tools/repository_size_manifest.toml,tool support file,keep-or-review,.toml,343,7,non-python tool asset
 tools/restart_gate_lanes.office.toml,tools/restart_gate_lanes.office.toml,tool support file,keep-or-review,.toml,1041,31,non-python tool asset
 tools/runtime_memory_manifest.toml,tools/runtime_memory_manifest.toml,tool support file,keep-or-review,.toml,18058,241,non-python tool asset
-tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,137599,2931,non-python tool asset
+tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,137553,2930,non-python tool asset
 tools/vmec_roundtrip_lanes.office.toml,tools/vmec_roundtrip_lanes.office.toml,tool support file,keep-or-review,.toml,438,9,non-python tool asset
