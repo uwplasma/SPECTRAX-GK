@@ -1,7 +1,7 @@
 path,area,role,action,suffix,bytes,lines,notes
 src/spectraxgk/__init__.py,src/spectraxgk,promoted library code,merge-to-2.0-domain,.py,921,31,target=gkx public API or nearest domain; preserve promoted physics and JAX contracts
 src/spectraxgk/_version.py,src/spectraxgk,promoted library code,merge-to-2.0-domain,.py,22,1,target=gkx public API or nearest domain; preserve promoted physics and JAX contracts
-src/spectraxgk/api/__init__.py,src/spectraxgk/api,promoted library code,merge-to-2.0-domain,.py,41959,393,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
+src/spectraxgk/api/__init__.py,src/spectraxgk/api,promoted library code,merge-to-2.0-domain,.py,41983,393,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/__init__.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,791,29,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/io.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,35724,1088,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/nonlinear_netcdf.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,35316,1069,target=gkx.io; preserve promoted physics and JAX contracts
@@ -83,6 +83,8 @@ src/spectraxgk/objectives/core.py,src/spectraxgk/objectives,promoted library cod
 src/spectraxgk/objectives/eigen.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,13589,399,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/geometry.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,5658,158,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/gradient_gates.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,21732,658,target=gkx.optimize; preserve promoted physics and JAX contracts
+src/spectraxgk/objectives/portfolio.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,20679,641,target=gkx.optimize; preserve promoted physics and JAX contracts
+src/spectraxgk/objectives/portfolio_guard.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,18958,530,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/sampling.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,7811,197,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/solver_gradient_reports.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,7311,230,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/solver_vmec.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,17099,442,target=gkx.optimize; preserve promoted physics and JAX contracts
@@ -96,13 +98,9 @@ src/spectraxgk/objectives/vmec_boozer_fd.py,src/spectraxgk/objectives,promoted l
 src/spectraxgk/objectives/vmec_boozer_gradients.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,23101,701,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/vmec_boozer_line_search.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,30441,882,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/vmec_candidate_admission.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,20562,540,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/vmec_transport.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,1696,56,target=gkx.optimize; preserve promoted physics and JAX contracts
+src/spectraxgk/objectives/vmec_transport.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,22512,635,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/vmec_transport_admission.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,20018,542,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/vmec_transport_branch.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,12330,405,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/vmec_transport_config.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,6402,176,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/vmec_transport_gradient.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,10732,303,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/vmec_transport_line_search.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,10263,261,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/vmec_transport_tables.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,16147,461,target=gkx.optimize; preserve promoted physics and JAX contracts
+src/spectraxgk/objectives/vmec_transport_branch.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,12316,405,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/zonal.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,28160,851,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/operators/__init__.py,src/spectraxgk/operators,promoted library code,merge-to-2.0-domain,.py,465,16,target=gkx.model; preserve promoted physics and JAX contracts
 src/spectraxgk/operators/linear/__init__.py,src/spectraxgk/operators,promoted library code,merge-to-2.0-domain,.py,2523,81,target=gkx.model; preserve promoted physics and JAX contracts
@@ -262,7 +260,7 @@ tests/unit/nonlinear/test_nonlinear_rhs.py,tests/unit,organized test,merge-by-do
 tests/unit/nonlinear/test_secondary.py,tests/unit,organized test,merge-by-domain,.py,10059,296,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/objectives/test_autodiff_solver_objectives.py,tests/unit,organized test,merge-by-domain,.py,126866,3519,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/objectives/test_differentiable_geometry_objectives.py,tests/unit,organized test,merge-by-domain,.py,81447,2242,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/unit/objectives/test_vmec_transport_objectives.py,tests/unit,organized test,merge-by-domain,.py,91217,2585,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/unit/objectives/test_vmec_transport_objectives.py,tests/unit,organized test,merge-by-domain,.py,91208,2585,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/operators/test_linear_streaming.py,tests/unit,organized test,merge-by-domain,.py,13655,406,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/operators/test_nonlinear_operator_packages.py,tests/unit,organized test,merge-by-domain,.py,3976,109,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/operators/test_operator_kernels.py,tests/unit,organized test,merge-by-domain,.py,61246,1640,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -359,7 +357,7 @@ tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py,tools/artifacts,artifact 
 tools/benchmark_atlas_manifest.toml,tools/benchmark_atlas_manifest.toml,tool support file,keep-or-review,.toml,1293,31,non-python tool asset
 tools/benchmark_refresh_manifest.toml,tools/benchmark_refresh_manifest.toml,tool support file,keep-or-review,.toml,4826,82,non-python tool asset
 tools/campaigns/design_nonlinear_gradient.py,tools/campaigns,campaign helper,keep-or-merge,.py,69636,1820,owned by tools/campaigns
-tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py,tools/campaigns,campaign helper,keep-or-merge,.py,22139,587,owned by tools/campaigns
+tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py,tools/campaigns,campaign helper,keep-or-merge,.py,22125,587,owned by tools/campaigns
 tools/campaigns/finalize_nonlinear_transport_matrix_release.py,tools/campaigns,campaign helper,keep-or-merge,.py,9342,255,owned by tools/campaigns
 tools/campaigns/nonlinear_gradient_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,127322,3514,owned by tools/campaigns
 tools/campaigns/nonlinear_replicate_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,43369,1198,owned by tools/campaigns
@@ -413,5 +411,5 @@ tools/release_artifact_manifest.toml,tools/release_artifact_manifest.toml,tool s
 tools/repository_size_manifest.toml,tools/repository_size_manifest.toml,tool support file,keep-or-review,.toml,343,7,non-python tool asset
 tools/restart_gate_lanes.office.toml,tools/restart_gate_lanes.office.toml,tool support file,keep-or-review,.toml,1041,31,non-python tool asset
 tools/runtime_memory_manifest.toml,tools/runtime_memory_manifest.toml,tool support file,keep-or-review,.toml,18058,241,non-python tool asset
-tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,138703,2964,non-python tool asset
+tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,137796,2937,non-python tool asset
 tools/vmec_roundtrip_lanes.office.toml,tools/vmec_roundtrip_lanes.office.toml,tool support file,keep-or-review,.toml,438,9,non-python tool asset

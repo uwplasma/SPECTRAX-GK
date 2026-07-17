@@ -1511,7 +1511,7 @@ def test_transport_sample_summary_rejects_ky_values_not_supported_by_single_solv
 from dataclasses import dataclass
 
 
-from spectraxgk.objectives.vmec_transport_gradient import (
+from spectraxgk.objectives.vmec_transport_optimization import (
     boundary_spec_record,
     build_boundary_transport_gradient_report,
     write_boundary_transport_gradient_report,
@@ -1633,7 +1633,7 @@ def test_transport_gradient_report_writer_and_public_api(tmp_path) -> None:
 # ---- test_vmec_jax_transport_line_search.py ----
 
 
-from spectraxgk.objectives.vmec_transport_line_search import (
+from spectraxgk.objectives.vmec_transport_optimization import (
     ProjectedLineSearchPolicy,
     boundary_chain_accepted_parameter_indices,
     projected_line_search_input_manifest,
@@ -2000,8 +2000,8 @@ from spectraxgk import (
 )
 from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
 import spectraxgk.objectives.vmec_transport_branch as transport_branch
-import spectraxgk.objectives.vmec_transport_config as transport_config
-import spectraxgk.objectives.vmec_transport_tables as transport_tables
+import spectraxgk.objectives.vmec_transport as transport_config
+import spectraxgk.objectives.vmec_transport as transport_tables
 
 
 def _fake_geometry() -> SimpleNamespace:

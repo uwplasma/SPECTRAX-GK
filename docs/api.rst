@@ -927,19 +927,6 @@ VMEC-JAX Transport Objective
 
 .. automodule:: spectraxgk.objectives.vmec_transport
    :members:
-   :no-index:
-
-VMEC-JAX Transport Configuration
---------------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_transport_config
-   :members:
-
-VMEC-JAX Transport Tables
--------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_transport_tables
-   :members:
    :private-members:
 
 VMEC-JAX Transport Branch Gates
@@ -962,22 +949,16 @@ Stellarator Transport Reports
    :members:
    :private-members:
 
-VMEC-JAX Transport Gradient
----------------------------
+VMEC-JAX Transport Optimization
+-------------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_transport_gradient
+.. automodule:: spectraxgk.objectives.vmec_transport_optimization
    :members:
 
 VMEC-JAX Boundary Chain
 -----------------------
 
 .. automodule:: spectraxgk.geometry.vmec_boundary_chain
-   :members:
-
-VMEC-JAX Transport Line Search
-------------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_transport_line_search
    :members:
 
 VMEC-JAX Candidate Gates

@@ -2405,9 +2405,7 @@ owned_modules = [
   "spectraxgk.objectives.stellarator",
   "spectraxgk.objectives.stellarator_contracts",
   "spectraxgk.geometry.vmec_boundary_chain",
-  "spectraxgk.objectives.vmec_transport_gradient",
-  "spectraxgk.objectives.vmec_transport_line_search",
-  "spectraxgk.objectives.vmec_transport",
+  "spectraxgk.objectives.vmec_transport_optimization",
 ]
 owner_lane = "production solver-objective gradient reports and validation"
 status = "active"
@@ -2636,52 +2634,26 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.vmec_transport_config"
-path = "src/spectraxgk/objectives/vmec_transport_config.py"
-owner_lane = "VMEC-JAX transport objective configuration and optional backend path policy"
+module = "spectraxgk.objectives.vmec_transport"
+path = "src/spectraxgk/objectives/vmec_transport.py"
+owner_lane = "VMEC-JAX transport objective configuration, sample tables, reductions, and callback"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "VMEC-JAX fixed-boundary optimization coupled to local gyrokinetic transport objectives",
   "Boozer-resolution guardrails for paper-facing stellarator optimization",
+  "multi-surface and multi-field-line stellarator transport screening",
 ]
 physics_contracts = [
   "configuration must keep growth, quasilinear, and reduced nonlinear-window scopes explicit",
   "Boozer grids below the documented mode threshold fail closed before optimization",
+  "reduced nonlinear-window proxies do not imply converged turbulent heat-flux claims",
 ]
 numerics_contracts = [
   "objective transforms and scales are finite, positive, and explicit",
   "optional backend paths are pinned reproducibly when imported VMEC-JAX/Boozer modules are already active",
-]
-fast_tests = [
-  "tests/unit/objectives/test_vmec_transport_objectives.py",
-]
-artifact_paths = [
-  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
-]
-next_tests = [
-  "add direct ObjectiveTerm metadata fixtures for every transform and transport kind",
-]
-
-[[modules]]
-module = "spectraxgk.objectives.vmec_transport_tables"
-path = "src/spectraxgk/objectives/vmec_transport_tables.py"
-owner_lane = "VMEC-JAX to SPECTRAX-GK transport sample tables and scalar reductions"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "multi-surface and multi-field-line stellarator transport screening",
-  "linear-growth and quasilinear proxy reductions before nonlinear holdout promotion",
-]
-physics_contracts = [
-  "growth, quasilinear, and reduced nonlinear-window table columns must remain distinguishable",
-  "reduced nonlinear-window proxies do not imply converged turbulent heat-flux optimization claims",
-]
-numerics_contracts = [
-  "ky samples map to unique integer solver-grid indices",
-  "surface chunking preserves weighted-mean reductions exactly against unchunked evaluation",
+  "ky samples map uniquely and surface chunking preserves weighted reductions",
 ]
 fast_tests = [
   "tests/unit/objectives/test_vmec_transport_objectives.py",
@@ -2691,6 +2663,7 @@ artifact_paths = [
   "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json",
 ]
 next_tests = [
+  "add direct ObjectiveTerm metadata fixtures for every transform and transport kind",
   "add real VMEC/Boozer fixture coverage for every supported transport objective kind",
 ]
 
