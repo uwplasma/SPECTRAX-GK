@@ -455,7 +455,7 @@ Release `v2.0.0` only when:
 | Phase | Completion | Next proof |
 | --- | ---: | --- |
 | 0. Freeze 1.7 contract and migration inventory | 35% | complete API-to-test/docs/benchmark ownership mapping |
-| 1. Delete unpromoted/duplicate code | 8% | <=120 source and <=45 tool files |
+| 1. Delete unpromoted/duplicate code | 15% | <=120 source and <=45 tool files |
 | 2. Consolidate package core and API | 0% | <=70 source files / <=50k lines with parity |
 | 3. Simplify tests, benchmarks, scripts | 0% | <=45 tests, <=15 scripts, >=95% coverage |
 | 4. QA linear/QL/nonlinear optimization | 5% | exact QA-ESS baseline, new differentiable/noisy objectives |
@@ -463,7 +463,7 @@ Release `v2.0.0` only when:
 | 6. Rename to GKX | 0% | namespace gate and complete renamed CI candidate |
 | 7. Version 2.0 release | 0% | tag, GitHub release, PyPI verification |
 
-Overall completion: 7%.
+Overall completion: 8%.
 
 ## Evidence Sources
 
@@ -504,3 +504,12 @@ Overall completion: 7%.
   checker command, release tests, and CI/release hooks. The focused release
   suite, Ruff, architecture policy, release-readiness policy, and validation
   coverage manifest pass; no numerical implementation changed.
+- 2026-07-17: Deleted the unpromoted synthetic QA low-turbulence envelope from
+  the installable API: three source modules, their dedicated validation file,
+  one 785-line artifact builder, and seven generated figure/data sidecars.
+  Retained the solved VMEC-JAX campaign, VMEC/Boozer objective contracts,
+  RBC(1,1) long-window landscape, and matched nonlinear transport gates. Source
+  is now 217 files/86,516 lines; tests are 94 files/95,997 lines; tools are 94
+  files/96,264 lines. The solved-QA and objective suites, 95 release tests,
+  public API import audit, Ruff, coverage-manifest regeneration, architecture
+  budgets, and warning-free strict documentation build pass.

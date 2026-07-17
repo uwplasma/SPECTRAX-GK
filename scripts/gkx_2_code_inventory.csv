@@ -1,7 +1,7 @@
 path,area,role,action,suffix,bytes,lines,notes
 src/spectraxgk/__init__.py,src/spectraxgk,promoted library code,merge-to-2.0-domain,.py,921,31,target=gkx public API or nearest domain; preserve promoted physics and JAX contracts
 src/spectraxgk/_version.py,src/spectraxgk,promoted library code,merge-to-2.0-domain,.py,22,1,target=gkx public API or nearest domain; preserve promoted physics and JAX contracts
-src/spectraxgk/api/__init__.py,src/spectraxgk/api,promoted library code,merge-to-2.0-domain,.py,44150,410,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
+src/spectraxgk/api/__init__.py,src/spectraxgk/api,promoted library code,merge-to-2.0-domain,.py,42029,393,target=nearest coherent gkx domain; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/__init__.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,821,29,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/benchmark_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,11914,398,target=gkx.io; preserve promoted physics and JAX contracts
 src/spectraxgk/artifacts/diagnostic_plots.py,src/spectraxgk/artifacts,promoted library code,merge-to-2.0-domain,.py,5715,168,target=gkx.io; preserve promoted physics and JAX contracts
@@ -96,9 +96,6 @@ src/spectraxgk/objectives/gradient_gates.py,src/spectraxgk/objectives,promoted l
 src/spectraxgk/objectives/portfolio_artifacts.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,20500,542,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/portfolio_contracts.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,11464,318,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/portfolio_sensitivity.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,10088,322,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/qa_low_turbulence_artifacts.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,16415,435,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/qa_low_turbulence_model.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,22217,653,target=gkx.optimize; preserve promoted physics and JAX contracts
-src/spectraxgk/objectives/qa_low_turbulence_optimizer.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,7109,226,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/sampling.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,7811,197,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/solver_gradient_reports.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,7311,230,target=gkx.optimize; preserve promoted physics and JAX contracts
 src/spectraxgk/objectives/solver_vmec.py,src/spectraxgk/objectives,promoted library code,merge-to-2.0-domain,.py,17099,442,target=gkx.optimize; preserve promoted physics and JAX contracts
@@ -319,7 +316,6 @@ tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py,tests/vali
 tests/validation/quasilinear/test_quasilinear_window.py,tests/validation,organized test,merge-by-domain,.py,18704,545,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_check_vmec_boozer_gates.py,tests/validation,organized test,merge-by-domain,.py,26260,751,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_external_vmec_validation_policy.py,tests/validation,organized test,merge-by-domain,.py,22429,685,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/validation/stellarator/test_qa_low_turbulence.py,tests/validation,organized test,merge-by-domain,.py,6380,187,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_vmec_example_inventory.py,tests/validation,organized test,merge-by-domain,.py,2998,87,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,18522,539,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tools/README.md,tools/README.md,tool documentation,keep,.md,3668,77,documents maintenance-tool ownership
@@ -336,7 +332,6 @@ tools/artifacts/build_nonlinear_validation_panels.py,tools/artifacts,artifact bu
 tools/artifacts/build_nonlinear_window_fd_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,21171,584,owned by tools/artifacts
 tools/artifacts/build_parallelization_completion_status.py,tools/artifacts,artifact builder,keep-or-merge,.py,32499,884,owned by tools/artifacts
 tools/artifacts/build_qa_optimizer_strategy_report.py,tools/artifacts,artifact builder,keep-or-merge,.py,22850,575,owned by tools/artifacts
-tools/artifacts/build_qa_transport_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,29773,785,owned by tools/artifacts
 tools/artifacts/build_qi_branch_refinement_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,11453,329,owned by tools/artifacts
 tools/artifacts/build_quasilinear_holdout_gap_report.py,tools/artifacts,artifact builder,keep-or-merge,.py,69948,1782,owned by tools/artifacts
 tools/artifacts/build_research_status.py,tools/artifacts,artifact builder,keep-or-merge,.py,166685,3771,owned by tools/artifacts
@@ -432,5 +427,5 @@ tools/release_artifact_manifest.toml,tools/release_artifact_manifest.toml,tool s
 tools/repository_size_manifest.toml,tools/repository_size_manifest.toml,tool support file,keep-or-review,.toml,343,7,non-python tool asset
 tools/restart_gate_lanes.office.toml,tools/restart_gate_lanes.office.toml,tool support file,keep-or-review,.toml,1041,31,non-python tool asset
 tools/runtime_memory_manifest.toml,tools/runtime_memory_manifest.toml,tool support file,keep-or-review,.toml,18058,241,non-python tool asset
-tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,154684,3357,non-python tool asset
+tools/validation_coverage_manifest.toml,tools/validation_coverage_manifest.toml,tool support file,keep-or-review,.toml,149753,3252,non-python tool asset
 tools/vmec_roundtrip_lanes.office.toml,tools/vmec_roundtrip_lanes.office.toml,tool support file,keep-or-review,.toml,438,9,non-python tool asset

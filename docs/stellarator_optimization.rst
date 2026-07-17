@@ -664,38 +664,15 @@ These are reduced visualization diagnostics, not solved VMEC WOUT surfaces; in
 particular, the synthetic surface can look nearly axisymmetric when the reduced
 helical-control amplitude is small.
 
-Aspect-6 QA Low-Turbulence Comparison
--------------------------------------
+Solved QA Transport Optimization
+--------------------------------
 
-The new aspect-6 comparison exercises the optimization workflow that is needed
-before a full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` nonlinear design
-loop is promoted. It follows the fixed-boundary QA objective structure used by
-``vmec_jax`` examples and by stellarator microturbulence optimization studies
-[Jorge24]_ [Kim24]_: constrain the MHD/geometry family, then add a turbulence
-objective whose gradients are audited before any design claim is made. The
-current artifact is intentionally reduced and trace-safe. It is useful for
-algorithm development, AD/finite-difference validation, uncertainty plumbing,
-and manuscript figure layout; it is not a solved-VMEC, long-window nonlinear
-transport optimization claim.
-
-Run the complete comparison with:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_qa_transport_validation_artifacts.py comparison --pdf
-   python tools/artifacts/build_qa_transport_validation_artifacts.py horizon-audit --pdf
-
-The command writes:
-
-- ``docs/_static/qa_low_turbulence_comparison.png`` and ``.pdf`` for the
-  publication panel;
-- ``docs/_static/qa_low_turbulence_comparison.json`` as the audit source;
-- ``docs/_static/qa_low_turbulence_comparison.summary.csv`` for the optimized
-  design metrics;
-- ``docs/_static/qa_low_turbulence_comparison.scan.csv`` for the fixed-
-  ``a/L_T`` density-gradient scan.
-- ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` and sidecars for
-  the reduced nonlinear-envelope horizon check.
+The production workflow starts from the current VMEC-JAX precise-QA seed and
+adds one validated SPECTRAX-GK transport objective while retaining the aspect,
+iota, and quasisymmetry residuals. Candidate equilibria remain unpromoted until
+solved-WOUT geometry gates and matched long-window nonlinear audits pass. This
+preserves the fixed-boundary equilibrium and precise-QA conventions of
+[HirshmanWhitson83]_ and [LandremanPaul22]_.
 
 To experiment with the solved-boundary VMEC-JAX path, first assemble the
 objective without solving. This path requires the optional ``vmec_jax`` and
@@ -917,212 +894,6 @@ rebuilds the manuscript-readiness and strict pre-manuscript closure panels. Use
 ``--skip-dashboard-regeneration`` only for import-path debugging or tests, not
 for release candidates.
 
-.. figure:: _static/qa_low_turbulence_comparison.png
-   :alt: Aspect-6 QA low-turbulence optimization comparison
-   :width: 100%
-
-   Aspect-6 QA low-turbulence comparison. The blue design is optimized only
-   for reduced quasisymmetry, aspect ratio, the minimum-iota floor, and
-   regularization. The orange design adds the reduced late-window nonlinear
-   heat-flux envelope residual. At fixed ``a/L_n = 2.2`` and ``a/L_Ti = 6``,
-   the tracked artifact reduces the reduced late-window ``Q_env`` by about
-   ``10.7%`` at ``t v_ti/a = 400`` and reduces the fitted ``Q_env`` versus
-   ``a/L_n`` slope while retaining the geometry and differentiability gates.
-   The smooth trace is expected because it solves
-   ``dE/dt = 2 gamma E - alpha E^2`` rather than a full turbulent nonlinear
-   gyrokinetic initial-value problem. The middle-row surfaces are colored by
-   reduced ``|B|`` and the bottom row shows reduced Boozer-LCFS ``|B|`` maps.
-   Both final designs keep a visible non-axisymmetric helical boundary
-   amplitude near ``0.16`` and satisfy ``iota > 0.70``.
-
-.. figure:: _static/qa_low_turbulence_time_horizon_audit.png
-   :alt: Reduced nonlinear time-horizon audit for the QA low-turbulence comparison
-   :width: 95%
-
-   Reduced nonlinear time-horizon audit for the same optimized designs. The
-   ``t v_ti/a = 400`` late-window mean differs from the ``t=1000`` reference by
-   ``1.2e-7`` for the constraints-only design and by ``6.5e-8``
-   for the transport-aware design. The coefficient of variation, normalized
-   trend, and first/second-half drift are all below ``1e-3`` at ``t=400``.
-   Therefore the tracked reduced-envelope figure keeps ``t=400`` as a
-   conservative but compact horizon; this is still not a full nonlinear
-   SPECTRAX-GK transport-window convergence claim.
-
-
-Model Hierarchy Used in the Panel
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The comparison deliberately separates four layers that are often conflated in
-optimization figures:
-
-1. **Linear ITG response.** The reduced controls define smooth proxies for the
-   linear growth rate ``gamma(p)``, perpendicular scale ``kperp_eff2(p)``, and
-   heat-flux weight ``W_i(p)``. In the production code those quantities come
-   from the SPECTRAX-GK linear operator and its selected eigenbranch; in this
-   reduced gate they are analytic JAX functions chosen to exercise the same
-   differentiability and branch-stability contracts without launching a full
-   VMEC/Boozer solve.
-2. **Quasilinear diagnostic.** The reduced quasilinear scalar follows the same
-   mixing-length structure used elsewhere in the code,
-
-   .. math::
-
-      Q_i^{QL,red}(p) = C_{sat}\,W_i(p)\,\frac{\gamma(p)^2}{k_\perp^2(p)},
-
-   with ``C_sat = 0.72`` in this aspect-6 reduced gate. It is recorded as a
-   diagnostic and optimization-adjacent observable, not as a promoted absolute
-   turbulent-flux predictor. The broader quasilinear promotion rules remain in
-   :doc:`quasilinear` and follow the model-selection cautions in [Stephens21]_,
-   [Parker23]_, [Staebler24]_, and [Jorge24]_.
-3. **Reduced nonlinear envelope.** The transport-aware objective uses the
-   differentiable RK2 energy envelope described below. This creates a stable
-   local optimization target and a meaningful post-transient window diagnostic,
-   but it is still a reduced model. Production nonlinear claims must use the
-   replicated long-window SPECTRAX-GK audits described in
-   :doc:`validation_strategy` and :doc:`release_scope`, consistent with the
-   nonlinear turbulence-in-the-loop standard in [Kim24]_.
-4. **End-to-end differentiability.** JAX differentiates the explicit reduced
-   map from controls to residuals and observables. The artifact then checks
-   the scalar objective gradient, the full residual Jacobian, and the full
-   observable Jacobian against central finite differences. The same pattern is
-   used before replacing the reduced row producer with ``vmec_jax`` and
-   ``booz_xform_jax`` in-memory geometry.
-
-This hierarchy is the reason the README panel uses the phrase "reduced NL Q".
-It shows how the optimizer plumbing behaves and how a transport objective can
-change the shape, gradient-scan slope, and late-window heat-flux envelope, while
-keeping the stronger full-nonlinear-GK optimization claim gated separately.
-
-Objective Blocks
-~~~~~~~~~~~~~~~~
-
-The two designs use the same four reduced low-order controls
-``p = (p_a, p_kappa, p_h, p_s)`` exposed by
-:mod:`spectraxgk.objectives.qa_low_turbulence`: a minor-radius/aspect shift, a vertical
-elongation shift, a helical-ripple amplitude, and a magnetic-shear shift. The
-helical amplitude is not allowed to collapse to zero: both objectives include
-a high-weight QA-compatible shaping residual that keeps ``p_h`` near ``0.16``.
-This is why the reduced LCFS visualization remains non-axisymmetric while the
-QA residual stays small. The formal iota floor and the higher operating iota
-floor also use high weights, so the optimized points remain comfortably above
-``iota = 0.41``.
-
-The
-control-only objective is
-
-.. math::
-
-   J_{QA}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_h, r_{reg} \|_2^2,
-
-while the transport-aware objective is
-
-.. math::
-
-   J_{QA+Q}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_h, r_{reg}, r_Q \|_2^2.
-
-The residuals are
-
-.. math::
-
-   r_A = \sqrt{w_A}\, \frac{A(p)-A_0}{A_0}, \qquad A_0=6,
-
-.. math::
-
-   r_{\iota,min} = \sqrt{w_{\iota,min}}\,\mathrm{softplus}_{\beta}\left(\iota_{min}-\bar{\iota}(p)\right),
-   \qquad \iota_{min}=0.41,
-
-.. math::
-
-   r_{\iota,op} = \sqrt{w_{\iota,op}}\,\mathrm{softplus}_{\beta}\left(\iota_{op}-\bar{\iota}(p)\right),
-   \qquad \iota_{op}=0.70,
-
-.. math::
-
-   r_{QA}=\sqrt{w_{QA}}\,\epsilon_{QA}(p), \qquad
-   r_{reg}=\sqrt{w_{reg}}\,p,
-
-and, only for the transport-aware design,
-
-.. math::
-
-   r_Q = \sqrt{w_Q\,\langle Q_i^{red}\rangle_{late}}.
-
-The first iota term is the formal floor requested for the configuration. The
-second iota term is an operating floor, currently ``0.70``, added after QA of
-the initial artifact showed that the bare ``0.41`` floor allowed low-iota
-solutions that were not useful for the intended stellarator-optimization
-comparison. Both terms are one-sided smooth floors, not equality targets. Once
-``bar(iota)`` is above the relevant floor, that residual contributes only the
-exponentially small smooth tail.
-
-Reduced ITG Envelope
-~~~~~~~~~~~~~~~~~~~~
-
-The reduced nonlinear diagnostic integrates one smooth energy envelope,
-
-.. math::
-
-   \frac{dE}{dt} = 2\gamma(p, a/L_n, a/L_T)E - \alpha(p, a/L_n, a/L_T)E^2,
-   \qquad Q_i^{red}(t) = W_i(p, a/L_n, a/L_T)E(t),
-
-with a fixed-step RK2 method so the entire map is differentiable by JAX. The
-late-window average is
-
-.. math::
-
-   \langle Q_i^{red}\rangle_{late}
-      = \frac{1}{t_1-t_0}\int_{t_0}^{t_1} Q_i^{red}(t)\,dt,
-
-where the artifact uses the final configured fraction of the trace. The
-current tracked comparison runs to ``t v_ti/a = 400`` and requires ``tmax >=
-300`` before the long-window gate can pass. The JSON sidecar records the
-late-window coefficient of variation, linear trend, first-half/second-half
-mean drift, and running-mean drift so a small heat-flux value cannot be
-confused with a startup transient. The density scan keeps ``a/L_T`` fixed and
-recomputes the same late-window average over the specified ``a/L_n`` grid.
-
-Gradient, Conditioning, and UQ Gates
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Every optimized point records three differentiability gates:
-
-- a scalar-objective AD versus central finite-difference check;
-- a full weighted-residual Jacobian AD versus central finite-difference check;
-- a full observable-vector AD versus central finite-difference check from
-  controls to aspect, iota, QA residual, linear features, quasilinear flux, and
-  long-window nonlinear heat-flux statistics.
-
-The residual Jacobian is passed to the same Gauss-Newton covariance diagnostic
-used by the inverse/UQ examples. The sidecar records singular values, rank,
-condition number, covariance, and parameter correlations. This prevents a plot
-from being promoted if the scalar gradient passes only because the residual map
-is locally rank deficient. The observable gate checks the complete reduced
-plumbing rather than only the final scalar objective.
-
-Geometry and Claim Boundary
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The 3D LCFS and ``|B|`` maps in the figure are reduced max-mode-1
-visualizations derived from the same controls. They are included so readers can
-see the qualitative shape change chosen by the transport-aware objective. They
-are not VMEC equilibria and should not be used for final physics claims. The
-production path remains:
-
-.. code-block:: text
-
-   vmec_jax fixed-boundary state
-      -> booz_xform_jax Boozer transform, mboz >= 21, nboz >= 21
-      -> SPECTRAX-GK flux-tube objective rows
-      -> AD/FD and held-out geometry gates
-      -> long post-transient replicated nonlinear transport audits
-
-This is consistent with VMEC's fixed-boundary MHD-equilibrium role
-[HirshmanWhitson83]_, modern high-precision quasisymmetric optimization
-[LandremanPaul22]_, quasilinear microstability optimization [Jorge24]_, and
-nonlinear turbulence-in-the-loop optimization evidence [Kim24]_. The reduced
-comparison is therefore a validated optimization-plumbing and figure-generation
-artifact, not the final production nonlinear turbulent heat-flux optimization.
-
 Boundary-Coefficient Objective Landscapes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1227,8 +998,6 @@ boundary.
 Implementation Map
 ~~~~~~~~~~~~~~~~~~
 
-- Core reduced model: :mod:`spectraxgk.objectives.qa_low_turbulence`
-- Artifact builder: :download:`build_qa_transport_validation_artifacts.py <../tools/artifacts/build_qa_transport_validation_artifacts.py>` (``comparison`` mode)
 - Time-horizon audit builder: the same command's ``horizon-audit`` mode
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`
 - Nonlinear landscape admission builder: :download:`build_nonlinear_transport_admission.py landscape <../tools/artifacts/build_nonlinear_transport_admission.py>`
@@ -1238,7 +1007,6 @@ Implementation Map
 - Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_transport_admission.py campaign <../tools/artifacts/build_nonlinear_transport_admission.py>`
 - Solved-equilibrium linear launch screen:
   ``python tools/artifacts/build_nonlinear_transport_admission.py linear-screen ...``
-- Tests: ``tests/validation/stellarator/test_qa_low_turbulence.py`` and
   ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.
 - Legacy nonlinear landscape admission report from the earlier narrow scan:
@@ -1247,9 +1015,6 @@ Implementation Map
   :download:`vmec_boundary_transport_prelaunch_gate.json <_static/vmec_boundary_transport_prelaunch_gate.json>`
 - Legacy nonlinear optimizer campaign-admission gate from the earlier narrow scan:
   :download:`nonlinear_campaign_admission_report.json <_static/nonlinear_campaign_admission_report.json>`
-- Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
-- Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
-- Horizon audit CSV: :download:`qa_low_turbulence_time_horizon_audit.csv <_static/qa_low_turbulence_time_horizon_audit.csv>`
 
 VMEC-JAX Geometry Examples
 --------------------------

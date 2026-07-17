@@ -532,8 +532,6 @@ development diagnostics only:
    python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py
    python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py
    python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
-   python tools/artifacts/build_qa_transport_validation_artifacts.py comparison --pdf
-   python tools/artifacts/build_qa_transport_validation_artifacts.py horizon-audit --pdf
 
 The portfolio gate writes JSON/PNG/PDF artifacts and checks scalar plus
 row-wise AD/finite-difference agreement for the same surface/alpha/``k_y``
@@ -543,22 +541,6 @@ three ``k_y`` values with growth and quasilinear-flux columns. This is a
 reduced/model-development gate; it does not claim optimized nonlinear heat
 flux or calibrated saturated transport. Treat the JSON sidecar as the audit
 source; the PNG/PDF summarize the same sidecar for docs and review.
-
-The aspect-6 QA low-turbulence comparison tool writes
-``docs/_static/qa_low_turbulence_comparison.{json,png,pdf}`` plus CSV sidecars.
-It compares a quasisymmetry/aspect/iota-floor design with a design that adds a
-reduced nonlinear heat-flux envelope residual, then plots the fixed-``a/L_T``
-``Q_env`` versus ``a/L_n`` scan, fixed-gradient reduced-envelope traces,
-reduced LCFS surfaces colored by ``|B|``, and reduced Boozer-LCFS ``|B|`` maps.
-The trace is smooth by construction because it integrates
-``dE/dt = 2 gamma E - alpha E^2``; it should not be read as a turbulent
-nonlinear SPECTRAX-GK heat-flux time series. This is a reduced
-differentiability and visualization example; production nonlinear optimization
-still requires long post-transient transport-window audits.
-The companion time-horizon audit writes
-``docs/_static/qa_low_turbulence_time_horizon_audit.{json,csv,png,pdf}`` and
-shows that ``t v_ti/a = 400`` is already converged relative to the
-``t=1000`` reduced-envelope reference for the tracked designs.
 
 The production bridge now exposes the same portfolio layout for real
 ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` rows:

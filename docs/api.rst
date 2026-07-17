@@ -991,26 +991,6 @@ Parallel Decomposition Contracts
 .. automodule:: spectraxgk.parallel.decomposition
    :members:
 
-QA Low-Turbulence Model And Gates
----------------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_model
-   :members:
-   :private-members:
-
-QA Low-Turbulence Optimizer
----------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_optimizer
-   :members:
-
-QA Low-Turbulence Artifacts
----------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_artifacts
-   :members:
-   :private-members:
-
 VMEC-JAX Transport Objective
 ----------------------------
 
