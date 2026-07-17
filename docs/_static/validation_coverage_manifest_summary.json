@@ -18,7 +18,7 @@
     "spectraxgk.operators.nonlinear.policies",
     "spectraxgk.operators.nonlinear.collisions",
     "spectraxgk.operators.nonlinear.projection",
-    "spectraxgk.quasilinear",
+    "spectraxgk.diagnostics.quasilinear_transport",
     "spectraxgk.diagnostics.quasilinear_calibration",
     "spectraxgk.diagnostics.transport_windows",
     "spectraxgk.benchmarking.shared",
@@ -63,8 +63,8 @@
   "n_excluded_modules": 18,
   "n_high_priority_open": 58,
   "n_modules": 74,
-  "n_owned_modules": 102,
-  "n_package_modules": 194,
+  "n_owned_modules": 101,
+  "n_package_modules": 193,
   "owned_modules_by_owner": {
     "spectraxgk.api.__init__": [],
     "spectraxgk.artifacts.__init__": [],
@@ -87,6 +87,9 @@
     "spectraxgk.diagnostics.nonlinear_replicates": [],
     "spectraxgk.diagnostics.nonlinear_transport_optimization": [],
     "spectraxgk.diagnostics.quasilinear_calibration": [],
+    "spectraxgk.diagnostics.quasilinear_transport": [
+      "spectraxgk.diagnostics.quasilinear_model_selection"
+    ],
     "spectraxgk.diagnostics.stellarator_transport_reports": [],
     "spectraxgk.diagnostics.transport_windows": [],
     "spectraxgk.diagnostics.validation_gates": [],
@@ -212,10 +215,6 @@
       "spectraxgk.parallel.velocity_hermite",
       "spectraxgk.parallel.velocity_plan",
       "spectraxgk.parallel.velocity_streaming"
-    ],
-    "spectraxgk.quasilinear": [
-      "spectraxgk.diagnostics.quasilinear_transport",
-      "spectraxgk.diagnostics.quasilinear_model_selection"
     ],
     "spectraxgk.runtime": [
       "spectraxgk.cli",
@@ -689,15 +688,15 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.quasilinear",
+      "module": "spectraxgk.diagnostics.quasilinear_transport",
       "n_artifacts": 11,
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 2,
+      "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/quasilinear.py",
+      "path": "src/spectraxgk/diagnostics/quasilinear_transport.py",
       "status": "active"
     },
     {

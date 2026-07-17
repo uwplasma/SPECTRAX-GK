@@ -217,7 +217,7 @@ dispatches, transposes, global reconstruction, or recompilation.
 Exit: target package topology, <=45 files/45,000 lines, <=30 public names, no
 module >1,200 lines, frozen physics/derivative/performance contracts pass.
 
-Progress: **32%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
+Progress: **33%**. NetCDF, plotting, portfolio, zonal, VMEC transport,
 diagnostic moments/growth, Krylov, and replicated nonlinear-gradient statistics
 ownership have been consolidated. Refactor-only runtime contracts are deleted,
 the collision interface now contains only the protocol used by the equations,
@@ -528,6 +528,12 @@ Use large coherent commits, each independently green:
   153 focused grid, basis, species, collision, linear, runtime, and Diffrax
   tests pass together with ownership, frozen-output, architecture, and size
   gates.
+- 2026-07-17 quasilinear-facade tranche: deleted the forwarding-only
+  ``spectraxgk.quasilinear`` module and routed examples, tests, profilers, and
+  documentation directly to ``diagnostics.quasilinear_transport`` while
+  preserving promoted top-level names. The source tree is now 193 files /
+  86,602 lines; 107 quasilinear and autodiff tests plus release/ownership gates
+  pass.
 - 2026-07-17 planning audit: pulled VMEC-JAX `adf2d334`; identified the exact
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
@@ -539,14 +545,15 @@ Use large coherent commits, each independently green:
 | --- | ---: |
 | Frozen 1.7 contract | 95% |
 | Deletion/repository trim | 50% |
-| Scientific-core simplification | 32% |
-| Test/benchmark/command simplification | 20% |
+| Scientific-core simplification | 33% |
+| Test/benchmark/command simplification | 21% |
 | QA linear/QL/nonlinear optimization | 15% |
 | README/docs rebuild | 14% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **30%**. The next implementation tranche continues
-Phase 2 with term/field/dissipation ownership and removes the next unreferenced
-campaign/static-evidence family. The uncontended GPU refresh is independent of
-that critical path and will be repeated only when an office device is idle.
+Weighted overall completion: **31%**. The next implementation tranche removes
+the remaining linear/nonlinear solver facades by routing top-level names to
+their domain owners, then returns to term/field/dissipation ownership and the
+next unreferenced campaign/static-evidence family. The uncontended GPU refresh
+remains independent of that critical path.

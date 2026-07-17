@@ -65,7 +65,7 @@ from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions  # n
 from spectraxgk.runtime import run_runtime_linear  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
 from spectraxgk.core.grid import build_spectral_grid  # noqa: E402
-from spectraxgk.core.species import build_linear_params  # noqa: E402
+from spectraxgk.operators.linear.params import build_linear_params  # noqa: E402
 from spectraxgk.diagnostics.analysis import extract_eigenfunction  # noqa: E402
 from spectraxgk.geometry import (  # noqa: E402
     apply_imported_geometry_grid_defaults,

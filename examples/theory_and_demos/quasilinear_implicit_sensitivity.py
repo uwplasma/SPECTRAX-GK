@@ -25,7 +25,7 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
 from spectraxgk.artifacts.plotting import set_plot_style
-from spectraxgk.quasilinear import effective_kperp2, phi_norm2, saturated_flux_from_linear_weight
+from spectraxgk.diagnostics.quasilinear_transport import effective_kperp2, phi_norm2, saturated_flux_from_linear_weight
 
 
 OBSERVABLE_LABELS = (r"$\gamma$", r"$\omega$", r"$k_{\perp,\mathrm{eff}}^2$", r"$\hat Q_i$", r"$Q_i^{ML}$")

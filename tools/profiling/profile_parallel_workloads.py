@@ -439,7 +439,7 @@ def run_independent_ky_sweep(args: argparse.Namespace) -> dict[str, Any]:
 def _quasilinear_reduced_observables(
     ky: np.ndarray, gamma: np.ndarray, omega: np.ndarray
 ) -> dict[str, Any]:
-    from spectraxgk.quasilinear import quasilinear_feature_objective
+    from spectraxgk.diagnostics.quasilinear_transport import quasilinear_feature_objective
 
     ky_arr = np.asarray(ky, dtype=float)
     gamma_arr = np.asarray(gamma, dtype=float)

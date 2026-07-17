@@ -38,7 +38,7 @@ from spectraxgk.linear import (
     linear_rhs_cached,
 )
 from spectraxgk.diagnostics import fieldline_quadrature_weights
-from spectraxgk.quasilinear import (
+from spectraxgk.diagnostics.quasilinear_transport import (
     effective_kperp2,
     quasilinear_feature_objective,
     shape_aware_power_law_objective,

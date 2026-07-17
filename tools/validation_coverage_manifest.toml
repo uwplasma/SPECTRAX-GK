@@ -1145,10 +1145,9 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.quasilinear"
-path = "src/spectraxgk/quasilinear.py"
+module = "spectraxgk.diagnostics.quasilinear_transport"
+path = "src/spectraxgk/diagnostics/quasilinear_transport.py"
 owned_modules = [
-  "spectraxgk.diagnostics.quasilinear_transport",
   "spectraxgk.diagnostics.quasilinear_model_selection",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"

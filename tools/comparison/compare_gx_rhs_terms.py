@@ -54,7 +54,7 @@ from spectraxgk.terms.linear_terms import (
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
-from spectraxgk.core.species import build_linear_params
+from spectraxgk.operators.linear.params import build_linear_params
 
 try:
     from tools.comparison.compare_gx_imported_linear import (

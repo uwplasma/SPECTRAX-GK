@@ -332,7 +332,7 @@ The default normalization is
    \sum_{k_x,k_y,z} w_{k_x,k_y,z} |\phi_{k_x,k_y}(z)|^2,
 
 with the same Hermitian and flux-tube weights used by
-:func:`spectraxgk.quasilinear.spectral_phi_weights`.
+:func:`spectraxgk.diagnostics.quasilinear_transport.spectral_phi_weights`.
 
 Supported amplitude normalizations are:
 
@@ -376,7 +376,7 @@ comparisons [Parker23]_, SAT3/SAT3-NN-style spectrum-aware rules
 be used as a predictive absolute-flux model.
 
 The reduced objective helper
-``spectraxgk.quasilinear.quasilinear_feature_objective`` supports the same
+``spectraxgk.diagnostics.quasilinear_transport.quasilinear_feature_objective`` supports the same
 diagnostic rules for differentiability tests from feature vectors
 ``[gamma, kperp_eff2, flux_weight]``. The fast suite checks the resulting
 Jacobians against central finite differences before these objectives are used
@@ -392,7 +392,7 @@ Implementation map
      - Source
      - Responsibility
    * - Quasilinear weights
-     - :mod:`spectraxgk.quasilinear`
+     - :mod:`spectraxgk.diagnostics.quasilinear_transport`
      - phase/amplitude-invariant ``k_perp`` scale, heat and particle weights,
        and saturated outputs
    * - Diagnostic kernels

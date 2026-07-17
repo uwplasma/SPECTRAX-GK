@@ -798,13 +798,6 @@ Nonlinear Output NetCDF
    :members:
    :private-members:
 
-Quasilinear Transport Facade
-----------------------------
-
-.. automodule:: spectraxgk.quasilinear
-   :members:
-   :no-index:
-
 Quasilinear Transport Diagnostics
 ---------------------------------
 

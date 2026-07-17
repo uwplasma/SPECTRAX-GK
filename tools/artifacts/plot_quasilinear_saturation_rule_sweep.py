@@ -23,7 +23,7 @@ from spectraxgk.parallel import independent_map  # noqa: E402
 from spectraxgk.diagnostics.quasilinear_calibration import (
     calibration_point_from_nonlinear_window_summary,
 )  # noqa: E402
-from spectraxgk.quasilinear import (  # noqa: E402
+from spectraxgk.diagnostics.quasilinear_transport import (  # noqa: E402
     saturation_amplitude2,
     shape_aware_power_law_objective,
 )
