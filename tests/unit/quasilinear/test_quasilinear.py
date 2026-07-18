@@ -13,7 +13,8 @@ import spectraxgk as public_quasilinear
 from spectraxgk.diagnostics import quasilinear_transport
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import build_linear_cache, linear_terms_to_term_config
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import linear_terms_to_term_config
 from spectraxgk.diagnostics.quasilinear_transport import (
     compute_quasilinear_from_linear_state,
     effective_kperp2,

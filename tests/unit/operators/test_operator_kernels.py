@@ -25,13 +25,10 @@ from spectraxgk.core.velocity import (
 )
 from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    integrate_linear,
-    linear_rhs_cached,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+from spectraxgk.operators.linear.rhs import linear_rhs_cached
+from spectraxgk.solvers.linear.integrators import integrate_linear
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import (
     apply_collision_moment_matrix,

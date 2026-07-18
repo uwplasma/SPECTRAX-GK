@@ -220,8 +220,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear"
-path = "src/spectraxgk/linear.py"
+module = "spectraxgk.terms.assembly"
+path = "src/spectraxgk/terms/assembly.py"
 owned_modules = [
   "spectraxgk.diagnostics.analysis",
   "spectraxgk.diagnostics.growth_rates",
@@ -231,7 +231,6 @@ owned_modules = [
   "spectraxgk.core.grid",
   "spectraxgk.solvers.linear.krylov_algorithms",
   "spectraxgk.solvers.linear.krylov",
-  "spectraxgk.terms.assembly",
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",
   "spectraxgk.operators.linear.dissipation",
@@ -447,7 +446,7 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct owner-module tests for GMRES failure metadata if exposed in a future public solver report",
-  "keep spectraxgk.linear public implicit helper exports until the next major API cleanup",
+  "keep the linear implicit helper public exports available on the top-level spectraxgk API",
 ]
 
 [[modules]]
@@ -622,10 +621,9 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear"
-path = "src/spectraxgk/nonlinear.py"
+module = "spectraxgk.solvers.nonlinear.state_integration"
+path = "src/spectraxgk/solvers/nonlinear/state_integration.py"
 owned_modules = [
-  "spectraxgk.solvers.nonlinear.state_integration",
   "spectraxgk.solvers.nonlinear.diagnostic_integration",
   "spectraxgk.operators.nonlinear.brackets",
   "spectraxgk.terms.nonlinear",
@@ -1007,7 +1005,7 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct NetCDF resolved-diagnostic schema round-trip coverage after artifact writers are split further",
-  "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
+  "keep the nonlinear helper public exports object-identical on the top-level spectraxgk API",
 ]
 
 [[modules]]
@@ -1043,7 +1041,7 @@ artifact_paths = [
   "docs/_static/validation_gate_index.json",
 ]
 next_tests = [
-  "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
+  "keep the nonlinear helper public exports object-identical on the top-level spectraxgk API",
   "add direct helper parity coverage when the IMEX diagnostics loop is split further",
 ]
 
@@ -1298,7 +1296,6 @@ next_tests = [
 module = "spectraxgk.benchmarking.shared"
 path = "src/spectraxgk/benchmarking/shared.py"
 owned_modules = [
-  "spectraxgk.benchmarks",
   "spectraxgk.diagnostics.normalization",
 ]
 owner_lane = "reference loading, fit policies, and comparison-gate inputs"

@@ -30,7 +30,8 @@ from spectraxgk.geometry import (
 )
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
 from spectraxgk.runtime import (
     _build_initial_condition,
     _centered_glibc_random_pairs,
@@ -3831,8 +3832,8 @@ def test_runtime_linear_explicit_time_rejects_return_state_before_setup(
 
 
 def test_direct_linear_and_nonlinear_integrators_fast_smoke() -> None:
-    from spectraxgk.nonlinear import integrate_nonlinear
-    from spectraxgk.linear import integrate_linear
+    from spectraxgk.solvers.nonlinear.state_integration import integrate_nonlinear
+    from spectraxgk.solvers.linear.integrators import integrate_linear
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)

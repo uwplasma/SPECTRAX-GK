@@ -31,12 +31,9 @@ from spectraxgk.objectives.autodiff_validation import (
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    linear_rhs_cached,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+from spectraxgk.operators.linear.rhs import linear_rhs_cached
 from spectraxgk.diagnostics import fieldline_quadrature_weights
 from spectraxgk.diagnostics.quasilinear_transport import (
     effective_kperp2,

@@ -39,7 +39,8 @@ from spectraxgk.geometry import (
     SAlphaGeometry,
     apply_imported_geometry_grid_defaults,
 )
-from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
 from spectraxgk.runtime import (
     build_runtime_geometry,
     build_runtime_linear_params,

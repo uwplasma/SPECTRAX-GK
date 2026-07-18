@@ -175,12 +175,6 @@ Linear Operators
 
 .. automodule:: spectraxgk.operators.linear
 
-Linear
-------
-
-.. automodule:: spectraxgk.linear
-   :members:
-
 Linear Linked Boundaries
 ------------------------
 
@@ -310,12 +304,6 @@ application, branch selection, shift-invert preconditioning, and Arnoldi iterati
    :members:
    :private-members:
    :no-index:
-
-Nonlinear
----------
-
-.. automodule:: spectraxgk.nonlinear
-   :members:
 
 Nonlinear Diagnostics
 ---------------------
@@ -509,7 +497,7 @@ Nonlinear Gradient Statistics
 Benchmarks
 ----------
 
-.. automodule:: spectraxgk.benchmarks
+.. automodule:: spectraxgk.benchmarking.shared
    :members:
    :no-index:
 

@@ -141,13 +141,13 @@ Unit tests (numerical invariants)
 Representative unit checks include:
 
 - **Hermite/Laguerre ladder identities**:
-  :func:`spectraxgk.linear.apply_hermite_v`,
-  :func:`spectraxgk.linear.apply_laguerre_x`.
+  :func:`spectraxgk.operators.linear.moments.apply_hermite_v`,
+  :func:`spectraxgk.operators.linear.moments.apply_laguerre_x`.
 - **Quasineutrality consistency**:
-  :func:`spectraxgk.linear.quasineutrality_phi`.
+  :func:`spectraxgk.operators.linear.moments.quasineutrality_phi`.
 - **Streaming term validation**:
-  :func:`spectraxgk.linear.grad_z_periodic`,
-  :func:`spectraxgk.linear.streaming_term`.
+  :func:`spectraxgk.operators.linear.moments.grad_z_periodic`,
+  :func:`spectraxgk.operators.linear.moments.streaming_term`.
 - **Growth-rate fitting windows**:
   :func:`spectraxgk.diagnostics.growth_rates.select_fit_window`,
   :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate_auto`.
@@ -157,9 +157,9 @@ Representative unit checks include:
   :func:`spectraxgk.diagnostics.normalization.get_normalization_contract`,
   :func:`spectraxgk.diagnostics.normalization.apply_diagnostic_normalization`.
 - **Modular RHS equivalence**:
-  :func:`spectraxgk.linear.linear_terms_to_term_config`,
+  :func:`spectraxgk.operators.linear.params.linear_terms_to_term_config`,
   :func:`spectraxgk.terms.assemble_rhs_cached`,
-  :func:`spectraxgk.linear.linear_rhs_cached`.
+  :func:`spectraxgk.operators.linear.rhs.linear_rhs_cached`.
 
 These tests live in ``tests/unit/linear/test_linear.py`` and
 ``tests/unit/core/test_core_numerics.py`` and ``tests/unit/operators/test_terms_assembly.py`` and are
@@ -172,7 +172,7 @@ Physics regression tests
 The physics-focused tests exercise reduced or symmetry limits that should
 remain invariant across refactors:
 
-- **Term toggles**: :class:`spectraxgk.linear.LinearTerms` switches individual
+- **Term toggles**: :class:`spectraxgk.operators.linear.params.LinearTerms` switches individual
   operator components without changing the equation structure.
 - **Mirror/curvature activation**: nonzero drift terms create nonzero response
   when streaming and drive are turned off.
@@ -192,7 +192,7 @@ Benchmark regression tests
 Benchmark regression tests validate the Cyclone base case reference dataset and
 growth-rate extraction pipeline:
 
-- Loading the reference CSV via :func:`spectraxgk.benchmarks.load_cyclone_reference`.
+- Loading the reference CSV via :func:`spectraxgk.benchmarking.shared.load_cyclone_reference`.
 - Running short linear scans from the canonical
   ``examples/linear/axisymmetric/cyclone.toml`` input via
   :func:`spectraxgk.runtime.run_runtime_scan`.

@@ -36,8 +36,9 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution fallba
 
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-from spectraxgk.linear import build_linear_cache, linear_rhs_cached
-from spectraxgk.nonlinear import nonlinear_rhs_cached
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.rhs import linear_rhs_cached
+from spectraxgk.solvers.nonlinear.state_integration import nonlinear_rhs_cached
 from spectraxgk.runtime import (
     _build_initial_condition,
     _runtime_external_phi,
@@ -270,7 +271,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
 
     from jax import profiler
 
-    from spectraxgk.nonlinear import prepare_nonlinear_explicit_diagnostics
+    from spectraxgk.solvers.nonlinear.diagnostic_integration import prepare_nonlinear_explicit_diagnostics
     from spectraxgk.runtime import run_runtime_nonlinear
 
     cfg, _data = load_runtime_from_toml(args.config)

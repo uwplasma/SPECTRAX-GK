@@ -16,7 +16,9 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.objectives.autodiff_validation import covariance_diagnostics
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, integrate_linear, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
+from spectraxgk.solvers.linear.integrators import integrate_linear
 from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.operators.linear.params import Species, build_linear_params
 

@@ -23,7 +23,8 @@ from spectraxgk.geometry import (
     twist_shift_params,
 )
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
 
 
 def test_geometry_package_facade_preserves_core_symbol_identity() -> None:

@@ -97,8 +97,6 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/runtime/policies.py``
 2. **solver execution**
    - ``runtime.py``
-   - ``linear.py``
-   - ``nonlinear.py``
    - ``solvers/time/explicit.py``
    - ``solvers/time/explicit_steps.py``
    - ``solvers/time/explicit_cfl.py``
@@ -126,7 +124,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/demo.py``
    - ``cli.py``
 5. **benchmark and validation tooling**
-   - ``spectraxgk.benchmarks``
+   - ``spectraxgk.benchmarking.shared``
    - root ``benchmarks/`` drivers
    - purpose-specific ``tools/`` commands
    - ``tests/validation`` physics and benchmark gates
@@ -147,13 +145,13 @@ Physics / Numerics / IO Map
      - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/imported_miller.py``, ``geometry/imported_vmec.py``, ``geometry/vmec_field_line_sampling.py``, ``geometry/vmec_boozer_derivatives.py``, and ``geometry/vmec_state_controls.py``
      - parser, remap, normalization, geometry-response tests, Miller/VMEC finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
-     - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/collisions.py``, ``operators/linear/collision_tables.py``, ``operators/linear/dissipation.py``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, and ``terms/assembly.py``
+     - ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/collisions.py``, ``operators/linear/collision_tables.py``, ``operators/linear/dissipation.py``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, and ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests; cache-builder tests cover staged grid, geometry, twist-shift, gyro/moment, drift, and linked-boundary packing
    * - Solver objectives and eigen-AD gates
      - top-level ``spectraxgk`` objective exports, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/portfolio.py``, ``objectives/portfolio_guard.py``, ``objectives/zonal.py``, ``objectives/stellarator.py``, ``objectives/solver_vmec.py``, ``objectives/gradient_gates.py``, and the retained ``objectives/vmec_*`` modules
      - core linear/quasilinear observables, implicit eigenpair VJP, branch locality, portfolio reduction/covariance, zonal and stellarator objectives, VMEC/Boozer geometry gradients, admission gates, and finite-difference line searches
    * - Nonlinear operators
-     - ``nonlinear.py`` facade, ``solvers/nonlinear/state_integration.py``, ``solvers/nonlinear/diagnostic_integration.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/brackets.py``, ``operators/nonlinear/diagnostic_state.py``, ``operators/nonlinear/diagnostics.py``, ``operators/nonlinear/projection.py``, ``operators/nonlinear/collisions.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex.py``, ``solvers/nonlinear/imex_diagnostics.py``, ``core/velocity.py``, and ``terms/nonlinear.py``
+     - ``solvers/nonlinear/state_integration.py``, ``solvers/nonlinear/diagnostic_integration.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/brackets.py``, ``operators/nonlinear/diagnostic_state.py``, ``operators/nonlinear/diagnostics.py``, ``operators/nonlinear/projection.py``, ``operators/nonlinear/collisions.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex.py``, ``solvers/nonlinear/imex_diagnostics.py``, ``core/velocity.py``, and ``terms/nonlinear.py``
      - RHS routing, bracket payload, explicit stepping, explicit diagnostic orchestration, IMEX diagnostic orchestration, cached IMEX operator/state policy, diagnostic tuple assembly, fixed-mode and Hermitian projection, collision-split, staged electrostatic/electromagnetic nonlinear contribution helpers, transport-window tests
    * - Parallelization policy and helpers
      - ``parallel.py``, ``sharding.py``, ``parallel/velocity.py``, ``parallel/velocity_plan.py``, ``parallel/velocity_hermite.py``, ``parallel/velocity_streaming.py``, ``parallel/velocity_drive.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts_domain.py``, ``operators/nonlinear/parallel_contracts_spectral.py``, ``operators/nonlinear/parallel_contracts_strategy.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_layout.py``, ``operators/nonlinear/spectral_identity_reports.py``, ``operators/nonlinear/spectral_identity_rhs.py``, ``operators/nonlinear/spectral_identity_integrator.py``, ``operators/nonlinear/device_z.py``
@@ -171,7 +169,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarking.shared``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -284,9 +282,9 @@ Completed extractions:
   hypercollisional, hyperdiffusive, and end-damping kernels have one physical
   owner in ``operators/linear/dissipation.py``; assembly imports that owner
   directly rather than retaining a second implementation under ``terms``.
-- nonlinear public-driver internals. ``nonlinear.py`` remains the public
-  facade while cached RHS/state integration lives in ``solvers/nonlinear/state_integration.py`` and
-  explicit/IMEX diagnostic entry points live in ``solvers/nonlinear/diagnostic_integration.py``.
+- nonlinear public-driver internals. Cached RHS/state integration lives in
+  ``solvers/nonlinear/state_integration.py`` and explicit/IMEX diagnostic entry
+  points live in ``solvers/nonlinear/diagnostic_integration.py``.
   Lower-level nonlinear RHS, diagnostic-state, policy, explicit-step, explicit
   and IMEX diagnostic scan preparation/finalization, and IMEX mechanics remain
   owned by ``operators/nonlinear/*`` and
@@ -382,8 +380,7 @@ Completed extractions:
 - benchmark-harness physics metric extraction and scan/mode orchestration:
   ``diagnostics/analysis.py`` and ``workflows/runtime``. Reviewed
   reference tables and comparison-only policies live in
-  ``benchmarking/shared.py`` behind the compact ``spectraxgk.benchmarks``
-  facade. Eigenfunction normalization,
+  ``benchmarking/shared.py``. Eigenfunction normalization,
   phase alignment, comparison metrics, and reference-bundle IO live in
   ``diagnostics/modes.py``; diagnostic time-series loading lives in
   ``artifacts/nonlinear_diagnostics.py``; late/leading windows and analytic
@@ -546,8 +543,9 @@ Completed extractions:
   diagnostics, resolved field/transport group evaluation, and resolved
   spectra/channel schema packing while preserving the
   explicit/IMEX scan tuple schema. The old root nonlinear helper shims were
-  removed; normal users should use ``spectraxgk.nonlinear`` and developer
-  helpers should import from ``spectraxgk.operators.nonlinear``.
+  removed; normal users should use the top-level ``spectraxgk`` public API and
+  developer helpers should import from ``spectraxgk.solvers.nonlinear`` and
+  ``spectraxgk.operators.nonlinear``.
 - full-GK nonlinear executable orchestration lives in
   ``workflows/nonlinear.py`` behind the public ``spectraxgk.runtime`` facade.
   The owner separates runtime context construction, fixed-mode/source policy,
@@ -605,8 +603,9 @@ Completed extractions:
   matrix-free operator application and compiled iterations share the focused
   ``krylov_algorithms.py`` owner. The old root
   ``linear_*`` helper shims were
-  removed; normal users should use ``spectraxgk.linear`` for the public linear
-  API or import focused developer helpers from the domain packages.
+  removed; normal users should use the top-level ``spectraxgk`` public API for
+  the public linear surface or import focused developer helpers from the domain
+  packages.
 - nonlinear turbulence-gradient paired-seed statistics, control-variate
   construction, uncertainty propagation, and independent control-mean gates
   live in ``diagnostics/nonlinear_gradient_statistics.py`` as pure reusable
@@ -728,8 +727,8 @@ The benchmark stack has two explicit roles:
   own promoted solver execution. ETG and Cyclone use only this path; artifact
   figures consume reviewed tables rather than launching a second hidden solve.
 
-``spectraxgk.benchmarks`` is now a small facade for reviewed reference data and
-comparison policies. KBM time histories and fixed-beta ``k_y`` scans use
+Reviewed reference data and comparison policies live in
+``spectraxgk.benchmarking.shared``. KBM time histories and fixed-beta ``k_y`` scans use
 generic runtime orchestration. The former ``kbm_beta_scan.py`` was removed
 after audit showed that it incorrectly interpreted a ``k_y`` reference table
 as beta values. TEM and kinetic-electron execution also use canonical runtime

@@ -11,24 +11,12 @@ from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
 from spectraxgk.diagnostics.analysis import estimate_observed_order
 from spectraxgk.geometry import SAlphaGeometry, SlabGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import (
-    LinearCache,
-    LinearParams,
-    LinearTerms,
-    apply_hermite_v,
-    apply_laguerre_x,
-    build_H,
-    build_linear_cache,
-    compute_b,
-    diamagnetic_drive_coeffs,
-    energy_operator,
-    grad_z_periodic,
-    integrate_linear,
-    linear_rhs,
-    linear_rhs_cached,
-    quasineutrality_phi,
-    streaming_term,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.cache_model import LinearCache
+from spectraxgk.operators.linear.moments import apply_hermite_v, apply_laguerre_x, build_H, compute_b, diamagnetic_drive_coeffs, energy_operator, grad_z_periodic, quasineutrality_phi, streaming_term
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+from spectraxgk.operators.linear.rhs import linear_rhs, linear_rhs_cached
+from spectraxgk.solvers.linear.integrators import integrate_linear
 from spectraxgk.operators.linear.linked import _build_linked_fft_maps
 from spectraxgk.operators.linear.params import _x64_enabled
 from spectraxgk.operators.linear.streaming import grad_z_linked_fft
@@ -2001,7 +1989,7 @@ def test_rho_star_scales_cache_ky():
 
 def test_shift_axis_noop():
     """shift_axis should return the input when offset is zero."""
-    from spectraxgk.linear import shift_axis
+    from spectraxgk.operators.linear.moments import shift_axis
 
     arr = jnp.arange(6.0).reshape(2, 3)
     out = shift_axis(arr, 0, axis=0)

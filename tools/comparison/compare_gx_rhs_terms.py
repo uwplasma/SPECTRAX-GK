@@ -34,13 +34,9 @@ from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, KBMBa
 from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_H,
-    build_linear_cache,
-    linear_terms_to_term_config,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.moments import build_H
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
 from spectraxgk.operators.linear.params import _as_species_array
 from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config
 from spectraxgk.terms.linear_terms import (

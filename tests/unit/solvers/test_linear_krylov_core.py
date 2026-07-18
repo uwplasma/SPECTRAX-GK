@@ -11,12 +11,8 @@ import solvax
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    linear_terms_to_term_config,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
 import spectraxgk.solvers.linear.krylov as lk
 import spectraxgk.solvers.linear.krylov_algorithms as ka
 

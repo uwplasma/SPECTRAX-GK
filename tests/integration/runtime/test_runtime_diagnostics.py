@@ -52,12 +52,8 @@ from spectraxgk.core.velocity import gamma0
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.diagnostics.analysis import select_ky_index
-from spectraxgk.linear import (
-    build_linear_cache,
-    LinearParams,
-    LinearTerms,
-    linear_terms_to_term_config,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
 from spectraxgk.solvers.time.explicit import (
     ExplicitTimeConfig,
     _apply_completed_step_state_mask,

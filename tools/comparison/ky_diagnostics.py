@@ -50,12 +50,9 @@ from spectraxgk.config import (
 from spectraxgk.solvers.time.diffrax_linear import integrate_linear_diffrax
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    integrate_linear_diagnostics,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+from spectraxgk.solvers.linear.integrators import integrate_linear_diagnostics
 from spectraxgk.solvers.linear.krylov import KrylovConfig, dominant_eigenpair
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import TermConfig

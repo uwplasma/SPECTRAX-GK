@@ -17,7 +17,7 @@ from examples.theory_and_demos.quasilinear_implicit_sensitivity import (
 from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.linear import LinearParams
+from spectraxgk.operators.linear.params import LinearParams
 from spectraxgk.solvers.time.runners import (
     integrate_linear_from_config,
     integrate_nonlinear_from_config,

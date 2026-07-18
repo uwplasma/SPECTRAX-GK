@@ -28,8 +28,9 @@ from spectraxgk._version import __version__ as spectraxgk_version
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.nonlinear import integrate_nonlinear_cached, nonlinear_rhs_cached
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
+from spectraxgk.solvers.nonlinear.state_integration import integrate_nonlinear_cached, nonlinear_rhs_cached
 from spectraxgk.parallel.integrators import integrate_nonlinear_sharded
 from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig

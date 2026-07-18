@@ -2715,7 +2715,7 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         + summary["n_excluded_modules"]
     )
     rows = {row["module"]: row for row in summary["rows"]}
-    assert rows["spectraxgk.linear"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.terms.assembly"]["coverage_target_percent"] == 95.0
     assert rows["spectraxgk.runtime"]["n_owned_modules"] >= 5
     assert rows["spectraxgk.diagnostics.validation_gates"]["n_physics_contracts"] >= 2
     assert (
@@ -2757,7 +2757,7 @@ def test_repository_validation_manifest_is_well_formed() -> None:
     assert rows["spectraxgk.solvers.nonlinear.explicit"]["n_numerics_contracts"] >= 2
     assert rows["spectraxgk.solvers.nonlinear.imex"]["coverage_target_percent"] == 95.0
     assert rows["spectraxgk.solvers.nonlinear.imex"]["n_physics_contracts"] >= 2
-    assert "spectraxgk.nonlinear" in summary["high_priority_open"]
+    assert "spectraxgk.solvers.nonlinear.state_integration" in summary["high_priority_open"]
 
 
 def test_validation_manifest_main_writes_summary_json(tmp_path: Path) -> None:

@@ -46,7 +46,7 @@ from spectraxgk.benchmarking.shared import (
     _two_species_params,
 )
 from spectraxgk.config import InitializationConfig
-from spectraxgk.linear import LinearParams
+from spectraxgk.operators.linear.params import LinearParams
 from spectraxgk.solvers.linear.krylov import KrylovConfig
 
 

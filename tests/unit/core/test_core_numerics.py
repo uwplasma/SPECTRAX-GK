@@ -10,8 +10,6 @@ import numpy as np
 import pytest
 
 import spectraxgk.config as public_config
-import spectraxgk.linear as public_linear
-import spectraxgk.nonlinear as public_nonlinear
 import spectraxgk.objectives.vmec_transport as public_vmec_transport
 import spectraxgk.operators.linear as public_linear_operators
 import spectraxgk.operators.nonlinear.policies as public_nonlinear_policies
@@ -52,8 +50,6 @@ from spectraxgk.utils.callbacks import (
 @pytest.mark.parametrize(
     ("facade", "required"),
     [
-        (public_linear, {"LinearParams", "build_linear_cache", "integrate_linear"}),
-        (public_nonlinear, {"nonlinear_rhs_cached", "integrate_nonlinear"}),
         (public_linear_operators, {"LinearCache", "build_H", "linear_rhs_cached"}),
         (
             public_nonlinear_policies,
@@ -68,8 +64,6 @@ from spectraxgk.utils.callbacks import (
         ),
     ],
     ids=(
-        "linear",
-        "nonlinear",
         "linear-operators",
         "nonlinear-policies",
         "vmec-transport",
@@ -187,8 +181,8 @@ def test_species_builder_core_contracts() -> None:
 
 
 def test_normalization_and_benchmark_public_contracts() -> None:
-    import spectraxgk.benchmarks as benchmark_defaults
-    from spectraxgk import benchmarks
+    import spectraxgk.benchmarking.shared as benchmark_defaults
+    from spectraxgk.benchmarking import shared as benchmarks
     from spectraxgk.diagnostics.normalization import (
         apply_diagnostic_normalization,
         get_normalization_contract,

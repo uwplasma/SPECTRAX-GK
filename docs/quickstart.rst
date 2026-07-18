@@ -164,7 +164,7 @@ Python demo
 
    print(result.gamma, result.omega)
 
-Tracked comparison tables are available through :mod:`spectraxgk.benchmarks`;
+Tracked comparison tables are available through :mod:`spectraxgk.benchmarking.shared`;
 all simulations use the unified runtime API above.
 
 Run from TOML

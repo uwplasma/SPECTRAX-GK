@@ -372,8 +372,7 @@ runtime defaults for the solver or the shipped example drivers.
 Benchmark runner internals
 --------------------------
 
-``spectraxgk.benchmarks`` is a compact reference-policy facade. Reusable
-reference loaders and comparison policies live in
+Reusable reference loaders and comparison policies live in
 ``spectraxgk.benchmarking.shared``; timestepping, scans, geometry, and physical
 operators use the same runtime and solver APIs as ordinary simulations.
 Case-level reproduction policy stays in root ``benchmarks/`` drivers rather

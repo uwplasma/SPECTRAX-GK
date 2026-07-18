@@ -19,31 +19,15 @@ from spectraxgk.diagnostics.transport import heat_flux_species
 from spectraxgk.diagnostics.moments import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
 from spectraxgk.operators.linear.cache_builder import (
     update_linear_cache_for_sheared_kx,
 )
-from spectraxgk.nonlinear import (
-    build_nonlinear_collision_split_policy,
-    build_nonlinear_diagnostic_setup,
-    build_nonlinear_simulation_diagnostics,
-    build_nonlinear_imex_operator,
-    build_nonlinear_time_step_policy,
-    finalize_nonlinear_scan_diagnostics,
-    integrate_nonlinear,
-    integrate_nonlinear_cached,
-    integrate_nonlinear_explicit_diagnostics,
-    integrate_nonlinear_explicit_diagnostics_state,
-    integrate_nonlinear_imex_cached,
-    integrate_nonlinear_imex_diagnostics,
-    nonlinear_rhs_cached,
-    integrate_nonlinear_sheared,
-    integrate_nonlinear_sheared_transport,
-    maybe_emit_nonlinear_progress,
-    run_sampled_explicit_diagnostic_scan,
-    sampled_scan_intervals,
-    select_nonlinear_step_diagnostics,
-)
+from spectraxgk.operators.nonlinear.diagnostics import build_nonlinear_simulation_diagnostics, finalize_nonlinear_scan_diagnostics, maybe_emit_nonlinear_progress, run_sampled_explicit_diagnostic_scan, sampled_scan_intervals, select_nonlinear_step_diagnostics
+from spectraxgk.operators.nonlinear.policies import build_nonlinear_collision_split_policy, build_nonlinear_diagnostic_setup, build_nonlinear_imex_operator, build_nonlinear_time_step_policy
+from spectraxgk.solvers.nonlinear.diagnostic_integration import integrate_nonlinear_explicit_diagnostics, integrate_nonlinear_explicit_diagnostics_state, integrate_nonlinear_imex_diagnostics
+from spectraxgk.solvers.nonlinear.state_integration import integrate_nonlinear, integrate_nonlinear_cached, integrate_nonlinear_imex_cached, integrate_nonlinear_sheared, integrate_nonlinear_sheared_transport, nonlinear_rhs_cached
 from spectraxgk.operators.nonlinear.collisions import (
     _apply_collision_split,
     _collision_damping,

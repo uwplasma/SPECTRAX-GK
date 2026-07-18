@@ -30,7 +30,7 @@ from benchmarks.performance.benchmark_runtime_memory import (
 )
 from spectraxgk.core.velocity import J_l_all, single_precision_factorial
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams, LinearTerms
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms
 from spectraxgk.operators.linear import dissipation as linear_dissipation_module
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
@@ -97,7 +97,7 @@ def test_cyclone_publication_driver_uses_asymptotic_fit_window() -> None:
 
 
 def test_benchmark_public_exports_resolve() -> None:
-    import spectraxgk.benchmarks as benchmark_api
+    import spectraxgk.benchmarking.shared as benchmark_api
 
     for name in benchmark_api.__all__:
         assert hasattr(benchmark_api, name), name

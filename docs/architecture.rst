@@ -8,18 +8,12 @@ Core modules
   coefficients, and polarization helpers.
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
-- ``spectraxgk.linear``: explicit public linear API for documented operators,
-  cache construction, parallel kernels, and integrators. Private kernel helpers
-  stay in their owning modules and are not compatibility exports.
 - ``spectraxgk.operators.linear``: cache construction, linked-boundary maps,
   Hermite/Laguerre moment operators, linear parameter pytrees, and cached RHS
   assembly entry points.
 - ``spectraxgk.solvers.linear``: matrix-free eigensolver policy, linear
   fixed-step/diagnostic integration policy, implicit GMRES/preconditioner
   policy, and gated velocity-parallel linear RHS dispatch.
-- ``spectraxgk.nonlinear``: explicit public nonlinear API for state integration,
-  diagnostics, collision/time-step policy, and cached IMEX workflows. Private
-  kernels stay in their physical or numerical owner modules.
 - ``spectraxgk.solvers.nonlinear``: explicit RK/SSP/K10 and IMEX fixed-point,
   GMRES, and stage-composition policy.
 - ``spectraxgk.operators.nonlinear.diagnostics``: sampling, resolved-diagnostic
@@ -40,8 +34,6 @@ Core modules
 - ``spectraxgk.benchmarking.shared``: reviewed reference tables,
   normalization constants, and comparison-only branch policies.
 - ``spectraxgk.diagnostics.growth_rates``: reusable growth/frequency fitting.
-- ``spectraxgk.benchmarks``: compact reference-policy facade; it does not own
-  simulation execution.
 - ``spectraxgk.artifacts.plotting``: reusable, publication-ready plotting utilities.
 
 Term-level source mapping

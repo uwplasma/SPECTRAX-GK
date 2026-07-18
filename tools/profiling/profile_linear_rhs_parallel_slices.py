@@ -85,7 +85,7 @@ def _block_until_ready(tree: Any) -> None:
 
 
 def _terms() -> Any:
-    from spectraxgk.linear import LinearTerms
+    from spectraxgk.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=1.0,
@@ -103,7 +103,7 @@ def _terms() -> Any:
 
 
 def _streaming_terms() -> Any:
-    from spectraxgk.linear import LinearTerms
+    from spectraxgk.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=1.0,
@@ -126,7 +126,8 @@ def _build_species_problem(*, nx: int, ny: int, nz: int, nl: int, nm: int):
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=nx, Ny=ny, Nz=nz, Lx=6.0, Ly=6.0, boundary="periodic")
@@ -195,7 +196,8 @@ def profile_linear_rhs_parallel_slices(
     """Time serial and velocity-sharded electrostatic linear-slices RHS calls."""
 
     import jax
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     platform_name = str(platform).lower()
@@ -365,7 +367,7 @@ def profile_linear_rhs_parallel_slices(
 
     integration: dict[str, object] | None = None
     if axis_name in {"species", "species_hermite"} and int(integration_steps) > 0:
-        from spectraxgk.linear import integrate_linear
+        from spectraxgk.solvers.linear.integrators import integrate_linear
 
         def integrate(parallel):
             return integrate_linear(

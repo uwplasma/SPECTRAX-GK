@@ -7,7 +7,7 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.solvers.time.diffrax import integrate_linear_diffrax
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams
+from spectraxgk.operators.linear.params import LinearParams
 
 
 def main() -> None:

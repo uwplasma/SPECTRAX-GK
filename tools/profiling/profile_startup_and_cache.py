@@ -137,11 +137,9 @@ def main_runtime_startup(argv: list[str] | None = None) -> None:
     from spectraxgk.geometry import apply_imported_geometry_grid_defaults
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-    from spectraxgk.linear import build_linear_cache
-    from spectraxgk.nonlinear import (
-        integrate_nonlinear_explicit_diagnostics_state,
-        nonlinear_rhs_cached,
-    )
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.solvers.nonlinear.diagnostic_integration import integrate_nonlinear_explicit_diagnostics_state
+    from spectraxgk.solvers.nonlinear.state_integration import nonlinear_rhs_cached
     from spectraxgk.runtime import (
         _build_initial_condition,
         _runtime_external_phi,
@@ -491,7 +489,7 @@ def main_linear_cache(argv: list[str] | None = None) -> None:
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
     from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-    from spectraxgk.linear import build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
     from spectraxgk.operators.linear.cache_arrays import (
         _build_end_damping_profile_array,
         _build_gyroaverage_cache_arrays,

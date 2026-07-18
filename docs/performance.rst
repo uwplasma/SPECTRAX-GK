@@ -504,7 +504,7 @@ helper:
      --summary-json docs/_static/full_linear_rhs_trace_summary.json
 
 The May 11, 2026 local CPU production-path artifacts record
-``source="spectraxgk.linear.linear_rhs_cached"`` and
+``source="spectraxgk.operators.linear.rhs.linear_rhs_cached"`` and
 ``force_electrostatic_fields=true``. The initial-state companion reports
 ``warm_seconds=1.54e-1`` and ``compile_execute_seconds=1.02``. The active
 ``z_wave`` companion injects resolved parallel variation and reports
@@ -520,7 +520,7 @@ artifacts.
 The May 11, 2026 one-RTX-A4000 production-path artifacts
 ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
 ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` report
-``source="spectraxgk.linear.linear_rhs_cached"``, ``2779`` HLO lines, and
+``source="spectraxgk.operators.linear.rhs.linear_rhs_cached"``, ``2779`` HLO lines, and
 ``force_electrostatic_fields=true``. The initial and active ``z_wave`` states
 measure ``warm_seconds=5.13e-3`` and ``5.15e-3``, respectively. These GPU
 artifacts show that the production linear-RHS path remains about five
@@ -1181,7 +1181,7 @@ evaluation:
 
 .. code-block:: python
 
-   from spectraxgk.nonlinear import prepare_nonlinear_explicit_diagnostics
+   from spectraxgk.solvers.nonlinear.diagnostic_integration import prepare_nonlinear_explicit_diagnostics
 
    simulation = prepare_nonlinear_explicit_diagnostics(
        initial_state, grid, geometry, parameters,
@@ -1640,7 +1640,7 @@ JIT considerations
 ------------------
 
 The linear integrator is ``jit``-compiled with the number of steps and method
-as static arguments. The operator term switches (:class:`spectraxgk.linear.LinearTerms`)
+as static arguments. The operator term switches (:class:`spectraxgk.operators.linear.params.LinearTerms`)
 should also remain static inside a compiled loop to avoid recompilation. The
 cached operator arrays can be constructed once and reused across multiple runs
 to avoid repeated geometry setup costs. Nonlinear IMEX paths now reuse the

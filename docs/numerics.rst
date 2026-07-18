@@ -20,19 +20,19 @@ The core numerical algorithms and their implementation entry points are:
   :mod:`spectraxgk.core.velocity`.
 - **Gyroaverage / polarization**:
   :func:`spectraxgk.core.velocity.J_l_all`,
-  :func:`spectraxgk.linear.quasineutrality_phi`.
+  :func:`spectraxgk.operators.linear.moments.quasineutrality_phi`.
 - **Centered periodic derivative in z**:
-  :func:`spectraxgk.linear.grad_z_periodic`.
+  :func:`spectraxgk.operators.linear.moments.grad_z_periodic`.
 - **Hermite ladder streaming**:
-  :func:`spectraxgk.linear.streaming_term`.
+  :func:`spectraxgk.operators.linear.moments.streaming_term`.
 - **Curvature / grad-B / mirror couplings**:
-  :func:`spectraxgk.linear.linear_rhs_cached`,
+  :func:`spectraxgk.operators.linear.rhs.linear_rhs_cached`,
   :func:`spectraxgk.geometry.SAlphaGeometry.drift_components`,
   :func:`spectraxgk.geometry.SAlphaGeometry.bgrad`.
 - **Diamagnetic drive**:
-  :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
+  :func:`spectraxgk.operators.linear.moments.diamagnetic_drive_coeffs`.
 - **Time integration (explicit RK, IMEX)**:
-  :func:`spectraxgk.linear.integrate_linear`.
+  :func:`spectraxgk.solvers.linear.integrators.integrate_linear`.
 - **CFL-controlled RK4 (adaptive step control, streaming diagnostics)**:
   :func:`spectraxgk.integrate_linear_explicit`
   (implemented in :func:`spectraxgk.solvers.time.explicit.integrate_linear_explicit`).
@@ -42,13 +42,13 @@ The core numerical algorithms and their implementation entry points are:
 - **Config-driven runner**:
   :func:`spectraxgk.solvers.time.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
-  :func:`spectraxgk.linear.integrate_linear`.
+  :func:`spectraxgk.solvers.linear.integrators.integrate_linear`.
 - **Structured Hermite-line solves and bounded-memory Jacobians**:
   `SOLVAX <https://github.com/uwplasma/SOLVAX>`_ provides the reusable
   tridiagonal and autodiff primitives; SPECTRAX-GK retains physical layout,
   coefficients, tolerances, and acceptance policy.
 - **Nonlinear IMEX (implicit linear + explicit nonlinear)**:
-  :func:`spectraxgk.nonlinear.integrate_nonlinear`.
+  :func:`spectraxgk.solvers.nonlinear.state_integration.integrate_nonlinear`.
 
 JAX execution model
 -------------------
@@ -56,7 +56,7 @@ JAX execution model
 The implementation leverages the following JAX primitives:
 
 - **JIT compilation**: ``jax.jit`` is used in
-  :func:`spectraxgk.linear.integrate_linear` to stage time-stepping
+  :func:`spectraxgk.solvers.linear.integrators.integrate_linear` to stage time-stepping
   kernels.
 - **Loop fusion**: ``jax.lax.scan`` drives the time integration loop.
 - **FFT grids**: ``jax.numpy.fft.fftfreq`` is used in
@@ -84,10 +84,10 @@ The implementation leverages the following JAX primitives:
   checked against finite differences.
 - **Stencil operations**: ``jax.numpy.roll`` and ``jax.numpy.pad`` implement
   the centered ``z`` derivative and Hermite/Laguerre ladder couplings in
-  :func:`spectraxgk.linear.grad_z_periodic`,
-  :func:`spectraxgk.linear.streaming_term`,
-  :func:`spectraxgk.linear.apply_hermite_v`,
-  :func:`spectraxgk.linear.apply_laguerre_x`.
+  :func:`spectraxgk.operators.linear.moments.grad_z_periodic`,
+  :func:`spectraxgk.operators.linear.moments.streaming_term`,
+  :func:`spectraxgk.operators.linear.moments.apply_hermite_v`,
+  :func:`spectraxgk.operators.linear.moments.apply_laguerre_x`.
 
 These links are clickable in the HTML docs via the ``viewcode`` extension.
 
@@ -138,9 +138,9 @@ The linear solver supports:
   implicit derivative, so the gradient does not depend on the number of Krylov
   iterations except through primal/transpose solve accuracy.
 
-These are all implemented in :func:`spectraxgk.linear.integrate_linear` and
+These are all implemented in :func:`spectraxgk.solvers.linear.integrators.integrate_linear` and
 share the cached operator data assembled by
-:func:`spectraxgk.linear.build_linear_cache`.
+:func:`spectraxgk.operators.linear.cache_builder.build_linear_cache`.
 
 Diffrax integration
 -------------------
@@ -280,7 +280,7 @@ the row-relative :math:`k_x` mesh. Direct full/compressed bracket, JAX-tangent,
 three-step state, and heat-flux gates agree within ``2e-5`` relative tolerance.
 The
 research function
-:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared` verifies zero-shear
+:func:`spectraxgk.solvers.nonlinear.state_integration.integrate_nonlinear_sheared` verifies zero-shear
 trajectory identity and cumulative full-step remapping. Its midpoint RK2 and
 three-stage Heun RK3 routes evaluate each RHS in the correctly remapped stage
 coordinate basis and return each derivative to the step basis before combining
@@ -330,7 +330,7 @@ redundant RHS evaluation per step without altering the Runge--Kutta tableau;
 the state-only path remains separate so it never computes fields solely for
 reuse.
 
-:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_transport` records the
+:func:`spectraxgk.solvers.nonlinear.state_integration.integrate_nonlinear_sheared_transport` records the
 canonical per-species gyro-Bohm heat flux at every accepted step. It uses
 the same flux-surface quadrature and transport kernel as production nonlinear
 diagnostics and evaluates that kernel with the instantaneous sheared cache. The
@@ -551,8 +551,8 @@ end-to-end JAX differentiability:
   high-residual mode.
 - **Reusable IMEX operators**: nonlinear IMEX runs can prebuild and reuse the
   matrix-free linear operator with
-  :func:`spectraxgk.nonlinear.build_nonlinear_imex_operator` and pass it to
-  :func:`spectraxgk.nonlinear.integrate_nonlinear_imex_cached` via
+  :func:`spectraxgk.operators.nonlinear.policies.build_nonlinear_imex_operator` and pass it to
+  :func:`spectraxgk.solvers.nonlinear.state_integration.integrate_nonlinear_imex_cached` via
   ``implicit_operator``. When ``apar=bpar=0``, the IMEX fixed-point and
   post-step field paths use the same electrostatic compiled linear-RHS route as
   the explicit nonlinear RHS, avoiding unused electromagnetic Hamiltonian
@@ -1338,9 +1338,9 @@ Putting the pieces together, the linear operator is assembled from:
 - **Grad-B drift**: ``gb_d`` coupling across :math:`\ell\pm1`.
 - **Diamagnetic drive**: :math:`\omega_*` energy-weighted source in ``m=0,2``.
 
-Operator toggles start from :class:`spectraxgk.linear.LinearTerms` and are
+Operator toggles start from :class:`spectraxgk.operators.linear.params.LinearTerms` and are
 converted into one canonical :class:`spectraxgk.terms.TermConfig` through
-:func:`spectraxgk.linear.linear_terms_to_term_config`. The same modular RHS
+:func:`spectraxgk.operators.linear.params.linear_terms_to_term_config`. The same modular RHS
 path is then used by fixed-step linear integrators, diffrax integrators,
 Krylov operator applications, and nonlinear IMEX linear solves.
 
@@ -1383,7 +1383,7 @@ The diamagnetic drive is written in the standard energy form,
 where :math:`\omega_* = k_y R/L_n`, :math:`\eta_i = (R/L_T)/(R/L_n)`, and
 :math:`\mathcal{E}_{\ell m}` is the Hermite–Laguerre energy operator applied to
 the basis. The coefficients are generated by
-:func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
+:func:`spectraxgk.operators.linear.moments.diamagnetic_drive_coeffs`.
 
 Time integration
 ----------------

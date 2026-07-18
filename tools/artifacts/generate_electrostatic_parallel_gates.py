@@ -59,7 +59,7 @@ def _terms(
     gradb: float = 0.0,
     diamagnetic: float = 0.0,
 ) -> Any:
-    from spectraxgk.linear import LinearTerms
+    from spectraxgk.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=0.0,
@@ -99,7 +99,8 @@ def build_problem(
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(
@@ -176,7 +177,7 @@ def build_electrostatic_field_reduce_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     devices = _device_list(requested_devices)
     state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
@@ -265,7 +266,7 @@ def build_electrostatic_diamagnetic_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
     from spectraxgk.parallel.velocity import diamagnetic_drive_shard_map
 
     devices = _device_list(requested_devices)
@@ -385,7 +386,8 @@ def build_electrostatic_drift_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import build_H, linear_rhs_cached
+    from spectraxgk.operators.linear.moments import build_H
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
     from spectraxgk.parallel.velocity import (
         curvature_gradb_drift_shard_map,
         mirror_drift_shard_map,

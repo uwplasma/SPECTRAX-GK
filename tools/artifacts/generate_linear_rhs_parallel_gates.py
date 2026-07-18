@@ -65,7 +65,7 @@ def _linear_terms(
     gradb: float = 0.0,
     diamagnetic: float = 0.0,
 ) -> Any:
-    from spectraxgk.linear import LinearTerms
+    from spectraxgk.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=streaming,
@@ -109,7 +109,8 @@ def build_problem(
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(
@@ -187,7 +188,7 @@ def build_linear_rhs_streaming_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
     from spectraxgk.parallel.velocity import periodic_streaming_shard_map
 
     devices = _device_list(requested_devices)
@@ -277,7 +278,8 @@ def build_linear_rhs_streaming_electrostatic_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.parallel.velocity import build_velocity_sharding_plan
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
@@ -385,7 +387,8 @@ def build_linear_rhs_electrostatic_slices_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.parallel.velocity import build_velocity_sharding_plan
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
@@ -708,7 +711,7 @@ def _run_zero_norm_state_window(args: argparse.Namespace) -> int:
 
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-    from spectraxgk.linear import build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
     from spectraxgk.runtime import (
         _build_initial_condition,
         _select_nonlinear_mode_indices,

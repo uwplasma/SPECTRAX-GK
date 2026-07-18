@@ -163,7 +163,7 @@ from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig
-from spectraxgk.linear import LinearTerms
+from spectraxgk.operators.linear.params import LinearTerms
 from spectraxgk.workflows.runtime.config import RuntimeConfig
 from spectraxgk.operators.linear.params import Species
 
@@ -2786,7 +2786,7 @@ from spectraxgk.benchmarking.shared import (
 )
 from spectraxgk.config import KBMBaseCase
 from spectraxgk.core.grid import select_ky_grid
-from spectraxgk.linear import build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
 

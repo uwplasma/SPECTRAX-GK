@@ -13,15 +13,11 @@ from spectraxgk.diagnostics.moments import fieldline_quadrature_weights
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
 from spectraxgk.solvers.time.explicit import _linear_frequency_bound
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.nonlinear import (
-    build_nonlinear_imex_operator,
-    integrate_nonlinear,
-    integrate_nonlinear_explicit_diagnostics,
-    integrate_nonlinear_explicit_diagnostics_state,
-    integrate_nonlinear_imex_cached,
-    prepare_nonlinear_explicit_diagnostics,
-)
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearParams
+from spectraxgk.operators.nonlinear.policies import build_nonlinear_imex_operator
+from spectraxgk.solvers.nonlinear.diagnostic_integration import integrate_nonlinear_explicit_diagnostics, integrate_nonlinear_explicit_diagnostics_state, prepare_nonlinear_explicit_diagnostics
+from spectraxgk.solvers.nonlinear.state_integration import integrate_nonlinear, integrate_nonlinear_imex_cached
 from spectraxgk.terms.config import TermConfig
 
 pytestmark = pytest.mark.integration

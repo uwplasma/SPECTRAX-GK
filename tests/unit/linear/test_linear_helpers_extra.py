@@ -18,21 +18,13 @@ import spectraxgk.operators.linear as linear_cache
 import spectraxgk.solvers.linear.implicit as linear_implicit
 import spectraxgk.operators.linear.dissipation as linear_dissipation
 import spectraxgk.terms.linear_terms as linear_terms
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    build_H,
-    hypercollision_damping,
-    integrate_linear,
-    integrate_linear_diagnostics,
-    linear_rhs,
-    linear_rhs_cached,
-    linear_rhs_parallel_cached,
-    lenard_bernstein_eigenvalues,
-    linear_terms_to_term_config,
-    term_config_to_linear_terms,
-)
+from spectraxgk.operators.linear.cache_arrays import hypercollision_damping
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.moments import build_H, lenard_bernstein_eigenvalues
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config, term_config_to_linear_terms
+from spectraxgk.operators.linear.rhs import linear_rhs, linear_rhs_cached
+from spectraxgk.solvers.linear.integrators import integrate_linear, integrate_linear_diagnostics
+from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
 from spectraxgk.operators.linear.cache_arrays import (
     _build_end_damping_profile_array,
     _build_gyroaverage_cache_arrays,

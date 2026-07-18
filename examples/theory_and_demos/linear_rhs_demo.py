@@ -3,7 +3,8 @@ import jax.numpy as jnp
 from spectraxgk.config import CycloneBaseCase
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, integrate_linear
+from spectraxgk.operators.linear.params import LinearParams
+from spectraxgk.solvers.linear.integrators import integrate_linear
 
 
 def main():

@@ -29,7 +29,7 @@ from spectraxgk.solvers.time.diffrax_core import (
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams
+from spectraxgk.operators.linear.params import LinearParams
 from spectraxgk.operators.linear.params import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 from dataclasses import replace
@@ -177,7 +177,7 @@ def test_pack_unpack_complex_state_roundtrip() -> None:
 
 def test_density_from_G_cached_all_branches() -> None:
     grid, geom, params, G5 = _tiny_diffrax_setup(nx=1, ny=2, nz=4)
-    from spectraxgk.linear import build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
 
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
     out5 = _density_from_G_cached(G5, cache, density_species_index=None)

@@ -246,8 +246,8 @@ eigenvector, and
 
 The sign convention above matches the runtime output: ``gamma`` is the growth
 rate and ``omega`` is the physical mode frequency reported by the executable.
-The operator is assembled by :mod:`spectraxgk.linear`,
-:mod:`spectraxgk.terms.assembly`, and the individual term modules under
+The operator is assembled by
+:mod:`spectraxgk.terms.assembly` and the individual term modules under
 :mod:`spectraxgk.terms`.
 
 Field solve and linear weights

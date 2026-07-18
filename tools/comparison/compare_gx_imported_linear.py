@@ -47,7 +47,8 @@ from spectraxgk.solvers.time.explicit import (
     _linear_explicit_step,
 )
 from spectraxgk.workflows.runtime.toml import load_toml
-from spectraxgk.linear import LinearTerms, build_linear_cache
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.params import LinearTerms
 from spectraxgk.runtime import (
     _build_initial_condition as _build_runtime_initial_condition,
     _load_initial_state_from_file,

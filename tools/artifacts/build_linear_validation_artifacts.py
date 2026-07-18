@@ -6093,12 +6093,9 @@ def finite_wavelength_itg_growth_curve(
     from spectraxgk.config import GridConfig
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.geometry import SlabGeometry
-    from spectraxgk.linear import (
-        LinearParams,
-        LinearTerms,
-        build_linear_cache,
-        linear_rhs_cached,
-    )
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
     from spectraxgk.operators.linear.collisions import (
         FiniteWavelengthCoulombOperator,
     )
@@ -6238,12 +6235,9 @@ def collisionless_slab_itg_hierarchy(
     from spectraxgk.config import GridConfig
     from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.geometry import SlabGeometry
-    from spectraxgk.linear import (
-        LinearParams,
-        LinearTerms,
-        build_linear_cache,
-        linear_rhs_cached,
-    )
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     if len(resolutions) < 2 or any(p < 0 or j < 0 for p, j in resolutions):
         raise ValueError("at least two non-negative resolutions are required")

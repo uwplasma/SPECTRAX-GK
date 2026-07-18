@@ -48,7 +48,7 @@ from spectraxgk.geometry import (  # noqa: E402
     apply_geometry_grid_defaults,
     ensure_flux_tube_geometry_data,
 )
-from spectraxgk.linear import build_linear_cache  # noqa: E402
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
 from spectraxgk.runtime import (  # noqa: E402
     _build_initial_condition,
     build_runtime_geometry,

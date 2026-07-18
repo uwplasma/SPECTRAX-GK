@@ -172,8 +172,8 @@ drift/drive terms:
 - ``omega_star_scale``: scales the diamagnetic drive.
 
 In code, ``rho_star`` multiplies the Fourier grids inside
-:func:`spectraxgk.linear.build_linear_cache`, while ``omega_d_scale`` and
-``omega_star_scale`` enter directly in :func:`spectraxgk.linear.linear_rhs_cached`.
+:func:`spectraxgk.operators.linear.cache_builder.build_linear_cache`, while ``omega_d_scale`` and
+``omega_star_scale`` enter directly in :func:`spectraxgk.operators.linear.rhs.linear_rhs_cached`.
 
 Diagnostic normalization mode
 -----------------------------

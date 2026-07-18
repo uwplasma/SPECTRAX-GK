@@ -1059,7 +1059,8 @@ def _small_periodic_field_problem():
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
     from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
@@ -1081,7 +1082,8 @@ def _small_kinetic_electron_problem(*, linked: bool = False):
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
     from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams
 
     grid_config = (
         GridConfig(
@@ -1126,7 +1128,8 @@ def _small_kinetic_electron_problem(*, linked: bool = False):
 
 
 def test_mixed_species_hermite_linked_operator_matches_serial_trajectory() -> None:
-    from spectraxgk.linear import integrate_linear, linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.integrators import integrate_linear
 
     devices = jax.devices()
     if len(devices) < 4:
@@ -1212,7 +1215,8 @@ def test_mixed_species_hermite_linked_operator_matches_serial_trajectory() -> No
 
 
 def test_electrostatic_phi_reference_matches_production_field_solve() -> None:
-    from spectraxgk.linear import LinearTerms, linear_rhs_cached
+    from spectraxgk.operators.linear.params import LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     state, cache, params = _small_periodic_field_problem()
     terms = LinearTerms(
@@ -1366,7 +1370,8 @@ def test_species_sharded_phi_matches_production_quasineutrality() -> None:
 def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route() -> (
     None
 ):
-    from spectraxgk.linear import integrate_linear, linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.integrators import integrate_linear
 
     devices = jax.devices()
     if len(devices) < 4:
@@ -1653,7 +1658,7 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
 
 
 def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
-    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     def assert_species_close(observed, expected, *, rtol=5e-5, atol=5e-6):
         for species_index in range(int(expected.shape[0])):
@@ -1711,7 +1716,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     )
     assert_species_close(routed_rhs, expected_rhs, rtol=3e-5, atol=3e-5)
 
-    from spectraxgk.linear import integrate_linear
+    from spectraxgk.solvers.linear.integrators import integrate_linear
 
     serial_state, serial_phi = integrate_linear(
         state,
@@ -1881,7 +1886,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
 
 
 def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
-    from spectraxgk.linear import integrate_linear
+    from spectraxgk.solvers.linear.integrators import integrate_linear
     from spectraxgk.operators.linear.params import linear_terms_to_term_config
     from spectraxgk.terms.assembly import compute_fields_cached
 
@@ -1937,7 +1942,7 @@ def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
 
 
 def test_species_pmap_collision_preserves_long_wavelength_moments() -> None:
-    from spectraxgk.linear import integrate_linear
+    from spectraxgk.solvers.linear.integrators import integrate_linear
     from spectraxgk.operators.linear.dissipation import _laguerre_temperature_coupling
 
     if len(jax.devices()) < 2:
@@ -2011,7 +2016,7 @@ def test_species_pmap_collision_preserves_long_wavelength_moments() -> None:
 
 
 def test_species_pmap_parameter_gradient_matches_centered_difference() -> None:
-    from spectraxgk.linear import integrate_linear
+    from spectraxgk.solvers.linear.integrators import integrate_linear
 
     devices = jax.devices()
     if len(devices) < 2:
@@ -2124,7 +2129,7 @@ def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
 
 
 def test_mirror_and_curvature_gradb_drift_shard_maps_match_production_terms() -> None:
-    from spectraxgk.linear import build_H
+    from spectraxgk.operators.linear.moments import build_H
     from spectraxgk.terms.linear_terms import (
         curvature_gradb_contribution,
         mirror_contribution,
@@ -2206,7 +2211,7 @@ def test_mirror_and_curvature_gradb_drift_shard_maps_match_production_terms() ->
 def test_mirror_and_curvature_gradb_drift_shard_maps_match_reference_when_logical_devices_available() -> (
     None
 ):
-    from spectraxgk.linear import build_H
+    from spectraxgk.operators.linear.moments import build_H
 
     devices = jax.devices()
     if len(devices) < 2:
@@ -2349,7 +2354,8 @@ def test_six_dimensional_mirror_and_drift_paths_preserve_species_broadcasts() ->
 
 
 def test_diamagnetic_drive_shard_map_matches_production_term() -> None:
-    from spectraxgk.linear import LinearTerms, linear_rhs_cached
+    from spectraxgk.operators.linear.params import LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     state, cache, params = _small_periodic_field_problem()
     phi = electrostatic_phi_reference(
@@ -2648,13 +2654,10 @@ def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
     from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.linear import (
-        LinearParams,
-        LinearTerms,
-        build_linear_cache,
-        linear_rhs_cached,
-        linear_rhs_parallel_cached,
-    )
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     cfg = CycloneBaseCase(
@@ -2708,7 +2711,8 @@ def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -
 
 
 def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> None:
-    from spectraxgk.linear import LinearParams, LinearTerms, linear_rhs_parallel_cached
+    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     class Cache:
@@ -2731,13 +2735,10 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
     from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.linear import (
-        LinearParams,
-        LinearTerms,
-        build_linear_cache,
-        linear_rhs_cached,
-        linear_rhs_parallel_cached,
-    )
+    from spectraxgk.operators.linear.cache_builder import build_linear_cache
+    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     cfg = CycloneBaseCase(
@@ -2802,11 +2803,9 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
 def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_call_graph() -> (
     None
 ):
-    from spectraxgk.linear import (
-        LinearTerms,
-        linear_rhs_cached,
-        linear_rhs_parallel_cached,
-    )
+    from spectraxgk.operators.linear.params import LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     state, cache, params = _small_periodic_field_problem()
@@ -2861,11 +2860,9 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_cal
 def test_linear_rhs_parallel_cached_auto_backend_selects_gated_electrostatic_slices() -> (
     None
 ):
-    from spectraxgk.linear import (
-        LinearTerms,
-        linear_rhs_cached,
-        linear_rhs_parallel_cached,
-    )
+    from spectraxgk.operators.linear.params import LinearTerms
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     state, cache, params = _small_periodic_field_problem()
@@ -2911,7 +2908,8 @@ def test_linear_rhs_parallel_cached_auto_backend_selects_gated_electrostatic_sli
 def test_linear_rhs_parallel_cached_electrostatic_linear_slices_rejects_ungated_terms() -> (
     None
 ):
-    from spectraxgk.linear import LinearParams, LinearTerms, linear_rhs_parallel_cached
+    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     class Cache:
@@ -3083,7 +3081,7 @@ def test_fused_electrostatic_route_rejects_invalid_decompositions() -> None:
 def test_bounded_mixed_species_hermite_rhs_matches_serial_operator() -> None:
     """One complete mixed RHS compile must preserve the serial equations."""
 
-    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     devices = jax.devices()
     if len(devices) < 4:
@@ -3122,7 +3120,7 @@ def test_bounded_mixed_species_hermite_rhs_matches_serial_operator() -> None:
 def test_bounded_species_sharded_rhs_matches_serial_operator() -> None:
     """One complete species-sharded compile must preserve the serial equations."""
 
-    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.operators.linear.rhs import linear_rhs_cached
 
     devices = jax.devices()
     if len(devices) < 2:
