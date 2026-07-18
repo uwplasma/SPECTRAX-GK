@@ -2205,7 +2205,7 @@ def test_electrostatic_field_reduce_gate_builds_identity_summary(monkeypatch) ->
 
     monkeypatch.setattr(field_reduce_gate, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", _fake_devices)
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", fake_rhs)
     monkeypatch.setattr(
         "spectraxgk.parallel.velocity.build_velocity_sharding_plan",
         lambda *_args, **_kwargs: _VelocityPlan(
@@ -2265,7 +2265,7 @@ def test_electrostatic_diamagnetic_gate_builds_identity_summary(monkeypatch) -> 
 
     monkeypatch.setattr(diamagnetic_gate, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", _fake_devices)
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", fake_rhs)
     monkeypatch.setattr(
         "spectraxgk.parallel.velocity.build_velocity_sharding_plan",
         lambda *_args, **_kwargs: _VelocityPlan(
@@ -2340,9 +2340,9 @@ def test_electrostatic_drift_gate_builds_identity_summary(monkeypatch) -> None:
 
     monkeypatch.setattr(drift_gate, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", _fake_devices)
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", fake_rhs)
     monkeypatch.setattr(
-        "spectraxgk.linear.build_H", lambda state, *_args, **_kwargs: state
+        "spectraxgk.operators.linear.moments.build_H", lambda state, *_args, **_kwargs: state
     )
     monkeypatch.setattr(
         "spectraxgk.parallel.velocity.build_velocity_sharding_plan",
@@ -2401,7 +2401,7 @@ def test_linear_rhs_streaming_gate_builds_identity_summary(monkeypatch) -> None:
 
     monkeypatch.setattr(streaming_gate, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", _fake_devices)
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", fake_rhs)
     monkeypatch.setattr(
         "spectraxgk.parallel.velocity.build_velocity_sharding_plan",
         lambda *_args, **_kwargs: _VelocityPlan(
@@ -2451,8 +2451,8 @@ def test_linear_rhs_electrostatic_routes_build_identity_summary(
 
     monkeypatch.setattr(gate, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", _fake_devices)
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_parallel_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.solvers.linear.parallel.linear_rhs_parallel_cached", fake_rhs)
     monkeypatch.setattr(
         "spectraxgk.parallel.velocity.build_velocity_sharding_plan",
         lambda *_args, **_kwargs: _VelocityPlan(

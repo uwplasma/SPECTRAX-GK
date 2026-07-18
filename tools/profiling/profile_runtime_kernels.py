@@ -861,7 +861,7 @@ def main_full_linear_rhs(argv: list[str] | None = None) -> int:
         memory_profile=args.memory_profile,
         hlo_out=args.hlo_out,
         force_electrostatic_fields=force_electrostatic_fields,
-        source="spectraxgk.linear.linear_rhs_cached",
+        source="spectraxgk.operators.linear.rhs.linear_rhs_cached",
     )
     _write_summary_json(summary, args.summary_json)
     print(json.dumps(summary, indent=2, sort_keys=True))

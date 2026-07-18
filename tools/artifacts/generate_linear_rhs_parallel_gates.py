@@ -236,7 +236,7 @@ def build_linear_rhs_streaming_gate(
         {
             "case": "Full linear-RHS streaming-only shard-map identity gate",
             "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
+            "reference_source": "spectraxgk.operators.linear.rhs.linear_rhs_cached with only streaming enabled",
             "claim_scope": "linear RHS identity gate with only streaming enabled, not a full-RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -342,8 +342,8 @@ def build_linear_rhs_streaming_electrostatic_gate(
     return _json_clean(
         {
             "case": "Electrostatic streaming linear-RHS shard-map identity gate",
-            "source": "spectraxgk.linear.linear_rhs_parallel_cached backend=streaming_electrostatic",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
+            "source": "spectraxgk.solvers.linear.parallel.linear_rhs_parallel_cached backend=streaming_electrostatic",
+            "reference_source": "spectraxgk.operators.linear.rhs.linear_rhs_cached with only streaming enabled",
             "claim_scope": "streaming plus electrostatic field-solve call-graph identity, not a full-RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -459,8 +459,8 @@ def build_linear_rhs_electrostatic_slices_gate(
     return _json_clean(
         {
             "case": "Composed electrostatic linear-slices RHS identity gate",
-            "source": "spectraxgk.linear.linear_rhs_parallel_cached backend=electrostatic_linear_slices",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with streaming/mirror/curvature/gradB/diamagnetic enabled",
+            "source": "spectraxgk.solvers.linear.parallel.linear_rhs_parallel_cached backend=electrostatic_linear_slices",
+            "reference_source": "spectraxgk.operators.linear.rhs.linear_rhs_cached with streaming/mirror/curvature/gradB/diamagnetic enabled",
             "claim_scope": (
                 "single-species periodic electrostatic linear-RHS identity for the gated slices; "
                 "not a linked-boundary, collision, electromagnetic, nonlinear, or speedup claim"
