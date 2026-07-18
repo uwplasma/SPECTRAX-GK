@@ -23,9 +23,9 @@ if len(sys.argv) > 1:
         f"unexpected arguments: {' '.join(sys.argv[1:])}; edit the constants"
     )
 
-import vmec_jax as vj  # noqa: E402
-from vmec_jax import optimize as opt  # noqa: E402
-from vmec_jax.core import turbulence as turb  # noqa: E402
+import vmex as vj  # noqa: E402
+from vmex import optimize as opt  # noqa: E402
+from vmex.core import turbulence as turb  # noqa: E402
 
 INPUT_FILE = (
     Path(vj.__file__).resolve().parents[1] / "examples/data/input.minimal_seed_nfp2"

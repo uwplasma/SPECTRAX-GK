@@ -342,7 +342,7 @@ def compare_scripted_stellarator_itg_objectives(
         "production_nonlinear_optimization_claim": False,
         "baseline_scope": (
             "reduced max-mode-1 QA controls; solved-boundary baseline should be the final WOUT "
-            "from vmec_jax/examples/optimization/QA_optimization.py or the constraints-only VMEC-JAX driver"
+            "from vmex/examples/optimization/QA_optimization.py or the constraints-only VMEX driver"
         ),
         "parameter_names": list(STELLARATOR_ITG_PARAMETER_NAMES),
         "observable_names": list(STELLARATOR_ITG_OBSERVABLE_NAMES),
