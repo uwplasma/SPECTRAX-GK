@@ -538,6 +538,18 @@ Use large coherent commits, each independently green:
   turbulence objective seam, fixed-weight one-point limitation in current QA
   examples, 94-file/96k-line tool blocker, 1,592-file static evidence blocker,
   and atomic rename requirements.
+- 2026-07-17 root-facade tranche: removed the ``spectraxgk.linear``,
+  ``spectraxgk.nonlinear``, and ``spectraxgk.benchmarks`` re-export modules and
+  routed the public API and every consumer directly to the domain owners
+  (``operators.linear.*``, ``solvers.linear.*``, ``solvers.nonlinear.*``,
+  ``operators.nonlinear.*``, ``benchmarking.shared``). Repointed 19 API-registry
+  targets and 46 consumer files, re-homed the linear/nonlinear coverage-owner
+  blocks onto ``terms.assembly`` and ``solvers.nonlinear.state_integration``,
+  migrated 37 documentation cross-references, and fixed a stale ``ci.yml``
+  fundamentals-core shard path. The source tree is now 190 files / 86,417 lines;
+  import (362 public names), Ruff, unit+integration (no new failures), 97
+  release-gate tests, architecture/size/coverage manifests, and Sphinx ``-W``
+  all pass.
 
 ## Current Completion
 
@@ -545,15 +557,17 @@ Use large coherent commits, each independently green:
 | --- | ---: |
 | Frozen 1.7 contract | 95% |
 | Deletion/repository trim | 50% |
-| Scientific-core simplification | 33% |
+| Scientific-core simplification | 35% |
 | Test/benchmark/command simplification | 21% |
 | QA linear/QL/nonlinear optimization | 15% |
 | README/docs rebuild | 14% |
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **31%**. The next implementation tranche removes
-the remaining linear/nonlinear solver facades by routing top-level names to
-their domain owners, then returns to term/field/dissipation ownership and the
-next unreferenced campaign/static-evidence family. The uncontended GPU refresh
+Weighted overall completion: **32%**. The root linear/nonlinear/benchmarks
+facades are now gone. The next implementation tranche consolidates
+term/field/dissipation ownership under ``terms``/``physics`` and removes the
+duplicated ``parallel/*_reference``/``*_shard_map`` reimplementations of the
+canonical streaming and drift kernels, then continues with the next
+unreferenced campaign/static-evidence family. The uncontended GPU refresh
 remains independent of that critical path.
