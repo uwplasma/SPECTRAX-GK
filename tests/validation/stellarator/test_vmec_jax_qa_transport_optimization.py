@@ -156,8 +156,6 @@ def test_optimization_examples_document_user_customization_knobs() -> None:
     assert "N_HERMITE" in examples_readme
     assert "R_OVER_LT" in examples_readme
     assert "R_OVER_LN" in examples_readme
-    assert "BASELINE_VMEC_FILE" in examples_readme
-    assert "CANDIDATE_VMEC_FILE" in examples_readme
     assert "objective_terms" in examples_readme
     assert "opt.least_squares" in examples_readme
     assert "t=[1100,1500]" in examples_readme

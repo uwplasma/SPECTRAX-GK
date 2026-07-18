@@ -265,6 +265,39 @@ Differentiable-Physics Figures
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open
      - primary artifact base: ``docs/_static/stellarator_itg_optimization_uq.png`` with JSON sidecars and individual diagnostic panels ``docs/_static/stellarator_itg_growth_optimization.png``, ``docs/_static/stellarator_itg_quasilinear_optimization.png``, and ``docs/_static/stellarator_itg_nonlinear_optimization.png``. The supporting reduced comparison sidecar ``docs/_static/stellarator_itg_optimization_comparison.json`` records objective histories and reduction ratios, but its companion PNG is a synthetic reduced max-mode-1 surface diagnostic and is not a solved-geometry optimization figure. These files live under ``examples/theory_and_demos/reduced_stellarator_itg`` rather than ``examples/optimization``. The UQ panel computes covariance from the final weighted objective residual Jacobian and shows derivative parity, control uncertainty, covariance projection, and rank/conditioning diagnostics. The production QA optimization examples are the VMEC-JAX-style scripts in ``examples/optimization``; they remain separate from this diagnostic artifact stack and still require solved-WOUT gates plus converged nonlinear audits before transport-optimization claims.
 
+Quasilinear Model-Selection Figures
+-----------------------------------
+
+These quasilinear model-development figures are retained as static evidence;
+their generator scripts were retired, but the compressed panels and their
+JSON/CSV companions remain tracked. Each documents a scoped negative or
+claim-boundary result, not a runtime absolute-flux predictor:
+
+- ``docs/_static/quasilinear_saturation_rule_sweep.png`` (with JSON companion):
+  simple-rule saturation sweep on two training cases and ten held-out windows;
+  positive-growth mixing length, linear heat-flux weight, and absolute-growth
+  all fail the held-out absolute-flux gate.
+- ``docs/_static/quasilinear_shape_aware_saturation.png`` (with JSON companion):
+  shared spectrum-shape exponent model, a manuscript-facing negative result
+  ruling out a one-exponent envelope.
+- ``docs/_static/quasilinear_candidate_uncertainty.png`` (with JSON companion):
+  leave-one-geometry-out candidate scoring with training-residual prediction
+  intervals; the best candidate ``spectral_envelope_ridge`` misses the 0.35
+  transport gate.
+- ``docs/_static/quasilinear_candidate_regularization_sweep.png`` (with CSV/JSON
+  companions): ridge-penalty sweep confirming no tested penalty passes the gate.
+- ``docs/_static/quasilinear_dataset_sufficiency.png`` (with JSON companion):
+  audit of the validated nonlinear windows behind the candidate models.
+- ``docs/_static/quasilinear_model_selection_status.png`` (with CSV/JSON
+  companion): consolidated claim-boundary panel, ``passed=false`` with the
+  dataset-sufficiency, uncertainty, and transport-error blockers.
+- ``docs/_static/quasilinear_stellarator_usefulness.png`` (with CSV/JSON
+  companions): stellarator usefulness/limitation summary across HSX, W7-X,
+  CTH-like, and shaped-pressure windows.
+- ``docs/_static/quasilinear_screening_skill.png`` (with CSV/JSON companions):
+  rank/correlation screening skill; no model passes the full-portfolio and
+  held-out rank gates.
+
 Caption Policy
 --------------
 
