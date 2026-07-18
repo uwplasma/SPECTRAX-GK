@@ -112,8 +112,7 @@ Nonlinear matrix release gates
 
 Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
 portfolio tools rather than manual figure selection.
-``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` writes the long-window
-matched matrix, and ``tools/release/check_nonlinear_transport_gates.py matrix-portfolio``
+``tools/release/check_nonlinear_transport_gates.py matrix-portfolio``
 selects only a passing family before publication artifacts are indexed. The current
 tracked max-mode-5 campaign is negative
 evidence: accepted QA/ESS passed only ``9/18`` samples, projected weight
@@ -243,11 +242,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/artifacts/build_zonal_flow_artifacts.py miller-panel``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py contract``
-- ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py moment-tail``
-- ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder``
-- ``tools/campaigns/write_w7x_zonal_closure_sweep.py``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py state-convention``
-- ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py sweep``
 - ``tools/artifacts/build_zonal_flow_artifacts.py objective-gate``
 - ``tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py``
 
@@ -350,46 +345,8 @@ case eligible for a scoped high-grid holdout role only; it explicitly does not
 claim full ``n48/n64/n80`` convergence or promote an absolute quasilinear
 transport model.
 
-``tools/campaigns/write_external_vmec_holdout_configs.py`` is the reproducibility
-companion for that lane. It writes the fixed-step nonlinear TOMLs and restart
-copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
-``t = 150`` initial runs followed by ``t = 250`` restart continuations at
-``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
-the resulting traces must still pass the convergence gate above before they can
-enter quasilinear calibration reports or optimization studies. Its
-``direct_full_horizon_launch_commands`` can be launched with
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py`` even though the manifest is
-an external-VMEC holdout manifest rather than a nonlinear-gradient manifest.
-For manual restart-ladder launches, prefer the paired
-``staged_ladder_skip_existing_commands`` or
-``direct_full_horizon_skip_existing_launch_commands`` lists; those wrappers
-skip only after the full ``.out.nc``/``.restart.nc``/``.big.nc`` bundle exists,
-so interrupted office runs can be resumed without accidentally treating a
-partial output as complete.
-That launcher now preserves manifest command provenance, honors leading
-``PYTHONPATH=...``/``CUDA_VISIBLE_DEVICES=...`` assignments, and uses one
-work-conserving worker per listed GPU so a shorter grid does not leave a GPU
-idle while a larger grid continues running. For the
-production nonlinear optimization evidence lane the same generator also accepts
-``--seed-variant`` and ``--dt-variant`` entries. Those options write explicit
-``[metadata]`` blocks and variant-specific filenames so seed and timestep
-replicate windows can be launched on the office GPUs, extracted with the same
-transport-window protocol, and checked by
-``tools/release/check_nonlinear_transport_gates.py readiness`` before any
-absolute-flux or turbulent-flux optimization wording can be considered.
-For external-VMEC replicate campaigns,
-``tools/artifacts/build_external_vmec_replicate_ensemble.py`` is the reproducible
-NetCDF-to-evidence wrapper: it extracts heat-flux traces from finished
-``*.out.nc`` files, writes the transport-window summaries and convergence
-reports, runs the readiness and ensemble gates, and produces the documentation
-figure used by the manuscript ledger.
-It fails closed by default when those gates fail.  The explicit
-``--allow-failed-gates`` option is reserved for diagnostic landscapes where
-failed points must remain visible in the final plot rather than terminating a
-multi-point campaign; it must not be used to promote a nonlinear transport
-claim.
-Before those files enter the ensemble builder, run
-``tools/release/check_nonlinear_transport_gates.py runtime-outputs`` on every produced ``*.out.nc``.
+Every produced ``*.out.nc`` file is checked with
+``tools/release/check_nonlinear_transport_gates.py runtime-outputs``.
 That gate verifies the grouped NetCDF contains ``Grids/time`` and the requested
 heat-flux diagnostic, checks finite monotone time samples, enforces optional
 ``tmin/tmax`` coverage, and fails closed for restart-only or metadata-only
@@ -412,36 +369,6 @@ next blocker is predictive transfer margin and uncertainty separation rather
 than a missing sample dimension. These artifacts are intentionally tracked so
 future transport-objective redesigns can be judged against a real long-window
 nonlinear failure, not a startup proxy.
-For actual nonlinear turbulence-gradient promotion, use
-``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient`` when the perturbation is a
-VMEC boundary coefficient. It writes the matched ``input.*`` files and records
-the exact ``vmec_jax`` commands needed to create the three real re-equilibrated
-``wout`` files. Then use
-``tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py`` to write the matched
-baseline/plus/minus VMEC launch ladders and replay commands. The campaign
-writer rejects missing files, duplicate resolved paths, and byte-identical VMEC
-contents unless ``--allow-identical-vmec-content`` is explicitly used for a
-plumbing-only smoke test; production evidence therefore requires real
-``wout`` files. The generated TOMLs are restart-ladder segments: a final
-``t=900`` config only advances the last segment unless the earlier restart
-artifacts have been seeded. The manifest therefore records
-``direct_full_horizon_launch_commands`` for one-shot final-horizon campaigns
-and an ``output_gate_command`` that must pass before ensemble evidence is built.
-For the direct one-shot route, launch the recorded commands with
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py`` instead of an ad-hoc shell
-loop. The launcher reads the manifest, assigns one worker per listed GPU, writes
-per-task logs and a status JSON, supports ``--skip-existing`` for safe restarts,
-and keeps the command provenance identical to the manifest. The status JSON is
-created before the first long nonlinear task exits, with ``status="running"``,
-``task_count``, and ``pending_count`` fields, so multi-hour office-GPU campaigns
-have immediate machine-readable progress even when no output NetCDF has finished
-yet.
-Then use
-``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` after the matched
-``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
-the central finite-difference gradient sidecar and checks response resolution,
-forward/backward asymmetry, subtraction conditioning, propagated uncertainty,
-and the uncertainty gates on all three replicated nonlinear windows.
 The tracked optimized-QA/ESS ``ZBS(1,0)`` example is deliberately kept as a
 fail-closed regression: the real ``vmec_jax`` re-equilibrated ``t=[450,900]``
 baseline/plus/minus ensembles pass their replicated transport-window gates and
@@ -478,202 +405,12 @@ artifact is tracked as
 It is a regression target for the fail-closed workflow and a design input for
 the next campaign, not promotion evidence.
 
-``tools/artifacts/build_nonlinear_gradient_evidence.py rank-candidates``
-compares completed finite-difference artifacts by resolved response, locality,
-conditioning, and propagated uncertainty. The adjacent ``bracket-sweep``
-subcommand accepts only one physical control at several amplitudes and writes
-JSON/CSV/PNG/PDF evidence. Neither operation promotes a result that has not
-already passed the long-window finite-difference gate.
-
 The tracked QA/ESS controls are deliberately negative regression cases.
 ``ZBS(1,1)`` is statistically cleaner but nonlocal, ``ZBS(1,0)`` can be
 local but remains variance limited, and the larger ``RBC(1,1)`` bracket
 worsens asymmetry. The completed overdetermined audit records full runtime
 coverage and zero promoted controls; it is evidence against weakening the
 locality or uncertainty criteria, not a missing workflow.
-
-``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan``
-matches common plus/minus labels and quantifies whether paired sampling or a
-control variate can reduce response uncertainty. The corresponding
-``control-mean`` subcommand is the only post-run promotion path for that
-variance-reduced estimator. For the tracked 7.5% ``ZBS(1,0)`` case, 21
-independent matched pairs over ``t=[600,1100]`` pass the control-mean gate
-with combined relative uncertainty ``0.311 < 0.5``. This result is scoped to
-that response estimator; it does not establish a universal nonlinear
-turbulence gradient.
-
-``tools/campaigns/write_vmec_state_mapping_campaign.py symmetric`` is the launch-plan
-artifact for that missing step. It consumes the QL seed screen, writes
-baseline/plus/minus VMEC input decks for candidate perturbable coefficients,
-and records the planned response-matrix protocol. The tracked
-``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.json``
-currently uses the bundled QA VMEC input and the candidate ``RBC(1,1)``,
-``ZBS(1,1)``, and ``ZBS(1,0)`` directions. It intentionally reports
-``passed = false`` and ``ready_for_nonlinear_launch = false`` because the VMEC
-responses, state-to-input Jacobian, condition number, and residual have not
-been extracted yet. The companion tests verify combined VMEC input lines such
-as ``RBC(...), ZBS(...)`` so second-column coefficients are not silently missed.
-
-``tools/artifacts/build_vmec_state_to_input_mapping_response.py`` consumes the solved
-WOUT files from that campaign and writes
-``docs/_static/nonlinear_gradient_state_to_input_mapping_response.json``. The
-tracked response artifact uses normally terminated ``vmec_jax`` solves with a
-larger explicit iteration budget and reports a zero ``2 x 3`` response matrix,
-rank ``0``, and relative target residual ``1`` for both admitted controls. This
-negative result is useful evidence: the current stellarator-symmetric
-``RBC/ZBS`` directions cannot be used to launch the asymmetric ``Rsin/Zcos``
-nonlinear-gradient controls.
-
-``tools/campaigns/write_vmec_state_mapping_campaign.py asymmetric`` is the
-symmetry-compatible follow-up launch writer. It reads the same QL seed screen,
-sets ``LASYM = .TRUE.``, inserts explicit zero-baseline ``RBS/ZBC`` coefficients
-when needed, and writes matched baseline/plus/minus VMEC decks with absolute
-finite-difference steps. The tracked
-``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.json``
-uses four candidate ``RBS/ZBC`` directions. After the twelve generated
-``vmec_jax`` solves terminated normally,
-``tools/artifacts/build_vmec_state_to_input_mapping_response.py`` wrote
-``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json``:
-the measured Jacobian has rank ``2``, condition number about ``1.02``, and no
-mapping blockers, so the runbook can produce explicit short-bracket command
-fragments for both admitted state controls.
-
-Both state-mapping subcommands and the weighted short-bracket launcher use the
-public ``vmec_jax.VmecInput`` read/write API. If a requested boundary mode lies
-outside the seed input's ``NTOR`` or ``MPOL`` extent, the writer expands all
-four boundary arrays and the associated axis arrays before inserting the
-coefficient. Round-trip tests then re-read the generated deck and verify
-``LASYM``, mode extent, and coefficient value; a textual coefficient that the
-VMEC parser would discard is not accepted as launch evidence.
-
-``tools/campaigns/write_vmec_state_control_short_bracket_launch.py`` consumes that
-passing runbook and writes the next launch contract:
-``docs/_static/nonlinear_gradient_state_control_short_bracket_launch.json``.
-It perturbs the least-squares ``RBS/ZBC`` input directions with an absolute
-state-control scalar step, keeps ``LASYM = .TRUE.``, and records the bounded
-``t=150`` nonlinear campaign-writer commands. The tracked status sidecar
-``docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.json``
-shows that the six generated VMEC decks terminated normally and that two
-short-bracket nonlinear campaign manifests were prepared. This is still launch
-status, not nonlinear-gradient evidence; the prepared nonlinear runs must pass
-runtime-output, replicated-window, central-finite-difference, and final
-evidence gates before promotion.
-
-The first short-bracket nonlinear audit has also been run on the office GPUs
-and summarized in
-``docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.json``.
-All ``18`` runtime outputs completed, the corrected bounded-output gates pass
-for all six state/replicate groups, and all six replicated-window ensemble
-gates pass. The central finite-difference gates fail closed for both mapped
-state controls: ``Rsin_mid_surface_m1`` has response fraction about ``0.0045``,
-finite-difference asymmetry about ``9.5``, and gradient uncertainty about
-``7.7``; ``Zcos_mid_surface_m1`` has response fraction about ``0.0015``,
-asymmetry about ``45``, and uncertainty about ``23``. This is the expected
-scientific use of a short-bracket audit: it proves the nonlinear plumbing and
-window statistics are stable, but it rejects promotion until a bracket sweep or
-longer/lower-noise window resolves a local response.
-
-The bracket-amplitude follow-up is now tracked in
-``docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.json``.
-It is generated by the same state-to-input artifact owner with the
-``tools/artifacts/build_vmec_state_to_input_mapping_response.py bracket-sweep-status``
-subcommand, so VMEC state-control response maps and bracket-sweep status
-reports share one documented workflow.
-It runs the same two mapped state controls at ``alpha_delta=3e-3`` and
-``1e-2`` on the office GPUs. All ``36`` nonlinear runs complete and the output
-and replicated-window gates remain stable, but all four central
-finite-difference gates still fail. The largest response fraction is only
-``0.0045`` against the ``0.03`` resolved-response gate, with relative gradient
-uncertainty still above ``8.8``. This closes the larger-single-control bracket
-as a promotion route. The next valid test is lower-variance evidence: longer
-post-transient windows, more independent replicas, paired-seed variance
-reduction, or a better-conditioned multi-control observable.
-
-``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` is the companion
-for a single smoother composite direction. It perturbs several VMEC boundary
-coefficients together, normalizes the finite-difference scalar by the Euclidean
-norm of the coefficient-change vector, and writes the same
-baseline/plus/minus VMEC launch contract. The tracked
-``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` uses the
-current QA/ESS long-window evidence signs to define a 2% descent-oriented
-``ZBS(1,1)``, ``ZBS(1,0)``, ``RBC(1,1)`` direction. This is still a launch
-artifact; promotion requires the resulting re-equilibrated VMEC files and
-long-window nonlinear FD gate.
-After a detached office campaign finishes, run
-``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess`` on the generated
-``gradient_campaign_manifest.json`` rather than replaying individual commands
-by hand. With ``--require-outputs`` it fails before post-processing if any
-expected ``*.out.nc`` file is missing; otherwise it runs the output gates,
-baseline/plus/minus replicated ensemble builders, the central-FD gate, and the
-final nonlinear-gradient evidence check in dependency order. Use
-``--allow-blocked`` only when collecting a failure artifact for diagnosis; a
-promotion run should keep the default fail-closed behavior.
-If that central-FD gate is blocked by a replicated state, run
-``tools/campaigns/nonlinear_replicate_followup.py spread-summary`` on the baseline, plus, and
-minus ensemble JSON files before launching more nonlinear simulations. The
-tool enriches the ensemble rows with seed/timestep labels and convergence
-statistics, writes JSON/CSV/PNG sidecars, and classifies whether the failed
-state is seed-limited, timestep-limited, mixed seed/timestep spread, or missing
-metadata. The current QA/ESS composite profile-direction diagnostic is
-``docs/_static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.json``:
-the plus state is a mixed seed/timestep failure, so the next GPU campaign must
-disambiguate timestep sensitivity or shrink the bracket rather than adding
-blind replicas.
-``tools/campaigns/nonlinear_replicate_followup.py write-campaign`` turns that diagnostic
-back into a minimal run list. It reads the original
-``gradient_campaign_manifest.json`` and the spread diagnostic, infers the seed
-and timestep metadata from the already-generated TOMLs, and writes only the
-cross variants needed to disambiguate the failed state. For the current QA/ESS
-profile-direction audit, the tracked launch artifact is
-``docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json``;
-it selects ``seed22_dt0p05``, ``seed32_dt0p04``, and ``seed33_dt0p05`` for the
-``plus_delta`` state. After those three GPU runs finish, rebuild the plus
-ensemble with the added outputs, rerun
-``tools/campaigns/nonlinear_replicate_followup.py spread-summary``, and only then rerun the
-central-FD/evidence gates.
-
-``tools/campaigns/write_optimized_equilibrium_transport_configs.py`` is the production
-optimization companion for that final audit. Given a concrete post-optimization
-``wout*.nc`` file, it writes the ``t=250,350,450,700`` fixed-step nonlinear
-ladder on the release ``n64`` grid, two seed replicates, one timestep
-replicate, restart-copy commands, and the exact
-``tools/artifacts/build_external_vmec_replicate_ensemble.py`` plus
-``tools/release/check_nonlinear_optimization_gates.py production-guard`` commands needed
-after the runs finish. This wrapper is a launch contract only: a new production
-optimization claim should not be counted until the generated ``t=[350,700]``
-ensemble actually passes finite-flux, running-window, block/SEM,
-replicate-spread, optimized-equilibrium marker, and matched-audit gates. The
-current scoped guard is promoted by three accepted matched audits under the
-explicit ``2%`` long-window reduction policy.
-
-``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` is the broader
-optimization-claim companion. Its ``write`` subcommand expands one matched
-baseline/candidate WOUT pair into the default paper-facing matrix:
-``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
-``k_y rho_i=(0.10,0.30,0.50)``. Each point gets baseline and candidate
-seed/timestep replicated nonlinear windows and exact postprocessing commands.
-For independent GPU queues, pass ``--gpu-splits 2`` and launch the generated
-``run_matrix_final_horizon_gpu0.sh`` and ``run_matrix_final_horizon_gpu1.sh``
-scripts; they contain only final-horizon direct commands, not the intermediate
-restart-ladder horizons. Their skip-existing policy calls
-``tools/release/check_nonlinear_transport_gates.py target-time`` for each final output, so rerunning
-after an interruption skips only bundles whose recorded time reaches the target
-within the generated time-step tolerance; partial checkpoint bundles are rerun.
-Newly generated final-horizon scripts also guard each output with a per-output
-``flock`` lock and an atomic-directory fallback. That lets future fallback
-matrices use split workers or be relaunched safely without two workers writing
-the same ``*.out.nc``/``*.big.nc``/``*.restart.nc`` bundle at once.
-Use
-``tools/release/check_nonlinear_transport_gates.py matrix-progress`` before
-postprocessing: it reads the manifest, verifies the expected NetCDF bundle
-files, and separately checks that the recorded ``Grids/time`` reaches the
-final target. This prevents a checkpoint bundle at, for example, ``t≈800``
-from being mistaken for a completed ``t=1500`` audit. The ``report`` subcommand
-then aggregates the completed matched-comparison JSON files and fails closed if
-sample coverage, pass fraction, missing comparisons, or mean heat-flux
-reduction are insufficient. This is the required gate before changing scoped
-single-point optimization evidence into a broad multi-surface turbulent-flux
-optimization claim.
 
 ``tools/release/check_nonlinear_transport_gates.py matrix-portfolio`` is the final selector
 when several candidate families have been audited. It consumes one or more
@@ -695,20 +432,6 @@ positive support, optional Krylov consistency, and the same nonlinear-launch
 growth threshold. A failed launch-growth subgate is a useful documented result,
 not a release failure, because it prevents QI feasibility scans from being
 misread as transport validation.
-
-``tools/campaigns/write_w7x_zonal_closure_sweep.py`` is the analogous reproducibility
-companion for the open W7-X zonal-response lane. It writes a manifest of
-single-``k_x`` closure probes for the paper-facing test-4 contract, separated
-by operator family: baseline, constant-Hermite, ``|k_z|``-weighted Hermite,
-mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
-The manifest includes the exact
-``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel`` launch commands plus the
-companion ``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder`` command needed to refresh
-the bounded closure audit after the remote runs complete. Each launch command
-writes a case-local ``panel.png`` and the final ladder command writes
-``w7x_zonal_closure_ladder_full.{png,json,csv}``, preventing exploratory
-office runs from overwriting the frozen documentation figure before the
-candidate passes the residual, late-envelope, and moment-tail screens.
 
 ``tools/release/check_quasilinear_promotion_guardrails.py calibration-inputs`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
@@ -857,29 +580,6 @@ artifacts into ``docs/_static/w7x_zonal_contract_audit.png``. That panel is a
 publication-facing diagnostic of the open mismatch rather than a release gate;
 its JSON metadata has ``gate_index_include=false`` so the validation index does
 not count it as closed.
-``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py moment-tail`` adds a no-rerun velocity-space
-audit at ``docs/_static/w7x_zonal_moment_tail_audit.png``. It shows that the
-long ``Nl=8``, ``Nm=32`` traces have large late normalized-trace standard
-deviations and non-negligible final high-Hermite/high-Laguerre free-energy
-fractions. The existing ``Nl=16``, ``Nm=64``, ``t≈100`` audit lowers the early
-trace standard deviation but already carries a large high-Hermite tail, so the
-next closure experiment should be a bounded moment/closure or recurrence
-control sweep, not a change to the paper normalization.
-``tools/artifacts/build_w7x_zonal_recurrence_artifacts.py closure-ladder`` makes that bounded sweep explicit
-for ``k_x rho_i=0.07`` in
-``docs/_static/w7x_zonal_closure_ladder_kx070.png``. The ladder separates
-closure families one knob at a time under the paper-facing initializer and
-line-average observable. The refreshed office-GPU ladder covers baseline,
-constant Hermite, ``k_z``-weighted Hermite, mixed Laguerre-Hermite,
-Laguerre-only, and isotropic hypercollision variants at ``0.01`` and
-``0.03``. The best early-window trace error is the isotropic ``nu_hyper=0.01``
-case with mean absolute error ``0.2755`` versus baseline ``0.2861``, but its
-late-window standard-deviation ratio is ``4.25`` versus baseline ``4.10`` and
-therefore worsens the recurrence/envelope metric. Laguerre-only and mixed
-Laguerre-Hermite closures show the same pattern: strong tail suppression with
-no simultaneous improvement of trace error and late envelope. The ladder is
-therefore a documented negative result for these bounded closure families, not
-a hidden validation setting.
 The ``state-convention`` mode of the same command closes the state-level
 initializer and observable convention layer for the same paper-facing setup.
 At ``k_x rho_i=0.07``, ``Nl=16``, and ``Nm=64``, the recovered Gaussian
@@ -1368,14 +1068,9 @@ For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
 
 - ``tools/comparison/compare_runtime.py stress-matrix`` (KAW, Cyclone kinetic electrons, KBM Miller)
-- ``tools/campaigns/run_validation_campaigns.py imported-linear-targeted`` (generic per-``ky`` targeted imported-linear wrapper)
 - ``tools/comparison/compare_gx_imported_linear.py window`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
-- ``tools/campaigns/run_validation_campaigns.py kbm-lowky-extractor`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/comparison/build_exact_state_audit.py run`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/comparison/build_exact_state_audit.py report`` (no-rerun W7-X exact-state convention audit panel)
-- ``tools/campaigns/run_validation_campaigns.py restart-parity`` (manifest-driven nonlinear restart/continuation parity gate)
-- ``tools/campaigns/run_validation_campaigns.py device-parity`` (manifest-driven CPU/GPU short-window parity gate)
-- ``tools/campaigns/run_validation_campaigns.py vmec-roundtrip`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
 
 The current full-GK nonlinear ETG lane is now explicitly tracked as a pilot
 runtime contract via
@@ -1463,17 +1158,6 @@ The tracked ``office`` manifest now pins these audit lanes to
 and CPU pinning avoids spurious GPU ``RESOURCE_EXHAUSTED`` failures when
 ``booz_xform_jax`` or grid-default assembly would otherwise grab a busy device.
 
-The restart/continuation gate uses the same environment model and should be
-run against the tracked nonlinear lanes with ``PYTHONPATH`` set to the source
-tree so the office venv does not pick up a stale installed package:
-
-.. code-block:: bash
-
-   PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
-   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_validation_campaigns.py restart-parity \
-     --manifest tools/restart_gate_lanes.office.toml \
-     --outdir tools_out/restart_parity_office
-
 The current ``office`` exact-state manifest now includes:
 
 - startup audits for Cyclone, KBM, W7-X, and HSX
@@ -1504,27 +1188,6 @@ term replay, and first RK4 partial-step replay now all close on the shipped
 nonlinear config for the current release pass. The remaining KBM work is
 therefore future long-window cleanup rather than a blocking startup-state,
 diagnostic-reconstruction, or first-step assembly mismatch.
-
-The device-parity gate now has audited ``office`` manifests for one tokamak and
-one stellarator lane, both requiring stable nonzero outputs rather than the
-older zero-norm smoke probe:
-
-.. code-block:: bash
-
-   PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
-   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_validation_campaigns.py device-parity \
-     --manifest tools/device_parity_lanes.office.toml \
-     --outdir tools_out/device_parity_office
-
-The VMEC roundtrip gate uses the same manifest pattern and currently covers the
-tracked W7-X and HSX VMEC lanes:
-
-.. code-block:: bash
-
-   PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
-   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_validation_campaigns.py vmec-roundtrip \
-     --manifest tools/vmec_roundtrip_lanes.office.toml \
-     --outdir tools_out/vmec_roundtrip_office
 
 If the helper must be forced to another interpreter, set ``geometry.geometry_helper_python``
 in the runtime TOML used by the audit and rerun the same command. The old

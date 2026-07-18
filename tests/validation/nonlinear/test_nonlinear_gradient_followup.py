@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
-from support.paths import REPO_ROOT, load_artifact_tool
+from support.paths import REPO_ROOT
 
 import pytest
 
@@ -238,35 +237,6 @@ def test_control_mean_gate_combines_independent_control_uncertainty() -> None:
             )
 
 
-def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
-    module = load_artifact_tool("build_nonlinear_gradient_evidence")
-
-    artifact = tmp_path / "candidate.json"
-    payload = _artifact(response=0.032, asymmetry=0.044, uncertainty=1.81)
-    source_ensembles = payload["source_ensembles"]
-    assert isinstance(source_ensembles, dict)
-    for state in ("baseline", "plus", "minus"):
-        ensemble = source_ensembles[state]
-        assert isinstance(ensemble, dict)
-        ensemble["statistics"] = {
-            "n_reports": 3,
-            "mean_rel_spread": 0.18 if state == "plus" else 0.04,
-            "combined_sem_rel": 0.05,
-        }
-    artifact.write_text(json.dumps(payload), encoding="utf-8")
-    out_prefix = tmp_path / "variance_plan"
-
-    assert (
-        module.main(["variance-plan", str(artifact), "--out-prefix", str(out_prefix)])
-        == 0
-    )
-    report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
-    assert report["kind"] == "nonlinear_turbulence_gradient_variance_reduction_plan"
-    assert out_prefix.with_suffix(".csv").exists()
-    assert out_prefix.with_suffix(".png").exists()
-    assert out_prefix.with_suffix(".pdf").exists()
-
-
 def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
     artifact = json.loads(
         (
@@ -296,40 +266,3 @@ def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
     assert gate["passed"] is True
     assert gate["summary"]["common_pair_count"] == 21
     assert gate["pair_rows"][1]["label"] == "seed35"
-
-
-def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
-    module = load_artifact_tool("build_nonlinear_gradient_evidence")
-
-    plus = tmp_path / "plus.json"
-    minus = tmp_path / "minus.json"
-    plus.write_text(json.dumps(_control_ensemble("plus")), encoding="utf-8")
-    minus.write_text(json.dumps(_control_ensemble("minus")), encoding="utf-8")
-    source = (
-        ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
-    )
-    out_prefix = tmp_path / "control_mean_gate"
-
-    assert (
-        module.main(
-            [
-                "control-mean",
-                "--variance-report",
-                str(source),
-                "--plus-ensemble",
-                str(plus),
-                "--minus-ensemble",
-                str(minus),
-                "--out-prefix",
-                str(out_prefix),
-            ]
-        )
-        == 0
-    )
-
-    report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
-    assert report["kind"] == "nonlinear_turbulence_gradient_control_mean_gate"
-    assert report["passed"] is True
-    assert out_prefix.with_suffix(".csv").exists()
-    assert out_prefix.with_suffix(".png").exists()
-    assert out_prefix.with_suffix(".pdf").exists()

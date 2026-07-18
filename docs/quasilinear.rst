@@ -614,18 +614,7 @@ that several long nonlinear runs agree; it is not a substitute for actually
 running those long nonlinear simulations. The command-line artifact wrapper is
 ``tools/release/check_nonlinear_transport_gates.py ensemble``; it reads multiple window JSON
 reports and writes a JSON report plus an optional PNG summary for documentation
-or manuscript audit trails. For external-VMEC replicate campaigns the
-end-to-end extraction wrapper is
-``tools/artifacts/build_external_vmec_replicate_ensemble.py``: it reads the finished
-``*.out.nc`` files, extracts ``Diagnostics/HeatFlux_st`` into trace CSVs,
-writes transport-window summaries, convergence reports, readiness and ensemble
-JSON gates, and generates the publication-facing two-panel trace/uncertainty
-plot. This is the preferred path for new seed/timestep replicate evidence
-because it removes manual NetCDF-to-CSV and provenance-editing steps.
-The wrapper returns nonzero when readiness or ensemble gates fail.  Diagnostic
-landscape scans may pass ``--allow-failed-gates`` to finish collecting all
-points, but the produced JSON still records the failed gates and those points
-remain excluded from promotion claims.
+or manuscript audit trails.
 
 For a matched intervention such as equilibrium flow shear, first build one
 ``convergence`` report per trace and then run
@@ -977,16 +966,6 @@ weight, and an absolute-growth mixing-length diagnostic that gives stable
 branches nonzero intensity. The last rule is included only as a diagnostic
 stress test; it is not a validated physical saturation rule.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_saturation_rule_sweep.py \
-     --workers 4 \
-     --out docs/_static/quasilinear_saturation_rule_sweep.png
-
-``--workers`` parallelizes the independent case-row extraction while preserving
-the same ordered report as the serial run. It does not change the underlying
-quasilinear spectra, nonlinear window summaries, or validation gates.
-
 .. image:: _static/quasilinear_saturation_rule_sweep.png
    :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
    :width: 100%
@@ -1034,12 +1013,6 @@ tracked figure uses ``--passed-shape-only`` for the exponent fit, so the
 failed Cyclone shape gate does not contaminate the shape correction used for
 the other geometries.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_saturation_rule_sweep.py shape-aware \
-     --passed-shape-only \
-     --out docs/_static/quasilinear_shape_aware_saturation.png
-
 .. image:: _static/quasilinear_shape_aware_saturation.png
    :alt: Shape-aware quasilinear saturation diagnostic
    :width: 100%
@@ -1075,16 +1048,6 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 * passes candidate-specific eligibility checks such as minimum training-set
   size relative to the number of fitted parameters and matrix conditioning.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_candidate_uncertainty.py \
-     --workers 4 \
-     --out docs/_static/quasilinear_candidate_uncertainty.png
-
-``--workers`` parallelizes the leave-one-geometry-out holdout rows. The JSON
-report records the worker count and the identity contract; the numerical
-acceptance remains the same as the serial report.
-
 .. image:: _static/quasilinear_candidate_uncertainty.png
    :alt: Quasilinear candidate uncertainty gate
    :width: 100%
@@ -1112,14 +1075,6 @@ coming from one geometry class or from the full portfolio? It consumes only the
 tracked uncertainty, screening, and saturation-rule JSON sidecars. It does not
 refit or promote a new model.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py error-anatomy \
-     --out docs/_static/quasilinear_error_anatomy.png || true
-
-The command exits nonzero while promotion remains blocked. That is intentional:
-this is a fail-closed diagnostic for model development.
-
 .. image:: _static/quasilinear_error_anatomy.png
    :alt: Quasilinear residual-anatomy gate
    :width: 100%
@@ -1144,15 +1099,6 @@ show it is not an artifact of one arbitrary ridge penalty. The regularization
 audit below reruns the same leave-one-geometry-out ``spectral_envelope_ridge``
 fit across a ridge-penalty sweep and records the best admissible setting.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_candidate_uncertainty.py regularization-sweep \
-     --no-pdf \
-     --out docs/_static/quasilinear_candidate_regularization_sweep.png || true
-
-The command exits nonzero when the promotion gate remains failed. That behavior
-is intentional: the artifact is a guardrail, not a promoted runtime model.
-
 .. image:: _static/quasilinear_candidate_regularization_sweep.png
    :alt: Quasilinear candidate regularization audit
    :width: 100%
@@ -1172,11 +1118,6 @@ artifacts only; it does not refit a model or add any unvalidated nonlinear
 points. It compares the admitted HSX, W7-X, CTH-like, and shaped-pressure
 nonlinear windows against the current quasilinear candidates, then records the
 present status of the QA and QH optimization families.
-
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py stellarator-usefulness \
-     --out docs/_static/quasilinear_stellarator_usefulness.png
 
 .. image:: _static/quasilinear_stellarator_usefulness.png
    :alt: Stellarator quasilinear usefulness summary
@@ -1218,11 +1159,6 @@ late-window heat flux. The screening gate below therefore scores each candidate
 with both absolute-error and rank/correlation metrics, while keeping absolute
 flux promotion disabled unless the stricter holdout-promotion requirements
 also pass.
-
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py screening-skill \
-     --out docs/_static/quasilinear_screening_skill.png
 
 .. image:: _static/quasilinear_screening_skill.png
    :alt: Quasilinear screening and rank-correlation skill
@@ -1268,11 +1204,6 @@ model fit is attempted. It requires:
   candidates;
 * passed downstream saturation-rule and uncertainty/skill gates.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py dataset-sufficiency \
-     --out docs/_static/quasilinear_dataset_sufficiency.png
-
 .. image:: _static/quasilinear_dataset_sufficiency.png
    :alt: Quasilinear dataset-sufficiency promotion gate
    :width: 100%
@@ -1298,13 +1229,6 @@ uncertainty gate, and all tracked train/holdout calibration reports into one
 claim-boundary artifact. It is intentionally not another fit. It answers the
 reviewer-facing question: is there a positive scoped model-selection result,
 and are we still avoiding an absolute-flux overclaim?
-
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py model-selection-status \
-     --optimized-equilibrium-nonlinear-audit docs/_static/production_nonlinear_optimization_guard.json \
-     --require-optimized-equilibrium-nonlinear-audit \
-     --out docs/_static/quasilinear_model_selection_status.png
 
 .. image:: _static/quasilinear_model_selection_status.png
    :alt: Quasilinear model-selection status and claim-boundary guardrails
@@ -1343,11 +1267,6 @@ The holdout-gap report is the reviewer-facing companion to the model-selection
 status. It answers a different question: which currently tracked nonlinear
 windows are admitted, which candidate windows are excluded, and what exact
 data product is needed before absolute-flux promotion can be reconsidered?
-
-.. code-block:: bash
-
-   python tools/artifacts/build_quasilinear_holdout_gap_report.py \
-     --out docs/_static/quasilinear_holdout_gap_report.png
 
 .. image:: _static/quasilinear_holdout_gap_report.png
    :alt: Quasilinear holdout gap report and absolute-flux promotion blocker
@@ -1436,14 +1355,7 @@ useful portfolio of small VMEC equilibria that can seed those future linear
 scans and nonlinear validation runs without adding the VMEC files to the
 SPECTRAX-GK repository. The inventory tool records file sizes, checksums,
 ``nfp``, resolution, aspect ratio, edge rotational transform, beta, and a
-selection score for follow-up cases:
-
-.. code-block:: bash
-
-   VMEC_JAX_ROOT=/path/to/vmec_jax
-   python tools/artifacts/plot_vmec_jax_equilibrium_inventory.py \
-     --data-dir "$VMEC_JAX_ROOT/examples/data" \
-     --out docs/_static/vmec_jax_equilibrium_inventory.png
+selection score for follow-up cases.
 
 .. image:: _static/vmec_jax_equilibrium_inventory.png
    :alt: vmec_jax equilibrium inventory for future validation holdouts
@@ -1550,37 +1462,15 @@ or absolute-flux calibration point.
    :width: 100%
 
 Solved VMEC optimization outputs use the same launch discipline. The screen
-below consumes runtime linear-scan spectra from solved ``vmec_jax`` WOUTs and
+consumes runtime linear-scan spectra from solved ``vmec_jax`` WOUTs and
 blocks nonlinear launches unless growth, metric, and heat-flux weights are all
-finite and launchable:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_nonlinear_transport_admission.py linear-screen \
-     --spectrum qa_nfp2_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qa_nfp2_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --spectrum qh_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qh_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --spectrum qp_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --spectrum qp_nfp4_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp4_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --out docs/_static/vmec_optimization_candidate_screen_gate.json
+finite and launchable. The tracked screen artifact is
+``docs/_static/vmec_optimization_candidate_screen_gate.json``.
 
 The current four-case CPU screen is fail-closed: ``qa_nfp2`` is marginal,
 ``qh_nfp3``/``qp_nfp4`` are stable, and ``qp_nfp3`` is rejected despite large
 fitted growth because sampled effective ``k_perp^2`` is non-positive. This is
 candidate triage, not nonlinear transport validation.
-
-Nonlinear follow-up configs for these external VMEC candidates should be
-generated with ``tools/campaigns/write_external_vmec_holdout_configs.py`` rather than by
-hand. The standard command writes matched ``48x48x32`` and ``64x64x40`` TOMLs
-for a ``t = 150`` initial run and a ``t = 250`` restart continuation, plus a
-JSON manifest containing the launch commands and restart-copy commands. This
-keeps every candidate on the same ITG/adiabatic-electron physics, dissipation,
-sampling, and output convention before the convergence gate decides whether
-the case is admissible. The next promotion step is replicated nonlinear
-transport evidence: use ``--seed-variant`` for distinct randomized initial
-conditions and ``--dt-variant`` for fixed-step sensitivity checks. The generated
-TOMLs carry explicit seed/timestep metadata so
-``tools/release/check_nonlinear_transport_gates.py readiness`` can fail closed until
-each admitted case has at least two passed seed and timestep windows.
 
 .. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png
    :alt: External D-shaped tokamak VMEC linear quasilinear feasibility spectrum

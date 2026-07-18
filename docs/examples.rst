@@ -500,8 +500,6 @@ with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
    python examples/optimization/QA_optimization_linear_ITG.py
    python examples/optimization/QA_optimization_quasilinear_ITG.py
    python examples/optimization/QA_optimization_nonlinear_ITG.py
-   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
-   python examples/optimization/QA_parameter_scan.py
 
 The three ``QA_optimization_*_ITG.py`` scripts intentionally mirror upstream
 ``vmec_jax/examples/optimization/QA_optimization.py`` on the current
@@ -515,12 +513,6 @@ The linear-growth script uses VMEC-JAX's implicit Jacobian. The quasilinear
 and reduced nonlinear-window scripts use finite-difference outer Jacobians
 because their dominant-eigenvector weights do not yet have the required JAX
 derivative. None of these optimizer residuals is a saturated heat-flux claim.
-
-``QA_nonlinear_ITG_matched_audit.py`` is the production-evidence companion:
-after long SPECTRAX-GK nonlinear baseline/candidate campaigns finish, edit its
-ensemble paths and run it to build the matched reduction and uncertainty gate.
-It does not launch simulations and does not consume reduced/startup nonlinear
-optimizer residuals.
 
 Reduced synthetic scripts are kept outside ``examples/optimization`` as
 development diagnostics only:

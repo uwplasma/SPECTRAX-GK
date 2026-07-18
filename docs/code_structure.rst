@@ -466,12 +466,7 @@ Completed extractions:
   summary assembly. The same owner builds seed/timestep artifact-readiness
   manifests, while ``diagnostics/transport_windows.py`` owns individual-window
   statistics and ensemble uncertainty gates. These decisions remain testable
-  without rerunning nonlinear simulations. Follow-up launch planning is not runtime
-  package functionality; it lives in
-  ``tools/campaigns/nonlinear_replicate_followup.py``, where report
-  normalization, classification-specific cross-run selection, dedupe/limits,
-  state-plan packing, and config serialization keep GPU follow-up campaigns
-  deterministic and reviewable.
+  without rerunning nonlinear simulations.
 - quasilinear nonlinear-window convergence metadata is consolidated in
   ``diagnostics/transport_windows.py`` for statistics, CSV/summary IO,
   promotion readiness, and ensemble uncertainty; replicate readiness belongs

@@ -39,5 +39,4 @@ simulation directories:
 
 ```bash
 python tools/artifacts/make_benchmark_atlas.py
-python tools/campaigns/run_validation_campaigns.py benchmark-refresh --list
 ```

@@ -218,19 +218,6 @@ tests/integration/runtime/test_runtime_policies.py,tests/integration,organized t
 tests/integration/runtime/test_runtime_runner.py,tests/integration,organized test,merge-by-domain,.py,129194,4088,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/release/test_release_gates.py,tests/release,organized test,merge-by-domain,.py,105143,3042,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/support/paths.py,tests/support,organized test,merge-by-domain,.py,2597,84,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/artifacts/test_general_artifact_tools.py,tests/tools,organized test,merge-by-domain,.py,236019,6735,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/artifacts/test_quasilinear_artifact_tools.py,tests/tools,organized test,merge-by-domain,.py,68064,1857,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/artifacts/test_stellarator_artifact_tools.py,tests/tools,organized test,merge-by-domain,.py,198824,5723,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/artifacts/test_transport_artifact_tools.py,tests/tools,organized test,merge-by-domain,.py,98915,2841,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_campaign_gate_commands.py,tests/tools,organized test,merge-by-domain,.py,8789,271,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_campaign_manifest_reports.py,tests/tools,organized test,merge-by-domain,.py,6198,167,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_evaluate_vmec_jax_spectrax_transport_metric.py,tests/tools,organized test,merge-by-domain,.py,8367,255,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py,tests/tools,organized test,merge-by-domain,.py,10064,287,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py,tests/tools,organized test,merge-by-domain,.py,23906,690,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py,tests/tools,organized test,merge-by-domain,.py,7340,245,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_run_nonlinear_gradient_direct_campaign.py,tests/tools,organized test,merge-by-domain,.py,8274,237,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_vmec_campaign_writer_contracts.py,tests/tools,organized test,merge-by-domain,.py,25906,736,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/tools/campaigns/test_vmec_jax_campaign_writer_contracts.py,tests/tools,organized test,merge-by-domain,.py,9528,276,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/comparison/test_exact_state_audit.py,tests/tools,organized test,merge-by-domain,.py,4772,140,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/comparison/test_reference_comparison_tools.py,tests/tools,organized test,merge-by-domain,.py,137020,4325,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py,tests/tools,organized test,merge-by-domain,.py,23066,733,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -251,7 +238,6 @@ tests/unit/nonlinear/test_nonlinear_diagnostic_state.py,tests/unit,organized tes
 tests/unit/nonlinear/test_nonlinear_exb.py,tests/unit,organized test,merge-by-domain,.py,54544,1501,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/nonlinear/test_nonlinear_helpers_extra.py,tests/unit,organized test,merge-by-domain,.py,94132,2818,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/nonlinear/test_nonlinear_replicate_diagnostics.py,tests/unit,organized test,merge-by-domain,.py,4353,120,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/unit/nonlinear/test_nonlinear_replicate_followup.py,tests/unit,organized test,merge-by-domain,.py,5449,179,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/nonlinear/test_nonlinear_rhs.py,tests/unit,organized test,merge-by-domain,.py,9310,260,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/nonlinear/test_secondary.py,tests/unit,organized test,merge-by-domain,.py,10059,296,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/unit/objectives/test_autodiff_solver_objectives.py,tests/unit,organized test,merge-by-domain,.py,126866,3519,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
@@ -297,32 +283,16 @@ tests/validation/stellarator/test_external_vmec_validation_policy.py,tests/valid
 tests/validation/stellarator/test_vmec_example_inventory.py,tests/validation,organized test,merge-by-domain,.py,2998,87,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,18522,539,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tools/README.md,tools/README.md,tool documentation,keep,.md,3668,77,documents maintenance-tool ownership
-tools/artifacts/build_baseline_optimized_nonlinear_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,18216,499,owned by tools/artifacts
-tools/artifacts/build_external_vmec_replicate_ensemble.py,tools/artifacts,artifact builder,keep-or-merge,.py,18125,504,owned by tools/artifacts
 tools/artifacts/build_linear_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,294663,7571,owned by tools/artifacts
-tools/artifacts/build_matched_nonlinear_transport_comparison.py,tools/artifacts,artifact builder,keep-or-merge,.py,10102,286,owned by tools/artifacts
-tools/artifacts/build_matched_nonlinear_transport_matrix.py,tools/artifacts,artifact builder,keep-or-merge,.py,37136,937,owned by tools/artifacts
-tools/artifacts/build_nonlinear_gradient_evidence.py,tools/artifacts,artifact builder,keep-or-merge,.py,33826,891,owned by tools/artifacts
-tools/artifacts/build_nonlinear_transport_admission.py,tools/artifacts,artifact builder,keep-or-merge,.py,28404,762,owned by tools/artifacts
-tools/artifacts/build_nonlinear_transport_horizon_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,24902,638,owned by tools/artifacts
 tools/artifacts/build_nonlinear_validation_panels.py,tools/artifacts,artifact builder,keep-or-merge,.py,23458,679,owned by tools/artifacts
 tools/artifacts/build_nonlinear_window_fd_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,21171,584,owned by tools/artifacts
-tools/artifacts/build_parallelization_completion_status.py,tools/artifacts,artifact builder,keep-or-merge,.py,32499,884,owned by tools/artifacts
-tools/artifacts/build_qa_optimizer_strategy_report.py,tools/artifacts,artifact builder,keep-or-merge,.py,22850,575,owned by tools/artifacts
 tools/artifacts/build_qi_branch_refinement_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,11453,329,owned by tools/artifacts
-tools/artifacts/build_quasilinear_holdout_gap_report.py,tools/artifacts,artifact builder,keep-or-merge,.py,69948,1782,owned by tools/artifacts
 tools/artifacts/build_solver_objective_gradient_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,13958,358,owned by tools/artifacts
 tools/artifacts/build_tem_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,26432,670,owned by tools/artifacts
 tools/artifacts/build_vmec_boozer_aggregate_holdout_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,30732,777,owned by tools/artifacts
 tools/artifacts/build_vmec_boozer_aggregate_objective_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,70170,1850,owned by tools/artifacts
 tools/artifacts/build_vmec_boozer_gradient_holdout_matrix.py,tools/artifacts,artifact builder,keep-or-merge,.py,12670,365,owned by tools/artifacts
 tools/artifacts/build_vmec_boozer_nonlinear_window_fd_audit.py,tools/artifacts,artifact builder,keep-or-merge,.py,24415,666,owned by tools/artifacts
-tools/artifacts/build_vmec_boozer_parity_matrix.py,tools/artifacts,artifact builder,keep-or-merge,.py,33595,915,owned by tools/artifacts
-tools/artifacts/build_vmec_boundary_transport_landscape.py,tools/artifacts,artifact builder,keep-or-merge,.py,35942,980,owned by tools/artifacts
-tools/artifacts/build_vmec_jax_qa_full_sweep_panel.py,tools/artifacts,artifact builder,keep-or-merge,.py,48686,1332,owned by tools/artifacts
-tools/artifacts/build_vmec_jax_qa_transport_candidate_comparison.py,tools/artifacts,artifact builder,keep-or-merge,.py,20775,571,owned by tools/artifacts
-tools/artifacts/build_vmec_state_to_input_mapping_response.py,tools/artifacts,artifact builder,keep-or-merge,.py,28471,718,owned by tools/artifacts
-tools/artifacts/build_w7x_zonal_recurrence_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,48590,1399,owned by tools/artifacts
 tools/artifacts/build_w7x_zonal_reference_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,28171,804,owned by tools/artifacts
 tools/artifacts/build_w7x_zonal_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,55192,1479,owned by tools/artifacts
 tools/artifacts/build_zonal_flow_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,90699,2369,owned by tools/artifacts
@@ -337,30 +307,12 @@ tools/artifacts/make_benchmark_atlas.py,tools/artifacts,artifact builder,keep-or
 tools/artifacts/make_tables.py,tools/artifacts,artifact builder,keep-or-merge,.py,43805,1285,owned by tools/artifacts
 tools/artifacts/plot_external_vmec_nonlinear_convergence_gate.py,tools/artifacts,artifact builder,keep-or-merge,.py,37157,1047,owned by tools/artifacts
 tools/artifacts/plot_quasilinear_calibration.py,tools/artifacts,artifact builder,keep-or-merge,.py,16339,459,owned by tools/artifacts
-tools/artifacts/plot_quasilinear_candidate_uncertainty.py,tools/artifacts,artifact builder,keep-or-merge,.py,42123,1094,owned by tools/artifacts
 tools/artifacts/plot_quasilinear_diagnostics.py,tools/artifacts,artifact builder,keep-or-merge,.py,24571,677,owned by tools/artifacts
-tools/artifacts/plot_quasilinear_model_development.py,tools/artifacts,artifact builder,keep-or-merge,.py,98932,2566,owned by tools/artifacts
-tools/artifacts/plot_quasilinear_saturation_rule_sweep.py,tools/artifacts,artifact builder,keep-or-merge,.py,48801,1308,owned by tools/artifacts
 tools/artifacts/plot_scaling_panels.py,tools/artifacts,artifact builder,keep-or-merge,.py,26666,755,owned by tools/artifacts
 tools/artifacts/plot_stellarator_optimization_uq.py,tools/artifacts,artifact builder,keep-or-merge,.py,12085,350,owned by tools/artifacts
-tools/artifacts/plot_vmec_jax_equilibrium_inventory.py,tools/artifacts,artifact builder,keep-or-merge,.py,13037,392,owned by tools/artifacts
 tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py,tools/artifacts,artifact builder,keep-or-merge,.py,18430,496,owned by tools/artifacts
 tools/benchmark_atlas_manifest.toml,tools/benchmark_atlas_manifest.toml,tool support file,keep-or-review,.toml,1293,31,non-python tool asset
 tools/benchmark_refresh_manifest.toml,tools/benchmark_refresh_manifest.toml,tool support file,keep-or-review,.toml,4826,82,non-python tool asset
-tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py,tools/campaigns,campaign helper,keep-or-merge,.py,22125,587,owned by tools/campaigns
-tools/campaigns/nonlinear_replicate_followup.py,tools/campaigns,campaign helper,keep-or-merge,.py,43369,1198,owned by tools/campaigns
-tools/campaigns/run_nonlinear_gradient_direct_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,46258,1319,owned by tools/campaigns
-tools/campaigns/run_validation_campaigns.py,tools/campaigns,campaign helper,keep-or-merge,.py,37153,1088,owned by tools/campaigns
-tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py,tools/campaigns,campaign helper,keep-or-merge,.py,12154,301,owned by tools/campaigns
-tools/campaigns/write_external_vmec_holdout_configs.py,tools/campaigns,campaign helper,keep-or-merge,.py,24837,746,owned by tools/campaigns
-tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,17703,441,owned by tools/campaigns
-tools/campaigns/write_optimized_equilibrium_transport_configs.py,tools/campaigns,campaign helper,keep-or-merge,.py,11020,295,owned by tools/campaigns
-tools/campaigns/write_vmec_boundary_campaigns.py,tools/campaigns,campaign helper,keep-or-merge,.py,21991,578,owned by tools/campaigns
-tools/campaigns/write_vmec_jax_optimizer_comparison_manifest.py,tools/campaigns,campaign helper,keep-or-merge,.py,15656,420,owned by tools/campaigns
-tools/campaigns/write_vmec_jax_spsa_candidate_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,13366,351,owned by tools/campaigns
-tools/campaigns/write_vmec_state_control_short_bracket_launch.py,tools/campaigns,campaign helper,keep-or-merge,.py,23963,619,owned by tools/campaigns
-tools/campaigns/write_vmec_state_mapping_campaign.py,tools/campaigns,campaign helper,keep-or-merge,.py,34707,894,owned by tools/campaigns
-tools/campaigns/write_w7x_zonal_closure_sweep.py,tools/campaigns,campaign helper,keep-or-merge,.py,11676,359,owned by tools/campaigns
 tools/comparison/build_exact_state_audit.py,tools/comparison,comparison utility,keep-or-merge,.py,21572,647,owned by tools/comparison
 tools/comparison/compare_gx_imported_linear.py,tools/comparison,comparison utility,keep-or-merge,.py,82069,1992,owned by tools/comparison
 tools/comparison/compare_gx_kbm.py,tools/comparison,comparison utility,keep-or-merge,.py,51210,1337,owned by tools/comparison

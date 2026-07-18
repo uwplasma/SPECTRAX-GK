@@ -345,12 +345,6 @@ Quasilinear model-selection state:
   three matched baseline-to-optimized audits pass with positive
   uncertainty-separated heat-flux reductions. This is scoped candidate
   evidence, not a broad multi-surface nonlinear transport-optimization claim.
-- ``tools/artifacts/build_baseline_optimized_nonlinear_audit.py`` now records the matched
-  QA no-ESS reference to optimized QA/ESS comparison. The tracked
-  ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes
-  with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
-  SEM separation. This is a scoped finite-transform VMEC campaign comparison,
-  not a broad multi-surface stellarator optimization claim.
 - ``tools/release/check_nonlinear_optimization_gates.py gradient-evidence`` is the stricter
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
@@ -374,14 +368,6 @@ Quasilinear model-selection state:
   Until a paired post-transient artifact passes all response, asymmetry,
   conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
   evidence remains explicitly unpromoted.
-- ``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` is the paired
-  long-window promotion builder for that missing evidence. It takes the
-  finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated
-  nonlinear-window ensemble JSON files, computes the central finite-difference
-  heat-flux gradient, propagates ensemble SEM into a gradient-uncertainty gate,
-  writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
-  response, forward/backward asymmetry, condition number, and all three window
-  uncertainty gates pass.
 - Future perturbation refreshes must use distinct artifact slugs rather than
   overwriting the tracked failed candidate. For example, a new coefficient or
   amplitude campaign should write a slug such as
@@ -392,43 +378,11 @@ Quasilinear model-selection state:
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
 
-- ``tools/artifacts/build_nonlinear_gradient_evidence.py rank-candidates``
-  compares failed long-window finite-difference candidates without promoting
-  them. ``bracket-sweep`` applies the same response, locality, conditioning,
-  and uncertainty contract across amplitudes of one physical control.
 - The tracked QA/ESS campaign is complete negative evidence, not an unfinished
   launch plan: all required long-window runtime outputs exist, but no boundary
   control passes every finite-difference gate. ``ZBS(1,1)`` is nonlocal,
   ``ZBS(1,0)`` is variance limited, and increasing the ``RBC(1,1)``
   amplitude worsens asymmetry.
-- ``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan`` and
-  ``control-mean`` own the retained variance-reduction path. The independent
-  21-pair ``ZBS(1,0)`` control-mean audit passes its scoped uncertainty gate,
-  but does not promote a general nonlinear turbulent-flux gradient.
-- ``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` writes a
-  launch-contract for a smoother composite VMEC boundary direction. The
-  tracked
-  ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` applies
-  a 2% descent-oriented ``ZBS(1,1)``, ``ZBS(1,0)``, ``RBC(1,1)`` direction and
-  records the finite-difference normalization by coefficient-vector norm. This
-  is not nonlinear turbulence-gradient evidence until the generated VMEC states
-  are re-equilibrated and passed through the long-window nonlinear FD gate.
-- ``tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
-  launch-contract writer for the same lane. Given explicit baseline,
-  plus-perturbation, and minus-perturbation VMEC files, it writes the matched
-  fixed-step nonlinear TOML ladders, per-state ensemble commands, the central
-  finite-difference gate command, and the final evidence-check command. It
-  fails closed before writing production launch contracts if any VMEC file is
-  missing, if the same path is reused for more than one state, or if the three
-  files have byte-identical SHA256 contents. The only override is
-  ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
-  manifest flag and must not be used for production turbulence-gradient claims.
-- ``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient`` is the upstream
-  boundary-gradient launch helper. It writes matched ``baseline``,
-  ``plus_delta``, and ``minus_delta`` VMEC input files for one explicit
-  ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient and records the ``vmec_jax`` commands
-  that must be run before the resulting ``wout`` files can enter the
-  nonlinear-gradient campaign writer.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. On the expanded saturation sweep,
   the linear-weight fit is the least-bad simple rule with mean held-out

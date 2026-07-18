@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from importlib import import_module
-import json
-from pathlib import Path
 
 from support.paths import REPO_ROOT
 
@@ -778,11 +776,6 @@ from spectraxgk.parallel.decomposition import (
     serial_reconstruction_identity_report,
     shard_sequence,
 )
-from tools.artifacts.build_parallelization_completion_status import (
-    build_decomposition_status as build_status,
-    write_decomposition_csv_artifact as write_csv_artifact,
-    write_decomposition_json_artifact as write_json_artifact,
-)
 
 
 ROOT = REPO_ROOT
@@ -1071,38 +1064,6 @@ def test_manual_bad_assignment_report_can_expose_claim_scoped_identity_failure()
     assert report.out_of_range_indices == ()
     assert report.out_of_order is True
     assert report.reconstructed_indices == (0, 2, 1)
-
-
-def test_parallel_decomposition_status_summarizes_existing_artifacts(
-    tmp_path: Path,
-) -> None:
-    status = build_status(ROOT)
-    lanes = {lane["lane"]: lane for lane in status["lanes"]}
-
-    assert status["kind"] == "parallel_decomposition_status"
-    assert status["passed"] is True
-    assert status["production_independent_lanes"] == 2
-    assert status["diagnostic_nonlinear_lanes"] == 1
-    assert "Deterministic decomposition-contract status only" in status["claim_scope"]
-    assert (
-        lanes["independent_ky_scan"]["claim_level"] == "production_independent_batching"
-    )
-    assert lanes["uq_ensemble"]["claim_level"] == "production_independent_batching"
-    assert (
-        lanes["diagnostic_nonlinear_domain"]["claim_level"]
-        == "diagnostic_nonlinear_domain_partition"
-    )
-    assert all(lane["reconstruction_identity_passed"] for lane in lanes.values())
-    assert all(lane["claim_separation_passed"] for lane in lanes.values())
-
-    prefix = tmp_path / "parallel_decomposition_status"
-    paths = {
-        **write_json_artifact(status, prefix),
-        **write_csv_artifact(status, prefix),
-    }
-
-    assert json.loads(Path(paths["json"]).read_text(encoding="utf-8"))["passed"] is True
-    assert "claim_level" in Path(paths["csv"]).read_text(encoding="utf-8")
 
 
 def test_parallel_decomposition_contracts_are_exported_at_package_top_level() -> None:

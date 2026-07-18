@@ -117,20 +117,9 @@ clipping, exception metadata, and deterministic reconstruction. Whole-state
 nonlinear sharding and FFT-axis decomposition remain diagnostic, not production
 nonlinear speedup claims.
 
-Regenerate the closure status after refreshing any scaling artifact:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_parallelization_completion_status.py
-
-The lower-level decomposition-contract status is generated separately. It is
-useful when editing orchestration code because it checks deterministic shard
+The lower-level decomposition-contract status checks deterministic shard
 assignment, serial reconstruction identity, and claim-level separation without
 rerunning large profiles.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_parallelization_completion_status.py decomposition
 
 .. image:: _static/parallel_decomposition_status.png
    :alt: Parallel decomposition contract status

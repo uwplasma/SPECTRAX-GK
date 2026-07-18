@@ -9,7 +9,7 @@ import sys
 
 import numpy as np
 
-from support.paths import REPO_ROOT, load_campaign_tool, load_release_tool
+from support.paths import REPO_ROOT, load_release_tool
 from spectraxgk.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     nonlinear_window_convergence_report,
@@ -21,7 +21,6 @@ OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_transport_g
 output_target = load_release_tool("check_nonlinear_transport_gates")
 window_ensemble = load_release_tool("check_nonlinear_transport_gates")
 window_readiness = window_ensemble
-compact_bundle = load_campaign_tool("nonlinear_replicate_followup")
 FLOW_SHEAR_GATE = ROOT / "docs" / "_static" / "flow_shear_fixed_step_response_gate.json"
 
 
@@ -374,84 +373,3 @@ def test_readiness_tool_writes_reports_and_requires_seed_timestep_replicates(
         ]
         == 2
     )
-
-
-def _compact_payload() -> dict:
-    return {
-        "kind": "nonlinear_window_ensemble_report",
-        "passed": True,
-        "rows": [
-            {
-                "index": 0,
-                "source_artifact": (
-                    "docs/_static/demo/demo_case_nonlinear_t1500_n64_seed32"
-                    "_heat_flux_trace.csv"
-                ),
-                "summary_artifact": (
-                    "docs/_static/demo/demo_case_nonlinear_t1500_n64_seed32"
-                    "_transport_window.json"
-                ),
-            },
-            {
-                "index": 1,
-                "source_artifact": (
-                    "docs/_static/demo/demo_case_nonlinear_t1500_n64_dt0p04"
-                    "_heat_flux_trace.csv"
-                ),
-                "summary_artifact": (
-                    "docs/_static/demo/demo_case_nonlinear_t1500_n64_dt0p04"
-                    "_transport_window.json"
-                ),
-            },
-        ],
-    }
-
-
-def test_compact_ensemble_payload_and_cli_rewrite_rows_to_authoritative_netcdf(
-    tmp_path: Path,
-) -> None:
-    compact = compact_bundle.compact_ensemble_payload(
-        _compact_payload(),
-        output_gate_json="docs/_static/demo_output_gate.json",
-        netcdf_root="office:/work/run/tools_out/audits",
-    )
-    assert compact["compact_bundle_policy"]["output_gate_json"] == (
-        "docs/_static/demo_output_gate.json"
-    )
-    assert compact["rows"][0]["generated_trace_artifact"].endswith(
-        "_heat_flux_trace.csv"
-    )
-    assert compact["rows"][0]["source_artifact"] == (
-        "office:/work/run/tools_out/audits/demo_case/"
-        "demo_case_nonlinear_t1500_n64_seed32.out.nc"
-    )
-    assert compact["rows"][1]["source_artifact"] == (
-        "office:/work/run/tools_out/audits/demo_case/"
-        "demo_case_nonlinear_t1500_n64_dt0p04.out.nc"
-    )
-    assert compact["rows"][1]["summary_artifact"] == (
-        "docs/_static/demo_output_gate.json#rows[1]"
-    )
-
-    ensemble = tmp_path / "ensemble.json"
-    out = tmp_path / "compact.json"
-    ensemble.write_text(json.dumps(_compact_payload()), encoding="utf-8")
-    rc = compact_bundle.main(
-        [
-            "compact-bundle",
-            "--ensemble-json",
-            str(ensemble),
-            "--output-gate-json",
-            "docs/_static/demo_output_gate.json",
-            "--netcdf-root",
-            "office:/work/run/tools_out/audits/",
-            "--out-json",
-            str(out),
-        ]
-    )
-    assert rc == 0
-    compact = json.loads(out.read_text(encoding="utf-8"))
-    assert compact["rows"][0]["source_artifact"].startswith(
-        "office:/work/run/tools_out/audits/demo_case/"
-    )
-    assert ensemble.read_text(encoding="utf-8") == json.dumps(_compact_payload())

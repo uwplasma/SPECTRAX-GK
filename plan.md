@@ -550,13 +550,26 @@ Use large coherent commits, each independently green:
   import (362 public names), Ruff, unit+integration (no new failures), 97
   release-gate tests, architecture/size/coverage manifests, and Sphinx ``-W``
   all pass.
+- 2026-07-18 wholesale campaign/status deletion: removed all 14
+  ``tools/campaigns/`` tools, 13 campaign-artifact builders and 7
+  status/dashboard builders under ``tools/artifacts/``, all of
+  ``tests/tools/{campaigns,artifacts}``, two campaign-only physics-gate test
+  files, and three campaign-audit optimization examples (52 files, ~47k lines).
+  Excised deleted-tool tests from seven surviving files while preserving every
+  physics/AD-FD/benchmark/identity test, repaired 14 documentation pages and
+  both workflow YAMLs, purged the coverage/performance manifests and inventory
+  CSV, and fixed the release-readiness snippet contract. Tools 88->54,
+  tests 92->77, examples 41->38. Ruff, whole-suite collection (2076 tests),
+  architecture/size/coverage/parallel-scaling/release-readiness gates, and
+  Sphinx ``-W`` all pass; runtime tests pass except one pre-existing float32
+  demo flake that passes under CI ``x64``.
 
 ## Current Completion
 
 | Lane | Completion |
 | --- | ---: |
 | Frozen 1.7 contract | 95% |
-| Deletion/repository trim | 50% |
+| Deletion/repository trim | 68% |
 | Scientific-core simplification | 35% |
 | Test/benchmark/command simplification | 21% |
 | QA linear/QL/nonlinear optimization | 15% |
@@ -564,10 +577,13 @@ Use large coherent commits, each independently green:
 | GKX rename | 0% |
 | Release/history rewrite | 0% |
 
-Weighted overall completion: **32%**. The root linear/nonlinear/benchmarks
-facades are now gone. The next implementation tranche consolidates
-term/field/dissipation ownership under ``terms``/``physics`` and removes the
-duplicated ``parallel/*_reference``/``*_shard_map`` reimplementations of the
-canonical streaming and drift kernels, then continues with the next
-unreferenced campaign/static-evidence family. The uncontended GPU refresh
-remains independent of that critical path.
+Weighted overall completion: **36%**. The root facades and the entire
+campaign/status developer-tool machinery (52 files, ~47k lines) are gone; tools
+are down to 54 files and tests to 77. The next deletion sub-tranche trims the
+remaining campaign/status static evidence under ``docs/_static`` and folds the
+surviving benchmark-artifact builders toward the ``<=45`` tool budget. In
+parallel the scientific-core lane consolidates term/field/dissipation ownership
+under ``terms``/``physics`` and removes the duplicated
+``parallel/*_reference``/``*_shard_map`` reimplementations of the canonical
+streaming and drift kernels (dedup-first, since the 1000-line module budget
+blocks naive merges). The uncontended GPU refresh remains independent.

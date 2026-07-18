@@ -347,16 +347,6 @@ require the current VMEC-JAX turbulence tangent tests, SPECTRAX eigenbranch
 locality checks, and an independent finite-difference comparison on the exact
 objective used by the campaign.
 
-Assemble several probe JSON files into the collection consumed by the projected
-writer with:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_vmec_state_to_input_mapping_response.py boundary-chain-collection \
-     --probe-json tools_out/latest_vmec_stack/boundary_chain_zs13_h2e5_branch_locality.json \
-                  tools_out/latest_vmec_stack/boundary_chain_rc14_h2e5_branch_locality.json \
-     --out-json tools_out/latest_vmec_stack/boundary_chain_growth_collection.json
-
 The reusable low-level entry point is
 ``observable_gradient_validation_report(observable_fn, params, ...)``. It
 flattens arbitrary geometry or objective observables, compares JAX AD
@@ -401,14 +391,8 @@ Multi-Equilibrium Boozer Parity Matrix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The single-fixture bridge artifact is complemented by a replayable
-multi-equilibrium matrix:
-
-.. code-block:: bash
-
-   JAX_ENABLE_X64=1 PYTHONPATH=src \
-     python tools/artifacts/build_vmec_boozer_parity_matrix.py
-
-It writes ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}``.
+multi-equilibrium matrix tracked at
+``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}``.
 The builder enforces ``mboz,nboz >= 21`` before calling the real optional
 backend path, because the QI drift gate is under-resolved at lower Boozer mode
 counts. The JSON now includes a ``sample_set_provenance`` block and the CSV
@@ -537,17 +521,9 @@ remain useful for machine-specific validation equilibria, but they are no
 longer required for the bundled demos.
 For future validation-lane selection, the external ``vmec_jax`` example-data
 portfolio can be inventoried without copying those VMEC files into this
-repository:
-
-.. code-block:: bash
-
-   VMEC_JAX_ROOT=/path/to/vmec_jax
-   python tools/artifacts/plot_vmec_jax_equilibrium_inventory.py \
-     --data-dir "$VMEC_JAX_ROOT/examples/data" \
-     --out docs/_static/vmec_jax_equilibrium_inventory.png
-
-This writes ``docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}``.
-The artifact is an equilibrium-selection aid only. It excludes VMEC files with
+repository. The tracked inventory artifact
+``docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}`` is an
+equilibrium-selection aid only. It excludes VMEC files with
 degenerate reference-scale metadata from the recommended follow-up list, but it
 still does not validate quasilinear transport until each selected VMEC
 equilibrium also has matched linear and nonlinear SPECTRAX-GK runs and physics

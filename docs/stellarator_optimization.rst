@@ -57,18 +57,6 @@ Source Map
   :download:`QA_optimization_quasilinear_ITG.py <../examples/optimization/QA_optimization_quasilinear_ITG.py>`
 - VMEC-JAX-style nonlinear-window script:
   :download:`QA_optimization_nonlinear_ITG.py <../examples/optimization/QA_optimization_nonlinear_ITG.py>`
-- Matched nonlinear audit script:
-  :download:`QA_nonlinear_ITG_matched_audit.py <../examples/optimization/QA_nonlinear_ITG_matched_audit.py>`
-- Matched nonlinear matrix script:
-  :download:`QA_nonlinear_ITG_transport_matrix.py <../examples/optimization/QA_nonlinear_ITG_transport_matrix.py>`
-- VMEC-JAX-style boundary-parameter scan script:
-  :download:`QA_parameter_scan.py <../examples/optimization/QA_parameter_scan.py>`
-- Configurable solved-boundary driver:
-  :download:`vmec_jax_qa_low_turbulence_optimization.py <../tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py>`
-- Eval-only reduced transport-admission metric tool:
-  :download:`evaluate_vmec_jax_spectrax_transport_metric.py <../tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py>`
-- Optimizer evidence/strategy report builder:
-  :download:`build_qa_optimizer_strategy_report.py <../tools/artifacts/build_qa_optimizer_strategy_report.py>`
 - Optimization examples README:
   :download:`README.md <../examples/optimization/README.md>`
 
@@ -126,12 +114,7 @@ surface index, field-line label, angular and velocity-space resolution, selected
 ``k_y`` index, and density/temperature gradients as top-level constants.
 
 The optimizer output must then pass solved-equilibrium geometry gates and the
-separate long-window transport workflow:
-
-.. code-block:: bash
-
-   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
-   python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
+separate long-window transport workflow.
 
 Only converged, replicated, post-transient nonlinear windows can support a
 nonlinear turbulent-flux reduction. Linear growth, quasilinear screening, and
@@ -260,22 +243,12 @@ Optimizer-Comparison Manifest
 -----------------------------
 
 Optimizer comparisons should be launched from a single manifest, not from
-hand-edited shell history.  The generator
-:download:`write_vmec_jax_optimizer_comparison_manifest.py <../tools/campaigns/write_vmec_jax_optimizer_comparison_manifest.py>`
-writes a strict QA baseline command, matched deterministic transport optimizer
-commands, derivative-free outer-loop contracts, and the corresponding
-long-window nonlinear-audit commands:
-
-.. code-block:: bash
-
-   python3 tools/campaigns/write_vmec_jax_optimizer_comparison_manifest.py \
-     --campaign-root tools_out/vmec_jax_qa_optimizer_comparison_campaign \
-     --out-json docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json
+hand-edited shell history.
 
 The tracked manifest sidecar
 :download:`vmec_jax_qa_optimizer_comparison_manifest.json <_static/vmec_jax_qa_optimizer_comparison_manifest.json>`
 was generated with an older API generation and is retained as historical
-provenance. Regenerating it with the current script emits:
+provenance. It records:
 
 - one QA constraints baseline using current VMEC-JAX least squares;
 - one matched command per transport observable from the common baseline:
@@ -328,9 +301,8 @@ Key references for this policy are:
   optimization comparators.
 
 Each optimization script also writes long-window initial/final nonlinear ITG
-audit manifests after saving the VMEC-JAX result. Those manifests use the same
-``write_optimized_equilibrium_transport_configs.py`` path as the production
-promotion pipeline. They are not launched by default because the audits are
+audit manifests after saving the VMEC-JAX result. They are not launched by
+default because the audits are
 multi-hour GPU jobs; set ``RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True`` inside
 the script to launch them, build replicated initial/final ensemble gates, and
 write the initial-vs-final nonlinear ``Q(t)`` comparison plot, or launch the
@@ -437,14 +409,6 @@ than baseline (``-0.49%``, ``z = -0.19``; ``-0.25%``, ``z = -0.09``).
    slightly worse than the strict QA baseline in the long post-transient window
    and is not promoted.
 
-The parameter-scan example calls
-``tools/artifacts/build_vmec_boundary_transport_landscape.py`` with top-level constants.
-Its default mode reuses the tracked strict-baseline ``RBC(1,1)`` reduced-metric
-JSON. Set ``EVALUATE_REDUCED = True`` to rerun the deterministic growth and
-explicit quasilinear metrics for a new coefficient scan. Replicated nonlinear
-transport-window ensemble gates are intentionally a separate promotion step and
-are not overlaid unless explicit ensemble sidecars are supplied.
-
 .. figure:: _static/vmec_jax_qa_full_sweep_panel.png
    :alt: VMEC-JAX QA max-mode-5 optimizer sweep
    :width: 98%
@@ -461,29 +425,7 @@ Full Max-Mode-5 Optimizer Sweeps
 For manuscript-facing comparisons between optimizer algorithms, run the full
 ``max_mode = 5`` VMEC-JAX solved-boundary sweep on the workstation/GPU node and
 then build the comparison panel from the real ``history.json`` and
-``wout_final.nc`` outputs:
-
-.. code-block:: bash
-
-   # Current VMEC-JAX API: make the matched constraints-only baseline first.
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --constraints-only --target-aspect 6.0 --target-iota 0.42 \
-     --mode-schedule 1,2,3,4,5 --max-nfev 2000 --solver-device gpu \
-     --outdir runs_onepoint/qa_baseline_strict_upstream
-
-   # Restart a growth-rate optimization from the solved baseline. Growth uses
-   # VMEC-JAX's implicit equilibrium Jacobian through the current public API.
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --input runs_onepoint/qa_baseline_strict_upstream/input.final \
-     --mode-schedule 5 --target-aspect 6.0 --target-iota 0.42 \
-     --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
-     --transport-kind growth --transport-weight 0.10 --jacobian implicit \
-     --solver-device gpu --outdir runs_onepoint/growth_scalar_trust
-
-   # Locally, after copying the campaign directory back:
-   python tools/artifacts/build_vmec_jax_qa_full_sweep_panel.py \
-     --run-root tools_out/vmec_jax_qa_full_sweep_YYYYMMDD \
-     --out docs/_static/vmec_jax_qa_full_sweep_panel.png --pdf
+``wout_final.nc`` outputs.
 
 The panel builder compares the upstream-style QA baseline plus any completed
 growth-rate, quasilinear-flux, nonlinear-window, and projected/admission
@@ -519,32 +461,7 @@ and exposed an input/WOUT replay discrepancy. It remains useful negative
 evidence, but its removed command-line switches are not emulated. New campaigns
 must independently solve ``input.final``, compare the replayed WOUT with the
 optimizer WOUT, and use only the authoritative replay for downstream transport
-audits. Large sample sets should first be evaluated with the current metric
-evaluator below; only admitted candidates should consume long nonlinear runs.
-
-Transport-admission bookkeeping for the strict baseline is separated from
-optimization. After a baseline or candidate writes ``input.final``, run:
-
-.. code-block:: bash
-
-   python tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py \
-     --input tools_out/vmec_jax_qa_strict_baseline/input.final \
-     --out-json tools_out/vmec_jax_qa_strict_baseline/growth_metric.json \
-     --transport-kind growth --solver-device cpu
-
-The same command accepts ``--transport-kind quasilinear_flux`` and
-``--transport-kind nonlinear_window_heat_flux``. The evaluator solves the
-supplied fixed boundary once through VMEC-JAX and calls the SPECTRAX-GK
-objective directly; it does not update the boundary or take an outer
-least-squares step. On the passing strict QA baseline, the default 18-point
-sample set ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
-``k_y rho_i=(0.10,0.30,0.50)`` is evaluated from one current
-``VmecInput``/``solve_equilibrium`` result through
-``vmec_jax.core.turbulence.turbulence_objective_vector``. Normalized surfaces
-are mapped to the nearest valid interior radial index and each requested
-``k_y`` sets the spectral box length explicitly. These are reduced admission
-metrics only. Candidate promotion still requires solved-equilibrium,
-boundary-gradient/branch, and matched long-window nonlinear gates.
+audits.
 
 .. figure:: _static/vmec_jax_qa_full_sweep_panel.png
    :alt: VMEC-JAX QA max-mode-5 optimizer sweep with SPECTRAX-GK transport objectives
@@ -592,25 +509,6 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    Boozer-LCFS ``|B|`` contours. This is the figure to use when discussing the
    solved QA baseline geometry. It is not a nonlinear heat-flux optimization
    claim.
-
-Configurable Solved-Boundary Driver
------------------------------------
-
-For dry-runs, guarded transport-weight ladders, profile-floor experiments, and
-small optimizer-budget checks, use the configurable driver instead of the three
-literal QA scripts:
-
-.. code-block:: bash
-
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py --dry-run
-
-The driver follows the current VMEC-JAX public API directly: it parses a
-``VmecInput``, solves the initial equilibrium, and calls ``opt.least_squares``
-over a mode-continuation schedule. The required QA, aspect-ratio, and mean-iota
-terms are always explicit. ``growth`` can use the implicit equilibrium
-Jacobian; the eigenvector-weighted quasilinear and reduced nonlinear proxies use
-finite-difference outer Jacobians. ``setup_summary.json`` records this policy
-before any expensive solve begins.
 
 Development-Only Reduced Diagnostics
 ------------------------------------
@@ -674,45 +572,16 @@ solved-WOUT geometry gates and matched long-window nonlinear audits pass. This
 preserves the fixed-boundary equilibrium and precise-QA conventions of
 [HirshmanWhitson83]_ and [LandremanPaul22]_.
 
-To experiment with the solved-boundary VMEC-JAX path, first assemble the
-objective without solving. This path requires the optional ``vmec_jax`` and
-``booz_xform_jax`` packages because it works from in-memory VMEC states rather
-than pre-generated geometry files:
+The solved-boundary VMEC-JAX path assembles the objective from in-memory VMEC
+states and requires the optional ``vmec_jax`` and ``booz_xform_jax`` packages.
+It first solves a constraints-only QA baseline and then restarts a
+transport-weighted branch from that solved input. The current VMEC-JAX
+least-squares implementation owns the optimizer. SPECTRAX-GK selects only the
+derivative policy appropriate to the observable; it no longer maintains a
+parallel optimizer-method abstraction.
 
-.. code-block:: bash
-
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --dry-run --target-aspect 6.0 --target-iota 0.42 \
-     --mode-schedule 1,2,3,4,5
-
-Then run the two comparable branches:
-
-.. code-block:: bash
-
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --constraints-only \
-     --target-aspect 6.0 --target-iota 0.42 \
-     --mode-schedule 1,2,3,4,5 \
-     --make-plots \
-     --outdir runs/qa_constraints_only
-
-   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
-     --input runs/qa_constraints_only/input.final \
-     --target-aspect 6.0 --target-iota 0.42 --mode-schedule 5 \
-     --make-plots \
-     --outdir runs/qa_plus_reduced_nonlinear_heat_flux \
-     --transport-weight 0.05 --jacobian finite-difference \
-     --transport-kind nonlinear_window_heat_flux \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.10,0.30,0.50
-
-On a GPU node, append ``--solver-device gpu``; otherwise JAX uses the available
-default backend. The current VMEC-JAX least-squares implementation owns the
-optimizer. SPECTRAX-GK selects only the derivative policy appropriate to the
-observable; it no longer maintains a parallel optimizer-method abstraction.
-
-Both use the upstream simple-seed perturbation and explicit mode continuation.
+The two branches use the upstream simple-seed perturbation and explicit mode
+continuation.
 The SPECTRAX-GK study targets ``A=6`` and mean ``iota=0.42``; a passed optimizer
 run is still only a candidate. The required next audit is an independent WOUT
 profile/replay check followed by matched, replicated, long-window nonlinear
@@ -722,17 +591,6 @@ The A=6 admission artifact records ``mean_iota_lower_bound`` and
 ``iota_profile_floor`` fields. Legacy ``target_*`` iota fields remain in the
 JSON only as compatibility aliases and should be interpreted as lower-bound
 admission gates, not as the upstream QA script's exact mean-iota objective.
-
-For bounded local candidate pairs, build the solved-boundary audit panel with:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_vmec_jax_qa_transport_candidate_comparison.py --pdf
-
-On this development workstation the command uses the local authoritative
-sidecar directories when they are present. In a clean clone those directories
-are absent, so the tool falls back to the tracked JSON payload and reproduces
-the shipped panel without requiring large transient ``tools_out`` artifacts.
 
 .. figure:: _static/vmec_jax_qa_transport_candidate_comparison.png
    :alt: VMEC-JAX QA candidate iota-profile and scalar diagnostic audit
@@ -773,8 +631,7 @@ New campaigns use current VMEC-JAX ``opt.least_squares`` directly. Growth-rate
 optimization uses its implicit equilibrium Jacobian and must pass the local
 SPECTRAX eigenbranch/tangent gates; eigenvector-weighted QL and reduced
 nonlinear objectives use finite-difference outer Jacobians. Candidate boundaries
-are replayed independently and evaluated with
-``evaluate_vmec_jax_spectrax_transport_metric.py`` before any matched nonlinear
+are replayed independently and evaluated before any matched nonlinear
 audit. This current path replaces the former private fixed-boundary stage,
 manual frozen-axis tape access, and projected-input writer.
 
@@ -844,14 +701,10 @@ records the same lesson as a prelaunch rule: the ``2.2876%`` reduced margin is
 below the ``4%`` calibrated threshold, so a future candidate at this margin
 would be blocked before launching a new expensive nonlinear campaign.
 
-The broad nonlinear turbulent-flux optimization gate is now encoded directly in
-``examples/optimization/QA_nonlinear_ITG_transport_matrix.py`` and the
-lower-level ``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` helper. The
-example keeps the VMEC-JAX-style top-level-constant workflow: edit the baseline
-and candidate WOUT paths, then run the script to emit the full production
+The broad nonlinear turbulent-flux optimization gate is a full production
 campaign over ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
 ``k_y rho_i=(0.10,0.30,0.50)`` with seed/timestep replicated
-``t=[1100,1500]`` nonlinear windows. The generated postprocess script rebuilds
+``t=[1100,1500]`` nonlinear windows. Its postprocess rebuilds
 every output gate, ensemble gate, matched comparison, and the aggregate matrix
 report. A broad optimization claim is allowed only when that aggregate report
 passes; otherwise the candidate remains single-point or diagnostic evidence.
@@ -868,8 +721,7 @@ Boundary-Coefficient Objective Landscapes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Before launching another optimizer, SPECTRAX-GK now includes a
-boundary-coefficient landscape diagnostic:
-:download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`.
+boundary-coefficient landscape diagnostic.
 It perturbs one VMEC input coefficient, writes the corresponding ``input.*``
 decks, evaluates deterministic reduced transport objectives, and optionally
 overlays true post-transient nonlinear heat-flux points with uncertainty bars. This
@@ -893,16 +745,7 @@ landscapes.
 The reduced scan is intentionally reusable.  The batched evaluator computes
 growth and all explicit quasilinear metrics in one VMEC/JAX solve per
 coefficient; reduced/startup nonlinear-window metrics are excluded from this
-landscape.  To regenerate the tracked figure without recomputing metrics,
-reuse the stored JSON sidecar::
-
-   python tools/artifacts/build_vmec_boundary_transport_landscape.py \
-     --baseline-input tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final \
-     --coefficient "RBC(1,1)" \
-     --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc11_full.json \
-     --fractions=-0.75,-0.70,-0.65,-0.60,-0.55,-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75 \
-     --surfaces 0.45,0.64,0.78 --alphas 0.0,0.7853981633974483 --ky-values 0.10,0.30,0.50 \
-     --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2
+landscape.
 
 When selected landscape points are promoted to expensive turbulence evidence,
 run replicated post-transient nonlinear ensembles and rerun the plot with
@@ -925,22 +768,6 @@ it passes the explicitly selected ``20%`` landscape gate but not the stricter
 stability-boundary/open long-window points and should not be inferred from
 reduced metrics.  The shorter windows are retained only as negative convergence
 diagnostics for this landscape protocol.
-For diagnostic landscapes that should show failed post-transient points instead
-of aborting the full scan, build each sidecar with
-``tools/artifacts/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That
-flag only changes the command exit status; the JSON and plot still mark failed
-readiness or ensemble gates as failed and those points must not be promoted.
-
-When selected landscape points are promoted to expensive turbulence evidence,
-the nonlinear campaign-admission report should be rebuilt from the matching
-strict-baseline reduced scan and the new replicated nonlinear landscape
-sidecars::
-
-   python tools/artifacts/build_nonlinear_transport_admission.py campaign \
-     --prelaunch-report path/to/current_prelaunch_gate.json \
-     --landscape-admission path/to/current_landscape_admission.json \
-     --out-json path/to/current_campaign_admission_report.json \
-     --fail-on-blocked
 
 Earlier ``+3% RBC(0,1)`` and sparse ``RBC(1,1)`` sidecars are retained as
 historical development artifacts only. They were generated from older narrow
@@ -968,17 +795,6 @@ boundary.
 Implementation Map
 ~~~~~~~~~~~~~~~~~~
 
-- Time-horizon audit builder: the same command's ``horizon-audit`` mode
-- Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`
-- Nonlinear landscape admission builder: :download:`build_nonlinear_transport_admission.py landscape <../tools/artifacts/build_nonlinear_transport_admission.py>`
-- Reduced nonlinear-audit prelaunch builder:
-  ``python tools/artifacts/build_nonlinear_transport_admission.py prelaunch ...``
-  (:download:`build_nonlinear_transport_admission.py <../tools/artifacts/build_nonlinear_transport_admission.py>`)
-- Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_transport_admission.py campaign <../tools/artifacts/build_nonlinear_transport_admission.py>`
-- Solved-equilibrium linear launch screen:
-  ``python tools/artifacts/build_nonlinear_transport_admission.py linear-screen ...``
-  ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
-  admission policy tests.
 - Legacy nonlinear landscape admission report from the earlier narrow scan:
   :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
 - Legacy reduced nonlinear-audit prelaunch gate from the earlier narrow scan:
@@ -1046,13 +862,6 @@ The public VMEC-JAX QA transport scripts are:
   heat-flux screening objective, then promote only if matched baseline and
   optimized equilibria pass replicated long-window post-transient heat-flux
   audits.
-- ``QA_nonlinear_ITG_matched_audit.py``: consume already accepted baseline and
-  optimized nonlinear ensemble sidecars and write the matched reduction audit
-  that decides whether a nonlinear turbulent-flux reduction is promoted.
-- ``QA_nonlinear_ITG_transport_matrix.py``: write the broad matched
-  baseline/candidate matrix over three surfaces, two field lines, and three
-  ``k_y`` values. This is the required launch/postprocess contract before a
-  low-turbulence QA candidate can be promoted beyond a single-point audit.
 
 Development-only reduced diagnostics remain under
 ``examples/theory_and_demos/reduced_stellarator_itg`` for AD/FD and plotting
@@ -1084,33 +893,11 @@ values as final evidence. Production evidence requires long post-transient
 averages whose running means are converged and whose seed/timestep/grid
 replicates agree within the documented gate.
 
-The matched-audit example is the short user-facing command for that production
-evidence path:
-
-.. code-block:: bash
-
-   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
-
-By default it rebuilds the tracked no-ESS reference versus optimized QA/ESS
-audit. For a new low-turbulence stellarator, edit ``BASELINE_ENSEMBLE`` and
-``OPTIMIZED_ENSEMBLE`` in the script after the long nonlinear campaign has
-generated accepted ensemble-gate JSON files. A candidate is promotable only if
-both ensembles qualify, the post-transient optimized mean is lower than the
-matched baseline by the configured threshold, and the difference is separated
-from the combined uncertainty. This is the required final step after the
-linear, quasilinear, or nonlinear-window optimizer proposes a candidate.
-
-The broad-matrix example is the corresponding user-facing command for
-multi-surface promotion:
-
-.. code-block:: bash
-
-   python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
-
-It writes the campaign manifests plus GPU-split launch scripts. The generated
-aggregate report is the promotion artifact: all baseline/candidate ensembles
-must pass their long post-transient window gates, and the matched comparison
-matrix must satisfy the configured pass-fraction and mean-reduction policy.
+The broad matched baseline/candidate matrix over three surfaces, two field
+lines, and three ``k_y`` values is the multi-surface promotion artifact: all
+baseline/candidate ensembles must pass their long post-transient window gates,
+and the matched comparison matrix must satisfy the configured pass-fraction and
+mean-reduction policy.
 After postprocessing candidate families, use the portfolio gate to pick the
 promoted family and to keep strict negative-transfer rows out of the promotion
 count:
@@ -1907,25 +1694,13 @@ the following pass:
    long-window nonlinear audit, which closes the optimized-equilibrium
    post-transient transport-window evidence requirement for this scoped
    candidate.
-   ``tools/campaigns/write_optimized_equilibrium_transport_configs.py`` is the launch
-   contract for that final audit. Given a concrete post-optimization
-   ``wout*.nc``, it writes the release ``n64`` nonlinear transport replicate
-   ladder, including ``t=250,350,450,700`` continuations, two random-seed
-   replicates, one timestep replicate, and the exact ensemble/guard commands.
-   The current selected candidate has completed that ladder. The generated
+   The current selected candidate has completed the release ``n64`` nonlinear
+   transport replicate ladder over ``t=250,350,450,700`` continuations with two
+   random-seed replicates and one timestep replicate. The
    ``t=[350,700]`` ensemble passes finite-flux, running-window, block/SEM,
    replicate-spread, and optimized-equilibrium marker gates, with ensemble mean
    ion heat flux ``10.19``, mean-relative spread ``0.038``, and combined
    SEM/mean ``0.021``.
-
-   Example launch-contract generation:
-
-   .. code-block:: bash
-
-      python tools/campaigns/write_optimized_equilibrium_transport_configs.py \
-        --vmec-file /path/to/wout_optimized_equilibrium.nc \
-        --case optimized_equilibrium_post_optimization \
-        --out-dir tools_out/optimized_equilibrium_replicates
 
    The current QA ``vmec_jax`` optimized-equilibrium candidate has also been
    screened through the SPECTRAX-GK linear/quasilinear runtime before launching
@@ -2054,9 +1829,7 @@ a smoother composite profile-gradient direction.
 summarizes the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)``
 audits. The controls fail in complementary ways: ``ZBS(1,1)`` is
 statistically clean but nonlocal, whereas ``ZBS(1,0)`` can be local but is
-too noisy. The ``bracket-sweep`` subcommand of
-``tools/artifacts/build_nonlinear_gradient_evidence.py`` enforces a
-same-control amplitude comparison. The tracked ``RBC(1,1)`` sweep shows
+too noisy. The tracked ``RBC(1,1)`` sweep shows
 finite-difference asymmetry increasing from about ``0.897`` to ``1.895``;
 a larger bracket is therefore not a defensible cure.
 
@@ -2068,17 +1841,15 @@ relative gradient-uncertainty gate (``0.683 > 0.5``). The later 7.5%
 the plus-state spread and propagated uncertainty criteria. These are retained
 as negative physics evidence, not as machinery for generating further plans.
 
-The retained variance-reduction workflow is
-``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan``
-followed by ``control-mean``. Four initial matched pairs were insufficient,
+The retained variance-reduction workflow uses matched control-mean pairs. Four
+initial matched pairs were insufficient,
 while the independent 21-pair campaign over ``t=[600,1100]`` passed its
 scoped combined-uncertainty gate. This validates the estimator for this
 specific bracket; it does not justify a broad nonlinear turbulent-flux
 optimization claim.
 
 Because both single-control amplitude sweeps point away from more blind
-replicas, SPECTRAX-GK now also includes
-``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` for a smoother
+replicas, SPECTRAX-GK now also targets a smoother
 multi-coefficient direction. The tracked
 ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` uses the
 current long-window evidence signs to define a 2% descent-oriented direction:
@@ -2406,38 +2177,11 @@ seed/timestep labels across all parameter states.
    single-control ``RBC(1,1)`` path fail-closed and supports the move to a
    smaller locality sweep or an overdetermined profile-gradient campaign.
 
-For boundary-coefficient gradients, first use
-``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient``. It starts from a concrete
-VMEC input file such as the optimized-equilibrium ``input.final``, writes
-matched ``baseline``, ``plus_delta``, and ``minus_delta`` input files for an
-explicit ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient, and records the exact
-``vmec_jax`` commands plus the downstream nonlinear-gradient campaign command.
-The generated files are still launch artifacts, not evidence: production
-promotion only begins after ``vmec_jax`` has re-equilibrated all three inputs
-and produced distinct ``wout`` files.
-Once the three matched ensembles exist,
-``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` is the promotion
-artifact builder. It consumes the ``baseline``, ``plus_delta``, and
-``minus_delta`` replicated ensemble JSON files, computes
-``dQ/dp = (Q_+ - Q_-)/(2 delta_p)``, propagates the ensemble SEM into
-``gradient_uncertainty_rel``, checks the response fraction, forward/backward
-asymmetry, subtraction condition number, and per-state window uncertainty, and
-writes JSON/CSV/PNG/PDF sidecars. When the three ensembles contain matching
-``seedNN`` or ``dtNN`` replicate labels, the JSON also records
-diagnostic-only paired-replicate finite-difference rows. Those rows diagnose
-weak or sign-changing stochastic responses; they are not production gates and
-do not relax the uncertainty, asymmetry, response, or conditioning thresholds.
-The resulting JSON is then supplied to
+For boundary-coefficient gradients, the central finite-difference gradient JSON
+is supplied to
 ``tools/release/check_nonlinear_optimization_gates.py gradient-evidence`` together with the
-three ensemble artifacts; only that paired long-window workflow can promote a
-nonlinear turbulence-gradient claim.
-``tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py`` writes the matching
-launch ladder from three explicit VMEC files first: baseline, positive
-perturbation, and negative perturbation. Its manifest records the per-state run
-manifests, the ensemble-builder commands, the central-FD command, and the final
-evidence-check command, so office GPU campaigns and later manuscript artifacts
-use one reproducible contract. The writer also performs a fail-closed VMEC
-preflight: all three files must exist, must be distinct resolved paths, and must
-have distinct SHA256 contents by default. Byte-identical files can only be
-accepted with ``--allow-identical-vmec-content`` for plumbing smoke tests, and
-that flag is recorded in the manifest as non-production evidence.
+matched ``baseline``, ``plus_delta``, and ``minus_delta`` replicated ensemble
+artifacts. That gate checks the response fraction, forward/backward asymmetry,
+subtraction condition number, and propagated ``gradient_uncertainty_rel``, and
+only that paired long-window workflow can promote a nonlinear
+turbulence-gradient claim.

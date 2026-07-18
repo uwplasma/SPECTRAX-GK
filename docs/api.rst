@@ -467,12 +467,6 @@ Nonlinear Replicate Diagnostics
 .. automodule:: spectraxgk.diagnostics.nonlinear_replicates
    :members:
 
-Nonlinear Replicate Follow-Up
------------------------------
-
-.. automodule:: tools.campaigns.nonlinear_replicate_followup
-   :members:
-
 Nonlinear Transport Optimization Diagnostics
 --------------------------------------------
 

@@ -663,12 +663,6 @@ from diagnostic decomposition work:
    :alt: SPECTRAX-GK parallelization closure status
    :align: center
 
-It is regenerated with:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_parallelization_completion_status.py
-
 The tracked ``docs/_static/parallelization_completion_status.json`` reports
 ``production_completion_percent = 100`` for independent ``k_y`` scans and
 quasilinear/UQ ensembles. The same artifact keeps whole-state nonlinear
