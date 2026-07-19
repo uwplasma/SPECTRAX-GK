@@ -612,6 +612,24 @@ Use large coherent commits, each independently green:
   **95.19%** (1338 missing of 27819, +243 statements vs the ~193 the gate
   required); full x64 suite **2149 passed / 0 failed**; package-coverage
   manifest gate and architecture gate (79 test files <= baseline 95) both pass.
+- 2026-07-19 coordinated ``vmec_jax`` -> ``vmex`` rename (``c09f12c3``,
+  ``438176b8``). Now that the whole geometry bridge runs on the vmex public
+  API, the historical ``vmec_jax`` provenance token was renamed everywhere it
+  is a live identifier or value, in lockstep so the source literals, the 46
+  frozen docs/_static + benchmarks artifacts, and the release gates that
+  field-check their ``kind``/``source``/``source_model`` values all moved
+  together. 45 tracked asset files were renamed (docs panels + the QA test
+  file) with every figure/download reference updated; the mapping metadata key
+  became ``mapping["vmex"]``; the ``*_VMEC_JAX_PATH`` env vars became
+  ``*_VMEX_PATH``. VMEC-format names (``vmec_boozer_core``, ``vmec_transport``,
+  VMEC equilibria) were deliberately left untouched -- only the ``vmec_jax``
+  token moved -- and the genuine "``vmec_jax`` was renamed to ``vmex``" history
+  notes are kept below. A latent Sphinx ``|B|`` substitution warning (from the
+  piece B boozer-constants docstring) was escaped so ``sphinx -W`` is clean.
+  Verified: ruff, API (362), collection (2172), architecture gate, ``sphinx -W``
+  (0 warnings, all renamed figures resolve), and the full x64 suite (2149
+  passed / 0 failed). This clears the plan's last listed push-blocker; the
+  single combined push of the local stack awaits explicit user authorization.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
@@ -727,10 +745,19 @@ flake.
    / ``operators/linear/collisions.py`` 63/83/93 -> 100%. +243 statements over
    the ~193 the gate needed. Full x64 suite 2149 passed / 0 failed; the
    package-coverage manifest gate and architecture gate both pass.
-3. **Coordinated ``vmex_*`` -> ``vmex_*`` identifier + frozen-artifact
-   rename** (current top priority; see the dependency section), then the single
-   combined push of the local commit stack. This is the last push-blocker: both
-   CI-green (x64) and the >=95% coverage gate are now satisfied.
+3. ~~**Coordinated ``vmec_jax_*`` -> ``vmex_*`` identifier + frozen-artifact
+   rename**~~ — DONE (``c09f12c3`` + ``438176b8``). Lockstep rename of source
+   identifiers, report ``kind``/``source``/``source_model`` values, the 46
+   frozen docs/_static + benchmarks artifacts, 45 tracked asset files, the
+   gates that field-check them, and the ``*_VMEC_JAX_PATH`` env vars. VMEC
+   equilibrium names (``vmec_boozer_core``, ``vmec_transport``) left untouched;
+   only the ``vmec_jax`` provenance token moved. Verified: ruff, API (362),
+   collection (2172), architecture gate, Sphinx ``-W`` (0 warnings), and the
+   full x64 suite (2149 passed / 0 failed).
+4. **Single combined push of the local commit stack** (AWAITS user
+   authorization; outward-facing). Both push-blockers are cleared: x64 CI-green
+   and the >=95% coverage gate. Remote ``origin`` -> ``uwplasma/spectrax-gk``,
+   branch ``refactor/gkx-2.0``. Do not push without an explicit go-ahead.
 
 **Then** continue the scientific-core lane (consolidate term/field/dissipation
 ownership under ``terms``/``physics`` and remove the duplicated
