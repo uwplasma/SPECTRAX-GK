@@ -758,78 +758,72 @@ def test_vmec_field_line_sampling_helpers_have_canonical_owner() -> None:
     assert vmec_state_sensitivity._rms_with_floor is (
         vmec_field_line_sampling._rms_with_floor
     )
-    assert vmec_state_sensitivity._vmec_field_line_sampling_coordinates is (
-        vmec_field_line_sampling._vmec_field_line_sampling_coordinates
-    )
 
 
 def test_vmec_tensor_mapping_builds_finite_mapping_from_mocked_vmec_modules(
     monkeypatch,
 ) -> None:
-    vmec_pkg = types.ModuleType("vmec_jax")
-    vmec_pkg.__path__ = []  # type: ignore[attr-defined]
-    geom_mod = types.ModuleType("vmec_jax.geom")
-    bcovar_mod = types.ModuleType("vmec_jax.vmec_bcovar")
-    field_mod = types.ModuleType("vmec_jax.field")
-
-    ns, ntheta_grid, nzeta_grid = 5, 6, 5
+    ntheta = 8
     dtype = jnp.float32
-    s = jnp.arange(ns, dtype=dtype)[:, None, None]
-    theta = jnp.linspace(0.0, 2.0 * jnp.pi, ntheta_grid, endpoint=False, dtype=dtype)[
-        None, :, None
-    ]
-    zeta = jnp.linspace(0.0, 2.0 * jnp.pi, nzeta_grid, endpoint=False, dtype=dtype)[
-        None, None, :
-    ]
-    zeros = jnp.zeros((ns, ntheta_grid, nzeta_grid), dtype=dtype)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, ntheta, endpoint=False, dtype=dtype)
+    ones = jnp.ones(ntheta, dtype=dtype)
+    captured: dict[str, object] = {}
 
-    def eval_geom(_state, _static):  # noqa: ANN001, ANN202
-        return types.SimpleNamespace(
-            sqrtg=1.0 + 0.02 * s + zeros,
-            g_ss=1.1 + 0.01 * s + zeros,
-            g_st=zeros,
-            g_sp=zeros,
-            g_tt=1.2 + 0.03 * jnp.cos(theta) + zeros,
-            g_tp=zeros,
-            g_pp=1.4 + 0.02 * jnp.sin(zeta) + zeros,
-        )
+    def gk_fieldline_geometry(state, runtime, **kwargs):  # noqa: ANN001, ANN202
+        captured["state"] = state
+        captured["runtime"] = runtime
+        captured.update(kwargs)
+        return {
+            "theta": theta,
+            "gradpar": 0.5 * ones,
+            "bmag": 1.0 + 0.05 * jnp.cos(theta),
+            "bgrad": 0.01 * jnp.sin(theta),
+            "gds2": 1.1 * ones,
+            "gds21": -0.2 * ones,
+            "gds22": 0.9 * ones,
+            "cvdrift": 0.3 * ones,
+            "cvdrift0": 0.0 * ones,
+            "gbdrift": 0.25 * ones,
+            "gbdrift0": 0.0 * ones,
+            "grho": ones,
+            "jacobian": 1.2 * ones,
+            "q": 1.0 / 0.6,
+            "s_hat": -0.1,
+            "epsilon": 0.3,
+            "R0": 1.5,
+            "B0": 2.0,
+            "alpha": 0.2,
+            "nfp": 4,
+            "vmex": {
+                "surface_index": 2,
+                "L_ref": 1.5,
+                "B_ref": 2.0,
+                "gradpar_profile": 0.5 * ones,
+            },
+        }
 
-    def vmec_bcovar_half_mesh_from_wout(**_kwargs):  # noqa: ANN202
-        bsupu = 1.0 + 0.05 * jnp.cos(theta) + zeros
-        bsupv = 0.7 + 0.03 * jnp.sin(zeta) + zeros
-        return types.SimpleNamespace(bsupu=bsupu, bsupv=bsupv)
-
-    def b2_from_bsup(_geom, bsupu, bsupv):  # noqa: ANN001, ANN202
-        return bsupu * bsupu + 0.2 * bsupv * bsupv
-
-    geom_mod.eval_geom = eval_geom
-    bcovar_mod.vmec_bcovar_half_mesh_from_wout = vmec_bcovar_half_mesh_from_wout
-    field_mod.b2_from_bsup = b2_from_bsup
-    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_pkg)
-    monkeypatch.setitem(sys.modules, "vmec_jax.geom", geom_mod)
-    monkeypatch.setitem(sys.modules, "vmec_jax.vmec_bcovar", bcovar_mod)
-    monkeypatch.setitem(sys.modules, "vmec_jax.field", field_mod)
-
-    state = types.SimpleNamespace(Rcos=jnp.ones((ns, 2), dtype=dtype))
-    wout = types.SimpleNamespace(
-        iotas=jnp.asarray([0.2, 0.4, 0.6, 0.8, 1.0], dtype=dtype),
-        Aminor_p=1.3,
-        phi=np.asarray([0.0, 2.0 * np.pi]),
-        nfp=4,
+    monkeypatch.setattr(
+        vmec_tensor_mapping,
+        "_import_vmex_turbulence",
+        lambda: types.SimpleNamespace(gk_fieldline_geometry=gk_fieldline_geometry),
     )
 
+    state = object()
+    runtime = object()
     mapping = vmec_tensor_mapping.vmec_jax_flux_tube_mapping_from_state(
         state,
-        static=object(),
-        wout=wout,
+        runtime,
         surface_index=2,
         alpha=0.2,
-        ntheta=8,
-        reference_length=1.5,
-        reference_b=2.0,
-        drift_scale=0.7,
+        ntheta=ntheta,
     )
 
+    assert captured["state"] is state
+    assert captured["runtime"] is runtime
+    assert captured["s_index"] == 2
+    assert captured["alpha"] == pytest.approx(0.2)
+    assert captured["ntheta"] == ntheta
+    assert captured["equal_arc"] is True
     for key in (
         "theta",
         "gradpar",
@@ -843,32 +837,16 @@ def test_vmec_tensor_mapping_builds_finite_mapping_from_mocked_vmec_modules(
         "grho",
     ):
         arr = np.asarray(mapping[key])
-        assert arr.shape == (8,)
+        assert arr.shape == (ntheta,)
         assert np.all(np.isfinite(arr))
     assert mapping["R0"] == pytest.approx(1.5)
     assert mapping["B0"] == pytest.approx(2.0)
     assert mapping["nfp"] == 4
     assert float(mapping["q"]) == pytest.approx(1.0 / 0.6, rel=2.0e-6)
+    assert "vmex" not in mapping
     assert mapping["vmec_jax"]["surface_index"] == 2
+    assert mapping["vmec_jax"]["reference_length"] == pytest.approx(1.5)
     assert mapping["vmec_jax"]["reference_b"] == pytest.approx(2.0)
-
-
-def test_vmec_tensor_mapping_validates_surface_and_reference_scales() -> None:
-    state = types.SimpleNamespace(Rcos=jnp.ones((4, 2), dtype=jnp.float32))
-    wout = types.SimpleNamespace(
-        iotas=jnp.asarray([0.0, 0.4, 0.5, 0.6], dtype=jnp.float32),
-        Aminor_p=0.0,
-        phi=np.asarray([0.0, 0.0]),
-    )
-
-    with pytest.raises(ValueError, match="interior"):
-        vmec_tensor_mapping._surface(state, wout, surface_index=0)
-
-    scales = vmec_tensor_mapping._reference_scales(
-        wout, reference_length=None, reference_b=None
-    )
-    assert scales.length == pytest.approx(1.0)
-    assert scales.b_ref == pytest.approx(1.0)
 
 
 def test_vmec_state_sensitivity_ad_fd_diagnostics_match_analytic_jacobian() -> None:
@@ -917,67 +895,6 @@ def test_vmec_state_rms_with_floor_matches_tensor_rms_contract() -> None:
     assert float(vmec_state_sensitivity._rms_with_floor(jnp.zeros(4), 1.0e-8)) == (
         pytest.approx(1.0e-4)
     )
-
-
-def test_vmec_state_field_line_sampling_coordinates_validate_iota_contract() -> None:
-    wout = types.SimpleNamespace(iotas=jnp.asarray([0.0, 0.5, -0.25]))
-
-    iota_line, iota_safe, theta_line, theta_vmec, zeta_line = (
-        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
-            wout,
-            surface_index=1,
-            alpha=0.3,
-            ntheta=8,
-            dtype=jnp.float32,
-        )
-    )
-
-    assert float(iota_line) == pytest.approx(0.5)
-    assert float(iota_safe) == pytest.approx(0.5)
-    assert theta_line.shape == (8,)
-    assert theta_vmec.shape == zeta_line.shape == (8,)
-    expected_zeta = jnp.mod((theta_vmec - 0.3) / iota_safe, 2.0 * jnp.pi)
-    np.testing.assert_allclose(
-        np.asarray(zeta_line),
-        np.asarray(expected_zeta),
-        atol=5.0e-6,
-    )
-
-    _zero_iota, zero_safe, *_ = (
-        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
-            wout,
-            surface_index=0,
-            alpha=0.0,
-            ntheta=4,
-            dtype=jnp.float32,
-        )
-    )
-    assert float(zero_safe) == pytest.approx(1.0e-12)
-
-    with pytest.raises(ValueError, match="ntheta"):
-        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
-            wout,
-            surface_index=1,
-            alpha=0.0,
-            ntheta=3,
-            dtype=jnp.float32,
-        )
-    with pytest.raises(RuntimeError, match="iotas profile"):
-        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
-            types.SimpleNamespace(iotas=jnp.ones((2, 2))),
-            surface_index=1,
-            alpha=0.0,
-            ntheta=4,
-            dtype=jnp.float32,
-        )
-    with pytest.raises(RuntimeError, match="iotas profile"):
-        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
-            wout,
-            surface_index=5,
-            alpha=0.0,
-            ntheta=4,
-            dtype=jnp.float32,
-        )
 
 
 def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (

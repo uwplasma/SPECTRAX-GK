@@ -537,26 +537,18 @@ def test_final_iota_profiles_from_vmec_result_returns_none_without_solved_state(
 
 
 def test_candidate_gate_extracts_iota_profiles_from_vmec_jax_state(monkeypatch) -> None:
-    calls: list[tuple[object, object, object, int]] = []
-
-    def fake_profiles_from_state(*, state, static, indata, signgs):
-        calls.append((state, static, indata, signgs))
-        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
-
-    fake_vmec_jax = SimpleNamespace(
-        equilibrium_iota_profiles_from_state=fake_profiles_from_state
+    monkeypatch.setitem(sys.modules, "vmex", SimpleNamespace())
+    wout = SimpleNamespace(
+        iotas=np.asarray([0.0, 0.411, 0.415]),
+        iotaf=np.asarray([0.412, 0.416]),
     )
-    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
-    optimizer = SimpleNamespace(_static="static", _indata="indata", _signgs=1)
     result = SimpleNamespace(
         history={"aspect_final": 6.0, "iota_final": -0.42, "qs_final": 0.02},
-        final_state="state",
-        final_optimizer=optimizer,
+        final_equilibrium=SimpleNamespace(wout=wout),
     )
 
     report = build_solved_vmec_candidate_gate(result, **POLICY)
 
-    assert calls == [("state", "static", "indata", 1)]
     assert report["passed"] is True
     assert report["checks"]["mean_iota"]["value"] == 0.42
     assert report["checks"]["iota_profile"]["source"] == "vmec_jax_state"
@@ -564,32 +556,28 @@ def test_candidate_gate_extracts_iota_profiles_from_vmec_jax_state(monkeypatch) 
 
 
 def test_candidate_gate_prefers_independent_state_qs_over_history(monkeypatch) -> None:
-    def fake_profiles_from_state(*, state, static, indata, signgs):
-        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
+    class FakeQS:
+        def __init__(self, surfaces, *, helicity_m=1, helicity_n=0, **_kwargs):
+            assert np.asarray(surfaces).shape[0] == 11
+            assert (helicity_m, helicity_n) == (1, 0)
 
-    fake_vmec_jax = SimpleNamespace(
-        equilibrium_iota_profiles_from_state=fake_profiles_from_state
-    )
-    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
-
-    class FakeOptimizer:
-        _static = "static"
-        _indata = "indata"
-        _signgs = 1
-
-        def _evaluate_residuals_from_state(self, state):
+        def total_state(self, state, runtime):
             assert state == "state"
-            return {"combined": 99.0}
-
-        def _qs_total_from_state(self, state, residuals):
-            assert state == "state"
-            assert residuals == {"combined": 99.0}
+            assert runtime == "runtime"
             return 0.013
 
+    fake_vmex = SimpleNamespace(
+        optimize=SimpleNamespace(QuasisymmetryRatioResidual=FakeQS)
+    )
+    monkeypatch.setitem(sys.modules, "vmex", fake_vmex)
     result = SimpleNamespace(
         history={"aspect_final": 6.0, "iota_final": 0.428, "qs_final": 99.0},
         final_state="state",
-        final_optimizer=FakeOptimizer(),
+        final_runtime="runtime",
+        final_wout=SimpleNamespace(
+            iotas=np.asarray([0.0, 0.411, 0.415]),
+            iotaf=np.asarray([0.412, 0.416]),
+        ),
     )
 
     report = build_solved_vmec_candidate_gate(result, **POLICY)
@@ -602,44 +590,35 @@ def test_candidate_gate_prefers_independent_state_qs_over_history(monkeypatch) -
 def test_candidate_gate_uses_standalone_qs_not_assembled_transport_block(
     monkeypatch,
 ) -> None:
-    def fake_profiles_from_state(*, state, static, indata, signgs):
-        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
-
     class FakeQS:
-        def __init__(self, *, helicity_m, helicity_n, surfaces):
-            assert helicity_m == 1
-            assert helicity_n == 0
+        def __init__(self, surfaces, *, helicity_m=1, helicity_n=0, **_kwargs):
             assert np.asarray(surfaces).shape[0] == 11
+            assert (helicity_m, helicity_n) == (1, 0)
 
-        def total(self, ctx, state):
+        def total_state(self, state, runtime):
             assert state == "state"
-            assert ctx.signgs == 1
+            assert runtime == "runtime"
             return 0.009
 
-    fake_vmec_jax = SimpleNamespace(
-        equilibrium_iota_profiles_from_state=fake_profiles_from_state,
-        QuasisymmetryRatioResidual=FakeQS,
+    fake_vmex = SimpleNamespace(
+        optimize=SimpleNamespace(QuasisymmetryRatioResidual=FakeQS)
     )
-    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
+    monkeypatch.setitem(sys.modules, "vmex", fake_vmex)
 
     class FakeOptimizer:
-        _static = SimpleNamespace(s=np.asarray([0.0, 0.5, 1.0]))
-        _indata = "indata"
-        _signgs = 1
-        _flux = "flux"
-        _helicity_m = 1
-        _helicity_n = 0
-
-        def _evaluate_residuals_from_state(self, _state):
-            return {"transport_contaminated_block": 99.0}
-
-        def _qs_total_from_state(self, _state, _residuals):
-            return 99.0
+        def quasisymmetry_objective(self, _params):
+            raise AssertionError("assembled optimizer objective must not be used")
 
     result = SimpleNamespace(
         history={"aspect_final": 6.0, "iota_final": 0.428, "qs_final": 99.0},
         final_state="state",
+        final_runtime="runtime",
+        final_params=(1.0, 2.0),
         final_optimizer=FakeOptimizer(),
+        final_wout=SimpleNamespace(
+            iotas=np.asarray([0.0, 0.411, 0.415]),
+            iotaf=np.asarray([0.412, 0.416]),
+        ),
     )
 
     report = build_solved_vmec_candidate_gate(result, **POLICY)
@@ -650,22 +629,16 @@ def test_candidate_gate_uses_standalone_qs_not_assembled_transport_block(
 
 
 def test_candidate_gate_state_qs_falls_back_to_optimizer_method(monkeypatch) -> None:
-    def fake_profiles_from_state(*, state, static, indata, signgs):
-        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
+    class FailingQS:
+        def __init__(self, *_args, **_kwargs):
+            raise RuntimeError("qs residual unavailable")
 
-    fake_vmec_jax = SimpleNamespace(
-        equilibrium_iota_profiles_from_state=fake_profiles_from_state
+    fake_vmex = SimpleNamespace(
+        optimize=SimpleNamespace(QuasisymmetryRatioResidual=FailingQS)
     )
-    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
+    monkeypatch.setitem(sys.modules, "vmex", fake_vmex)
 
     class FakeOptimizer:
-        _static = "static"
-        _indata = "indata"
-        _signgs = 1
-
-        def _evaluate_residuals_from_state(self, _state):
-            raise RuntimeError("state residual unavailable")
-
         def quasisymmetry_objective(self, params):
             assert params == (1.0, 2.0)
             return 0.017
@@ -673,31 +646,28 @@ def test_candidate_gate_state_qs_falls_back_to_optimizer_method(monkeypatch) -> 
     result = SimpleNamespace(
         history={"aspect_final": 6.0, "iota_final": 0.428, "qs_final": 99.0},
         final_state="state",
+        final_runtime="runtime",
         final_params=(1.0, 2.0),
         final_optimizer=FakeOptimizer(),
+        final_wout=SimpleNamespace(
+            iotas=np.asarray([0.0, 0.411, 0.415]),
+            iotaf=np.asarray([0.412, 0.416]),
+        ),
     )
 
     report = build_solved_vmec_candidate_gate(result, **POLICY)
 
     assert report["passed"] is True
     assert report["checks"]["quasisymmetry"]["value"] == 0.017
-    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
 
 
-def test_final_iota_profiles_from_vmec_result_handles_vmec_jax_failure(
-    monkeypatch,
-) -> None:
-    def fake_profiles_from_state(**_kwargs):
-        raise RuntimeError("not converged")
+def test_final_iota_profiles_from_vmec_result_handles_vmec_jax_failure() -> None:
+    class BrokenEquilibrium:
+        @property
+        def wout(self):
+            raise RuntimeError("not converged")
 
-    fake_vmec_jax = SimpleNamespace(
-        equilibrium_iota_profiles_from_state=fake_profiles_from_state
-    )
-    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
-    result = SimpleNamespace(
-        final_state=object(),
-        final_optimizer=SimpleNamespace(_static=None, _indata=None, _signgs=-1),
-    )
+    result = SimpleNamespace(final_equilibrium=BrokenEquilibrium())
 
     assert final_iota_profiles_from_vmec_result(result) is None
 
@@ -833,23 +803,26 @@ def test_authoritative_wout_candidate_gate_reads_wout_file_with_profile_floor(
         def __exit__(self, *_exc):
             return False
 
-    def fake_load_wout(path):
+    def fake_read_wout(path):
         assert path == tmp_path / "wout_final_rerun.nc"
         return "loaded-wout"
 
-    def fake_qs_from_wout(wout, *, surfaces, helicity_m, helicity_n, ntheta, nphi):
-        assert wout == "loaded-wout"
-        assert tuple(np.asarray(surfaces, dtype=float)) == (0.0, 0.5, 1.0)
-        assert (helicity_m, helicity_n, ntheta, nphi) == (1, 0, 31, 32)
-        return {"total": 0.003}
+    class FakeQS:
+        def __init__(self, surfaces, *, helicity_m, helicity_n, ntheta, nphi):
+            assert tuple(np.asarray(surfaces, dtype=float)) == (0.0, 0.5, 1.0)
+            assert (helicity_m, helicity_n, ntheta, nphi) == (1, 0, 31, 32)
+
+        def total(self, wout):
+            assert wout == "loaded-wout"
+            return 0.003
 
     monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=FakeDataset))
     monkeypatch.setitem(
         sys.modules,
-        "vmec_jax",
+        "vmex",
         SimpleNamespace(
-            load_wout=fake_load_wout,
-            quasisymmetry_ratio_residual_from_wout=fake_qs_from_wout,
+            read_wout=fake_read_wout,
+            optimize=SimpleNamespace(QuasisymmetryRatioResidual=FakeQS),
         ),
     )
 
@@ -877,12 +850,12 @@ def test_authoritative_wout_candidate_gate_reports_wout_load_errors(
     def broken_dataset(_path):
         raise OSError("missing variable")
 
-    def broken_load_wout(_path):
+    def broken_read_wout(_path):
         raise RuntimeError("bad wout")
 
     monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=broken_dataset))
     monkeypatch.setitem(
-        sys.modules, "vmec_jax", SimpleNamespace(load_wout=broken_load_wout)
+        sys.modules, "vmex", SimpleNamespace(read_wout=broken_read_wout)
     )
 
     report = build_authoritative_wout_candidate_gate(
@@ -2385,11 +2358,11 @@ def test_vmec_jax_transport_objective_pins_imported_backend_paths(
     booz_file = booz_pkg / "__init__.py"
     booz_file.write_text("", encoding="utf-8")
 
-    vmec_module = ModuleType("vmec_jax")
+    vmec_module = ModuleType("vmex")
     vmec_module.__file__ = str(vmec_file)
     booz_module = ModuleType("booz_xform_jax")
     booz_module.__file__ = str(booz_file)
-    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_module)
+    monkeypatch.setitem(sys.modules, "vmex", vmec_module)
     monkeypatch.setitem(sys.modules, "booz_xform_jax", booz_module)
     monkeypatch.delenv("SPECTRAX_VMEC_JAX_PATH", raising=False)
     monkeypatch.delenv("VMEC_JAX_PATH", raising=False)
