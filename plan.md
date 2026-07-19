@@ -611,6 +611,37 @@ migration, not a string rename.
   replace mismatches the frozen artifacts. Best folded into Phase 5 (docs) or a
   dedicated pass.
 
+## Literature Validation (2026-07-18)
+
+A multi-source, adversarially-verified literature review confirms GKX's core
+scientific direction. The review was cut short by a session limit before the
+quasilinear (pillar 3) and differentiable-optimization (pillar 4) pillars were
+fully verified, so those remain to be finished before Phase 4 advances.
+
+- **Velocity representation - SOUND.** The Hermite-Laguerre moment hierarchy
+  (Jorge, Ricci & Loureiro 2017, arXiv:1709.01411) is a validated foundation:
+  the moment-based flux-tube linear model reproduces GENE for ITG, TEM, KBM and
+  MTM with excellent growth-rate/frequency agreement; the nonlinear moment-based
+  approach reproduces the Dimits shift (which the gyrofluid framework does not);
+  and a good Cyclone nonlinear ITG heat flux needs only ~16 Hermite-Laguerre
+  modes vs ~100 velocity grid points in GENE. **Claim boundary to encode:** the
+  moment-count advantage is collisionality-dependent - moments for convergence
+  fall as collisionality rises and are lower for gradient-driven (e.g. pedestal)
+  modes, but in the near-collisionless / trapped-particle limit the moment count
+  approaches GENE's grid-point count, so GKX must NOT claim a universal
+  velocity-space efficiency win. Report efficiency by regime.
+- **Collision operators - SOUND.** Implementing the linearized gyrokinetic
+  Coulomb, Sugama, improved-Sugama and Dougherty operators directly in the
+  Hermite-Laguerre basis (Frei, Jorge & Ricci; Jorge, Frei et al.) is the
+  validated approach and spans banana to Pfirsch-Schluter collisionality - this
+  matches GKX's existing reduced/tabulated operators. The remaining lane work
+  (promote to TOML-selectable + add the missing collisionless-growth-rate and
+  finite-b H-theorem benchmarks) is well-targeted.
+- **Quasilinear (pillar 3) and differentiable optimization (pillar 4):**
+  verification incomplete (session limit). Re-run the review's pillar-3/4 angles
+  (resume the deep-research run) before Phase 4 advances; the key references are
+  already in the plan's Evidence Sources.
+
 ## Current Completion
 
 | Lane | Completion |
