@@ -91,7 +91,7 @@ def nonlinear_window_stats_promotion_ready(
     """Return whether serialized nonlinear-window metadata supports promotion.
 
     This duplicates the lightweight schema check from
-    ``spectraxgk.diagnostics.transport_windows`` so the CI repo-hygiene job can run before
+    ``gkx.diagnostics.transport_windows`` so the CI repo-hygiene job can run before
     installing JAX and the rest of the runtime stack.
     """
 
@@ -1345,7 +1345,7 @@ def _gate_case(data: dict[str, Any], path: Path) -> str:
 
 def _artifact_keys_from_gate(data: dict[str, Any]) -> set[str]:
     keys: set[str] = set()
-    for field in ("spectrax", "nonlinear_netcdf", "csv", "source"):
+    for field in ("gkx", "nonlinear_netcdf", "csv", "source"):
         key = _canonical_artifact_key(data.get(field))
         if key:
             keys.add(key)
@@ -1563,7 +1563,7 @@ def write_audit_plot(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     """Write a compact calibration-input audit plot."""
 

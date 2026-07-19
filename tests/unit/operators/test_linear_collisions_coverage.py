@@ -1,7 +1,7 @@
 """Validation-branch and pytree coverage for linear collision kernels.
 
 These tests exercise the provenance checks, operator-variant guards, and
-edge-case validation in :mod:`spectraxgk.operators.linear.collisions` that the
+edge-case validation in :mod:`gkx.operators.linear.collisions` that the
 main kernel regression suite does not reach. Every check pins the exact
 contract (checksum/shape provenance, moment-axis shapes, species axes, grid
 monotonicity, or pytree round-trip identity) rather than mere execution.
@@ -20,9 +20,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.operators.collision import CollisionContext
-from spectraxgk.operators.linear import collisions
-from spectraxgk.operators.linear.collisions import (
+from gkx.operators.collision import CollisionContext
+from gkx.operators.linear import collisions
+from gkx.operators.linear.collisions import (
     DriftKineticMomentCollisionOperator,
     EqualSpeciesFiniteWavelengthCoulombOperator,
     FiniteWavelengthCoulombOperator,
@@ -33,7 +33,7 @@ from spectraxgk.operators.linear.collisions import (
     interpolate_collision_diagonal_table,
     interpolate_collision_pair_table,
 )
-from spectraxgk.terms.config import FieldState
+from gkx.terms.config import FieldState
 
 
 def _fake_resource_files(payload: bytes, metadata_text: str):
@@ -72,7 +72,7 @@ def test_collision_matrix_bundle_rejects_corrupt_provenance(monkeypatch) -> None
     """The cached bundle fails closed on checksum and shape mismatches."""
 
     real_payload = (
-        resources.files("spectraxgk")
+        resources.files("gkx")
         .joinpath("data")
         .joinpath(collisions._COLLISION_MATRIX_DATA)
         .read_bytes()

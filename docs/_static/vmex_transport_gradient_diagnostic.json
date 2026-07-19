@@ -160,7 +160,7 @@
   ],
   "next_action": "use a constraint-preserving projected update or constrained line search along the leading transport-gradient components",
   "setup": {
-    "input": "/home/rjorge/tmp/spectrax-authoritative-qa-baseline-direct-metric-20260602151201/input.final",
+    "input": "/home/rjorge/tmp/gkx-authoritative-qa-baseline-direct-metric-20260602151201/input.final",
     "max_mode": 5,
     "min_vmec_mode": 7,
     "transport_kind": "nonlinear_window_heat_flux",
@@ -181,7 +181,7 @@
       "reduction": "weighted_mean",
       "n_samples": 1
     },
-    "spectrax_config": {
+    "gkx_config": {
       "ntheta": 24,
       "mboz": 21,
       "nboz": 21,

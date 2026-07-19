@@ -1,1 +1,1 @@
-"""Performance benchmark drivers for SPECTRAX-GK."""
+"""Performance benchmark drivers for GKX."""

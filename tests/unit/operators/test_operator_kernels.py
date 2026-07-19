@@ -12,10 +12,10 @@ import numpy as np
 import pytest
 from scipy.special import eval_genlaguerre, eval_laguerre, j0, jv
 
-from spectraxgk.config import GridConfig
-from spectraxgk.operators.collision import CollisionContext
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.core.velocity import (
+from gkx.config import GridConfig
+from gkx.operators.collision import CollisionContext
+from gkx.core.grid import build_spectral_grid
+from gkx.core.velocity import (
     J_l_all,
     associated_bessel_laguerre_coefficients,
     bessel_laguerre_kernels,
@@ -23,14 +23,14 @@ from spectraxgk.core.velocity import (
     laguerre_gyroaverage_neighbors,
     sum_Jl2,
 )
-from spectraxgk.diagnostics.analysis import fit_growth_rate
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.operators.linear.rhs import linear_rhs_cached
-from spectraxgk.solvers.linear.integrators import integrate_linear
-from spectraxgk.operators import hermite_streaming
-from spectraxgk.operators.linear import (
+from gkx.diagnostics.analysis import fit_growth_rate
+from gkx.geometry import SAlphaGeometry
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.operators.linear.rhs import linear_rhs_cached
+from gkx.solvers.linear.integrators import integrate_linear
+from gkx.operators import hermite_streaming
+from gkx.operators.linear import (
     apply_collision_moment_matrix,
     apply_finite_wavelength_coulomb_moment_operator,
     apply_multispecies_collision_moment_matrix,
@@ -50,19 +50,19 @@ from spectraxgk.operators.linear import (
     parallel_electric_field_source,
     solve_driven_collision_response,
 )
-from spectraxgk.operators.linear.dissipation import (
+from gkx.operators.linear.dissipation import (
     collision_quadratic_rate,
     collisions_contribution,
     multispecies_collision_invariant_rates,
 )
-from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.terms.config import FieldState, TermConfig
-from spectraxgk.terms.linear_terms import (
+from gkx.terms.assembly import assemble_rhs_cached
+from gkx.terms.config import FieldState, TermConfig
+from gkx.terms.linear_terms import (
     drift_kinetic_coulomb_six_moment_contribution,
     drift_kinetic_sugama_six_moment_contribution,
 )
-from spectraxgk.runtime import run_runtime_scan
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.runtime import run_runtime_scan
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 def test_streaming_zero_kpar() -> None:
@@ -198,8 +198,8 @@ def test_reduced_sugama_current_recovers_high_charge_limit() -> None:
 
 
 def test_linear_operator_package_reexports_streaming_kernel() -> None:
-    from spectraxgk.operators.linear import hermite_streaming as package_streaming
-    from spectraxgk.operators.linear.moments import hermite_streaming as streaming_impl
+    from gkx.operators.linear import hermite_streaming as package_streaming
+    from gkx.operators.linear.moments import hermite_streaming as streaming_impl
 
     assert hermite_streaming is package_streaming
     assert package_streaming is streaming_impl

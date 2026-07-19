@@ -17,7 +17,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.geometry.vmec_state_controls as controls
+import gkx.geometry.vmec_state_controls as controls
 
 
 # ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ _SQUARE_LAYOUT_MESSAGE = (
 def test_auto_fallback_closes_dataset_when_classic_reader_also_fails(monkeypatch):
     """A square-layout failure tries the classic reader, then re-raises + closes."""
 
-    monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
+    monkeypatch.delenv("GKX_BOOZ_BACKEND", raising=False)
     calls = {"new_booz": 0, "import_preferred": "<unset>"}
 
     def _always_square(_backend: object, _path: object) -> object:
@@ -107,9 +107,9 @@ def test_auto_fallback_skips_classic_reader_and_closes(monkeypatch, env_backend,
     """Only auto-mode square-layout failures may fall back to booz_xform."""
 
     if env_backend is None:
-        monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
+        monkeypatch.delenv("GKX_BOOZ_BACKEND", raising=False)
     else:
-        monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", env_backend)
+        monkeypatch.setenv("GKX_BOOZ_BACKEND", env_backend)
 
     def _raise(_backend: object, _path: object) -> object:
         raise error

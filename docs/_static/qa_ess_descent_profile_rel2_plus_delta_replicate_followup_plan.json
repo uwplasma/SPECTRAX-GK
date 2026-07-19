@@ -234,9 +234,9 @@
         }
       ],
       "direct_full_horizon_launch_commands": [
-        "python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed22_dt0p05.toml --steps 18000 --no-progress",
-        "python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed32_dt0p04.toml --steps 22500 --no-progress",
-        "python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed33_dt0p05.toml --steps 18000 --no-progress"
+        "python3 -m gkx.cli run-runtime-nonlinear --config tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed22_dt0p05.toml --steps 18000 --no-progress",
+        "python3 -m gkx.cli run-runtime-nonlinear --config tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed32_dt0p04.toml --steps 22500 --no-progress",
+        "python3 -m gkx.cli run-runtime-nonlinear --config tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed33_dt0p05.toml --steps 18000 --no-progress"
       ],
       "reference_config": "tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed31.toml",
       "run_manifest": "tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/plus_delta/run_manifest.json",

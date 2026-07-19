@@ -1,7 +1,7 @@
 # Optimization Examples
 
 These examples use the current VMEC-JAX equilibrium/optimization API and
-SPECTRAX-GK turbulence objectives without an intermediate file or legacy
+GKX turbulence objectives without an intermediate file or legacy
 optimizer adapter.
 
 ## QA Transport Optimizations
@@ -9,7 +9,7 @@ optimizer adapter.
 Each script follows `vmex/examples/optimization/QA_optimization.py`: it
 starts from the same perturbed circular seed, continues boundary modes 1 through
 5, and retains the QA, aspect-ratio 6, and mean-iota 0.42 objective terms. The
-only added tuple is one SPECTRAX-GK ITG observable:
+only added tuple is one GKX ITG observable:
 
 ```bash
 python examples/optimization/QA_optimization_linear_ITG.py
@@ -102,4 +102,4 @@ regenerates the manuscript-readiness and pre-manuscript closure dashboards.
 
 ## Expected Outputs
 
-Solved runs write optimizer history, final VMEC input/WOUT files when available, SPECTRAX-GK transport diagnostics, and `solved_wout_gate.json`. The strict gate fails closed if the final equilibrium violates the aspect, `|iota| >= 0.41`, or quasisymmetry constraints. For exploratory transport rows, a small iota shortfall can still be retained as `diag-ok` evidence when `|iota| >= 0.39`, aspect and QS remain acceptable, and the result is clearly described as a diagnostic candidate rather than an accepted optimized stellarator. A nonlinear turbulent-flux claim still requires matched long post-transient nonlinear audits.
+Solved runs write optimizer history, final VMEC input/WOUT files when available, GKX transport diagnostics, and `solved_wout_gate.json`. The strict gate fails closed if the final equilibrium violates the aspect, `|iota| >= 0.41`, or quasisymmetry constraints. For exploratory transport rows, a small iota shortfall can still be retained as `diag-ok` evidence when `|iota| >= 0.39`, aspect and QS remain acceptable, and the result is clearly described as a diagnostic candidate rather than an accepted optimized stellarator. A nonlinear turbulent-flux claim still requires matched long post-transient nonlinear audits.

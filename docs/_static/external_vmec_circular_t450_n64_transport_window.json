@@ -18,7 +18,7 @@
   },
   "promotion_gate_passed": true,
   "source_gate": "docs/_static/external_vmec_circular_t450_high_grid_convergence_gate.json",
-  "spectrax": "docs/_static/external_vmec_circular_holdout_nonlinear_t450_n64_pilot.traces.csv",
+  "gkx": "docs/_static/external_vmec_circular_holdout_nonlinear_t450_n64_pilot.traces.csv",
   "tmax": 449.9636535644531,
   "tmin": 225.0591278076172,
   "window_policy": "highest_resolution_common_late_window_from_passed_external_vmec_grid_gate",

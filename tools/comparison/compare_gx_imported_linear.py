@@ -16,29 +16,29 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
-from spectraxgk.geometry import (
+from gkx.benchmarking.shared import _apply_reference_hypercollisions
+from gkx.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
+from gkx.geometry import (
     SlabGeometry,
     apply_imported_geometry_grid_defaults,
     ensure_flux_tube_geometry_data,
     zero_shear_enabled,
     load_imported_geometry_netcdf,
 )
-from spectraxgk.core.velocity import gamma0
-from spectraxgk.core.grid import (
+from gkx.core.velocity import gamma0
+from gkx.core.grid import (
     build_spectral_grid,
     select_ky_grid,
     select_real_fft_ky_grid,
 )
-from spectraxgk.diagnostics import (
+from gkx.diagnostics import (
     distribution_free_energy,
     electrostatic_field_energy,
     fieldline_quadrature_weights,
     magnetic_vector_potential_energy,
 )
-from spectraxgk.diagnostics.analysis import ModeSelection, instantaneous_growth_rate_from_phi, select_ky_index
-from spectraxgk.solvers.time.explicit import (
+from gkx.diagnostics.analysis import ModeSelection, instantaneous_growth_rate_from_phi, select_ky_index
+from gkx.solvers.time.explicit import (
     ExplicitTimeConfig,
     _instantaneous_growth_rate_step,
     _linear_frequency_bound,
@@ -46,19 +46,19 @@ from spectraxgk.solvers.time.explicit import (
     _linear_term_config,
     _linear_explicit_step,
 )
-from spectraxgk.workflows.runtime.toml import load_toml
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearTerms
-from spectraxgk.runtime import (
+from gkx.workflows.runtime.toml import load_toml
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearTerms
+from gkx.runtime import (
     _build_initial_condition as _build_runtime_initial_condition,
     _load_initial_state_from_file,
 )
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.geometry.miller_eik import generate_runtime_miller_eik
-from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeSpeciesConfig
-from spectraxgk.operators.linear.params import Species, build_linear_params
-from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.geometry.miller_eik import generate_runtime_miller_eik
+from gkx.workflows.runtime.config import RuntimeConfig, RuntimeSpeciesConfig
+from gkx.operators.linear.params import Species, build_linear_params
+from gkx.terms.assembly import assemble_rhs_cached
+from gkx.geometry.vmec_eik import generate_runtime_vmec_eik
 
 
 def _reshape_saved_state(
@@ -260,7 +260,7 @@ def _resolve_imported_real_fft_ny(gx_ky: np.ndarray, gx_contract: GXInputContrac
         return inferred
     full_ny_from_input = max(4, int(3 * (ny_input - 1) + 1))
     # GX input files store the dealiased non-negative ky count (`nky`), while
-    # the imported SPECTRAX grid needs the full real-FFT layout. For the GX
+    # the imported GKX grid needs the full real-FFT layout. For the GX
     # 2/3-rule contract, the non-negative block has length `floor(Ny/3) + 1`,
     # so the inverse mapping is `Ny = 3 * (nky - 1) + 1`.
     if ny_input == int(np.asarray(gx_ky).size):
@@ -398,7 +398,7 @@ def _resolve_internal_geometry_source(
     runtime_config: Path | None,
     gx_contract: GXInputContract | None = None,
 ) -> Path:
-    """Resolve geometry for the SPECTRAX run without sourcing it from GX output files."""
+    """Resolve geometry for the GKX run without sourcing it from GX output files."""
 
     if geometry_file is not None:
         return geometry_file.expanduser().resolve()
@@ -441,7 +441,7 @@ def _resolve_internal_geometry_source(
         )
 
     raise ValueError(
-        "No geometry source for SPECTRAX run. Provide either --geometry-file or --runtime-config "
+        "No geometry source for GKX run. Provide either --geometry-file or --runtime-config "
         "(VMEC runtime TOML)."
     )
 
@@ -562,10 +562,10 @@ def _cached_hermitian_mode_weight(cache, *, use_dealias: bool) -> jnp.ndarray:
 
 
 def _gx_kyst_fac_mask_cached(cache, *, use_dealias: bool) -> jnp.ndarray:
-    """Return GX kyst fac*mask on a full SPECTRAX ky layout.
+    """Return GX kyst fac*mask on a full GKX ky layout.
 
     GX stores ``*_kyst`` diagnostics on the positive-rFFT ky half only, while the
-    evolved SPECTRAX state may carry the full ``±ky`` layout. To compare a full
+    evolved GKX state may carry the full ``±ky`` layout. To compare a full
     state against GX ``*_kyst`` data, keep the positive-ky rows with the Hermitian
     factor of 2, keep ky=0 with unit weight, and exclude ky<0 entirely.
     """
@@ -908,7 +908,7 @@ def _gx_has_uniform_linear_dt(
     Imported-linear audits compare against a specific GX run. When the saved
     times correspond to a constant underlying timestep, reusing that inferred dt
     is a more faithful contract than re-estimating an adaptive CFL step from
-    the reconstructed SPECTRAX state.
+    the reconstructed GKX state.
     """
 
     time_arr = np.asarray(gx_time, dtype=float)
@@ -1022,7 +1022,7 @@ def _save_cached_ky_series(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Compare GX linear diagnostics against SPECTRAX-GK using imported GX/VMEC geometry."
+        description="Compare GX linear diagnostics against GKX using imported GX/VMEC geometry."
     )
     parser.add_argument("--gx", type=Path, required=True, help="Path to the GX .out.nc file")
     parser.add_argument(
@@ -1036,7 +1036,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--runtime-config",
         type=Path,
         default=None,
-        help="Optional SPECTRAX runtime TOML used to generate VMEC geometry internally when --geometry-file is omitted.",
+        help="Optional GKX runtime TOML used to generate VMEC geometry internally when --geometry-file is omitted.",
     )
     parser.add_argument(
         "--gx-input",
@@ -1356,7 +1356,7 @@ def build_growth_dump_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for times and omega_kxkyt.")
     p.add_argument("--gx-input", type=Path, required=True, help="GX input file describing the imported contract.")
-    p.add_argument("--geometry-file", type=Path, required=True, help="Imported geometry file used by SPECTRAX.")
+    p.add_argument("--geometry-file", type=Path, required=True, help="Imported geometry file used by GKX.")
     p.add_argument("--time-index-start", type=int, required=True, help="GX diagnostic start index.")
     p.add_argument("--time-index-stop", type=int, required=True, help="GX diagnostic stop index.")
     p.add_argument("--ky", type=float, default=None, help="Optional ky value to score. Defaults to the smallest positive ky.")
@@ -1439,7 +1439,7 @@ def _load_gx_restart_state(path: Path) -> np.ndarray:
     if raw.ndim != 7 or raw.shape[-1] != 2:
         raise ValueError(f"unexpected GX restart G shape {raw.shape}")
     state = raw[..., 0] + 1j * raw[..., 1]
-    # GX restart layout: (species, m, l, z, kx, ky) -> SPECTRAX: (species, l, m, ky, kx, z)
+    # GX restart layout: (species, m, l, z, kx, ky) -> GKX: (species, l, m, ky, kx, z)
     return np.asarray(np.transpose(state, (0, 2, 1, 5, 4, 3)), dtype=np.complex64)
 
 
@@ -1727,7 +1727,7 @@ def build_window_parser() -> argparse.ArgumentParser:
     p.add_argument("--gx-dir", type=Path, required=True, help="Directory containing GX diag_state dump binaries")
     p.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for dimensions and times")
     p.add_argument("--gx-input", type=Path, required=True, help="GX input file describing the imported contract")
-    p.add_argument("--geometry-file", type=Path, required=True, help="Imported geometry file used by SPECTRAX")
+    p.add_argument("--geometry-file", type=Path, required=True, help="Imported geometry file used by GKX")
     p.add_argument("--time-index-start", type=int, required=True, help="GX diag_state start index")
     p.add_argument("--time-index-stop", type=int, required=True, help="GX diag_state stop index")
     p.add_argument("--out", type=Path, default=None, help="Optional CSV summary output")
@@ -1958,17 +1958,17 @@ def run_window(argv: list[str] | None = None) -> None:
         {"metric": "phi", "rel": _rel_err(sp_phi_stop, gx_phi_stop)},
         {"metric": "apar", "rel": _rel_err(sp_apar_stop, gx_apar_stop_use)},
         {"metric": "bpar", "rel": _rel_err(sp_bpar_stop, gx_bpar_stop_use)},
-        {"metric": "Wg", "gx_stop": distribution_free_energy_stop, "spectrax": sp_Wg_stop, "rel": abs(sp_Wg_stop - distribution_free_energy_stop) / max(abs(distribution_free_energy_stop), 1.0e-30)},
-        {"metric": "Wphi", "gx_stop": electrostatic_field_energy_stop, "spectrax": sp_Wphi_stop, "rel": abs(sp_Wphi_stop - electrostatic_field_energy_stop) / max(abs(electrostatic_field_energy_stop), 1.0e-30)},
-        {"metric": "Wapar", "gx_stop": magnetic_vector_potential_energy_stop, "spectrax": sp_Wapar_stop, "rel": abs(sp_Wapar_stop - magnetic_vector_potential_energy_stop) / max(abs(magnetic_vector_potential_energy_stop), 1.0e-30)},
-        {"metric": "Phi2", "gx_stop": gx_Phi2_stop, "spectrax": sp_Phi2_stop, "rel": abs(sp_Phi2_stop - gx_Phi2_stop) / max(abs(gx_Phi2_stop), 1.0e-30)},
+        {"metric": "Wg", "gx_stop": distribution_free_energy_stop, "gkx": sp_Wg_stop, "rel": abs(sp_Wg_stop - distribution_free_energy_stop) / max(abs(distribution_free_energy_stop), 1.0e-30)},
+        {"metric": "Wphi", "gx_stop": electrostatic_field_energy_stop, "gkx": sp_Wphi_stop, "rel": abs(sp_Wphi_stop - electrostatic_field_energy_stop) / max(abs(electrostatic_field_energy_stop), 1.0e-30)},
+        {"metric": "Wapar", "gx_stop": magnetic_vector_potential_energy_stop, "gkx": sp_Wapar_stop, "rel": abs(sp_Wapar_stop - magnetic_vector_potential_energy_stop) / max(abs(magnetic_vector_potential_energy_stop), 1.0e-30)},
+        {"metric": "Phi2", "gx_stop": gx_Phi2_stop, "gkx": sp_Phi2_stop, "rel": abs(sp_Phi2_stop - gx_Phi2_stop) / max(abs(gx_Phi2_stop), 1.0e-30)},
     ]
     print("metric     rel")
     for row in rows[:4]:
         print(f"{row['metric']:8s} {float(row['rel']): .3e}")
-    print("diag       gx_stop       spectrax      rel")
+    print("diag       gx_stop       gkx      rel")
     for row in rows[4:]:
-        print(f"{row['metric']:8s} {float(row['gx_stop']): .6e} {float(row['spectrax']): .6e} {float(row['rel']): .3e}")
+        print(f"{row['metric']:8s} {float(row['gx_stop']): .6e} {float(row['gkx']): .6e} {float(row['rel']): .3e}")
 
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)

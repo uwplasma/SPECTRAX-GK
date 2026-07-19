@@ -15,23 +15,23 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk.geometry.autodiff_checks as diff_autodiff
-import spectraxgk.geometry.backend_discovery as backend_discovery
-import spectraxgk.geometry.booz_xform_bridge as booz_bridge
-import spectraxgk.geometry.differentiable as diff_geom
-import spectraxgk.geometry.flux_tube_contract as geom_contract
-import spectraxgk.geometry.numerics as geom_numerics
-import spectraxgk.geometry.sensitivity as geom_sensitivity
-import spectraxgk.geometry.vmec_boozer_core as vmec_boozer_core
-import spectraxgk.geometry.vmec_boozer_constants as vmec_boozer_constants
-import spectraxgk.geometry.vmec_boozer_derivatives as vmec_boozer_derivatives
-import spectraxgk.geometry.vmec_field_line_sampling as vmec_field_line_sampling
-import spectraxgk.geometry.vmec_flux_tube_reports as vmec_flux_tube_reports
-import spectraxgk.geometry.vmec_state_controls as vmec_state_controls
-import spectraxgk.geometry.vmec_state_sensitivity as vmec_state_sensitivity
-import spectraxgk.geometry.vmec_tensor_mapping as vmec_tensor_mapping
-from spectraxgk.geometry.differentiable import (
+import gkx
+import gkx.geometry.autodiff_checks as diff_autodiff
+import gkx.geometry.backend_discovery as backend_discovery
+import gkx.geometry.booz_xform_bridge as booz_bridge
+import gkx.geometry.differentiable as diff_geom
+import gkx.geometry.flux_tube_contract as geom_contract
+import gkx.geometry.numerics as geom_numerics
+import gkx.geometry.sensitivity as geom_sensitivity
+import gkx.geometry.vmec_boozer_core as vmec_boozer_core
+import gkx.geometry.vmec_boozer_constants as vmec_boozer_constants
+import gkx.geometry.vmec_boozer_derivatives as vmec_boozer_derivatives
+import gkx.geometry.vmec_field_line_sampling as vmec_field_line_sampling
+import gkx.geometry.vmec_flux_tube_reports as vmec_flux_tube_reports
+import gkx.geometry.vmec_state_controls as vmec_state_controls
+import gkx.geometry.vmec_state_sensitivity as vmec_state_sensitivity
+import gkx.geometry.vmec_tensor_mapping as vmec_tensor_mapping
+from gkx.geometry.differentiable import (
     _array_parity_metrics,
     _boozer_half_mesh_s_grid,
     _candidate_paths,
@@ -241,13 +241,13 @@ def test_differentiable_geometry_patch_context_restores_module_attrs() -> None:
 
 
 def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
-    assert spectraxgk.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
+    assert gkx.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
     assert (
-        spectraxgk.flux_tube_geometry_from_vmec_boozer_state
+        gkx.flux_tube_geometry_from_vmec_boozer_state
         is flux_tube_geometry_from_vmec_boozer_state
     )
-    assert spectraxgk.geometry_observable_names is geometry_observable_names
-    assert spectraxgk.flux_tube_geometry_observables is flux_tube_geometry_observables
+    assert gkx.geometry_observable_names is geometry_observable_names
+    assert gkx.flux_tube_geometry_observables is flux_tube_geometry_observables
     geom = flux_tube_geometry_from_mapping(
         _sample_mapping(), source_model="vmex:test"
     )
@@ -479,15 +479,15 @@ def test_differentiable_backend_path_helpers_handle_missing_modules(
 ) -> None:
     existing = tmp_path / "backend"
     (existing / "src").mkdir(parents=True)
-    monkeypatch.setenv("SPECTRAX_VMEX_PATH", str(existing))
+    monkeypatch.setenv("GKX_VMEX_PATH", str(existing))
 
     paths = _candidate_paths(
-        ("SPECTRAX_VMEX_PATH",), (existing, tmp_path / "missing")
+        ("GKX_VMEX_PATH",), (existing, tmp_path / "missing")
     )
 
     assert paths == [existing.resolve(), (existing / "src").resolve()]
     assert (
-        _find_importable_module("spectraxgk_definitely_missing_backend", paths) is None
+        _find_importable_module("gkx_definitely_missing_backend", paths) is None
     )
 
 
@@ -534,8 +534,8 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(
     )
     for name in ("vmex", "booz_xform_jax", "booz_xform_jax.jax_api"):
         sys.modules.pop(name, None)
-    monkeypatch.setenv("SPECTRAX_VMEX_PATH", str(tmp_path / "vmex"))
-    monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", str(tmp_path / "booz_xform_jax"))
+    monkeypatch.setenv("GKX_VMEX_PATH", str(tmp_path / "vmex"))
+    monkeypatch.setenv("GKX_BOOZ_XFORM_JAX_PATH", str(tmp_path / "booz_xform_jax"))
 
     info = discover_differentiable_geometry_backends()
 
@@ -565,7 +565,7 @@ def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
         encoding="utf-8",
     )
     sys.modules.pop("vmex", None)
-    monkeypatch.setenv("SPECTRAX_VMEX_PATH", str(tmp_path / "vmex"))
+    monkeypatch.setenv("GKX_VMEX_PATH", str(tmp_path / "vmex"))
 
     report = vmec_boundary_aspect_sensitivity_report(
         jnp.asarray([0.08, 0.2]), fd_step=1.0e-3
@@ -595,7 +595,7 @@ def test_booz_xform_spectral_sensitivity_report_is_bounded_when_available() -> N
     report = booz_xform_spectral_sensitivity_report(ripple=0.05, fd_step=2.0e-5)
 
     assert (
-        spectraxgk.booz_xform_spectral_sensitivity_report
+        gkx.booz_xform_spectral_sensitivity_report
         is booz_xform_spectral_sensitivity_report
     )
     assert "available" in report
@@ -615,7 +615,7 @@ def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> 
     report = booz_xform_flux_tube_sensitivity_report(ntheta=32, fd_step=2.0e-5)
 
     assert (
-        spectraxgk.booz_xform_flux_tube_sensitivity_report
+        gkx.booz_xform_flux_tube_sensitivity_report
         is booz_xform_flux_tube_sensitivity_report
     )
     assert "available" in report
@@ -656,7 +656,7 @@ def test_vmex_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_state_wh
     report = vmex_boozer_flux_tube_sensitivity_report(ntheta=16, fd_step=2.0e-5)
 
     assert (
-        spectraxgk.vmex_boozer_flux_tube_sensitivity_report
+        gkx.vmex_boozer_flux_tube_sensitivity_report
         is vmex_boozer_flux_tube_sensitivity_report
     )
     assert "available" in report
@@ -916,7 +916,7 @@ def test_vmex_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_avai
     report = vmex_flux_tube_sensitivity_report(ntheta=12, fd_step=2.0e-6)
 
     assert (
-        spectraxgk.vmex_flux_tube_sensitivity_report
+        gkx.vmex_flux_tube_sensitivity_report
         is vmex_flux_tube_sensitivity_report
     )
     assert "available" in report
@@ -960,7 +960,7 @@ def test_vmex_flux_tube_array_parity_report_tracks_production_gap_when_available
     report = vmex_flux_tube_array_parity_report(ntheta=8)
 
     assert (
-        spectraxgk.vmex_flux_tube_array_parity_report
+        gkx.vmex_flux_tube_array_parity_report
         is vmex_flux_tube_array_parity_report
     )
     assert "available" in report
@@ -989,7 +989,7 @@ def test_vmex_flux_tube_array_parity_report_tracks_production_gap_when_available
     assert bool(report["array_metrics"]["bmag"]["shape_match"])
     if report["equal_arc_core_array_metrics"]:
         assert (
-            spectraxgk.vmex_boozer_equal_arc_core_profiles_from_state
+            gkx.vmex_boozer_equal_arc_core_profiles_from_state
             is vmex_boozer_equal_arc_core_profiles_from_state
         )
         assert set(report["equal_arc_core_array_metrics"]) >= {
@@ -1167,11 +1167,11 @@ def test_vmex_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_a
     report = vmex_metric_tensor_sensitivity_report(fd_step=2.0e-5)
 
     assert (
-        spectraxgk.vmex_metric_tensor_sensitivity_report
+        gkx.vmex_metric_tensor_sensitivity_report
         is vmex_metric_tensor_sensitivity_report
     )
     assert (
-        spectraxgk.vmec_metric_tensor_observable_names
+        gkx.vmec_metric_tensor_observable_names
         is vmec_metric_tensor_observable_names
     )
     assert "available" in report
@@ -1213,11 +1213,11 @@ def test_vmex_field_line_tensor_sensitivity_report_checks_stellarator_tensors_wh
     report = vmex_field_line_tensor_sensitivity_report(ntheta=24, fd_step=1.0e-6)
 
     assert (
-        spectraxgk.vmex_field_line_tensor_sensitivity_report
+        gkx.vmex_field_line_tensor_sensitivity_report
         is vmex_field_line_tensor_sensitivity_report
     )
     assert (
-        spectraxgk.vmec_field_line_tensor_observable_names
+        gkx.vmec_field_line_tensor_observable_names
         is vmec_field_line_tensor_observable_names
     )
     assert "available" in report
@@ -1283,7 +1283,7 @@ def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitiviti
         _differentiable_mapping, params, fd_step=fd_step
     )
 
-    assert spectraxgk.geometry_sensitivity_report is geometry_sensitivity_report
+    assert gkx.geometry_sensitivity_report is geometry_sensitivity_report
     assert report["observable_names"] == list(geometry_observable_names())
     assert np.asarray(report["jacobian_ad"]).shape == (
         len(geometry_observable_names()),
@@ -1318,7 +1318,7 @@ def test_geometry_tracer_detection_recurses_through_containers() -> None:
 
 
 def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
-    assert spectraxgk.finite_difference_jacobian is finite_difference_jacobian
+    assert gkx.finite_difference_jacobian is finite_difference_jacobian
     x64_enabled = bool(jax.config.jax_enable_x64)
     fd_step = 1.0e-5 if x64_enabled else 1.0e-3
     rtol = 1.0e-10 if x64_enabled else 2.0e-4
@@ -1508,7 +1508,7 @@ def test_geometry_inverse_design_report_recovers_selected_observables() -> None:
         fd_step=fd_step,
     )
 
-    assert spectraxgk.geometry_inverse_design_report is geometry_inverse_design_report
+    assert gkx.geometry_inverse_design_report is geometry_inverse_design_report
     assert report["observable_names"] == [
         "relative_bmag_ripple",
         "metric_frobenius_rms",

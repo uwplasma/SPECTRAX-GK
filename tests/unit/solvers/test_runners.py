@@ -3,16 +3,16 @@
 import jax.numpy as jnp
 import pytest
 
-import spectraxgk.solvers.time.runners as runners
-from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.solvers.time.runners import (
+import gkx.solvers.time.runners as runners
+from gkx.config import CycloneBaseCase, GridConfig, TimeConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.params import LinearParams
+from gkx.solvers.time.runners import (
     integrate_linear_from_config,
     integrate_nonlinear_from_config,
 )
-from spectraxgk.terms.config import FieldState
+from gkx.terms.config import FieldState
 
 
 def test_integrate_linear_from_config():

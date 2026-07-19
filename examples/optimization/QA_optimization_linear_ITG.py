@@ -2,7 +2,7 @@
 """Optimize quasi-axisymmetry plus a linear ITG growth-rate objective.
 
 This is VMEC-JAX's current ``QA_optimization.py`` workflow with one additional
-SPECTRAX-GK objective tuple. Edit the constants below and run without arguments.
+GKX objective tuple. Edit the constants below and run without arguments.
 The growth objective is traceable through the equilibrium and eigensolve, so the
 implicit-Jacobian optimization path is used.
 """

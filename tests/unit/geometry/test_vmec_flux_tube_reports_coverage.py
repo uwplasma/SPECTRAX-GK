@@ -16,8 +16,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-import spectraxgk.geometry.imported_vmec as imported_vmec
-import spectraxgk.geometry.vmec_flux_tube_reports as reports
+import gkx.geometry.imported_vmec as imported_vmec
+import gkx.geometry.vmec_flux_tube_reports as reports
 
 
 # ---------------------------------------------------------------------------

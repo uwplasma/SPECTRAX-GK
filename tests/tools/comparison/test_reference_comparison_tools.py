@@ -88,7 +88,7 @@ def test_load_growth_dt_accepts_float64_scalar(tmp_path: Path) -> None:
     assert _load_growth_dt(path) == 2.5e-4
 
 
-def test_load_gx_restart_state_transposes_to_spectrax_layout(tmp_path: Path) -> None:
+def test_load_gx_restart_state_transposes_to_gkx_layout(tmp_path: Path) -> None:
     import numpy as np
     from netCDF4 import Dataset
 
@@ -159,13 +159,13 @@ from compare_gx_imported_linear import (
     _write_scan_rows,
     build_parser as imported_linear_build_parser,
 )
-from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.solvers.time.explicit import ExplicitTimeConfig
-from spectraxgk.operators.linear.params import LinearTerms
-from spectraxgk.workflows.runtime.config import RuntimeConfig
-from spectraxgk.operators.linear.params import Species
+from gkx.config import GeometryConfig, GridConfig
+from gkx.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from gkx.core.grid import build_spectral_grid
+from gkx.solvers.time.explicit import ExplicitTimeConfig
+from gkx.operators.linear.params import LinearTerms
+from gkx.workflows.runtime.config import RuntimeConfig
+from gkx.operators.linear.params import Species
 
 
 def test_compare_gx_imported_linear_parser_accepts_gx_input() -> None:
@@ -1860,7 +1860,7 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarking.shared import LinearRunResult
+    from gkx.benchmarking.shared import LinearRunResult
 
     captured: dict[str, object] = {}
 
@@ -1907,7 +1907,7 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_se
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarking.shared import LinearRunResult
+    from gkx.benchmarking.shared import LinearRunResult
 
     result = LinearRunResult(
         t=np.array([0.0, 1.0, 2.0], dtype=float),
@@ -1943,7 +1943,7 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarking.shared import LinearRunResult
+    from gkx.benchmarking.shared import LinearRunResult
 
     calls: dict[str, object] = {}
 
@@ -2001,7 +2001,7 @@ def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarking.shared import LinearRunResult
+    from gkx.benchmarking.shared import LinearRunResult
 
     calls: dict[str, object] = {}
 
@@ -2171,7 +2171,7 @@ fprim = [0.8, 0.8]
 
 def test_compare_gx_kbm_runtime_conversion_preserves_physical_case() -> None:
     from tools.comparison import compare_gx_kbm as mod
-    from spectraxgk.config import KBMBaseCase
+    from gkx.config import KBMBaseCase
 
     case = KBMBaseCase()
     runtime = mod._runtime_config_from_kbm_case(case)
@@ -2420,7 +2420,7 @@ def _write_minimal_gx_nc(path: Path, ntime: int = 5) -> None:
         wapar[:, :] = np.repeat(np.linspace(0.3, 0.4, ntime)[:, None], 2, axis=1)
 
 
-def _write_minimal_spectrax_nc(path: Path, ntime: int = 5) -> None:
+def _write_minimal_gkx_nc(path: Path, ntime: int = 5) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -2445,7 +2445,7 @@ def _write_minimal_spectrax_nc(path: Path, ntime: int = 5) -> None:
         wapar[:, :] = np.repeat(np.linspace(0.4, 0.5, ntime)[:, None], 2, axis=1)
 
 
-def _write_minimal_spectrax_csv(path: Path, ntime: int = 5) -> None:
+def _write_minimal_gkx_csv(path: Path, ntime: int = 5) -> None:
     t = np.linspace(0.0, 1.0, ntime)
     data = np.column_stack(
         [
@@ -2469,12 +2469,12 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     os.environ.setdefault("MPLBACKEND", "Agg")
 
     gx_path = tmp_path / "gx.out.nc"
-    sp_path = tmp_path / "spectrax.csv"
+    sp_path = tmp_path / "gkx.csv"
     out_path = tmp_path / "diag_compare.png"
     summary_path = tmp_path / "diag_compare.summary.json"
 
     _write_minimal_gx_nc(gx_path)
-    _write_minimal_spectrax_csv(sp_path)
+    _write_minimal_gkx_csv(sp_path)
 
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
@@ -2485,7 +2485,7 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
             "compare_gx_nonlinear_diagnostics.py",
             "--gx",
             str(gx_path),
-            "--spectrax",
+            "--gkx",
             str(sp_path),
             "--tmin",
             "0.25",
@@ -2554,18 +2554,18 @@ def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(
     assert np.allclose(loaded["t"], t)
 
 
-def test_compare_gx_nonlinear_diagnostics_loads_spectrax_out_nc(tmp_path: Path) -> None:
+def test_compare_gx_nonlinear_diagnostics_loads_gkx_out_nc(tmp_path: Path) -> None:
     pytest.importorskip("netCDF4")
 
-    spectrax_path = tmp_path / "spectrax.out.nc"
-    _write_minimal_spectrax_nc(spectrax_path)
+    gkx_path = tmp_path / "gkx.out.nc"
+    _write_minimal_gkx_nc(gkx_path)
 
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear as mod
 
-        loaded = mod._load_spectrax(spectrax_path)
+        loaded = mod._load_gkx(gkx_path)
     finally:
         sys.path.remove(str(tools_dir))
 
@@ -2777,18 +2777,18 @@ def test_synth_positive_and_full_ky_rebuild_dump_grid() -> None:
 
 # ---- test_compare_gx_rhs_terms.py ----
 
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
     _build_initial_condition,
     _two_species_params,
 )
-from spectraxgk.config import KBMBaseCase
-from spectraxgk.core.grid import select_ky_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
-from spectraxgk.terms.config import TermConfig
+from gkx.config import KBMBaseCase
+from gkx.core.grid import select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
+from gkx.terms.config import TermConfig
 
 
 def test_manual_linear_contributions_match_assembly_for_multispecies_kbm() -> None:
@@ -3000,7 +3000,7 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(
 def test_runtime_linear_accepts_vmec_and_desc_eik_geometry_aliases(
     tmp_path: Path,
 ) -> None:
-    from spectraxgk.runtime import run_runtime_linear
+    from gkx.runtime import run_runtime_linear
     from tools.comparison.compare_gx_kbm import _runtime_config_from_kbm_case
 
     netcdf4 = pytest.importorskip("netCDF4")
@@ -3545,7 +3545,7 @@ def test_compare_runtime_diagnostic_state_builds_positive_ky_grid_and_writes_csv
     assert np.array_equal(captured["ky_vals"], np.array([0.1, 0.2], dtype=np.float32))
     assert summaries == ["kperp2", "fluxfac", "kx", "ky", "phi"]
     text = out_csv.read_text()
-    assert "metric,gx_out,spectrax_dump" in text
+    assert "metric,gx_out,gkx_dump" in text
     assert "Wg" in text
 
 
@@ -3838,7 +3838,7 @@ def _write_summary(
                 "initial_level": initial_level,
             }
         )
-    path = tmp_path / "spectrax_summary.csv"
+    path = tmp_path / "gkx_summary.csv"
     pd.DataFrame(rows).to_csv(path, index=False)
     return path
 
@@ -3851,7 +3851,7 @@ def test_w7x_zonal_reference_comparison_passes_closed_synthetic_case(
     summary = _write_summary(tmp_path)
 
     rows, report = mod.build_comparison(
-        spectrax_summary=summary,
+        gkx_summary=summary,
         reference_traces=ref_traces,
         reference_residuals=ref_residuals,
     )
@@ -3867,7 +3867,7 @@ def test_w7x_zonal_reference_comparison_fails_short_window(tmp_path: Path) -> No
     summary = _write_summary(tmp_path, tmax_scale=0.03)
 
     rows, report = mod.build_comparison(
-        spectrax_summary=summary,
+        gkx_summary=summary,
         reference_traces=ref_traces,
         reference_residuals=ref_residuals,
     )
@@ -3914,10 +3914,10 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(
     pd.DataFrame(combined_rows).to_csv(combined_trace, index=False)
 
     rows, report = mod.build_comparison(
-        spectrax_summary=summary,
+        gkx_summary=summary,
         reference_traces=ref_traces,
         reference_residuals=ref_residuals,
-        spectrax_trace_dir=trace_dir,
+        gkx_trace_dir=trace_dir,
         envelope_atol=1.0e-12,
     )
 
@@ -3926,10 +3926,10 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(
     assert rows["tail_mean_abs_error"].max() <= 1.0e-12
 
     combined_rows_out, combined_report = mod.build_comparison(
-        spectrax_summary=summary,
+        gkx_summary=summary,
         reference_traces=ref_traces,
         reference_residuals=ref_residuals,
-        spectrax_traces=combined_trace,
+        gkx_traces=combined_trace,
         envelope_atol=1.0e-12,
     )
     assert combined_report.passed is True
@@ -3947,7 +3947,7 @@ def test_w7x_zonal_reference_main_writes_open_json(tmp_path: Path) -> None:
     rc = mod.main(
         [
             "compare",
-            "--spectrax-summary",
+            "--gkx-summary",
             str(summary),
             "--reference-traces",
             str(ref_traces),

@@ -5,9 +5,9 @@ from __future__ import annotations
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.core.velocity import hermite_ladder_coeffs
-import spectraxgk.operators.linear.moments as linear_moments
-import spectraxgk.operators.linear.streaming as streaming_operators
+from gkx.core.velocity import hermite_ladder_coeffs
+import gkx.operators.linear.moments as linear_moments
+import gkx.operators.linear.streaming as streaming_operators
 
 
 def _complex_state(shape: tuple[int, ...]) -> jnp.ndarray:

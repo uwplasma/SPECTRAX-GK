@@ -8,14 +8,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk as public_quasilinear
-from spectraxgk.diagnostics import quasilinear_transport
-from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import linear_terms_to_term_config
-from spectraxgk.diagnostics.quasilinear_transport import (
+import gkx
+import gkx as public_quasilinear
+from gkx.diagnostics import quasilinear_transport
+from gkx.geometry import SAlphaGeometry, apply_geometry_grid_defaults
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import linear_terms_to_term_config
+from gkx.diagnostics.quasilinear_transport import (
     compute_quasilinear_from_linear_state,
     effective_kperp2,
     mixing_length_amplitude2_jax,
@@ -27,13 +27,13 @@ from spectraxgk.diagnostics.quasilinear_transport import (
     shape_aware_power_law_objective,
     spectral_phi_weights,
 )
-from spectraxgk.runtime import (
+from gkx.runtime import (
     build_runtime_linear_params,
     build_runtime_linear_terms,
     run_runtime_linear,
     run_runtime_scan,
 )
-from spectraxgk.workflows.runtime.config import (
+from gkx.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,
@@ -225,7 +225,7 @@ def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
     )
     with pytest.raises(ValueError, match="features"):
         shape_aware_power_law_objective(jnp.asarray([0.1, 0.2]), ky, exponent=1.0)
-    assert spectraxgk.shape_aware_power_law_objective is shape_aware_power_law_objective
+    assert gkx.shape_aware_power_law_objective is shape_aware_power_law_objective
 
 
 def test_shape_aware_power_law_objective_clips_nonpositive_ky_reference() -> None:

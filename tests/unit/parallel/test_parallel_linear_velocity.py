@@ -10,11 +10,11 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.solvers.linear import parallel as linear_parallel
-import spectraxgk.solvers.linear.parallel_common as linear_parallel_common
-import spectraxgk.solvers.linear.parallel_electrostatic as linear_parallel_electrostatic
-import spectraxgk.solvers.linear.parallel_streaming as linear_parallel_streaming
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
+from gkx.solvers.linear import parallel as linear_parallel
+import gkx.solvers.linear.parallel_common as linear_parallel_common
+import gkx.solvers.linear.parallel_electrostatic as linear_parallel_electrostatic
+import gkx.solvers.linear.parallel_streaming as linear_parallel_streaming
+from gkx.operators.linear.params import LinearParams, LinearTerms
 
 
 def _state() -> jnp.ndarray:
@@ -139,7 +139,7 @@ def test_resolve_parallel_devices_validates_explicit_and_requested_counts(
 def test_streaming_velocity_sharded_route_validates_shape_and_returns_zero_phi(
     monkeypatch,
 ) -> None:
-    import spectraxgk.parallel.velocity as velocity_sharding
+    import gkx.parallel.velocity as velocity_sharding
 
     calls: list[tuple[tuple[int, ...], int]] = []
 
@@ -177,8 +177,8 @@ def test_streaming_velocity_sharded_route_validates_shape_and_returns_zero_phi(
 
 
 def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> None:
-    import spectraxgk.operators.linear.streaming as operators
-    import spectraxgk.parallel.velocity as velocity_sharding
+    import gkx.operators.linear.streaming as operators
+    import gkx.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
     cache = _cache_for_richer_state()
@@ -211,7 +211,7 @@ def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> 
     )
     monkeypatch.setattr(operators, "grad_z_periodic", fake_grad_z)
 
-    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
+    from gkx.parallel.velocity import build_velocity_sharding_plan
 
     out = linear_parallel._streaming_electrostatic_from_phi_velocity_sharded(
         arr,
@@ -229,7 +229,7 @@ def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> 
 def test_streaming_electrostatic_velocity_sharded_fail_closed_and_uses_phi(
     monkeypatch,
 ) -> None:
-    import spectraxgk.parallel.velocity as velocity_sharding
+    import gkx.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
     cache = _cache_for_richer_state()
@@ -284,7 +284,7 @@ def test_streaming_electrostatic_velocity_sharded_fail_closed_and_uses_phi(
 def test_electrostatic_slices_velocity_sharded_fail_closed_and_weighted_routes(
     monkeypatch,
 ) -> None:
-    import spectraxgk.parallel.velocity as velocity_sharding
+    import gkx.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
     cache = _cache_for_richer_state()
@@ -420,7 +420,7 @@ def test_fused_electrostatic_slice_route_validates_decomposition_before_mesh() -
 
 
 def test_linear_rhs_parallel_cached_serial_dispatch(monkeypatch) -> None:
-    import spectraxgk.operators.linear.rhs as linear_rhs_owner
+    import gkx.operators.linear.rhs as linear_rhs_owner
 
     calls: list[str] = []
 
@@ -601,8 +601,8 @@ from dataclasses import replace
 import jax
 import numpy as np
 
-import spectraxgk
-from spectraxgk.parallel.velocity import (
+import gkx
+from gkx.parallel.velocity import (
     build_velocity_sharding_plan,
     curvature_gradb_drift_reference,
     curvature_gradb_drift_shard_map,
@@ -671,7 +671,7 @@ def _install_fake_two_way_shard_map(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_velocity_sharding_plan_prefers_species_then_hermite_for_6d_state() -> None:
     plan = build_velocity_sharding_plan((2, 4, 8, 16, 4, 32), num_devices=4)
 
-    assert spectraxgk.build_velocity_sharding_plan is build_velocity_sharding_plan
+    assert gkx.build_velocity_sharding_plan is build_velocity_sharding_plan
     assert plan.dims == ("s", "l", "m", "ky", "kx", "z")
     assert plan.chunks["s"] == 2
     assert plan.chunks["m"] == 2
@@ -811,8 +811,8 @@ def test_hermite_neighbor_reference_matches_manual_shift() -> None:
     expected_upper[:, :-1, ...] = np.asarray(state)[:, 1:, ...]
     np.testing.assert_allclose(np.asarray(lower), expected_lower)
     np.testing.assert_allclose(np.asarray(upper), expected_upper)
-    assert spectraxgk.hermite_neighbor_reference is hermite_neighbor_reference
-    assert spectraxgk.hermite_neighbor_shard_map is hermite_neighbor_shard_map
+    assert gkx.hermite_neighbor_reference is hermite_neighbor_reference
+    assert gkx.hermite_neighbor_shard_map is hermite_neighbor_shard_map
 
 
 def test_hermite_neighbor_shard_map_noops_to_reference_for_single_chunk() -> None:
@@ -883,7 +883,7 @@ def test_mocked_shard_map_exercises_multi_device_velocity_paths(
     kz = jnp.asarray([0.0, 1.0, -1.0, -2.0], dtype=jnp.float32)
     local_coeffs = jnp.ones((1, 3, 1, 1, 1), dtype=state.dtype)
     monkeypatch.setattr(
-        "spectraxgk.parallel.velocity._hermite_ladder_coefficients",
+        "gkx.parallel.velocity._hermite_ladder_coefficients",
         lambda _arr: (local_coeffs, local_coeffs, 1),
     )
     assert hermite_streaming_ladder_shard_map(
@@ -963,8 +963,8 @@ def test_hermite_shift_reference_matches_manual_offsets() -> None:
     expected_lower2[:, 2:, ...] = np.asarray(state)[:, :-2, ...]
     np.testing.assert_allclose(np.asarray(upper2), expected_upper2)
     np.testing.assert_allclose(np.asarray(lower2), expected_lower2)
-    assert spectraxgk.hermite_shift_reference is hermite_shift_reference
-    assert spectraxgk.hermite_shift_shard_map is hermite_shift_shard_map
+    assert gkx.hermite_shift_reference is hermite_shift_reference
+    assert gkx.hermite_shift_shard_map is hermite_shift_shard_map
 
 
 def test_hermite_shift_shard_map_matches_reference_when_logical_devices_available() -> (
@@ -1002,8 +1002,8 @@ def test_velocity_field_reduce_reference_matches_manual_sum() -> None:
     reduced = velocity_field_reduce_reference(state, axis="hermite")
 
     np.testing.assert_allclose(np.asarray(reduced), np.asarray(state).sum(axis=1))
-    assert spectraxgk.velocity_field_reduce_reference is velocity_field_reduce_reference
-    assert spectraxgk.velocity_field_reduce_shard_map is velocity_field_reduce_shard_map
+    assert gkx.velocity_field_reduce_reference is velocity_field_reduce_reference
+    assert gkx.velocity_field_reduce_shard_map is velocity_field_reduce_shard_map
 
 
 def test_velocity_field_reduce_shard_map_noops_to_reference_for_single_chunk() -> None:
@@ -1056,11 +1056,11 @@ def test_species_field_reduce_shard_map_matches_reference_when_devices_available
 
 
 def _small_periodic_field_problem():
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.geometry import SAlphaGeometry
+    from gkx.core.grid import build_spectral_grid
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
@@ -1079,11 +1079,11 @@ def _small_periodic_field_problem():
 
 
 def _small_kinetic_electron_problem(*, linked: bool = False):
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.geometry import SAlphaGeometry
+    from gkx.core.grid import build_spectral_grid
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams
 
     grid_config = (
         GridConfig(
@@ -1128,8 +1128,8 @@ def _small_kinetic_electron_problem(*, linked: bool = False):
 
 
 def test_mixed_species_hermite_linked_operator_matches_serial_trajectory() -> None:
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.integrators import integrate_linear
 
     devices = jax.devices()
     if len(devices) < 4:
@@ -1215,8 +1215,8 @@ def test_mixed_species_hermite_linked_operator_matches_serial_trajectory() -> No
 
 
 def test_electrostatic_phi_reference_matches_production_field_solve() -> None:
-    from spectraxgk.operators.linear.params import LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.params import LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     state, cache, params = _small_periodic_field_problem()
     terms = LinearTerms(
@@ -1249,8 +1249,8 @@ def test_electrostatic_phi_reference_matches_production_field_solve() -> None:
     np.testing.assert_allclose(
         np.asarray(observed), np.asarray(phi), rtol=2.0e-6, atol=2.0e-6
     )
-    assert spectraxgk.electrostatic_phi_reference is electrostatic_phi_reference
-    assert spectraxgk.electrostatic_phi_shard_map is electrostatic_phi_shard_map
+    assert gkx.electrostatic_phi_reference is electrostatic_phi_reference
+    assert gkx.electrostatic_phi_shard_map is electrostatic_phi_shard_map
 
 
 def test_electrostatic_phi_shard_map_noops_to_reference_for_single_chunk() -> None:
@@ -1321,7 +1321,7 @@ def test_electrostatic_phi_shard_map_matches_reference_when_logical_devices_avai
 
 
 def test_species_sharded_phi_matches_production_quasineutrality() -> None:
-    from spectraxgk.operators.linear.moments import quasineutrality_phi
+    from gkx.operators.linear.moments import quasineutrality_phi
 
     devices = jax.devices()
     if len(devices) < 2:
@@ -1370,8 +1370,8 @@ def test_species_sharded_phi_matches_production_quasineutrality() -> None:
 def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route() -> (
     None
 ):
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.integrators import integrate_linear
 
     devices = jax.devices()
     if len(devices) < 4:
@@ -1658,7 +1658,7 @@ def test_mixed_species_hermite_electrostatic_rhs_matches_serial_production_route
 
 
 def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     def assert_species_close(observed, expected, *, rtol=5e-5, atol=5e-6):
         for species_index in range(int(expected.shape[0])):
@@ -1716,7 +1716,7 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
     )
     assert_species_close(routed_rhs, expected_rhs, rtol=3e-5, atol=3e-5)
 
-    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from gkx.solvers.linear.integrators import integrate_linear
 
     serial_state, serial_phi = integrate_linear(
         state,
@@ -1886,9 +1886,9 @@ def test_species_sharded_linear_rhs_matches_serial_production_route() -> None:
 
 
 def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
-    from spectraxgk.solvers.linear.integrators import integrate_linear
-    from spectraxgk.operators.linear.params import linear_terms_to_term_config
-    from spectraxgk.terms.assembly import compute_fields_cached
+    from gkx.solvers.linear.integrators import integrate_linear
+    from gkx.operators.linear.params import linear_terms_to_term_config
+    from gkx.terms.assembly import compute_fields_cached
 
     if len(jax.devices()) < 2:
         pytest.skip("requires two logical CPU devices or two accelerators")
@@ -1942,8 +1942,8 @@ def test_species_pmap_electromagnetic_trajectory_matches_serial() -> None:
 
 
 def test_species_pmap_collision_preserves_long_wavelength_moments() -> None:
-    from spectraxgk.solvers.linear.integrators import integrate_linear
-    from spectraxgk.operators.linear.dissipation import _laguerre_temperature_coupling
+    from gkx.solvers.linear.integrators import integrate_linear
+    from gkx.operators.linear.dissipation import _laguerre_temperature_coupling
 
     if len(jax.devices()) < 2:
         pytest.skip("requires two logical CPU devices or two accelerators")
@@ -2016,7 +2016,7 @@ def test_species_pmap_collision_preserves_long_wavelength_moments() -> None:
 
 
 def test_species_pmap_parameter_gradient_matches_centered_difference() -> None:
-    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from gkx.solvers.linear.integrators import integrate_linear
 
     devices = jax.devices()
     if len(devices) < 2:
@@ -2129,8 +2129,8 @@ def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
 
 
 def test_mirror_and_curvature_gradb_drift_shard_maps_match_production_terms() -> None:
-    from spectraxgk.operators.linear.moments import build_H
-    from spectraxgk.terms.linear_terms import (
+    from gkx.operators.linear.moments import build_H
+    from gkx.terms.linear_terms import (
         curvature_gradb_contribution,
         mirror_contribution,
     )
@@ -2202,16 +2202,16 @@ def test_mirror_and_curvature_gradb_drift_shard_maps_match_production_terms() ->
     np.testing.assert_allclose(
         np.asarray(drift_observed), np.asarray(drift_expected), rtol=2.0e-6, atol=2.0e-6
     )
-    assert spectraxgk.mirror_drift_reference is mirror_drift_reference
-    assert spectraxgk.mirror_drift_shard_map is mirror_drift_shard_map
-    assert spectraxgk.curvature_gradb_drift_reference is curvature_gradb_drift_reference
-    assert spectraxgk.curvature_gradb_drift_shard_map is curvature_gradb_drift_shard_map
+    assert gkx.mirror_drift_reference is mirror_drift_reference
+    assert gkx.mirror_drift_shard_map is mirror_drift_shard_map
+    assert gkx.curvature_gradb_drift_reference is curvature_gradb_drift_reference
+    assert gkx.curvature_gradb_drift_shard_map is curvature_gradb_drift_shard_map
 
 
 def test_mirror_and_curvature_gradb_drift_shard_maps_match_reference_when_logical_devices_available() -> (
     None
 ):
-    from spectraxgk.operators.linear.moments import build_H
+    from gkx.operators.linear.moments import build_H
 
     devices = jax.devices()
     if len(devices) < 2:
@@ -2354,8 +2354,8 @@ def test_six_dimensional_mirror_and_drift_paths_preserve_species_broadcasts() ->
 
 
 def test_diamagnetic_drive_shard_map_matches_production_term() -> None:
-    from spectraxgk.operators.linear.params import LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.params import LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     state, cache, params = _small_periodic_field_problem()
     phi = electrostatic_phi_reference(
@@ -2405,8 +2405,8 @@ def test_diamagnetic_drive_shard_map_matches_production_term() -> None:
     np.testing.assert_allclose(
         np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6
     )
-    assert spectraxgk.diamagnetic_drive_reference is diamagnetic_drive_reference
-    assert spectraxgk.diamagnetic_drive_shard_map is diamagnetic_drive_shard_map
+    assert gkx.diamagnetic_drive_reference is diamagnetic_drive_reference
+    assert gkx.diamagnetic_drive_shard_map is diamagnetic_drive_shard_map
 
 
 def test_diamagnetic_drive_shard_map_matches_reference_when_logical_devices_available() -> (
@@ -2527,11 +2527,11 @@ def test_hermite_streaming_ladder_reference_matches_manual_coefficients() -> Non
     expected[0, 3, 0, 0, 0] = 2.0 * np.sqrt(3.0) * (3.0 + 2.0j)
     np.testing.assert_allclose(np.asarray(ladder), expected, rtol=1.0e-6, atol=1.0e-6)
     assert (
-        spectraxgk.hermite_streaming_ladder_reference
+        gkx.hermite_streaming_ladder_reference
         is hermite_streaming_ladder_reference
     )
     assert (
-        spectraxgk.hermite_streaming_ladder_shard_map
+        gkx.hermite_streaming_ladder_shard_map
         is hermite_streaming_ladder_shard_map
     )
 
@@ -2578,8 +2578,8 @@ def test_hermite_streaming_ladder_shard_map_matches_reference_when_logical_devic
 
 
 def test_periodic_streaming_reference_matches_production_streaming_term() -> None:
-    from spectraxgk.core.velocity import hermite_ladder_coeffs
-    from spectraxgk.operators.linear.streaming import streaming_ladder_term
+    from gkx.core.velocity import hermite_ladder_coeffs
+    from gkx.operators.linear.streaming import streaming_ladder_term
 
     ns, nl, nm, ny, nx, nz = 1, 2, 4, 2, 1, 8
     z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
@@ -2603,8 +2603,8 @@ def test_periodic_streaming_reference_matches_production_streaming_term() -> Non
     np.testing.assert_allclose(
         np.asarray(observed), np.asarray(expected), rtol=1.0e-6, atol=1.0e-6
     )
-    assert spectraxgk.periodic_streaming_reference is periodic_streaming_reference
-    assert spectraxgk.periodic_streaming_shard_map is periodic_streaming_shard_map
+    assert gkx.periodic_streaming_reference is periodic_streaming_reference
+    assert gkx.periodic_streaming_shard_map is periodic_streaming_shard_map
 
 
 def test_periodic_streaming_shard_map_noops_to_reference_for_single_chunk() -> None:
@@ -2651,14 +2651,14 @@ def test_periodic_streaming_shard_map_matches_reference_when_logical_devices_ava
 
 
 def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -> None:
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.geometry import SAlphaGeometry
+    from gkx.core.grid import build_spectral_grid
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams, LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
@@ -2701,9 +2701,9 @@ def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -
     np.testing.assert_allclose(
         np.asarray(phi_sharded), np.asarray(phi_serial), rtol=0.0, atol=0.0
     )
-    assert spectraxgk.linear_rhs_parallel_cached is linear_rhs_parallel_cached
+    assert gkx.linear_rhs_parallel_cached is linear_rhs_parallel_cached
     assert (
-        spectraxgk.linear_rhs_streaming_velocity_sharded(
+        gkx.linear_rhs_streaming_velocity_sharded(
             state, cache, params, num_devices=1
         )[0].shape
         == state.shape
@@ -2711,9 +2711,9 @@ def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -
 
 
 def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> None:
-    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.params import LinearParams, LinearTerms
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     class Cache:
         kz = jnp.asarray([0.0, 1.0, -1.0])
@@ -2732,14 +2732,14 @@ def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> No
 def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_graph() -> (
     None
 ):
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.geometry import SAlphaGeometry
+    from gkx.core.grid import build_spectral_grid
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams, LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic")
@@ -2793,7 +2793,7 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
         np.asarray(sharded), np.asarray(serial), rtol=2.0e-6, atol=2.0e-6
     )
     assert (
-        spectraxgk.linear_rhs_streaming_electrostatic_velocity_sharded(
+        gkx.linear_rhs_streaming_electrostatic_velocity_sharded(
             state, cache, params, num_devices=1
         )[0].shape
         == state.shape
@@ -2803,10 +2803,10 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
 def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_call_graph() -> (
     None
 ):
-    from spectraxgk.operators.linear.params import LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.params import LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     state, cache, params = _small_periodic_field_problem()
     z = jnp.linspace(0.0, 2.0 * jnp.pi, state.shape[-1], endpoint=False)
@@ -2850,7 +2850,7 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_cal
         np.asarray(sharded), np.asarray(serial), rtol=2.0e-6, atol=2.0e-6
     )
     assert (
-        spectraxgk.linear_rhs_electrostatic_slices_velocity_sharded(
+        gkx.linear_rhs_electrostatic_slices_velocity_sharded(
             state, cache, params, terms=terms, num_devices=1
         )[0].shape
         == state.shape
@@ -2860,10 +2860,10 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_cal
 def test_linear_rhs_parallel_cached_auto_backend_selects_gated_electrostatic_slices() -> (
     None
 ):
-    from spectraxgk.operators.linear.params import LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.params import LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     state, cache, params = _small_periodic_field_problem()
     z = jnp.linspace(0.0, 2.0 * jnp.pi, state.shape[-1], endpoint=False)
@@ -2908,9 +2908,9 @@ def test_linear_rhs_parallel_cached_auto_backend_selects_gated_electrostatic_sli
 def test_linear_rhs_parallel_cached_electrostatic_linear_slices_rejects_ungated_terms() -> (
     None
 ):
-    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-    from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.params import LinearParams, LinearTerms
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     class Cache:
         use_twist_shift = False
@@ -3081,7 +3081,7 @@ def test_fused_electrostatic_route_rejects_invalid_decompositions() -> None:
 def test_bounded_mixed_species_hermite_rhs_matches_serial_operator() -> None:
     """One complete mixed RHS compile must preserve the serial equations."""
 
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     devices = jax.devices()
     if len(devices) < 4:
@@ -3120,7 +3120,7 @@ def test_bounded_mixed_species_hermite_rhs_matches_serial_operator() -> None:
 def test_bounded_species_sharded_rhs_matches_serial_operator() -> None:
     """One complete species-sharded compile must preserve the serial equations."""
 
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     devices = jax.devices()
     if len(devices) < 2:

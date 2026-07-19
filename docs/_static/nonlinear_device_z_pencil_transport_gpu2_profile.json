@@ -37,7 +37,7 @@
       "fft": 30,
       "fusion": 0,
       "line_count": 296,
-      "path": "/tmp/spectrax_device_z_gpu2_new_gate_hlo_device2.hlo.txt"
+      "path": "/tmp/gkx_device_z_gpu2_new_gate_hlo_device2.hlo.txt"
     },
     "serial": {
       "all_reduce": 0,
@@ -47,7 +47,7 @@
       "fft": 38,
       "fusion": 0,
       "line_count": 507,
-      "path": "/tmp/spectrax_device_z_gpu2_new_gate_hlo_serial.hlo.txt"
+      "path": "/tmp/gkx_device_z_gpu2_new_gate_hlo_serial.hlo.txt"
     }
   },
   "kind": "nonlinear_device_z_pencil_transport_window_profile",
@@ -233,7 +233,7 @@
       "pop-os.trace.json.gz",
       "pop-os.xplane.pb"
     ],
-    "trace_dir": "/tmp/spectrax_traces/device_z_gpu2_new_gate/device2"
+    "trace_dir": "/tmp/gkx_traces/device_z_gpu2_new_gate/device2"
   },
   "warmups": 1,
   "z_chunk_size": 8

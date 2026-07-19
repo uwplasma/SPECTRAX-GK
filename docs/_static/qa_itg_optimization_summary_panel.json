@@ -1,5 +1,5 @@
 {
-  "claim_scope": "real VMEC-JAX/SPECTRAX-GK tracked optimization evidence; reduced objectives are diagnostic/model-development quantities unless matched long-window nonlinear audits pass",
+  "claim_scope": "real VMEC-JAX/GKX tracked optimization evidence; reduced objectives are diagnostic/model-development quantities unless matched long-window nonlinear audits pass",
   "kind": "qa_itg_optimization_readme_panel",
   "matched_projected_candidate": {
     "absolute_reduction": 0.32509294381594955,

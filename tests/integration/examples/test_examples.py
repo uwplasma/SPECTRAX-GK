@@ -14,15 +14,15 @@ from examples.theory_and_demos.autodiff_inverse_twomode import run_demo as run_t
 from examples.theory_and_demos.quasilinear_implicit_sensitivity import (
     run_demo as run_implicit_sensitivity_demo,
 )
-from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.solvers.time.runners import (
+from gkx.config import CycloneBaseCase, GridConfig, TimeConfig
+from gkx.core.grid import build_spectral_grid
+from gkx.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from gkx.operators.linear.params import LinearParams
+from gkx.solvers.time.runners import (
     integrate_linear_from_config,
     integrate_nonlinear_from_config,
 )
-from spectraxgk.terms.config import TermConfig
+from gkx.terms.config import TermConfig
 
 
 _PARALLEL_EXAMPLE = (
@@ -117,7 +117,7 @@ def test_quasilinear_implicit_sensitivity_demo_summary(tmp_path: Path) -> None:
 def test_runtime_batch_ky_scan_example_uses_independent_workers(
     monkeypatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     example = _load_parallel_example_module()
     calls: list[float] = []

@@ -85,7 +85,7 @@
   },
   "gx": "tools_out/final_nonlinear_audit/w7x_gx.out.nc",
   "source": "GX nonlinear diagnostics",
-  "spectrax": "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
+  "gkx": "tools_out/final_nonlinear_audit/w7x_gkx_current_adaptive_t200.out.nc",
   "summary": [
     {
       "final_rel": 0.012163664979830026,

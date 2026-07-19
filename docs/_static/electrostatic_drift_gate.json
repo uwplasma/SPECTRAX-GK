@@ -56,7 +56,7 @@
       16
     ]
   },
-  "reference_source": "spectraxgk.linear.linear_rhs_cached with mirror/curvature/grad-B terms only",
+  "reference_source": "gkx.linear.linear_rhs_cached with mirror/curvature/grad-B terms only",
   "requested_devices": 2,
   "rows": [
     {
@@ -82,7 +82,7 @@
     }
   ],
   "rtol": 2e-06,
-  "source": "spectraxgk.parallel.velocity mirror_drift_shard_map + curvature_gradb_drift_shard_map",
+  "source": "gkx.parallel.velocity mirror_drift_shard_map + curvature_gradb_drift_shard_map",
   "state_shape": [
     2,
     8,

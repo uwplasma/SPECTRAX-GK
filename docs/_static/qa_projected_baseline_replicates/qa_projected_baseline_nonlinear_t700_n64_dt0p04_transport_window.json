@@ -8,7 +8,7 @@
     "source": "replicated nonlinear-window extraction; convergence gate is stored separately"
   },
   "seed": 22,
-  "spectrax": "qa_projected_baseline_nonlinear_t700_n64_dt0p04_heat_flux_trace.csv",
+  "gkx": "qa_projected_baseline_nonlinear_t700_n64_dt0p04_heat_flux_trace.csv",
   "tmax": 700.0,
   "tmin": 350.0,
   "variant": {

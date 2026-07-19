@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spectraxgk.diagnostics.validation_gates import (
+from gkx.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,
@@ -180,7 +180,7 @@ def _plot_overlay_case(
         x, gamma_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference"
     )
     ax_gamma.plot(
-        x, gamma_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK"
+        x, gamma_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="GKX"
     )
     ax_gamma.set_title(
         title, fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold"
@@ -191,7 +191,7 @@ def _plot_overlay_case(
         x, omega_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference"
     )
     ax_omega.plot(
-        x, omega_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK"
+        x, omega_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="GKX"
     )
     ax_omega.set_ylabel(r"Frequency $\omega$")
     ax_omega.set_xlabel(x_label)
@@ -231,9 +231,9 @@ def _plot_kaw_case(ax_gamma: plt.Axes, ax_omega: plt.Axes, df: pd.DataFrame) -> 
         title="KAW Exact Diagnostic Window",
         xcol="ky",
         gamma_ref="gamma_ref",
-        gamma_sp="gamma_spectrax",
+        gamma_sp="gamma_gkx",
         omega_ref="omega_ref",
-        omega_sp="omega_spectrax",
+        omega_sp="omega_gkx",
         x_label=r"$k_y \rho_i$",
     )
     row = df.iloc[0]
@@ -539,9 +539,9 @@ def _build_extended_linear_panel(path: Path, assets: dict[str, Path]) -> None:
         title="Cyclone Kinetic Electrons",
         xcol="ky",
         gamma_ref="gamma_ref",
-        gamma_sp="gamma_spectrax",
+        gamma_sp="gamma_gkx",
         omega_ref="omega_ref",
-        omega_sp="omega_spectrax",
+        omega_sp="omega_gkx",
         x_label=r"$k_y \rho_i$",
     )
     _plot_overlay_case(
@@ -551,9 +551,9 @@ def _build_extended_linear_panel(path: Path, assets: dict[str, Path]) -> None:
         title="TEM Stress Lane",
         xcol="ky",
         gamma_ref="gamma_ref",
-        gamma_sp="gamma_spectrax",
+        gamma_sp="gamma_gkx",
         omega_ref="omega_ref",
-        omega_sp="omega_spectrax",
+        omega_sp="omega_gkx",
         x_label=r"$k_y \rho_i$",
     )
     _plot_exact_growth_case(
@@ -607,9 +607,9 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
             cyclone,
             "ky",
             "gamma_ref",
-            "gamma_spectrax",
+            "gamma_gkx",
             "omega_ref",
-            "omega_spectrax",
+            "omega_gkx",
             r"$k_y \rho_i$",
         ),
         (
@@ -617,9 +617,9 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
             etg,
             "ky",
             "gamma_ref",
-            "gamma_spectrax",
+            "gamma_gkx",
             "omega_ref",
-            "omega_spectrax",
+            "omega_gkx",
             r"$k_y \rho_i$",
         ),
         (
@@ -627,9 +627,9 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
             kbm,
             "ky",
             "gamma_ref",
-            "gamma_spectrax",
+            "gamma_gkx",
             "omega_ref",
-            "omega_spectrax",
+            "omega_gkx",
             r"$\beta$",
         ),
         (
@@ -785,7 +785,7 @@ def _build_readme_panel(
         _image_tile_plain(ax, image)
 
     fig.suptitle(
-        "SPECTRAX-GK Benchmark and Convergence Atlas",
+        "GKX Benchmark and Convergence Atlas",
         fontsize=SUPTITLE_SIZE + 1,
         fontweight="bold",
         y=0.998,

@@ -41,7 +41,7 @@ def test_audit_passes_when_required_point_matches_passed_gate(tmp_path: Path) ->
         json.dumps(
             {
                 "case": "synthetic_nonlinear_window",
-                "spectrax": "tools_out/synthetic.csv",
+                "gkx": "tools_out/synthetic.csv",
                 "gate_report": {
                     "case": "synthetic_nonlinear_window",
                     "passed": True,
@@ -146,7 +146,7 @@ def test_audit_normalizes_absolute_artifact_paths_from_other_checkouts(
         json.dumps(
             {
                 "case": "synthetic_nonlinear_window",
-                "spectrax": "tools_out/synthetic.csv",
+                "gkx": "tools_out/synthetic.csv",
                 "gate_report": {
                     "case": "synthetic_nonlinear_window",
                     "passed": True,
@@ -157,7 +157,7 @@ def test_audit_normalizes_absolute_artifact_paths_from_other_checkouts(
         encoding="utf-8",
     )
     report = tmp_path / "report.json"
-    _write_report(report, "/Users/example/local/SPECTRAX-GK/tools_out/synthetic.csv")
+    _write_report(report, "/Users/example/local/GKX/tools_out/synthetic.csv")
 
     paths = mod.write_audit(
         [report],
@@ -448,24 +448,23 @@ from tools.release.check_release_readiness import (
 
 
 def _write_release_ready_tree(root: Path) -> None:
-    (root / "src" / "spectraxgk").mkdir(parents=True)
+    (root / "src" / "gkx").mkdir(parents=True)
     (root / ".github" / "workflows").mkdir(parents=True)
     (root / "docs" / "_static").mkdir(parents=True)
     (root / "benchmarks" / "references").mkdir(parents=True)
     (root / "pyproject.toml").write_text(
         """
 [project]
-name = "spectraxgk"
+name = "gkx"
 version = "1.2.3"
 
 [project.scripts]
-spectraxgk = "spectraxgk.cli:main"
-spectrax-gk = "spectraxgk.cli:main"
+gkx = "gkx.cli:main"
 """.strip()
         + "\n",
         encoding="utf-8",
     )
-    (root / "src" / "spectraxgk" / "_version.py").write_text(
+    (root / "src" / "gkx" / "_version.py").write_text(
         '__version__ = "1.2.3"\n',
         encoding="utf-8",
     )
@@ -530,7 +529,7 @@ coverage:
         encoding="utf-8",
     )
     (root / "README.md").write_text(
-        "Install with pip install spectraxgk, run spectraxgk. License: MIT.\n",
+        "Install with pip install gkx, run gkx. License: MIT.\n",
         encoding="utf-8",
     )
     for artifact in (
@@ -561,7 +560,7 @@ coverage:
         """
 {
   "failed_required": [],
-  "kind": "spectraxgk_technical_release_status",
+  "kind": "gkx_technical_release_status",
   "lanes": {},
   "passed": true,
   "target_percent": 98.0,
@@ -642,7 +641,7 @@ coverage:
   },
   "public_api": {
     "count": 1,
-    "exports": [{"name": "solve", "module": "spectraxgk", "symbol": "solve"}]
+    "exports": [{"name": "solve", "module": "gkx", "symbol": "solve"}]
   },
   "release_lanes": [
     {
@@ -735,8 +734,8 @@ def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
     report = check_release_readiness(tmp_path)
 
     assert report["passed"] is True
-    assert report["project"]["name"] == "spectraxgk"
-    assert report["project"]["scripts"] == ["spectrax-gk", "spectraxgk"]
+    assert report["project"]["name"] == "gkx"
+    assert report["project"]["scripts"] == ["gkx"]
     assert report["version"]["project_version"] == "1.2.3"
     assert (
         report["release_target"]["technical_completion_fraction"]
@@ -876,7 +875,7 @@ def test_release_readiness_rejects_failed_technical_status(tmp_path: Path) -> No
         """
 {
   "failed_required": ["docs_release_hygiene: release scope"],
-  "kind": "spectraxgk_technical_release_status",
+  "kind": "gkx_technical_release_status",
   "lanes": {},
   "passed": false,
   "target_percent": 98.0,
@@ -1042,18 +1041,18 @@ from tools.release.check_release_readiness import (
 def _write_version_files(
     root: Path, *, project: str = "1.2.3", source: str = "1.2.3"
 ) -> None:
-    (root / "src" / "spectraxgk").mkdir(parents=True)
+    (root / "src" / "gkx").mkdir(parents=True)
     (root / "pyproject.toml").write_text(
         textwrap.dedent(
             f"""
             [project]
-            name = "spectraxgk"
+            name = "gkx"
             version = "{project}"
             """
         ).strip(),
         encoding="utf-8",
     )
-    (root / "src" / "spectraxgk" / "_version.py").write_text(
+    (root / "src" / "gkx" / "_version.py").write_text(
         f'__version__ = "{source}"\n',
         encoding="utf-8",
     )
@@ -1446,10 +1445,10 @@ from tools.release.check_package_architecture_manifest import (
 ROOT = REPO_ROOT
 LARGE_MODULE_DIRECT_ROW_MIN_SOURCE_LINES = 2_000
 PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {
-    "spectraxgk.api",
-    "spectraxgk.geometry",
-    "spectraxgk.operators",
-    "spectraxgk.operators.linear",
+    "gkx.api",
+    "gkx.geometry",
+    "gkx.operators",
+    "gkx.operators.linear",
 }
 
 
@@ -1474,7 +1473,7 @@ def _architecture_manifest(*, allowed: list[str]) -> dict[str, object]:
             "allowed_root_prefix_modules": allowed,
         },
         "package_policy": {
-            "required_domain_packages": ["spectraxgk.operators"],
+            "required_domain_packages": ["gkx.operators"],
             "required_docs": ["plan.md"],
         },
     }
@@ -1568,7 +1567,7 @@ gates = ["gate"]
 
 
 def _write_package(tmp_path: Path, *modules: str) -> None:
-    package = tmp_path / "src" / "spectraxgk"
+    package = tmp_path / "src" / "gkx"
     package.mkdir(parents=True, exist_ok=True)
     (package / "__init__.py").write_text("# package\n", encoding="utf-8")
     for module in modules:
@@ -1615,7 +1614,7 @@ package_coverage_target_percent = 95.0
 
 [coverage_inventory]
 require_all_package_modules_owned = true
-excluded_modules = ["spectraxgk.__init__"]
+excluded_modules = ["gkx.__init__"]
 """ + "".join(rows)
 
 
@@ -1649,7 +1648,7 @@ def _documented_public_api_modules() -> set[str]:
     api_reference = (ROOT / "docs" / "api.rst").read_text(encoding="utf-8")
     return set(
         re.findall(
-            r"^\.\. automodule:: (spectraxgk(?:\.[A-Za-z_]\w*)*)\s*$",
+            r"^\.\. automodule:: (gkx(?:\.[A-Za-z_]\w*)*)\s*$",
             api_reference,
             flags=re.MULTILINE,
         )
@@ -1679,13 +1678,13 @@ def _source_line_count(path: Path) -> int:
 
 
 def test_validate_architecture_policy_accepts_manifested_root_facade(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
     (source_root / "nonlinear_removed_helper.py").write_text("", encoding="utf-8")
 
     summary = validate_architecture_policy(
-        _architecture_manifest(allowed=["spectraxgk.nonlinear_removed_helper"]),
+        _architecture_manifest(allowed=["gkx.nonlinear_removed_helper"]),
         source_root=source_root,
         check_paths=False,
     )
@@ -1695,7 +1694,7 @@ def test_validate_architecture_policy_accepts_manifested_root_facade(tmp_path):
 
 
 def test_validate_architecture_policy_rejects_new_root_prefix_module(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
     (source_root / "runtime_extra.py").write_text("", encoding="utf-8")
@@ -1709,7 +1708,7 @@ def test_validate_architecture_policy_rejects_new_root_prefix_module(tmp_path):
 
 
 def test_validate_architecture_policy_reports_topology_gap(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     count_root = tmp_path / "counted"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
@@ -1735,7 +1734,7 @@ def test_validate_architecture_policy_reports_topology_gap(tmp_path):
 
 
 def test_validate_architecture_policy_rejects_topology_regression(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     count_root = tmp_path / "counted"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
@@ -1754,7 +1753,7 @@ def test_validate_architecture_policy_rejects_topology_regression(tmp_path):
 
 
 def test_validate_architecture_policy_can_require_topology_targets(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     count_root = tmp_path / "counted"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
@@ -1784,7 +1783,7 @@ def test_validate_architecture_policy_can_require_topology_targets(tmp_path):
 
 
 def test_validate_architecture_policy_tracks_aggregate_line_budget(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     count_root = tmp_path / "counted"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
@@ -1818,7 +1817,7 @@ def test_validate_architecture_policy_tracks_aggregate_line_budget(tmp_path):
 
 
 def test_validate_architecture_policy_rejects_line_budget_regression(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     count_root = tmp_path / "counted"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
@@ -1836,7 +1835,7 @@ def test_validate_architecture_policy_rejects_line_budget_regression(tmp_path):
 
 
 def test_validate_architecture_policy_tracks_complexity_exceptions(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
     (source_root / "facade.py").write_text("a\nb\nc\nd\n", encoding="utf-8")
@@ -1863,7 +1862,7 @@ def test_validate_architecture_policy_tracks_complexity_exceptions(tmp_path):
 
 
 def test_validate_architecture_policy_rejects_unowned_complexity_growth(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
     (source_root / "facade.py").write_text("a\nb\nc\n", encoding="utf-8")
@@ -1881,7 +1880,7 @@ def test_package_architecture_inventory_classifies_repository_areas() -> None:
     mod = load_release_tool("check_package_architecture_manifest")
 
     role, action, notes = mod._role_and_action(
-        Path("src/spectraxgk/operators/nonlinear/rhs.py")
+        Path("src/gkx/operators/nonlinear/rhs.py")
     )
     tool_role, tool_action, tool_notes = mod._role_and_action(
         Path("tools/artifacts/build_linear_validation_artifacts.py")
@@ -1889,8 +1888,8 @@ def test_package_architecture_inventory_classifies_repository_areas() -> None:
     summary = mod._summary(
         [
             mod.InventoryRow(
-                path="src/spectraxgk/operators/nonlinear/rhs.py",
-                area="src/spectraxgk/operators",
+                path="src/gkx/operators/nonlinear/rhs.py",
+                area="src/gkx/operators",
                 role=role,
                 action=action,
                 suffix=".py",
@@ -1952,7 +1951,7 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
     assert "2145 steps" in metadata["office_runtime_probe"]
     assert len(by_id) == len(rows) >= 15
     assert {row["status"] for row in rows} <= allowed_statuses
-    assert all(row["spectrax_owner"] and row["evidence"] for row in rows)
+    assert all(row["gkx_owner"] and row["evidence"] for row in rows)
     assert by_id["nonlinear_multi_device_domain_decomposition"]["status"] == "blocked"
     assert (
         by_id["conserving_lenard_bernstein_dougherty_like_collisions"]["status"]
@@ -1977,13 +1976,13 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
 
 
 def test_validate_architecture_policy_rejects_stale_allowlist(tmp_path):
-    source_root = tmp_path / "spectraxgk"
+    source_root = tmp_path / "gkx"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
 
     with pytest.raises(ValueError, match="allowlist contains modules"):
         validate_architecture_policy(
-            _architecture_manifest(allowed=["spectraxgk.nonlinear_removed_helper"]),
+            _architecture_manifest(allowed=["gkx.nonlinear_removed_helper"]),
             source_root=source_root,
             check_paths=False,
         )
@@ -2146,7 +2145,7 @@ def test_documented_public_api_modules_have_manifest_tracking() -> None:
 def test_large_modules_have_direct_manifest_rows() -> None:
     direct_modules, _, _ = _repository_manifest_sets()
     large_modules_without_direct_rows: dict[str, int] = {}
-    for path in (ROOT / "src" / "spectraxgk").rglob("*.py"):
+    for path in (ROOT / "src" / "gkx").rglob("*.py"):
         if path.name == "__init__.py":
             continue
         source_lines = _source_line_count(path)
@@ -2162,7 +2161,7 @@ def test_large_modules_have_direct_manifest_rows() -> None:
 
 def test_manifest_accepts_owned_refactor_modules(tmp_path: Path) -> None:
     _write_package(
-        tmp_path, "spectraxgk.runtime", "spectraxgk.workflows.runtime.config"
+        tmp_path, "gkx.runtime", "gkx.workflows.runtime.config"
     )
     _write_fast_inputs(tmp_path)
 
@@ -2170,8 +2169,8 @@ def test_manifest_accepts_owned_refactor_modules(tmp_path: Path) -> None:
         tmp_path,
         _coverage_manifest(
             _coverage_row(
-                "spectraxgk.runtime",
-                owned_modules=["spectraxgk.workflows.runtime.config"],
+                "gkx.runtime",
+                owned_modules=["gkx.workflows.runtime.config"],
             )
         ),
     )
@@ -2179,38 +2178,38 @@ def test_manifest_accepts_owned_refactor_modules(tmp_path: Path) -> None:
     assert summary["n_direct_modules"] == 1
     assert summary["n_owned_modules"] == 1
     assert summary["n_excluded_modules"] == 1
-    assert summary["owned_modules_by_owner"]["spectraxgk.runtime"] == [
-        "spectraxgk.workflows.runtime.config"
+    assert summary["owned_modules_by_owner"]["gkx.runtime"] == [
+        "gkx.workflows.runtime.config"
     ]
 
 
 def test_manifest_rejects_unowned_package_modules(tmp_path: Path) -> None:
     _write_package(
-        tmp_path, "spectraxgk.runtime", "spectraxgk.workflows.runtime.config"
+        tmp_path, "gkx.runtime", "gkx.workflows.runtime.config"
     )
     _write_fast_inputs(tmp_path)
 
     with pytest.raises(ValueError, match="package modules lack coverage ownership"):
         _validate_tmp_coverage_manifest(
-            tmp_path, _coverage_manifest(_coverage_row("spectraxgk.runtime"))
+            tmp_path, _coverage_manifest(_coverage_row("gkx.runtime"))
         )
 
 
 def test_manifest_rejects_duplicate_owned_modules(tmp_path: Path) -> None:
     _write_package(
         tmp_path,
-        "spectraxgk.runtime",
-        "spectraxgk.linear",
-        "spectraxgk.workflows.runtime.config",
+        "gkx.runtime",
+        "gkx.linear",
+        "gkx.workflows.runtime.config",
     )
     _write_fast_inputs(tmp_path)
 
     manifest = _coverage_manifest(
         _coverage_row(
-            "spectraxgk.runtime", owned_modules=["spectraxgk.workflows.runtime.config"]
+            "gkx.runtime", owned_modules=["gkx.workflows.runtime.config"]
         ),
         _coverage_row(
-            "spectraxgk.linear", owned_modules=["spectraxgk.workflows.runtime.config"]
+            "gkx.linear", owned_modules=["gkx.workflows.runtime.config"]
         ),
     )
     with pytest.raises(ValueError, match="duplicate coverage ownership"):
@@ -2218,12 +2217,12 @@ def test_manifest_rejects_duplicate_owned_modules(tmp_path: Path) -> None:
 
 
 def test_manifest_rejects_direct_rows_listed_as_owned_modules(tmp_path: Path) -> None:
-    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.linear")
+    _write_package(tmp_path, "gkx.runtime", "gkx.linear")
     _write_fast_inputs(tmp_path)
 
     manifest = _coverage_manifest(
-        _coverage_row("spectraxgk.runtime", owned_modules=["spectraxgk.linear"]),
-        _coverage_row("spectraxgk.linear"),
+        _coverage_row("gkx.runtime", owned_modules=["gkx.linear"]),
+        _coverage_row("gkx.linear"),
     )
     with pytest.raises(
         ValueError, match="direct manifest rows must not be listed as owned modules"
@@ -2314,13 +2313,13 @@ def test_claim_scope_pages_keep_required_quasilinear_boundaries() -> None:
 def test_readme_python_quickstart_imports_exist() -> None:
     """Keep the concise README example on the installed public import surface."""
 
-    from spectraxgk import (
+    from gkx import (
         CycloneBaseCase,
         LinearParams,
         integrate_linear_from_config,
     )
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SAlphaGeometry
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SAlphaGeometry
 
     assert CycloneBaseCase is not None
     assert LinearParams is not None
@@ -2342,7 +2341,7 @@ def test_claim_scope_pages_avoid_promoted_unscoped_claims() -> None:
 
 def test_core_source_avoids_comparison_code_terminology_outside_benchmarks() -> None:
     violations: list[str] = []
-    source_root = ROOT / "src" / "spectraxgk"
+    source_root = ROOT / "src" / "gkx"
     for path in source_root.rglob("*.py"):
         rel = path.relative_to(ROOT)
         if any(
@@ -2665,7 +2664,7 @@ def _manifest_text(
     source: str,
     test: str,
     artifact: str,
-    module: str = "spectraxgk.runtime",
+    module: str = "gkx.runtime",
     status: str = "active",
 ) -> str:
     return f"""
@@ -2674,7 +2673,7 @@ package_coverage_target_percent = 95.0
 
 [coverage_inventory]
 require_all_package_modules_owned = true
-excluded_modules = ["spectraxgk.__init__"]
+excluded_modules = ["gkx.__init__"]
 
 [[modules]]
 module = "{module}"
@@ -2693,11 +2692,11 @@ next_tests = ["next"]
 
 
 def _write_minimal_package(tmp_path: Path, *modules: str) -> None:
-    package = tmp_path / "src" / "spectraxgk"
+    package = tmp_path / "src" / "gkx"
     package.mkdir(parents=True, exist_ok=True)
     (package / "__init__.py").write_text("# package\n")
     for module in modules:
-        assert module.startswith("spectraxgk.")
+        assert module.startswith("gkx.")
         module_path = tmp_path / "src" / Path(*module.split(".")).with_suffix(".py")
         module_path.parent.mkdir(parents=True, exist_ok=True)
         module_path.write_text("# source\n")
@@ -2715,49 +2714,49 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         + summary["n_excluded_modules"]
     )
     rows = {row["module"]: row for row in summary["rows"]}
-    assert rows["spectraxgk.terms.assembly"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.runtime"]["n_owned_modules"] >= 5
-    assert rows["spectraxgk.diagnostics.validation_gates"]["n_physics_contracts"] >= 2
+    assert rows["gkx.terms.assembly"]["coverage_target_percent"] == 95.0
+    assert rows["gkx.runtime"]["n_owned_modules"] >= 5
+    assert rows["gkx.diagnostics.validation_gates"]["n_physics_contracts"] >= 2
     assert (
-        rows["spectraxgk.objectives.gradient_gates"]["coverage_target_percent"] == 95.0
+        rows["gkx.objectives.gradient_gates"]["coverage_target_percent"] == 95.0
     )
     assert (
-        rows["spectraxgk.objectives.vmec_boozer_gradients"]["n_numerics_contracts"] >= 2
+        rows["gkx.objectives.vmec_boozer_gradients"]["n_numerics_contracts"] >= 2
     )
 
     assert (
-        rows["spectraxgk.operators.linear.cache_builder"]["coverage_target_percent"]
+        rows["gkx.operators.linear.cache_builder"]["coverage_target_percent"]
         == 95.0
     )
-    assert rows["spectraxgk.operators.linear.cache_builder"]["n_owned_modules"] == 2
-    assert rows["spectraxgk.operators.linear.moments"]["n_numerics_contracts"] >= 2
-    assert rows["spectraxgk.operators.linear.params"]["n_physics_contracts"] >= 2
-    assert rows["spectraxgk.operators.linear.linked"]["n_owned_modules"] == 0
-    assert rows["spectraxgk.solvers.linear.parallel"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.operators.nonlinear.rhs"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.operators.nonlinear.rhs"]["n_numerics_contracts"] >= 2
+    assert rows["gkx.operators.linear.cache_builder"]["n_owned_modules"] == 2
+    assert rows["gkx.operators.linear.moments"]["n_numerics_contracts"] >= 2
+    assert rows["gkx.operators.linear.params"]["n_physics_contracts"] >= 2
+    assert rows["gkx.operators.linear.linked"]["n_owned_modules"] == 0
+    assert rows["gkx.solvers.linear.parallel"]["coverage_target_percent"] == 95.0
+    assert rows["gkx.operators.nonlinear.rhs"]["coverage_target_percent"] == 95.0
+    assert rows["gkx.operators.nonlinear.rhs"]["n_numerics_contracts"] >= 2
     assert (
-        rows["spectraxgk.operators.nonlinear.diagnostic_state"][
+        rows["gkx.operators.nonlinear.diagnostic_state"][
             "coverage_target_percent"
         ]
         == 95.0
     )
     assert (
-        rows["spectraxgk.operators.nonlinear.diagnostic_state"]["n_physics_contracts"]
+        rows["gkx.operators.nonlinear.diagnostic_state"]["n_physics_contracts"]
         >= 2
     )
-    spectral_core = rows["spectraxgk.operators.nonlinear.spectral_core"]
+    spectral_core = rows["gkx.operators.nonlinear.spectral_core"]
     assert spectral_core["coverage_target_percent"] == 95.0
     assert spectral_core["n_owned_modules"] >= 4
     assert spectral_core["n_numerics_contracts"] >= 2
     assert spectral_core["n_physics_contracts"] >= 2
     assert (
-        rows["spectraxgk.solvers.nonlinear.explicit"]["coverage_target_percent"] == 95.0
+        rows["gkx.solvers.nonlinear.explicit"]["coverage_target_percent"] == 95.0
     )
-    assert rows["spectraxgk.solvers.nonlinear.explicit"]["n_numerics_contracts"] >= 2
-    assert rows["spectraxgk.solvers.nonlinear.imex"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.solvers.nonlinear.imex"]["n_physics_contracts"] >= 2
-    assert "spectraxgk.solvers.nonlinear.state_integration" in summary["high_priority_open"]
+    assert rows["gkx.solvers.nonlinear.explicit"]["n_numerics_contracts"] >= 2
+    assert rows["gkx.solvers.nonlinear.imex"]["coverage_target_percent"] == 95.0
+    assert rows["gkx.solvers.nonlinear.imex"]["n_physics_contracts"] >= 2
+    assert "gkx.solvers.nonlinear.state_integration" in summary["high_priority_open"]
 
 
 def test_validation_manifest_main_writes_summary_json(tmp_path: Path) -> None:
@@ -2773,14 +2772,14 @@ def test_validation_manifest_main_writes_summary_json(tmp_path: Path) -> None:
 
 def test_validation_manifest_rejects_missing_fast_test(tmp_path: Path) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     artifact = tmp_path / "docs" / "_static" / "gate.json"
     artifact.parent.mkdir(parents=True)
     artifact.write_text("{}\n")
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/missing.py",
             artifact="docs/_static/gate.json",
         )
@@ -2796,7 +2795,7 @@ def test_validation_manifest_rejects_missing_fast_test(tmp_path: Path) -> None:
 
 def test_validation_manifest_rejects_invalid_status(tmp_path: Path) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test = tmp_path / "tests" / "test_runtime.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -2806,7 +2805,7 @@ def test_validation_manifest_rejects_invalid_status(tmp_path: Path) -> None:
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/test_runtime.py",
             artifact="docs/_static/gate.json",
             status="halfway",
@@ -2825,7 +2824,7 @@ def test_validation_manifest_rejects_duplicate_manifest_list_entries(
     tmp_path: Path,
 ) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime", "spectraxgk.config")
+    _write_minimal_package(tmp_path, "gkx.runtime", "gkx.config")
     test = tmp_path / "tests" / "test_runtime.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -2840,12 +2839,12 @@ package_coverage_target_percent = 95.0
 
 [coverage_inventory]
 require_all_package_modules_owned = true
-excluded_modules = ["spectraxgk.__init__"]
+excluded_modules = ["gkx.__init__"]
 
 [[modules]]
-module = "spectraxgk.runtime"
-path = "src/spectraxgk/runtime.py"
-owned_modules = ["spectraxgk.config", "spectraxgk.config"]
+module = "gkx.runtime"
+path = "src/gkx/runtime.py"
+owned_modules = ["gkx.config", "gkx.config"]
 owner_lane = "runtime lane"
 status = "active"
 coverage_priority = "high"
@@ -2871,7 +2870,7 @@ next_tests = ["next"]
 
 def test_validation_manifest_rejects_directory_fast_test(tmp_path: Path) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test_dir = tmp_path / "tests" / "runtime_cases"
     test_dir.mkdir(parents=True)
     artifact = tmp_path / "docs" / "_static" / "gate.json"
@@ -2880,7 +2879,7 @@ def test_validation_manifest_rejects_directory_fast_test(tmp_path: Path) -> None
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/runtime_cases",
             artifact="docs/_static/gate.json",
         )
@@ -2898,7 +2897,7 @@ def test_validation_manifest_accepts_nested_fast_test_seen_by_wide_gate(
     tmp_path: Path,
 ) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test = tmp_path / "tests" / "runtime" / "test_runtime.py"
     test.parent.mkdir(parents=True)
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -2908,7 +2907,7 @@ def test_validation_manifest_accepts_nested_fast_test_seen_by_wide_gate(
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/runtime/test_runtime.py",
             artifact="docs/_static/gate.json",
         )
@@ -2924,7 +2923,7 @@ def test_validation_manifest_accepts_nested_fast_test_seen_by_wide_gate(
 
 def test_validation_manifest_rejects_non_pytest_fast_test_name(tmp_path: Path) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test = tmp_path / "tests" / "runtime_cases.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -2934,7 +2933,7 @@ def test_validation_manifest_rejects_non_pytest_fast_test_name(tmp_path: Path) -
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/runtime_cases.py",
             artifact="docs/_static/gate.json",
         )
@@ -2950,7 +2949,7 @@ def test_validation_manifest_rejects_non_pytest_fast_test_name(tmp_path: Path) -
 
 def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test = tmp_path / "tests" / "test_runtime.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -2960,7 +2959,7 @@ def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) 
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/test_runtime.py",
             artifact="docs/_static/gate.json",
         )
@@ -2970,9 +2969,9 @@ def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) 
         """
 <coverage line-rate="0.96">
   <packages>
-    <package name="spectraxgk">
+    <package name="gkx">
       <classes>
-        <class filename="src/spectraxgk/runtime.py" line-rate="0.97" />
+        <class filename="src/gkx/runtime.py" line-rate="0.97" />
       </classes>
     </package>
   </packages>
@@ -3002,7 +3001,7 @@ def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(
     tmp_path: Path,
 ) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test = tmp_path / "tests" / "test_runtime.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -3012,7 +3011,7 @@ def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/test_runtime.py",
             artifact="docs/_static/gate.json",
         )
@@ -3022,10 +3021,10 @@ def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(
         """
 <coverage line-rate="0.96">
   <packages>
-    <package name="spectraxgk">
+    <package name="gkx">
       <classes>
-        <class filename="src/spectraxgk/runtime.py" line-rate="0.97" />
-        <class filename="spectraxgk/runtime.py" line-rate="0.50" />
+        <class filename="src/gkx/runtime.py" line-rate="0.97" />
+        <class filename="gkx/runtime.py" line-rate="0.50" />
       </classes>
     </package>
   </packages>
@@ -3037,7 +3036,7 @@ def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(
     try:
         mod.REPO_ROOT = tmp_path
         with pytest.raises(
-            ValueError, match="duplicate coverage entry for spectraxgk.runtime"
+            ValueError, match="duplicate coverage entry for gkx.runtime"
         ):
             mod.validate_manifest(
                 mod.load_manifest(manifest), coverage_xml=coverage_xml
@@ -3050,7 +3049,7 @@ def test_validation_manifest_rejects_package_coverage_below_target(
     tmp_path: Path,
 ) -> None:
     mod = _load_validation_tool_module()
-    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    _write_minimal_package(tmp_path, "gkx.runtime")
     test = tmp_path / "tests" / "test_runtime.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -3060,7 +3059,7 @@ def test_validation_manifest_rejects_package_coverage_below_target(
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
         _manifest_text(
-            source="src/spectraxgk/runtime.py",
+            source="src/gkx/runtime.py",
             test="tests/test_runtime.py",
             artifact="docs/_static/gate.json",
         )
@@ -3070,9 +3069,9 @@ def test_validation_manifest_rejects_package_coverage_below_target(
         """
 <coverage line-rate="0.949">
   <packages>
-    <package name="spectraxgk">
+    <package name="gkx">
       <classes>
-        <class filename="spectraxgk/runtime.py" line-rate="1.0" />
+        <class filename="gkx/runtime.py" line-rate="1.0" />
       </classes>
     </package>
   </packages>

@@ -25,7 +25,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "tools" / "package_architecture_manifest.toml"
-DEFAULT_SOURCE_ROOT = REPO_ROOT / "src" / "spectraxgk"
+DEFAULT_SOURCE_ROOT = REPO_ROOT / "src" / "gkx"
 
 
 def _as_nonempty_string(value: object, field: str) -> str:
@@ -81,9 +81,9 @@ def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
 
 
 def _root_module_path(module: str, source_root: Path) -> Path:
-    if not module.startswith("spectraxgk."):
-        raise ValueError(f"root-prefix module must start with spectraxgk.: {module}")
-    remainder = module.removeprefix("spectraxgk.")
+    if not module.startswith("gkx."):
+        raise ValueError(f"root-prefix module must start with gkx.: {module}")
+    remainder = module.removeprefix("gkx.")
     if "." in remainder:
         raise ValueError(
             f"root-prefix allowlist entries must be root modules: {module}"
@@ -92,9 +92,9 @@ def _root_module_path(module: str, source_root: Path) -> Path:
 
 
 def _package_path(package: str, source_root: Path) -> Path:
-    if not package.startswith("spectraxgk."):
-        raise ValueError(f"required package must start with spectraxgk.: {package}")
-    remainder = package.removeprefix("spectraxgk.")
+    if not package.startswith("gkx."):
+        raise ValueError(f"required package must start with gkx.: {package}")
+    remainder = package.removeprefix("gkx.")
     return source_root.joinpath(*remainder.split(".")) / "__init__.py"
 
 
@@ -393,7 +393,7 @@ def validate_architecture_policy(
     for path in sorted(source_root.glob("*.py")):
         if path.name == "__init__.py":
             continue
-        module = f"spectraxgk.{path.stem}"
+        module = f"gkx.{path.stem}"
         if path.stem.startswith(tuple(blocked_prefixes)):
             root_modules.append(module)
 
@@ -535,11 +535,11 @@ def _line_count(path: Path) -> int | None:
 def _area(rel: Path) -> str:
     if len(rel.parts) == 1:
         return "root"
-    if rel.parts[0] == "src" and len(rel.parts) > 2 and rel.parts[1] == "spectraxgk":
+    if rel.parts[0] == "src" and len(rel.parts) > 2 and rel.parts[1] == "gkx":
         return (
-            "src/spectraxgk"
+            "src/gkx"
             if len(rel.parts) == 3
-            else f"src/spectraxgk/{rel.parts[2]}"
+            else f"src/gkx/{rel.parts[2]}"
         )
     if rel.parts[0] in {"tests", "tools", "examples", "benchmarks", "docs"}:
         return rel.parts[0] if len(rel.parts) == 1 else f"{rel.parts[0]}/{rel.parts[1]}"
@@ -552,7 +552,7 @@ def _role_and_action(rel: Path) -> tuple[str, str, str]:
     stem = rel.stem
     path = rel.as_posix()
 
-    if parts[0] == "src" and len(parts) > 2 and parts[1] == "spectraxgk":
+    if parts[0] == "src" and len(parts) > 2 and parts[1] == "gkx":
         domain = parts[2] if len(parts) > 3 else "root"
         targets = {
             "artifacts": "gkx.io",

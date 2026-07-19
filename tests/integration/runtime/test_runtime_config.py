@@ -10,13 +10,13 @@ from support.paths import REPO_ROOT, load_repo_script
 
 import pytest
 
-from spectraxgk.workflows.runtime.toml import (
+from gkx.workflows.runtime.toml import (
     direct_config_shorthand_args,
     is_runtime_toml,
     load_runtime_from_toml,
     toml_shorthand_command,
 )
-from spectraxgk.workflows.runtime.config import (
+from gkx.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeParallelConfig,
     RuntimeQuasilinearConfig,
@@ -80,21 +80,21 @@ def test_runtime_config_to_dict_is_json_roundtrippable_with_serial_aliases() -> 
 def test_load_runtime_from_toml_handles_path_and_species_edge_cases(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("SPECTRAX_TEST_ROOT", str(tmp_path))
+    monkeypatch.setenv("GKX_TEST_ROOT", str(tmp_path))
     toml = """
 species = []
 
 [geometry]
 model = "vmec"
-vmec_file = "$SPECTRAX_TEST_ROOT/vmec.nc"
-geometry_file = "$SPECTRAX_TEST_MISSING/geom.nc"
+vmec_file = "$GKX_TEST_ROOT/vmec.nc"
+geometry_file = "$GKX_TEST_MISSING/geom.nc"
 
 [quasilinear]
 channels = "em"
-output_path = "$SPECTRAX_TEST_ROOT/ql"
+output_path = "$GKX_TEST_ROOT/ql"
 
 [output]
-restart_to_file = "$SPECTRAX_TEST_MISSING/restart.nc"
+restart_to_file = "$GKX_TEST_MISSING/restart.nc"
 
 [parallel]
 strategy = "OFF"
@@ -109,10 +109,10 @@ axis = " KY "
     assert len(cfg.species) == 1
     assert cfg.species[0].name == "ion"
     assert cfg.geometry.vmec_file == str((tmp_path / "vmec.nc").resolve())
-    assert cfg.geometry.geometry_file == "$SPECTRAX_TEST_MISSING/geom.nc"
+    assert cfg.geometry.geometry_file == "$GKX_TEST_MISSING/geom.nc"
     assert cfg.quasilinear.channels == ("em",)
     assert cfg.quasilinear.output_path == str((tmp_path / "ql").resolve())
-    assert cfg.output.restart_to_file == "$SPECTRAX_TEST_MISSING/restart.nc"
+    assert cfg.output.restart_to_file == "$GKX_TEST_MISSING/restart.nc"
     assert cfg.parallel.strategy == "serial"
     assert cfg.parallel.axis == "ky"
 

@@ -1,4 +1,4 @@
-ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega
+ky,gamma_ref,omega_ref,gamma_gkx,omega_gkx,rel_gamma,rel_omega
 0.050,0.009824,0.036540,0.009943,0.041317,0.012,0.131
 0.100,0.030426,0.079845,0.029892,0.078996,-0.018,-0.011
 0.150,0.054971,0.126847,0.058059,0.127123,0.056,0.002

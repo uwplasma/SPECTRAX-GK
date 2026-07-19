@@ -3,16 +3,16 @@ import numpy as np
 import jax.numpy as jnp
 from dataclasses import fields, replace
 import pytest
-import spectraxgk.solvers.time.explicit as explicit_time_integrators
-import spectraxgk.diagnostics as diagnostics_module
-import spectraxgk.diagnostics.moments as diagnostics_moments
-import spectraxgk.diagnostics.metadata as diagnostics_metadata
+import gkx.solvers.time.explicit as explicit_time_integrators
+import gkx.diagnostics as diagnostics_module
+import gkx.diagnostics.moments as diagnostics_moments
+import gkx.diagnostics.metadata as diagnostics_metadata
 from types import SimpleNamespace
 
-from spectraxgk.config import CycloneBaseCase
-from spectraxgk.benchmarking.shared import _build_initial_condition
-from spectraxgk.config import InitializationConfig
-from spectraxgk.diagnostics import (
+from gkx.config import CycloneBaseCase
+from gkx.benchmarking.shared import _build_initial_condition
+from gkx.config import InitializationConfig
+from gkx.diagnostics import (
     ResolvedDiagnostics,
     SimulationDiagnostics,
     _cached_hermitian_mode_weight,
@@ -48,13 +48,13 @@ from spectraxgk.diagnostics import (
     turbulent_heating_resolved_species,
     turbulent_heating_species,
 )
-from spectraxgk.core.velocity import gamma0
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.diagnostics.analysis import select_ky_index
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
-from spectraxgk.solvers.time.explicit import (
+from gkx.core.velocity import gamma0
+from gkx.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.diagnostics.analysis import select_ky_index
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
+from gkx.solvers.time.explicit import (
     ExplicitTimeConfig,
     _apply_completed_step_state_mask,
     _growth_rate_mode_mask,
@@ -72,12 +72,12 @@ from spectraxgk.solvers.time.explicit import (
     _rk3_heun_step,
     integrate_linear_explicit_diagnostics,
 )
-from spectraxgk.workflows.runtime.diagnostic_arrays import (
+from gkx.workflows.runtime.diagnostic_arrays import (
     validate_finite_runtime_diagnostics,
 )
-from spectraxgk.operators.linear.params import Species, build_linear_params
-from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.terms.config import FieldState
+from gkx.operators.linear.params import Species, build_linear_params
+from gkx.terms.assembly import assemble_rhs_cached
+from gkx.terms.config import FieldState
 
 
 def test_diagnostics_refactor_preserves_runtime_import_identities() -> None:
@@ -783,7 +783,7 @@ def test_energy_components_finite():
     )
     _, fields = cache, None
     # Build dummy fields from RHS for consistent shapes
-    from spectraxgk.terms.assembly import assemble_rhs_cached
+    from gkx.terms.assembly import assemble_rhs_cached
 
     _dG, fields = assemble_rhs_cached(G0, cache, params, terms=LinearTerms())
     phi = fields.phi
@@ -972,7 +972,7 @@ def test_species_flux_sums_to_total():
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
     )
-    from spectraxgk.terms.assembly import assemble_rhs_cached
+    from gkx.terms.assembly import assemble_rhs_cached
 
     _dG, fields = assemble_rhs_cached(G0, cache, params, terms=LinearTerms())
     phi = fields.phi

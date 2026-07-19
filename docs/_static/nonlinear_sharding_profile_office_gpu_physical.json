@@ -138,7 +138,7 @@
     "jaxlib": "0.6.2",
     "numpy": "2.2.6",
     "python": "3.10.12",
-    "spectraxgk": "1.6.10"
+    "gkx": "1.6.10"
   },
   "source_artifact": "docs/_static/nonlinear_sharding_profile_office_gpu_physical.json",
   "source_contract_version": 1,

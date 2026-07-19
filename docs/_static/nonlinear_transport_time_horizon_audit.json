@@ -531,7 +531,7 @@
       "effective_tmax": 11.52,
       "gate_passed": true,
       "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",
-      "notes": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear SPECTRAX-GK window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
+      "notes": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear GKX window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
       "production_nonlinear_optimization_blockers": [
         "reduced estimator output is not an actual nonlinear transport average",
         "missing grid-convergence gate for optimized nonlinear objective",
@@ -554,7 +554,7 @@
       "effective_tmax": 11.52,
       "gate_passed": true,
       "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",
-      "notes": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear SPECTRAX-GK window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
+      "notes": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear GKX window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
       "production_nonlinear_optimization_blockers": [
         "reduced estimator output is not an actual nonlinear transport average",
         "missing grid-convergence gate for optimized nonlinear objective",

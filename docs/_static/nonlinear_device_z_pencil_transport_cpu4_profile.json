@@ -37,7 +37,7 @@
       "fft": 36,
       "fusion": 0,
       "line_count": 213,
-      "path": "/tmp/spectrax_device_z_cpu4_hlo_device2.hlo.txt"
+      "path": "/tmp/gkx_device_z_cpu4_hlo_device2.hlo.txt"
     },
     "device_4": {
       "all_reduce": 0,
@@ -47,7 +47,7 @@
       "fft": 36,
       "fusion": 0,
       "line_count": 213,
-      "path": "/tmp/spectrax_device_z_cpu4_hlo_device4.hlo.txt"
+      "path": "/tmp/gkx_device_z_cpu4_hlo_device4.hlo.txt"
     },
     "serial": {
       "all_reduce": 0,
@@ -57,7 +57,7 @@
       "fft": 78,
       "fusion": 0,
       "line_count": 507,
-      "path": "/tmp/spectrax_device_z_cpu4_hlo_serial.hlo.txt"
+      "path": "/tmp/gkx_device_z_cpu4_hlo_serial.hlo.txt"
     }
   },
   "kind": "nonlinear_device_z_pencil_transport_window_profile",
@@ -357,7 +357,7 @@
       "Rogerios-MacBook-Pro.local.trace.json.gz",
       "Rogerios-MacBook-Pro.local.xplane.pb"
     ],
-    "trace_dir": "/tmp/spectrax_traces/device_z_cpu4/device4"
+    "trace_dir": "/tmp/gkx_traces/device_z_cpu4/device4"
   },
   "warmups": 1,
   "z_chunk_size": null

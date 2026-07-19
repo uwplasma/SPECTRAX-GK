@@ -5,10 +5,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.config import GeometryConfig, GridConfig
-import spectraxgk.geometry as geometry_pkg
-import spectraxgk.geometry.core as geometry_core
-from spectraxgk.geometry import (
+from gkx.config import GeometryConfig, GridConfig
+import gkx.geometry as geometry_pkg
+import gkx.geometry.core as geometry_core
+from gkx.geometry import (
     ZERO_SHAT_THRESHOLD,
     FluxTubeGeometryData,
     SAlphaGeometry,
@@ -22,9 +22,9 @@ from spectraxgk.geometry import (
     sample_flux_tube_geometry,
     twist_shift_params,
 )
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
 
 
 def test_geometry_package_facade_preserves_core_symbol_identity() -> None:

@@ -7,7 +7,7 @@
     "passed": true
   },
   "seed": 31,
-  "spectrax": "dshape_replicate_nonlinear_t250_n64_seed31_heat_flux_trace.csv",
+  "gkx": "dshape_replicate_nonlinear_t250_n64_seed31_heat_flux_trace.csv",
   "tmax": 250.0,
   "tmin": 170.0,
   "variant_axis": "seed",

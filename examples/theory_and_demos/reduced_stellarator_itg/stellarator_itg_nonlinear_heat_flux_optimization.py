@@ -24,7 +24,7 @@ from _stellarator_itg_workflow import (  # noqa: E402
     config_from_args,
     run_stellarator_itg_adam,
 )
-from spectraxgk import StellaratorITGOptimizationConfig  # noqa: E402
+from gkx import StellaratorITGOptimizationConfig  # noqa: E402
 
 
 OBJECTIVE_KIND = "nonlinear_heat_flux"

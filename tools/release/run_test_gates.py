@@ -545,7 +545,7 @@ def main_wide(argv: list[str] | None = None) -> int:
             "coverage",
             "run",
             "--parallel-mode",
-            "--source=spectraxgk",
+            "--source=gkx",
             "-m",
             "pytest",
             "-q",

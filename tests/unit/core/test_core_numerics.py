@@ -9,11 +9,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.config as public_config
-import spectraxgk.objectives.vmec_transport as public_vmec_transport
-import spectraxgk.operators.linear as public_linear_operators
-import spectraxgk.operators.nonlinear.policies as public_nonlinear_policies
-from spectraxgk.config import (
+import gkx.config as public_config
+import gkx.objectives.vmec_transport as public_vmec_transport
+import gkx.operators.linear as public_linear_operators
+import gkx.operators.nonlinear.policies as public_nonlinear_policies
+from gkx.config import (
     CycloneBaseCase,
     REFERENCE_ELECTRON_MASS,
     GeometryConfig,
@@ -24,12 +24,12 @@ from spectraxgk.config import (
     explicit_method_default_cfl_fac,
     resolve_cfl_fac,
 )
-from spectraxgk.operators.collision import (
+from gkx.operators.collision import (
     CollisionContext,
     CollisionOperator,
     SplitCollisionOperator,
 )
-from spectraxgk.core.grid import (
+from gkx.core.grid import (
     SpectralGrid,
     build_spectral_grid,
     real_fft_ordered_kx,
@@ -37,7 +37,7 @@ from spectraxgk.core.grid import (
     select_ky_grid,
     select_real_fft_ky_grid,
 )
-from spectraxgk.utils.callbacks import (
+from gkx.utils.callbacks import (
     _PROGRESS_START,
     _emit_progress,
     _format_duration,
@@ -58,7 +58,7 @@ from spectraxgk.utils.callbacks import (
         (
             public_vmec_transport,
             {
-                "VMECJAXTransportObjectiveConfig",
+                "VMEXTransportObjectiveConfig",
                 "vmex_transport_objective_from_state",
             },
         ),
@@ -105,12 +105,12 @@ def test_linear_terms_import_has_no_facade_order_dependency() -> None:
             sys.executable,
             "-c",
             (
-                "from spectraxgk.operators.linear.dissipation import "
+                "from gkx.operators.linear.dissipation import "
                 "collisions_contribution; "
-                "from spectraxgk.terms.linear_terms import "
+                "from gkx.terms.linear_terms import "
                 "conservative_full_f_dougherty_cross_moments, "
                 "drift_kinetic_dougherty_contribution; "
-                "from spectraxgk.operators.linear import linear_rhs"
+                "from gkx.operators.linear import linear_rhs"
             ),
         ],
         check=False,
@@ -123,7 +123,7 @@ def test_linear_terms_import_has_no_facade_order_dependency() -> None:
 def test_nonlinear_operator_facade_resolves_lazy_public_exports() -> None:
     """The public facade must not require eager RHS assembly at import time."""
 
-    from spectraxgk.operators import nonlinear
+    from gkx.operators import nonlinear
 
     assert nonlinear.NonlinearDiagnosticKernels.__module__.endswith("diagnostic_state")
     assert callable(nonlinear.compute_nonlinear_diagnostic_tuple)
@@ -134,7 +134,7 @@ def test_nonlinear_operator_facade_resolves_lazy_public_exports() -> None:
 
 
 def test_velocity_basis_orthonormality_and_validation() -> None:
-    from spectraxgk.core.velocity import hermite_ladder_coeffs, hermite_normed, laguerre
+    from gkx.core.velocity import hermite_ladder_coeffs, hermite_normed, laguerre
 
     xh = jnp.linspace(-6.0, 6.0, 4001)
     dxh = xh[1] - xh[0]
@@ -164,7 +164,7 @@ def test_velocity_basis_orthonormality_and_validation() -> None:
 
 
 def test_species_builder_core_contracts() -> None:
-    from spectraxgk.operators.linear.params import Species, build_linear_params
+    from gkx.operators.linear.params import Species, build_linear_params
 
     ion = Species(
         charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=2.0, fprim=1.0
@@ -181,9 +181,9 @@ def test_species_builder_core_contracts() -> None:
 
 
 def test_normalization_and_benchmark_public_contracts() -> None:
-    import spectraxgk.benchmarking.shared as benchmark_defaults
-    from spectraxgk.benchmarking import shared as benchmarks
-    from spectraxgk.diagnostics.normalization import (
+    import gkx.benchmarking.shared as benchmark_defaults
+    from gkx.benchmarking import shared as benchmarks
+    from gkx.diagnostics.normalization import (
         apply_diagnostic_normalization,
         get_normalization_contract,
     )
@@ -238,25 +238,25 @@ def test_public_api_facades_and_lazy_import_contracts() -> None:
     import subprocess
     import sys
 
-    import spectraxgk
-    import spectraxgk.api as public_api
+    import gkx
+    import gkx.api as public_api
     from support.paths import REPO_ROOT
 
     assert public_api.__all__ == list(public_api._EXPORT_TARGETS)
     assert len(public_api.__all__) == len(set(public_api.__all__))
-    assert spectraxgk.ExplicitTimeConfig.__name__ == "ExplicitTimeConfig"
-    assert callable(spectraxgk.integrate_nonlinear_explicit_diagnostics)
-    assert callable(spectraxgk.branch_continuity_metrics)
-    assert "LinearExplicitTimeConfig" not in spectraxgk.__all__
-    assert "integrate_nonlinear_diagnostics" not in spectraxgk.__all__
+    assert gkx.ExplicitTimeConfig.__name__ == "ExplicitTimeConfig"
+    assert callable(gkx.integrate_nonlinear_explicit_diagnostics)
+    assert callable(gkx.branch_continuity_metrics)
+    assert "LinearExplicitTimeConfig" not in gkx.__all__
+    assert "integrate_nonlinear_diagnostics" not in gkx.__all__
 
     root_script = f"""
 import sys
 sys.path.insert(0, {str(REPO_ROOT / "src")!r})
-import spectraxgk
+import gkx
 assert "numpy" not in sys.modules
 assert "jax" not in sys.modules
-from spectraxgk.parallel.decomposition import build_independent_portfolio_decomposition
+from gkx.parallel.decomposition import build_independent_portfolio_decomposition
 contract = build_independent_portfolio_decomposition(
     4, requested_shards=2, workload="independent_ky_scan"
 )
@@ -269,7 +269,7 @@ assert "jax" not in sys.modules
     api_script = f"""
 import sys
 sys.path.insert(0, {str(REPO_ROOT / "src")!r})
-import spectraxgk.api as api
+import gkx.api as api
 assert "numpy" not in sys.modules
 assert "jax" not in sys.modules
 assert "LinearParams" in api.__all__
@@ -326,7 +326,7 @@ def test_should_emit_progress_sanitizes_steps_and_targets() -> None:
 def test_emit_progress_handles_time_variants_and_metric_labels(monkeypatch) -> None:
     ticks = iter([10.0, 12.0])
     monkeypatch.setattr(
-        "spectraxgk.utils.callbacks.time.perf_counter", lambda: next(ticks)
+        "gkx.utils.callbacks.time.perf_counter", lambda: next(ticks)
     )
     _PROGRESS_START.clear()
 
@@ -358,7 +358,7 @@ def test_print_callback_returns_state_and_forwards_values(monkeypatch) -> None:
         calls.append(args)
         fn(*args)
 
-    monkeypatch.setattr("spectraxgk.utils.callbacks.jax.debug.callback", fake_callback)
+    monkeypatch.setattr("gkx.utils.callbacks.jax.debug.callback", fake_callback)
 
     state = {"unchanged": True}
     buf = io.StringIO()

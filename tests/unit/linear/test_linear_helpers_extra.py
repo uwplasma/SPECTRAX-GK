@@ -9,51 +9,51 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics.analysis import estimate_observed_order
-from spectraxgk.config import GridConfig
-from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.core.velocity import J_l_all
-import spectraxgk.operators.linear as linear_cache
-import spectraxgk.solvers.linear.implicit as linear_implicit
-import spectraxgk.operators.linear.dissipation as linear_dissipation
-import spectraxgk.terms.linear_terms as linear_terms
-from spectraxgk.operators.linear.cache_arrays import hypercollision_damping
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.moments import build_H, lenard_bernstein_eigenvalues
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config, term_config_to_linear_terms
-from spectraxgk.operators.linear.rhs import linear_rhs, linear_rhs_cached
-from spectraxgk.solvers.linear.integrators import integrate_linear, integrate_linear_diagnostics
-from spectraxgk.solvers.linear.parallel import linear_rhs_parallel_cached
-from spectraxgk.operators.linear.cache_arrays import (
+from gkx.diagnostics.analysis import estimate_observed_order
+from gkx.config import GridConfig
+from gkx.geometry import FluxTubeGeometryData, SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.core.velocity import J_l_all
+import gkx.operators.linear as linear_cache
+import gkx.solvers.linear.implicit as linear_implicit
+import gkx.operators.linear.dissipation as linear_dissipation
+import gkx.terms.linear_terms as linear_terms
+from gkx.operators.linear.cache_arrays import hypercollision_damping
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.moments import build_H, lenard_bernstein_eigenvalues
+from gkx.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config, term_config_to_linear_terms
+from gkx.operators.linear.rhs import linear_rhs, linear_rhs_cached
+from gkx.solvers.linear.integrators import integrate_linear, integrate_linear_diagnostics
+from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+from gkx.operators.linear.cache_arrays import (
     _build_end_damping_profile_array,
     _build_gyroaverage_cache_arrays,
     _build_low_rank_moment_cache_arrays,
 )
-from spectraxgk.operators.linear.linked import (
+from gkx.operators.linear.linked import (
     _build_linked_end_damping_profile,
     _build_linked_fft_maps,
     _signed_to_index,
 )
-from spectraxgk.operators.linear.params import (
+from gkx.operators.linear.params import (
     _as_species_array,
     _check_nonnegative,
     _check_positive,
     _is_tracer,
     _resolve_implicit_preconditioner,
 )
-from spectraxgk.solvers.linear.implicit import (
+from gkx.solvers.linear.implicit import (
     _build_implicit_operator,
     _integrate_linear_implicit_cached,
 )
-from spectraxgk.solvers.linear.integrators import _integrate_linear_cached_impl
-from spectraxgk.solvers.linear.parallel import (
+from gkx.solvers.linear.integrators import _integrate_linear_cached_impl
+from gkx.solvers.linear.parallel import (
     _is_electrostatic_field_terms,
     _is_electrostatic_slice_terms,
     _is_streaming_only_terms,
     _resolve_parallel_devices,
 )
-from spectraxgk.terms.config import FieldState, TermConfig
+from gkx.terms.config import FieldState, TermConfig
 
 
 def test_linear_validation_helpers_scalar_and_array() -> None:
@@ -756,11 +756,11 @@ def test_build_implicit_operator_handles_species_squeeze(monkeypatch) -> None:
         kpar_scale=1.0,
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.hypercollision_damping",
+        "gkx.solvers.linear.implicit.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.linear_rhs_cached",
+        "gkx.solvers.linear.implicit.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
     )
 
@@ -808,11 +808,11 @@ def test_build_implicit_operator_preconditioner_aliases_and_errors(monkeypatch) 
         kpar_scale=1.0,
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.hypercollision_damping",
+        "gkx.solvers.linear.implicit.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.linear_rhs_cached",
+        "gkx.solvers.linear.implicit.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
     )
 
@@ -883,11 +883,11 @@ def test_build_implicit_operator_linked_hermite_line_preconditioner(
         kpar_scale=1.0,
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.hypercollision_damping",
+        "gkx.solvers.linear.implicit.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.linear_rhs_cached",
+        "gkx.solvers.linear.implicit.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
     )
 
@@ -927,21 +927,21 @@ def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
     calls: list[tuple[str, str]] = []
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.build_linear_cache",
+        "gkx.solvers.linear.integrators.build_linear_cache",
         lambda *args, **kwargs: "cache",
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators._integrate_linear_cached",
+        "gkx.solvers.linear.integrators._integrate_linear_cached",
         lambda *args, **kwargs: calls.append(("cached", kwargs["method"]))
         or ("G", "phi"),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators._integrate_linear_cached_donate",
+        "gkx.solvers.linear.integrators._integrate_linear_cached_donate",
         lambda *args, **kwargs: calls.append(("donate", kwargs["method"]))
         or ("Gd", "phid"),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators._integrate_linear_implicit_cached",
+        "gkx.solvers.linear.integrators._integrate_linear_implicit_cached",
         lambda *args, **kwargs: calls.append(("implicit", "implicit"))
         or ("Gi", "phii"),
     )
@@ -974,11 +974,11 @@ def test_integrate_linear_wrapper_routes_nonserial_parallel(monkeypatch) -> None
     calls: list[object] = []
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.build_linear_cache",
+        "gkx.solvers.linear.integrators.build_linear_cache",
         lambda *args, **kwargs: "cache",
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators._integrate_linear_cached_impl",
+        "gkx.solvers.linear.integrators._integrate_linear_cached_impl",
         lambda *args, **kwargs: calls.append(kwargs["parallel"]) or ("Gp", "phip"),
     )
 
@@ -1020,7 +1020,7 @@ def test_integrate_linear_wrapper_enables_electrostatic_field_specialization(
     captured: dict[str, bool] = {}
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.build_linear_cache",
+        "gkx.solvers.linear.integrators.build_linear_cache",
         lambda *args, **kwargs: "cache",
     )
 
@@ -1029,7 +1029,7 @@ def test_integrate_linear_wrapper_enables_electrostatic_field_specialization(
         return "G", "phi"
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators._integrate_linear_cached", _fake_cached
+        "gkx.solvers.linear.integrators._integrate_linear_cached", _fake_cached
     )
 
     assert integrate_linear(
@@ -1062,7 +1062,7 @@ def test_integrate_linear_wrapper_does_not_force_electrostatic_when_em_terms_ena
     captured: dict[str, bool] = {}
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.build_linear_cache",
+        "gkx.solvers.linear.integrators.build_linear_cache",
         lambda *args, **kwargs: "cache",
     )
 
@@ -1071,7 +1071,7 @@ def test_integrate_linear_wrapper_does_not_force_electrostatic_when_em_terms_ena
         return "G", "phi"
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators._integrate_linear_cached", _fake_cached
+        "gkx.solvers.linear.integrators._integrate_linear_cached", _fake_cached
     )
 
     kwargs = {} if terms is None else {"terms": terms}
@@ -1098,10 +1098,10 @@ def test_linear_rhs_cached_uses_generic_jit_unless_electrostatic_is_forced(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.terms.assembly.assemble_rhs_cached_jit", _fake_generic
+        "gkx.terms.assembly.assemble_rhs_cached_jit", _fake_generic
     )
     monkeypatch.setattr(
-        "spectraxgk.terms.assembly.assemble_rhs_cached_electrostatic_jit",
+        "gkx.terms.assembly.assemble_rhs_cached_electrostatic_jit",
         lambda *args, **kwargs: pytest.fail(
             "electrostatic RHS should run only when explicitly forced"
         ),
@@ -1135,7 +1135,7 @@ def test_linear_rhs_parallel_cached_serial_alias_and_error_branches(
         return jnp.ones_like(G), jnp.zeros(G.shape[-3:], dtype=G.dtype)
 
     monkeypatch.setattr(
-        "spectraxgk.operators.linear.rhs.linear_rhs_cached", _fake_serial
+        "gkx.operators.linear.rhs.linear_rhs_cached", _fake_serial
     )
 
     rhs, phi = linear_rhs_parallel_cached(
@@ -1222,15 +1222,15 @@ def test_linear_rhs_parallel_cached_routes_gated_velocity_backends(
         return _fake
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.parallel.linear_rhs_streaming_velocity_sharded",
+        "gkx.solvers.linear.parallel.linear_rhs_streaming_velocity_sharded",
         _out("streaming"),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.parallel.linear_rhs_streaming_electrostatic_velocity_sharded",
+        "gkx.solvers.linear.parallel.linear_rhs_streaming_electrostatic_velocity_sharded",
         _out("streaming_es"),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.parallel.linear_rhs_electrostatic_slices_velocity_sharded",
+        "gkx.solvers.linear.parallel.linear_rhs_electrostatic_slices_velocity_sharded",
         _out("slices"),
     )
 
@@ -1312,11 +1312,11 @@ def test_linear_rhs_cached_can_use_electrostatic_specialized_jit(monkeypatch) ->
         )
 
     monkeypatch.setattr(
-        "spectraxgk.terms.assembly.assemble_rhs_cached_electrostatic_jit",
+        "gkx.terms.assembly.assemble_rhs_cached_electrostatic_jit",
         _fake_electrostatic,
     )
     monkeypatch.setattr(
-        "spectraxgk.terms.assembly.assemble_rhs_cached_jit",
+        "gkx.terms.assembly.assemble_rhs_cached_jit",
         lambda *args, **kwargs: pytest.fail(
             "generic RHS should not run when electrostatic specialization is forced"
         ),
@@ -1380,11 +1380,11 @@ def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
     cache = SimpleNamespace(lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32))
     params = SimpleNamespace(nu=0.0)
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.hypercollision_damping",
+        "gkx.solvers.linear.integrators.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.linear_rhs_cached",
+        "gkx.solvers.linear.integrators.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.zeros((1, 1, 2), dtype=jnp.complex64),
@@ -1415,11 +1415,11 @@ def test_integrate_linear_cached_impl_uses_parallel_rhs(monkeypatch) -> None:
     calls: list[object] = []
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.hypercollision_damping",
+        "gkx.solvers.linear.integrators.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.linear_rhs_cached",
+        "gkx.solvers.linear.integrators.linear_rhs_cached",
         lambda *args, **kwargs: pytest.fail(
             "serial RHS should not be used for nonserial parallel integration"
         ),
@@ -1430,7 +1430,7 @@ def test_integrate_linear_cached_impl_uses_parallel_rhs(monkeypatch) -> None:
         return jnp.ones_like(G), jnp.zeros((1, 1, 2), dtype=jnp.complex64)
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.linear_rhs_parallel_cached",
+        "gkx.solvers.linear.integrators.linear_rhs_parallel_cached",
         _fake_parallel_rhs,
     )
 
@@ -1455,7 +1455,7 @@ def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
     params = SimpleNamespace()
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit._build_implicit_operator",
+        "gkx.solvers.linear.implicit._build_implicit_operator",
         lambda *args, **kwargs: (
             G0,
             G0.shape,
@@ -1467,11 +1467,11 @@ def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.gmres",
+        "gkx.solvers.linear.implicit.gmres",
         lambda matvec, rhs, **kwargs: SimpleNamespace(x=rhs, converged=True),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.linear_rhs_cached",
+        "gkx.solvers.linear.implicit.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1499,11 +1499,11 @@ def test_integrate_linear_diagnostics_validates_and_records_energy(monkeypatch) 
         Jl=jnp.ones((1, 2, 1, 1, 2), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.hypercollision_damping",
+        "gkx.solvers.linear.integrator_diagnostics.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.linear_rhs_cached",
+        "gkx.solvers.linear.integrator_diagnostics.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1548,11 +1548,11 @@ def test_integrate_linear_diagnostics_explicit_method_branches(
         Jl=jnp.ones((2, 1, 1, 2), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.hypercollision_damping",
+        "gkx.solvers.linear.integrator_diagnostics.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.linear_rhs_cached",
+        "gkx.solvers.linear.integrator_diagnostics.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1586,11 +1586,11 @@ def test_integrate_linear_diagnostics_multispecies_density_and_invalid_method(
         Jl=jnp.ones((2, 2, 1, 1, 2), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.hypercollision_damping",
+        "gkx.solvers.linear.integrator_diagnostics.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.linear_rhs_cached",
+        "gkx.solvers.linear.integrator_diagnostics.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1637,15 +1637,15 @@ def test_integrate_linear_diagnostics_builds_cache_and_uses_imex2(monkeypatch) -
     build_calls: list[tuple[int, int]] = []
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.build_linear_cache",
+        "gkx.solvers.linear.integrator_diagnostics.build_linear_cache",
         lambda grid, geom, params, Nl, Nm: build_calls.append((Nl, Nm)) or cache,
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.hypercollision_damping",
+        "gkx.solvers.linear.integrator_diagnostics.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.linear_rhs_cached",
+        "gkx.solvers.linear.integrator_diagnostics.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1679,11 +1679,11 @@ def test_integrate_linear_diagnostics_imex_sampled_multispecies(monkeypatch) -> 
         Jl=jnp.ones((2, 2, 1, 1, 2), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.hypercollision_damping",
+        "gkx.solvers.linear.integrator_diagnostics.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.linear_rhs_cached",
+        "gkx.solvers.linear.integrator_diagnostics.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.zeros_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1721,11 +1721,11 @@ def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(
         Jl=jnp.ones((2, 1, 1, 2), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.hypercollision_damping",
+        "gkx.solvers.linear.integrator_diagnostics.hypercollision_damping",
         lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrator_diagnostics.linear_rhs_cached",
+        "gkx.solvers.linear.integrator_diagnostics.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.ones_like(G),
             jnp.ones((1, 1, 2), dtype=jnp.complex64),
@@ -1790,11 +1790,11 @@ def test_integrate_linear_cached_impl_observed_order_against_exact_solution(
     G0 = jnp.asarray([[[[[1.0 + 0.25j]]]]], dtype=jnp.complex64)
     params = LinearParams(nu=0.0)
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.hypercollision_damping",
+        "gkx.solvers.linear.integrators.hypercollision_damping",
         lambda cache, params, dtype: jnp.ones_like(cache.lb_lam, dtype=dtype) * damping,
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.integrators.linear_rhs_cached",
+        "gkx.solvers.linear.integrators.linear_rhs_cached",
         lambda G, cache, params, **kwargs: (
             jnp.asarray(rate * G, dtype=G.dtype),
             jnp.asarray(G[0, 0], dtype=G.dtype),

@@ -62,8 +62,8 @@ REQUIRED_RELEASE_SNIPPETS = (
     "rm -rf build dist",
 )
 REQUIRED_README_SNIPPETS = (
-    "pip install spectraxgk",
-    "spectraxgk",
+    "pip install gkx",
+    "gkx",
     "MIT",
 )
 REQUIRED_STATIC_ARTIFACTS = (
@@ -145,7 +145,7 @@ class ReleaseReadinessError(RuntimeError):
     """Raised when a release-readiness contract is not satisfied."""
 
 
-SOURCE_VERSION = REPO_ROOT / "src" / "spectraxgk" / "_version.py"
+SOURCE_VERSION = REPO_ROOT / "src" / "gkx" / "_version.py"
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 VERSION_RE = re.compile(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]\s*$")
 
@@ -276,71 +276,71 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         ),
         EvidenceCheck(
             "operators package facade",
-            "src/spectraxgk/operators/__init__.py",
+            "src/gkx/operators/__init__.py",
             "hermite_streaming",
         ),
         EvidenceCheck(
             "linear operator package",
-            "src/spectraxgk/operators/linear/__init__.py",
+            "src/gkx/operators/linear/__init__.py",
             "build_linear_cache",
         ),
         EvidenceCheck(
             "linear solver package",
-            "src/spectraxgk/solvers/linear/__init__.py",
+            "src/gkx/solvers/linear/__init__.py",
             "KrylovConfig",
         ),
         EvidenceCheck(
             "nonlinear operator package",
-            "src/spectraxgk/operators/nonlinear/__init__.py",
+            "src/gkx/operators/nonlinear/__init__.py",
             "nonlinear_rhs_cached_impl",
         ),
         EvidenceCheck(
             "nonlinear solver package",
-            "src/spectraxgk/solvers/nonlinear/__init__.py",
+            "src/gkx/solvers/nonlinear/__init__.py",
             "solve_imex_step",
         ),
         EvidenceCheck(
             "runtime scan orchestration module",
-            "src/spectraxgk/workflows/runtime/orchestration_scan.py",
+            "src/gkx/workflows/runtime/orchestration_scan.py",
             "RuntimeScanDeps",
         ),
         EvidenceCheck(
             "runtime policy module",
-            "src/spectraxgk/workflows/runtime/policies.py",
+            "src/gkx/workflows/runtime/policies.py",
             "RuntimeIndependentParallelPlan",
         ),
         EvidenceCheck(
-            "linear cache builder", "src/spectraxgk/operators/linear/cache_builder.py"
+            "linear cache builder", "src/gkx/operators/linear/cache_builder.py"
         ),
         EvidenceCheck(
-            "linear moments module", "src/spectraxgk/operators/linear/moments.py"
+            "linear moments module", "src/gkx/operators/linear/moments.py"
         ),
         EvidenceCheck(
-            "linear params module", "src/spectraxgk/operators/linear/params.py"
+            "linear params module", "src/gkx/operators/linear/params.py"
         ),
         EvidenceCheck(
-            "linear parallel module", "src/spectraxgk/solvers/linear/parallel.py"
+            "linear parallel module", "src/gkx/solvers/linear/parallel.py"
         ),
         EvidenceCheck(
-            "nonlinear helper module", "src/spectraxgk/operators/nonlinear/policies.py"
+            "nonlinear helper module", "src/gkx/operators/nonlinear/policies.py"
         ),
         EvidenceCheck(
             "benchmark policy module",
-            "src/spectraxgk/benchmarking/shared.py",
+            "src/gkx/benchmarking/shared.py",
             "CYCLONE_KRYLOV_DEFAULT",
         ),
         EvidenceCheck(
-            "diagnostic moment kernels", "src/spectraxgk/diagnostics/moments.py"
+            "diagnostic moment kernels", "src/gkx/diagnostics/moments.py"
         ),
         EvidenceCheck(
             "coverage manifest",
             "tools/validation_coverage_manifest.toml",
-            "spectraxgk.workflows.runtime.orchestration_scan",
+            "gkx.workflows.runtime.orchestration_scan",
         ),
     ),
     "docs_release_hygiene": (
-        EvidenceCheck("readme install", "README.md", "pip install spectraxgk"),
-        EvidenceCheck("readme executable", "README.md", "spectraxgk"),
+        EvidenceCheck("readme install", "README.md", "pip install gkx"),
+        EvidenceCheck("readme executable", "README.md", "gkx"),
         EvidenceCheck("MIT license in README", "README.md", "MIT"),
         EvidenceCheck("release scope ledger", "docs/release_scope.rst", "Claim scope"),
         EvidenceCheck("examples docs", "docs/examples.rst", "parallelization"),
@@ -432,7 +432,7 @@ def build_technical_release_status(root: Path = REPO_ROOT) -> dict[str, Any]:
         }
     overall = sum(scores) / max(len(scores), 1)
     return {
-        "kind": "spectraxgk_technical_release_status",
+        "kind": "gkx_technical_release_status",
         "root": str(root),
         "technical_release_completion_percent": overall,
         "target_percent": 98.0,
@@ -464,9 +464,9 @@ def read_project_version(root: Path = REPO_ROOT) -> str:
 
 
 def read_source_version(root: Path = REPO_ROOT) -> str:
-    """Return ``spectraxgk.__version__`` without importing the package."""
+    """Return ``gkx.__version__`` without importing the package."""
 
-    path = root / "src" / "spectraxgk" / "_version.py"
+    path = root / "src" / "gkx" / "_version.py"
     for line in path.read_text(encoding="utf-8").splitlines():
         match = VERSION_RE.match(line.strip())
         if match:
@@ -512,7 +512,7 @@ def validate_release_version(
     root: Path = REPO_ROOT,
     tag: str | None = None,
     require_tag: bool = False,
-    package: str = "spectraxgk",
+    package: str = "gkx",
     pypi_versions: Iterable[str] | None = None,
 ) -> dict[str, object]:
     """Validate package version, source version, optional tag, and PyPI uniqueness."""
@@ -522,7 +522,7 @@ def validate_release_version(
     source_version = read_source_version(root)
     if source_version != project_version:
         raise ReleaseVersionError(
-            f"src/spectraxgk/_version.py has {source_version!r}, "
+            f"src/gkx/_version.py has {source_version!r}, "
             f"but pyproject.toml has {project_version!r}"
         )
 
@@ -1142,9 +1142,9 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     version_report = validate_release_version(root=root)
     project = _project_metadata(root)
-    if project["name"] != "spectraxgk":
-        failures.append("pyproject project.name must be 'spectraxgk'")
-    expected_scripts = {"spectraxgk", "spectrax-gk"}
+    if project["name"] != "gkx":
+        failures.append("pyproject project.name must be 'gkx'")
+    expected_scripts = {"gkx", "gkx"}
     missing_scripts = sorted(expected_scripts - set(project["scripts"]))
     if missing_scripts:
         failures.append(f"missing executable entry points: {missing_scripts}")
@@ -1241,7 +1241,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         failures.append(str(exc))
 
     report = {
-        "kind": "spectraxgk_release_readiness",
+        "kind": "gkx_release_readiness",
         "root": str(root),
         "project": project,
         "version": version_report,
@@ -1294,7 +1294,7 @@ def build_version_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--package",
-        default="spectraxgk",
+        default="gkx",
         help="PyPI package name for duplicate checks.",
     )
     return parser

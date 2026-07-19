@@ -1,7 +1,7 @@
 """Unit contracts for the vmex-backed VMEC-state sensitivity helpers.
 
 These exercise the private helpers behind the three ``# pragma: no cover``
-public entry points of ``spectraxgk.geometry.vmec_state_sensitivity`` directly,
+public entry points of ``gkx.geometry.vmec_state_sensitivity`` directly,
 using synthetic ``_VMECStateContext`` bundles and a monkeypatched
 ``gk_fieldline_geometry`` / Boozer-tables seam so that no real vmex equilibrium
 solve is required.  Numeric expectations (packed observable order, hand-computed
@@ -21,7 +21,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.geometry.vmec_state_sensitivity as vss
+import gkx.geometry.vmec_state_sensitivity as vss
 
 
 # ---------------------------------------------------------------------------

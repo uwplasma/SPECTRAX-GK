@@ -19,21 +19,21 @@ allowed_root_prefix_modules = []
 
 [package_policy]
 required_domain_packages = [
-  "spectraxgk.artifacts",
-  "spectraxgk.core",
-  "spectraxgk.diagnostics",
-  "spectraxgk.geometry",
-  "spectraxgk.objectives",
-  "spectraxgk.operators",
-  "spectraxgk.operators.linear",
-  "spectraxgk.operators.nonlinear",
-  "spectraxgk.parallel",
-  "spectraxgk.solvers",
-  "spectraxgk.solvers.linear",
-  "spectraxgk.solvers.nonlinear",
-  "spectraxgk.solvers.time",
-  "spectraxgk.workflows",
-  "spectraxgk.workflows.runtime",
+  "gkx.artifacts",
+  "gkx.core",
+  "gkx.diagnostics",
+  "gkx.geometry",
+  "gkx.objectives",
+  "gkx.operators",
+  "gkx.operators.linear",
+  "gkx.operators.nonlinear",
+  "gkx.parallel",
+  "gkx.solvers",
+  "gkx.solvers.linear",
+  "gkx.solvers.nonlinear",
+  "gkx.solvers.time",
+  "gkx.workflows",
+  "gkx.workflows.runtime",
 ]
 required_docs = [
   "plan.md",
@@ -53,7 +53,7 @@ description = "Track the consolidation plan without breaking current CI before f
 
 [[topology_policy.counts]]
 name = "installable_source_python_files"
-path = "src/spectraxgk"
+path = "src/gkx"
 pattern = "*.py"
 recursive = true
 baseline = 220
@@ -132,7 +132,7 @@ description = "Track real code deletion rather than file reshuffling."
 
 [[line_budget_policy.counts]]
 name = "installable_source_python_lines"
-path = "src/spectraxgk"
+path = "src/gkx"
 pattern = "*.py"
 recursive = true
 baseline = 87847

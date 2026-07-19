@@ -239,7 +239,7 @@ def test_full_linear_trace_summary_contains_metadata() -> None:
         memory_profile=Path("tools_out/memory.prof"),
         hlo_out=Path("tools_out/hlo.txt"),
         force_electrostatic_fields=True,
-        source="spectraxgk.operators.linear.rhs.linear_rhs_cached",
+        source="gkx.operators.linear.rhs.linear_rhs_cached",
     )
 
     assert payload["kind"] == "full_linear_rhs_trace_summary"
@@ -248,7 +248,7 @@ def test_full_linear_trace_summary_contains_metadata() -> None:
     assert payload["warm_seconds"] == 0.1
     assert payload["hlo_token_counts"]["add"] >= 1
     assert payload["force_electrostatic_fields"] is True
-    assert payload["source"] == "spectraxgk.operators.linear.rhs.linear_rhs_cached"
+    assert payload["source"] == "gkx.operators.linear.rhs.linear_rhs_cached"
     assert payload["trace_dir"] == "tools_out/trace"
     assert "kernel-level optimization targets" in payload["claim_scope"]
 
@@ -379,8 +379,8 @@ def test_profile_linear_rhs_parallel_slices_builds_summary(monkeypatch) -> None:
 
     monkeypatch.setattr(linear_slices, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
-    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.solvers.linear.parallel.linear_rhs_parallel_cached", fake_rhs)
+    monkeypatch.setattr("gkx.operators.linear.rhs.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("gkx.solvers.linear.parallel.linear_rhs_parallel_cached", fake_rhs)
 
     summary = linear_slices.profile_linear_rhs_parallel_slices(
         platform="cpu",

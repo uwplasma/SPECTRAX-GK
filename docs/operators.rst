@@ -1,13 +1,13 @@
 Operators And Terms
 ===================
 
-This page documents the implemented operator set in SPECTRAX-GK and ties each
+This page documents the implemented operator set in GKX and ties each
 term to its runtime parameters and source files.
 
 State And Coupled Variable
 --------------------------
 
-For each species :math:`s`, SPECTRAX-GK evolves Laguerre-Hermite moments
+For each species :math:`s`, GKX evolves Laguerre-Hermite moments
 :math:`G^{(s)}_{\ell m}(k_x,k_y,z,t)`. The field-coupled variable used by the
 linear operator is
 
@@ -28,9 +28,9 @@ Hermite ladder is taken.
 
 Source mapping:
 
-- ``src/spectraxgk/linear.py``
-- ``src/spectraxgk/terms/fields.py``
-- ``src/spectraxgk/terms/assembly.py``
+- ``src/gkx/linear.py``
+- ``src/gkx/terms/fields.py``
+- ``src/gkx/terms/assembly.py``
 
 Implemented Linear Operator
 ---------------------------
@@ -70,8 +70,8 @@ Nonlinear electromagnetic terms additionally use :math:`J_0(\alpha)` and
 
 Source mapping:
 
-- ``src/spectraxgk/core/velocity.py``
-- ``src/spectraxgk/terms/nonlinear.py``
+- ``src/gkx/core/velocity.py``
+- ``src/gkx/terms/nonlinear.py``
 
 Streaming
 ---------
@@ -210,7 +210,7 @@ Hamiltonian response :math:`H`:
 
 The first path is available from Python through
 ``nonlinear_rhs_cached(..., collision_operator=operator)``. The callback must
-return a JAX array with the state shape. SPECTRAX-GK removes the built-in
+return a JAX array with the state shape. GKX removes the built-in
 collision contribution before adding ``terms.collisions * operator.apply(...)``;
 hypercollisions remain independent:
 
@@ -277,7 +277,7 @@ Reduced drift-kinetic Sugama equation gate
 ``drift_kinetic_coulomb_six_moment_contribution`` implement the complete
 like-species six-gyromoment matrices reported in Appendix C, equations
 (C6a)--(C6f) and (C9a)--(C9f), of the `improved Sugama moment formulation
-<https://arxiv.org/abs/2202.06293>`_.  In SPECTRAX-GK ordering, the nontrivial
+<https://arxiv.org/abs/2202.06293>`_.  In GKX ordering, the nontrivial
 moment vector is
 
 .. math::
@@ -668,7 +668,7 @@ through the same vectorized JAX and collision-protocol paths. This is a
 friction-flow matrix validation, not a parallel-conductivity claim. The
 published conductivity comparison retains more moments and reports that the
 original operator can underpredict current by at least 10%, while the improved
-operator approaches Coulomb within 1%; SPECTRAX-GK therefore keeps
+operator approaches Coulomb within 1%; GKX therefore keeps
 conductivity promotion blocked until the arbitrary-moment correction hierarchy
 and its driven steady-state gate are implemented.
 
@@ -882,7 +882,7 @@ As a separate full-distribution reference utility,
 These are equations (2.11)--(2.12) of the
 `improved multispecies Dougherty derivation <https://doi.org/10.1017/S0022377822000289>`_.
 Francisquez et al. derive a nonlinear full-:math:`f` Fokker--Planck model,
-whereas SPECTRAX-GK evolves a linearized delta-:math:`f` gyrokinetic state. The
+whereas GKX evolves a linearized delta-:math:`f` gyrokinetic state. The
 JAX implementation accepts arbitrary mass ratios and directed rates, keeps
 zero-rate and self pairs unchanged, and is equation-gated for pairwise momentum
 and energy conservation, the equal-species limit, positive target temperature,
@@ -961,7 +961,7 @@ trajectory identity; it does not yet cover mixed species--Hermite meshes.
 Hypercollisions
 ---------------
 
-SPECTRAX-GK implements three Hermite/Laguerre hypercollision branches and an
+GKX implements three Hermite/Laguerre hypercollision branches and an
 optional :math:`|k_z|`-scaled branch:
 
 .. math::
@@ -1069,15 +1069,15 @@ Source Mapping
 --------------
 
 - linear term kernels:
-  ``src/spectraxgk/terms/linear_terms.py``
+  ``src/gkx/terms/linear_terms.py``
 - nonlinear term kernels:
-  ``src/spectraxgk/terms/nonlinear.py``
+  ``src/gkx/terms/nonlinear.py``
 - assembly:
-  ``src/spectraxgk/terms/assembly.py``
+  ``src/gkx/terms/assembly.py``
 - low-level parameter container:
-  ``src/spectraxgk/linear.py``
+  ``src/gkx/linear.py``
 - runtime parameter surface:
-  ``src/spectraxgk/workflows/runtime/config.py``
+  ``src/gkx/workflows/runtime/config.py``
 
 Parameter Surface
 -----------------

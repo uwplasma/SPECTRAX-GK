@@ -28,12 +28,12 @@ from benchmarks.performance.benchmark_runtime_memory import (
     _write_row_logs,
     _write_summary,
 )
-from spectraxgk.core.velocity import J_l_all, single_precision_factorial
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.operators.linear import dissipation as linear_dissipation_module
-from spectraxgk.terms import linear_terms as linear_terms_module
-from spectraxgk.terms.linear_terms import (
+from gkx.core.velocity import J_l_all, single_precision_factorial
+from gkx.geometry import SAlphaGeometry
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.operators.linear import dissipation as linear_dissipation_module
+from gkx.terms import linear_terms as linear_terms_module
+from gkx.terms.linear_terms import (
     diamagnetic_contribution,
     end_damping_contribution,
     hypercollisions_contribution,
@@ -41,7 +41,7 @@ from spectraxgk.terms.linear_terms import (
     linked_streaming_contribution,
     streaming_contribution,
 )
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
@@ -60,16 +60,16 @@ from spectraxgk.benchmarking.shared import (
     scan_window_valid,
     should_use_ky_batch,
 )
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.rhs import linear_rhs_cached
-from spectraxgk.runtime import (
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.rhs import linear_rhs_cached
+from gkx.runtime import (
     _build_initial_condition as build_runtime_initial_condition,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
 )
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 ROOT = REPO_ROOT
@@ -97,7 +97,7 @@ def test_cyclone_publication_driver_uses_asymptotic_fit_window() -> None:
 
 
 def test_benchmark_public_exports_resolve() -> None:
-    import spectraxgk.benchmarking.shared as benchmark_api
+    import gkx.benchmarking.shared as benchmark_api
 
     for name in benchmark_api.__all__:
         assert hasattr(benchmark_api, name), name
@@ -541,7 +541,7 @@ def test_root_benchmark_payload_stays_lightweight() -> None:
 def test_runtime_memory_manifest_loads_runs() -> None:
     runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
     assert any(
-        run.case == "cyclone-linear" and run.backend == "spectrax_cpu" for run in runs
+        run.case == "cyclone-linear" and run.backend == "gkx_cpu" for run in runs
     )
     assert any(run.backend == "gx" for run in runs)
 
@@ -553,7 +553,7 @@ def test_runtime_memory_selection_filters_case_and_backend(tmp_path: Path) -> No
 [[run]]
 case = "a"
 label = "A"
-backend = "spectrax_cpu"
+backend = "gkx_cpu"
 command = "echo a"
 
 [[run]]
@@ -570,10 +570,10 @@ enabled = false
     runs = _load_manifest(manifest)
     assert runs[1].host == "office"
     assert runs[1].profile_command == "echo profile"
-    selected = _select_runs(runs, {"a"}, {"spectrax_cpu"})
+    selected = _select_runs(runs, {"a"}, {"gkx_cpu"})
     assert len(selected) == 1
     assert selected[0].case == "a"
-    assert selected[0].backend == "spectrax_cpu"
+    assert selected[0].backend == "gkx_cpu"
 
 
 def test_parse_peak_rss_mb_supports_macos_and_linux_formats() -> None:
@@ -589,7 +589,7 @@ def test_parse_profile_times_extracts_warmup_and_run_fields() -> None:
 def test_load_summary_rows_merges_matching_json_files(tmp_path: Path) -> None:
     first = tmp_path / "a.json"
     first.write_text(
-        '{"rows":[{"case":"a","backend":"spectrax_cpu","status":"success"}]}\n',
+        '{"rows":[{"case":"a","backend":"gkx_cpu","status":"success"}]}\n',
         encoding="utf-8",
     )
     second = tmp_path / "b.json"
@@ -598,12 +598,12 @@ def test_load_summary_rows_merges_matching_json_files(tmp_path: Path) -> None:
     )
     rows = _load_summary_rows([str(tmp_path / "*.json")])
     assert len(rows) == 2
-    assert {row["backend"] for row in rows} == {"spectrax_cpu", "gx"}
+    assert {row["backend"] for row in rows} == {"gkx_cpu", "gx"}
 
 
 def test_render_expands_root_and_env(monkeypatch) -> None:
-    monkeypatch.setenv("SPECTRAX_BENCH_ROOT", "/tmp/bench")
-    rendered = _render("{root}:${SPECTRAX_BENCH_ROOT}")
+    monkeypatch.setenv("GKX_BENCH_ROOT", "/tmp/bench")
+    rendered = _render("{root}:${GKX_BENCH_ROOT}")
     assert str(ROOT) in rendered
     assert "/tmp/bench" in rendered
 
@@ -617,7 +617,7 @@ def test_gx_runtime_memory_manifest_runs_in_isolated_tempdir() -> None:
         assert "env " in run.command
         assert "-u DISPLAY" in run.command
         assert "HDF5_DISABLE_VERSION_CHECK=1" in run.command
-        assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
+        assert "CUDA_VISIBLE_DEVICES=${GKX_BENCH_CUDA_DEVICE}" in run.command
 
 
 def test_gx_stellarator_runtime_manifest_uses_pregenerated_nc_geometry() -> None:
@@ -639,10 +639,10 @@ def test_gx_stellarator_runtime_manifest_uses_pregenerated_nc_geometry() -> None
 
 def test_gpu_runtime_memory_manifest_pins_configured_cuda_device() -> None:
     runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
-    gpu_runs = [run for run in runs if run.backend == "spectrax_gpu"]
+    gpu_runs = [run for run in runs if run.backend == "gkx_gpu"]
     assert gpu_runs
     for run in gpu_runs:
-        assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
+        assert "CUDA_VISIBLE_DEVICES=${GKX_BENCH_CUDA_DEVICE}" in run.command
 
 
 def test_short_nonlinear_gpu_rows_request_warm_profile_pass() -> None:
@@ -650,14 +650,14 @@ def test_short_nonlinear_gpu_rows_request_warm_profile_pass() -> None:
     selected = {
         (run.case, run.backend): run.profile_command
         for run in runs
-        if run.backend == "spectrax_gpu"
+        if run.backend == "gkx_gpu"
         and run.case in {"cyclone-nonlinear", "kbm-nonlinear"}
     }
     assert "profile_runtime_kernels.py cyclone" in str(
-        selected[("cyclone-nonlinear", "spectrax_gpu")]
+        selected[("cyclone-nonlinear", "gkx_gpu")]
     )
     assert "profile_runtime_kernels.py cyclone" in str(
-        selected[("kbm-nonlinear", "spectrax_gpu")]
+        selected[("kbm-nonlinear", "gkx_gpu")]
     )
 
 
@@ -700,7 +700,7 @@ def test_runtime_memory_command_captures_profile_times(monkeypatch) -> None:
     run = RuntimeBenchRun(
         case="c",
         label="C",
-        backend="spectrax_cpu",
+        backend="gkx_cpu",
         command="echo hi",
         cwd="/tmp",
         wrap_time=False,
@@ -733,7 +733,7 @@ def test_runtime_memory_command_runs_profile_subcommand(monkeypatch) -> None:
     run = RuntimeBenchRun(
         case="c",
         label="C",
-        backend="spectrax_gpu",
+        backend="gkx_gpu",
         command="echo cold",
         profile_command="echo warm",
         cwd="/tmp",
@@ -763,7 +763,7 @@ def test_runtime_memory_summary_is_written(tmp_path: Path) -> None:
     rows = [
         {
             "case": "a",
-            "backend": "spectrax_cpu",
+            "backend": "gkx_cpu",
             "status": "success",
             "stdout": "long runtime log",
             "stderr": "warning log",
@@ -783,7 +783,7 @@ def test_runtime_memory_summary_is_written(tmp_path: Path) -> None:
 def test_runtime_memory_summary_row_prunes_existing_logs() -> None:
     row = {
         "case": "a",
-        "backend": "spectrax_cpu",
+        "backend": "gkx_cpu",
         "stdout": "ok",
         "stderr": "",
     }
@@ -802,7 +802,7 @@ def test_runtime_memory_plot_supports_warm_runtime_markers(tmp_path: Path) -> No
         "\n".join(
             [
                 "case,label,backend,status,returncode,runtime_s,warmup_time_s,run_time_s,peak_rss_mb,host,cwd,command,stdout_log,stderr_log",
-                "cyclone-nonlinear,Cyclone ITG Nonlinear,spectrax_gpu,success,0,35.3,33.2,14.4,1878.4,office,/tmp,cmd,out,err",
+                "cyclone-nonlinear,Cyclone ITG Nonlinear,gkx_gpu,success,0,35.3,33.2,14.4,1878.4,office,/tmp,cmd,out,err",
                 "cyclone-nonlinear,Cyclone ITG Nonlinear,gx,success,0,21.1,,,1900.0,office,/tmp,cmd,out,err",
             ]
         )

@@ -3,11 +3,11 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.config import GridConfig
-from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
-from spectraxgk.core.grid import build_spectral_grid, real_fft_mesh
-from spectraxgk.terms import nonlinear as nonlinear_terms_module
-from spectraxgk.operators.nonlinear.brackets import (
+from gkx.config import GridConfig
+from gkx.core.velocity import bessel_j0, bessel_j1, laguerre_transform
+from gkx.core.grid import build_spectral_grid, real_fft_mesh
+from gkx.terms import nonlinear as nonlinear_terms_module
+from gkx.operators.nonlinear.brackets import (
     _apply_mask_xy,
     _broadcast_grid,
     _broadcast_mask,
@@ -16,8 +16,8 @@ from spectraxgk.operators.nonlinear.brackets import (
     _spectral_bracket_multi,
     _stack_fields,
 )
-from spectraxgk.operators.nonlinear.projection import advance_shearing_coordinates
-from spectraxgk.core.velocity import (
+from gkx.operators.nonlinear.projection import advance_shearing_coordinates
+from gkx.core.velocity import (
     _laguerre_bpar_correction,
     _laguerre_bpar_correction_precomputed,
     _laguerre_j0_field,
@@ -25,7 +25,7 @@ from spectraxgk.core.velocity import (
     _laguerre_to_grid,
     _laguerre_to_spectral,
 )
-from spectraxgk.terms.nonlinear import (
+from gkx.terms.nonlinear import (
     _apply_flutter,
     exb_nonlinear_contribution,
     nonlinear_em_contribution,
@@ -1270,7 +1270,7 @@ def test_precomputed_bessel_helpers_match_direct_evaluation():
             0.0, 2.0 * roots[None, :, None, None, None] * b_species[:, None, ...]
         )
     )
-    from spectraxgk.core.velocity import bessel_j0 as _b0, bessel_j1 as _b1
+    from gkx.core.velocity import bessel_j0 as _b0, bessel_j1 as _b1
 
     j0 = _b0(alpha)
     j1 = _b1(alpha)

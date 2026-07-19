@@ -59,7 +59,7 @@ def _terms(
     gradb: float = 0.0,
     diamagnetic: float = 0.0,
 ) -> Any:
-    from spectraxgk.operators.linear.params import LinearTerms
+    from gkx.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=0.0,
@@ -96,11 +96,11 @@ def build_problem(
 
     import jax.numpy as jnp
 
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SAlphaGeometry
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(
@@ -139,7 +139,7 @@ def _device_list(requested_devices: int) -> list[Any]:
 
 
 def _velocity_plan(state: Any, device_list: list[Any]) -> Any:
-    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
+    from gkx.parallel.velocity import build_velocity_sharding_plan
 
     return build_velocity_sharding_plan(
         state.shape, num_devices=len(device_list), axes=("hermite",)
@@ -147,7 +147,7 @@ def _velocity_plan(state: Any, device_list: list[Any]) -> Any:
 
 
 def _electrostatic_phi(state: Any, cache: Any, params: Any, plan: Any, devices: list[Any]):
-    from spectraxgk.parallel.velocity import electrostatic_phi_shard_map
+    from gkx.parallel.velocity import electrostatic_phi_shard_map
 
     return electrostatic_phi_shard_map(
         state,
@@ -177,7 +177,7 @@ def build_electrostatic_field_reduce_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     devices = _device_list(requested_devices)
     state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
@@ -223,8 +223,8 @@ def build_electrostatic_field_reduce_gate(
     return _json_clean(
         {
             "case": "Electrostatic Hermite-sharded field-reduction identity gate",
-            "source": "spectraxgk.parallel.velocity.electrostatic_phi_shard_map",
-            "reference_source": "spectraxgk.operators.linear.rhs.linear_rhs_cached production electrostatic field solve",
+            "source": "gkx.parallel.velocity.electrostatic_phi_shard_map",
+            "reference_source": "gkx.operators.linear.rhs.linear_rhs_cached production electrostatic field solve",
             "claim_scope": "single-species electrostatic phi field-reduction identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -266,8 +266,8 @@ def build_electrostatic_diamagnetic_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.parallel.velocity import diamagnetic_drive_shard_map
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.parallel.velocity import diamagnetic_drive_shard_map
 
     devices = _device_list(requested_devices)
     state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
@@ -332,8 +332,8 @@ def build_electrostatic_diamagnetic_gate(
     return _json_clean(
         {
             "case": "Electrostatic Hermite-sharded diamagnetic-drive identity gate",
-            "source": "spectraxgk.parallel.velocity.diamagnetic_drive_shard_map",
-            "reference_source": "spectraxgk.operators.linear.rhs.linear_rhs_cached with diamagnetic term only",
+            "source": "gkx.parallel.velocity.diamagnetic_drive_shard_map",
+            "reference_source": "gkx.operators.linear.rhs.linear_rhs_cached with diamagnetic term only",
             "claim_scope": "single-species periodic electrostatic diamagnetic-drive identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -386,9 +386,9 @@ def build_electrostatic_drift_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.operators.linear.moments import build_H
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.parallel.velocity import (
+    from gkx.operators.linear.moments import build_H
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.parallel.velocity import (
         curvature_gradb_drift_shard_map,
         mirror_drift_shard_map,
     )
@@ -490,8 +490,8 @@ def build_electrostatic_drift_gate(
     return _json_clean(
         {
             "case": "Electrostatic Hermite-sharded mirror/curvature/grad-B drift identity gate",
-            "source": "spectraxgk.parallel.velocity mirror_drift_shard_map + curvature_gradb_drift_shard_map",
-            "reference_source": "spectraxgk.operators.linear.rhs.linear_rhs_cached with mirror/curvature/grad-B terms only",
+            "source": "gkx.parallel.velocity mirror_drift_shard_map + curvature_gradb_drift_shard_map",
+            "reference_source": "gkx.operators.linear.rhs.linear_rhs_cached with mirror/curvature/grad-B terms only",
             "claim_scope": "single-species periodic electrostatic drift-slice identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -545,7 +545,7 @@ def _plot_field(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     z = np.asarray([row["z_index"] for row in rows], dtype=float)
@@ -584,7 +584,7 @@ def _plot_moment(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     m = np.asarray([row["m"] for row in rows], dtype=float)
@@ -623,7 +623,7 @@ def _plot_components(summary: dict[str, object], paths: dict[str, Path]) -> None
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     labels = [str(row["component"]).replace("_", "\n") for row in rows]

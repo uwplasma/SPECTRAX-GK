@@ -7,13 +7,13 @@ from dataclasses import replace
 import jax
 import jax.numpy as jnp
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.moments import quasineutrality_phi
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.terms.fields import _solve_fields_impl, solve_fields
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.moments import quasineutrality_phi
+from gkx.operators.linear.params import LinearParams
+from gkx.terms.fields import _solve_fields_impl, solve_fields
 
 
 def _build_case(

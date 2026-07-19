@@ -8,7 +8,7 @@
     "source": "replicated nonlinear-window extraction; convergence gate is stored separately"
   },
   "seed": 31,
-  "spectrax": "qa_no_ess_reference_equilibrium_nonlinear_t700_n64_seed31_heat_flux_trace.csv",
+  "gkx": "qa_no_ess_reference_equilibrium_nonlinear_t700_n64_seed31_heat_flux_trace.csv",
   "tmax": 700.0,
   "tmin": 350.0,
   "variant": {

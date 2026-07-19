@@ -15,7 +15,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.diagnostics.analysis import (
+from gkx.diagnostics.analysis import (
     ModeSelection,
     extract_eigenfunction,
     extract_mode_time_series,
@@ -24,7 +24,7 @@ from spectraxgk.diagnostics.analysis import (
     instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -42,26 +42,26 @@ from spectraxgk.benchmarking.shared import (
     load_kbm_reference,
     load_tem_reference,
 )
-from spectraxgk.config import (
+from gkx.config import (
     CycloneBaseCase,
     InitializationConfig,
     KBMBaseCase,
 )
-from spectraxgk.solvers.time.diffrax_linear import integrate_linear_diffrax
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.solvers.linear.integrators import integrate_linear_diagnostics
-from spectraxgk.solvers.linear.krylov import KrylovConfig, dominant_eigenpair
-from spectraxgk.terms.assembly import compute_fields_cached
-from spectraxgk.terms.config import TermConfig
-from spectraxgk.workflows.runtime.startup import (
+from gkx.solvers.time.diffrax_linear import integrate_linear_diffrax
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.solvers.linear.integrators import integrate_linear_diagnostics
+from gkx.solvers.linear.krylov import KrylovConfig, dominant_eigenpair
+from gkx.terms.assembly import compute_fields_cached
+from gkx.terms.config import TermConfig
+from gkx.workflows.runtime.startup import (
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
 )
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 def _parse_args() -> argparse.Namespace:

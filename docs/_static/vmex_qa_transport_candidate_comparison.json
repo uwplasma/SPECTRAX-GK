@@ -1,6 +1,6 @@
 {
   "kind": "vmex_qa_transport_candidate_comparison",
-  "claim_scope": "bounded VMEC-JAX solved-boundary candidate comparison; validates objective assembly, trace-safe SPECTRAX-GK transport residual, WOUT writing, and authoritative solved-equilibrium admission gates; not a converged optimized-equilibrium nonlinear turbulent-flux claim",
+  "claim_scope": "bounded VMEC-JAX solved-boundary candidate comparison; validates objective assembly, trace-safe GKX transport residual, WOUT writing, and authoritative solved-equilibrium admission gates; not a converged optimized-equilibrium nonlinear turbulent-flux claim",
   "target_aspect": 6.0,
   "aspect_atol": 0.05,
   "iota_gate_policy": "lower_bound_admission_not_exact_upstream_mean_iota_target",
@@ -181,7 +181,7 @@
             "passed": true
           }
         },
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
+        "claim_level": "solved VMEC candidate gate before expensive GKX nonlinear transport audit",
         "next_action": "candidate may proceed to matched long-window nonlinear transport audits"
       },
       "gate_source": "solved_wout_gate.json",
@@ -191,7 +191,7 @@
       "admission_blockers": []
     },
     {
-      "label": "QA + SPECTRAX-GK transport",
+      "label": "QA + GKX transport",
       "root": "tools_out/vmex_qa_transport_authoritative_sidecar/transport",
       "history": {
         "aspect_initial": 6.000183609867784,
@@ -366,7 +366,7 @@
             "passed": false
           }
         },
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
+        "claim_level": "solved VMEC candidate gate before expensive GKX nonlinear transport audit",
         "next_action": "do not promote this candidate; refine constraints or reduce/re-scale the transport residual"
       },
       "gate_source": "solved_wout_gate.json",
@@ -387,10 +387,10 @@
       "QA constraints"
     ],
     "blocked_branches": [
-      "QA + SPECTRAX-GK transport"
+      "QA + GKX transport"
     ],
     "transport_candidate_admitted": false,
     "transport_optimization_status": "blocked_before_transport_claim",
-    "next_step": "Use only branches with authoritative passing solved-WOUT gates for matched long-window SPECTRAX-GK nonlinear audits. If the transport branch is blocked, switch to a constraint-preserving/projection/admission method instead of promoting scalar-weight sweeps."
+    "next_step": "Use only branches with authoritative passing solved-WOUT gates for matched long-window GKX nonlinear audits. If the transport branch is blocked, switch to a constraint-preserving/projection/admission method instead of promoting scalar-weight sweeps."
   }
 }

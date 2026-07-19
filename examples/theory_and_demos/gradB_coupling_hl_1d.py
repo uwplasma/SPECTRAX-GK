@@ -4,11 +4,11 @@
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.solvers.linear.integrators import integrate_linear
+from gkx.config import GeometryConfig, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.solvers.linear.integrators import integrate_linear
 
 
 def main() -> None:

@@ -85,7 +85,7 @@ is validated against Cyclone benchmarks.
 Slab Model
 ----------
 
-SPECTRAX-GK exposes a slab flux-tube geometry contract directly with
+GKX exposes a slab flux-tube geometry contract directly with
 ``geometry.model = "slab"``. This is the correct backend for slab secondary
 and collisional-ETG benchmark families; it is not an ``s-alpha``
 approximation.
@@ -139,7 +139,7 @@ they are available from imported geometry. The helper
 files from VMEC/DESC-style workflows. That is the intended short path for
 imported stellarator examples: import the sampled field-line geometry first,
 prove solver/diagnostic parity on that contract, and only then add a native
-VMEC path that generates the same contract inside SPECTRAX-GK.
+VMEC path that generates the same contract inside GKX.
 
 Runtime and executable paths can now construct that bridge directly from config with
 ``geometry.model = "imported-netcdf"`` and
@@ -188,11 +188,11 @@ That same imported contract now has a first-class nonlinear runtime workflow:
 GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
 explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
 
-SPECTRAX-GK now also supports a direct VMEC runtime bridge with
+GKX now also supports a direct VMEC runtime bridge with
 ``geometry.model = "vmec"``. This path uses the VMEC field-line helper
 to produce an imported ``*.eik.nc`` file and then re-enters the same
 imported-geometry contract described above. The bridge is cached by input
-content and VMEC file timestamp when SPECTRAX chooses the output path itself.
+content and VMEC file timestamp when GKX chooses the output path itself.
 If the user supplies an explicit ``geometry_file`` target, the runtime now
 regenerates that file instead of silently reusing whatever stale ``*.eik.nc``
 may already be present there.
@@ -200,11 +200,11 @@ That keeps the native JAX geometry contract centered on ``FluxTubeGeometryData``
 while preserving reproducible imported-geometry workflows.
 For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
 the geometry helper so it chooses the cut from ``y0`` and the geometry itself.
-SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the helper input, which
+GKX no longer back-solves ``x0 = Lx/(2 pi)`` into the helper input, which
 was generating the wrong HSX/W7-X ``*.eik.nc`` files.
 When ``booz_xform_jax`` is not installed into the active environment, point
-SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
-``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A
+GKX at it through ``BOOZ_XFORM_JAX_PATH`` or
+``GKX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A
 ``booz_xform`` install is only needed as an automatic fallback reader for
 older helper environments.
 Differentiable VMEC/Boozer transport-gradient audits require a
@@ -215,7 +215,7 @@ reconstruction remain finite. Older checkouts can produce finite values but
 non-finite gradients and must not be used for promoted transport-gradient
 claims.
 The first differentiable-geometry bridge is now explicit in
-``spectraxgk.geometry.differentiable``. Use
+``gkx.geometry.differentiable``. Use
 ``discover_differentiable_geometry_backends()`` to audit optional
 ``vmex`` / ``booz_xform_jax`` availability and
 ``flux_tube_geometry_from_mapping(...)`` to validate an in-memory,
@@ -246,12 +246,12 @@ boundary-aspect check, a ``vmex`` metric-tensor check through
 ``vmex.geom`` plus ``vmex.vmec_bcovar``, a direct VMEC
 tensor-derived flux-tube mapping check, a tiny ``booz_xform_jax``
 Boozer-spectrum check, a bounded Boozer-spectrum-to-flux-tube mapping check, and a real
-``vmex`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK field-line
+``vmex`` ``VMECState`` to ``booz_xform_jax`` to GKX field-line
 geometry check. The metric-tensor gate currently has max absolute
 AD-vs-finite-difference error about ``5.9e-8`` and max relative error about
 ``1.3e-7``. The field-line tensor gate uses the non-axisymmetric
 ``nfp4_QH_warm_start`` fixture and checks ``|B|`` ripple plus sampled VMEC
-metric observables before any reduced SPECTRAX-GK metric/drift closure is
+metric observables before any reduced GKX metric/drift closure is
 applied; its current max absolute AD-vs-finite-difference error is about
 ``2.1e-3`` and max relative error is about ``2.4e-5``. The direct VMEC
 flux-tube gate inverts the sampled VMEC metric tensor, derives ``gds*``,
@@ -329,7 +329,7 @@ metadata before treating a VMEC/Boozer bridge row as optimization-ready.
 Growth-rate transport-gradient audits also need an eigenbranch-locality check.
 The public helper
 ``solver_linear_operator_matrix_from_geometry(geometry, ...)`` materializes the
-same SPECTRAX-GK linear operator used by
+same GKX linear operator used by
 ``solver_growth_rate_from_geometry(...)``. The report
 ``vmex_transport_growth_branch_locality_report_from_states(base, plus, minus, ...)``
 then compares the dominant-growth finite-difference slope against the slope of
@@ -338,12 +338,12 @@ surface, field line, and ``k_y`` sample. If the independently selected
 max-growth branch switches, or if the base branch is under-isolated, the report
 fails closed and labels the row before any transport-gradient optimization
 claim is admitted. Current VMEC-JAX exposes the equilibrium implicit derivative through its public
-optimization API. SPECTRAX-GK growth campaigns select that policy with
+optimization API. GKX growth campaigns select that policy with
 ``--jacobian implicit`` and retain the branch-locality report as a package-level
 physics gate. Historical frozen-axis boundary-chain artifacts remain in
 ``docs/_static`` as conditioning evidence, but their private-tape executable was
 removed when VMEC-JAX retired that optimizer generation. New derivative claims
-require the current VMEC-JAX turbulence tangent tests, SPECTRAX eigenbranch
+require the current VMEC-JAX turbulence tangent tests, GKX eigenbranch
 locality checks, and an independent finite-difference comparison on the exact
 objective used by the campaign.
 
@@ -358,7 +358,7 @@ and failure reason remain explicit. ``geometry_sensitivity_report`` is a thin
 ``FluxTubeGeometryData`` wrapper around the same helper.
 
 For ``vmex`` and ``booz_xform_jax`` this remains a bridge contract, not a
-claim that SPECTRAX-GK has run a full optimization. The upstream JAX pipeline
+claim that GKX has run a full optimization. The upstream JAX pipeline
 must first produce the sampled solver-ready field-line arrays accepted by
 ``flux_tube_geometry_from_mapping``. Passing the reusable AD/finite-difference
 gate proves local differentiability and conditioning of the supplied
@@ -385,7 +385,7 @@ described below.
    flux-tube mapping, checks both autodiff derivative paths against central
    finite differences, and, when both optional backends are available, starts
    from a real ``vmex`` ``VMECState`` before converting through
-   ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
+   ``booz_xform_jax`` into the GKX field-line contract.
 
 Multi-Equilibrium Boozer Parity Matrix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -439,7 +439,7 @@ Differentiable stellarator optimization must stay on the in-memory path:
 
 .. code-block:: python
 
-   from spectraxgk import flux_tube_geometry_from_vmec_boozer_state
+   from gkx import flux_tube_geometry_from_vmec_boozer_state
 
    geom = flux_tube_geometry_from_vmec_boozer_state(
        state,
@@ -454,7 +454,7 @@ Differentiable stellarator optimization must stay on the in-memory path:
    )
 
 This public wrapper converts a solved ``vmex`` state through
-``booz_xform_jax`` and returns the existing SPECTRAX-GK
+``booz_xform_jax`` and returns the existing GKX
 ``FluxTubeGeometryData`` solver contract. The path is
 ``VMECState -> BoozXformInputs -> Boozer coefficients -> FluxTubeGeometryData``
 and does not write or reload ``*.eik.nc`` files. The file-backed VMEC/EIK route
@@ -508,7 +508,7 @@ The fixed-resolution QI row and evaluated QI ``ntheta`` variants now pass, but
 production nonlinear heat-flux optimization and finite-beta converged
 transport-gradient gates are still open.
 The active publication wording must keep these levels separate: the current
-bridge starts at real ``vmex`` state coefficients and reaches SPECTRAX-GK
+bridge starts at real ``vmex`` state coefficients and reaches GKX
 solver observables, but it has not yet validated converged nonlinear
 turbulence gradients, broad QI transport behavior, or nonlinear audits of
 optimized equilibria.
@@ -526,7 +526,7 @@ repository. The tracked inventory artifact
 equilibrium-selection aid only. It excludes VMEC files with
 degenerate reference-scale metadata from the recommended follow-up list, but it
 still does not validate quasilinear transport until each selected VMEC
-equilibrium also has matched linear and nonlinear SPECTRAX-GK runs and physics
+equilibrium also has matched linear and nonlinear GKX runs and physics
 gates. The first bounded smoke checks have finite stable linear branches for
 Li383, nfp4 QH, CTH-like, and shaped-tokamak fixtures from
 ``vmex/examples/data``; those checks only validate the runtime geometry and
@@ -565,7 +565,7 @@ With ``geometry.model = "miller"``, the in-package geometry backend
 constructs the Miller surface, straight-field-line and equal-arc grids, metric
 and drift coefficients, writes a root-level ``*.eiknc.nc`` file, and then
 re-enters the same imported-geometry contract described above. An existing
-generated target is reused unless ``spectraxgk geometry miller --force`` is
+generated target is reused unless ``gkx geometry miller --force`` is
 requested; this makes repeated runs cheap while keeping explicit regeneration
 available after changing an input deck.
 On the tracked Cyclone Miller parameters, the generated ``*.eiknc.nc`` file
@@ -577,17 +577,17 @@ on the exact dumped GX state: ``kperp2``, ``fluxfac``, ``phi``, ``Wg``,
 
 Two user-facing entry points now exercise that bridge:
 
-- ``spectraxgk geometry vmec --config ...`` generates a compatible
-  ``*.eik.nc`` file from a SPECTRAX runtime TOML.
-- ``spectraxgk geometry miller --config ...`` generates a compatible
-  Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML, or reuses the
+- ``gkx geometry vmec --config ...`` generates a compatible
+  ``*.eik.nc`` file from a GKX runtime TOML.
+- ``gkx geometry miller --config ...`` generates a compatible
+  Miller ``*.eiknc.nc`` file from a GKX runtime TOML, or reuses the
   existing target when its path is already populated.
 - ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
   adiabatic-electron ITG case on the bundled QHS VMEC input deck after its
   ``wout_NuhrenbergZille_1988_QHS.nc`` file is generated with ``vmex``.
   They still accept ``--vmec-file`` for exact HSX validation WOUTs while
-  letting SPECTRAX generate and reuse the field-line geometry automatically.
+  letting GKX generate and reuse the field-line geometry automatically.
 
 VMEC and Miller runtime examples
 --------------------------------
@@ -599,7 +599,7 @@ VMEC-driven stellarator runs:
    cd examples/vmec
    vmex input.nfp3_QI_fixed_resolution_final
    cd ../..
-   spectrax-gk run-runtime-nonlinear \
+   gkx run-runtime-nonlinear \
      --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml \
      --steps 200 \
      --out tools_out/w7x_vmec.out.nc
@@ -607,7 +607,7 @@ VMEC-driven stellarator runs:
    cd examples/vmec
    vmex input.NuhrenbergZille_1988_QHS
    cd ../..
-   spectrax-gk run-runtime-nonlinear \
+   gkx run-runtime-nonlinear \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
      --steps 200 \
      --out tools_out/hsx_vmec.out.nc
@@ -616,7 +616,7 @@ Miller geometry runs:
 
 .. code-block:: bash
 
-   spectrax-gk run-runtime-nonlinear \
+   gkx run-runtime-nonlinear \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --steps 200 \
      --out tools_out/cyclone_miller.out.nc

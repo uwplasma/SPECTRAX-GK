@@ -1,12 +1,12 @@
 # Examples
 
-These examples are for users learning how to run SPECTRAX-GK and inspect its
+These examples are for users learning how to run GKX and inspect its
 outputs. They should stay runnable, documented, and distinct from benchmark or
 release machinery.
 
 ## Recommended Path
 
-1. `quickstart/` or the default executable demo: run `spectraxgk` with no TOML
+1. `quickstart/` or the default executable demo: run `gkx` with no TOML
    to generate a small linear run and plot.
 2. `linear/`: axisymmetric and non-axisymmetric linear ITG/ETG/KBM examples.
 3. `nonlinear/`: bounded nonlinear transport examples. Long production windows
@@ -14,10 +14,10 @@ release machinery.
 4. `geometry/` or `vmec/`: VMEC/Miller/imported-geometry preparation examples.
 5. `quasilinear/`: linear-run postprocessing and quasilinear diagnostic
    examples.
-6. `optimization/`: VMEC-JAX/Boozer/SPECTRAX-GK optimization workflows for
+6. `optimization/`: VMEC-JAX/Boozer/GKX optimization workflows for
    growth-rate, quasilinear-flux, and nonlinear-window objectives.
 7. `plotting/` or `utilities/`: plotting saved outputs, including
-   `spectraxgk --plot <output_file>`.
+   `gkx --plot <output_file>`.
 8. `parallelization/`: independent-work parallelization examples such as ky
    scans or UQ ensembles.
 

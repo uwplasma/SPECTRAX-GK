@@ -1,7 +1,7 @@
 Quasilinear Transport
 =====================
 
-SPECTRAX-GK can compute quasilinear transport diagnostics from a linear
+GKX can compute quasilinear transport diagnostics from a linear
 eigenstate or late-time linear state. The implementation deliberately separates
 the exact linear diagnostic from any saturation model:
 
@@ -46,7 +46,7 @@ the exact selected mode metadata.
 Literature anchors and claim policy
 -----------------------------------
 
-The SPECTRAX-GK quasilinear layer follows the same separation used in modern
+The GKX quasilinear layer follows the same separation used in modern
 reduced gyrokinetic transport workflows:
 
 * the linear gyrokinetic eigenproblem determines growth rates, frequencies,
@@ -65,7 +65,7 @@ alone. SAT3 [Dudding22]_ and SAT3-NN [Sar26]_ are useful longer term targets
 because they use spectrum-aware, database-calibrated saturation information
 instead of a single uncalibrated mixing-length constant.
 
-For stellarator optimization, SPECTRAX-GK currently treats quasilinear fluxes as
+For stellarator optimization, GKX currently treats quasilinear fluxes as
 research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
 validated absolute nonlinear flux predictor. The current 12-case
@@ -140,7 +140,7 @@ the scoped transport and coverage gate: mean relative error is about ``0.280``,
 held-out mean relative error is about ``0.275``, maximum relative error is
 about ``0.575``, and interval coverage is ``10/10``. The core rank-screening
 metric remains borderline (full-core Spearman about ``0.745``, just below the
-``0.75`` gate). SPECTRAX-GK therefore ships this as a scoped core diagnostic
+``0.75`` gate). GKX therefore ships this as a scoped core diagnostic
 and optimization-screening tool, not as a universal nonlinear heat-flux
 predictor or runtime saturation law.
 
@@ -149,7 +149,7 @@ Executable usage
 
 .. code-block:: bash
 
-   spectraxgk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --out tools_out/cyclone_quasilinear
 
@@ -157,7 +157,7 @@ or enable the diagnostic for another linear runtime TOML:
 
 .. code-block:: bash
 
-   spectraxgk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/axisymmetric/cyclone.toml \
      --quasilinear \
      --ql-mode saturated \
@@ -172,7 +172,7 @@ preserving the serial ordering of the output spectrum:
 
 .. code-block:: bash
 
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --ky-values 0.1,0.2,0.3,0.4 \
      --quasilinear \
@@ -212,7 +212,7 @@ The shaped-tokamak Miller companion uses the same pattern, with the positive
 
 .. code-block:: bash
 
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_miller_quasilinear.toml \
      --ky-values 0.1,0.2,0.3,0.4,0.5 \
      --quasilinear \
@@ -247,13 +247,13 @@ eigenvector, and
 The sign convention above matches the runtime output: ``gamma`` is the growth
 rate and ``omega`` is the physical mode frequency reported by the executable.
 The operator is assembled by
-:mod:`spectraxgk.terms.assembly` and the individual term modules under
-:mod:`spectraxgk.terms`.
+:mod:`gkx.terms.assembly` and the individual term modules under
+:mod:`gkx.terms`.
 
 Field solve and linear weights
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Given a linear state ``G``, SPECTRAX-GK first reconstructs fields with
+Given a linear state ``G``, GKX first reconstructs fields with
 ``compute_fields_cached``. In the currently validated electrostatic path the
 quasilinear diagnostic uses ``phi`` and sets ``A_parallel = B_parallel = 0``.
 Electromagnetic quasilinear channels remain disabled until the field-channel
@@ -293,10 +293,10 @@ density moment
 
 but it is zero for the one-ion adiabatic-electron cases because there is no
 kinetic electron species carrying particle transport. The implemented formulas
-live in :func:`spectraxgk.diagnostics.heat_flux_species`,
-:func:`spectraxgk.diagnostics.particle_flux_species`, and
+live in :func:`gkx.diagnostics.heat_flux_species`,
+:func:`gkx.diagnostics.particle_flux_species`, and
 ``_heat_flux_channel_contrib_species`` in
-:mod:`spectraxgk.diagnostics`.
+:mod:`gkx.diagnostics`.
 
 Amplitude normalization and effective scale
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -332,7 +332,7 @@ The default normalization is
    \sum_{k_x,k_y,z} w_{k_x,k_y,z} |\phi_{k_x,k_y}(z)|^2,
 
 with the same Hermitian and flux-tube weights used by
-:func:`spectraxgk.diagnostics.quasilinear_transport.spectral_phi_weights`.
+:func:`gkx.diagnostics.quasilinear_transport.spectral_phi_weights`.
 
 Supported amplitude normalizations are:
 
@@ -376,7 +376,7 @@ comparisons [Parker23]_, SAT3/SAT3-NN-style spectrum-aware rules
 be used as a predictive absolute-flux model.
 
 The reduced objective helper
-``spectraxgk.diagnostics.quasilinear_transport.quasilinear_feature_objective`` supports the same
+``gkx.diagnostics.quasilinear_transport.quasilinear_feature_objective`` supports the same
 diagnostic rules for differentiability tests from feature vectors
 ``[gamma, kperp_eff2, flux_weight]``. The fast suite checks the resulting
 Jacobians against central finite differences before these objectives are used
@@ -392,22 +392,22 @@ Implementation map
      - Source
      - Responsibility
    * - Quasilinear weights
-     - :mod:`spectraxgk.diagnostics.quasilinear_transport`
+     - :mod:`gkx.diagnostics.quasilinear_transport`
      - phase/amplitude-invariant ``k_perp`` scale, heat and particle weights,
        and saturated outputs
    * - Diagnostic kernels
-     - :mod:`spectraxgk.diagnostics`
+     - :mod:`gkx.diagnostics`
      - heat, particle, field-energy, volume-factor, and resolved flux
        contractions shared by linear and nonlinear paths
    * - Runtime plumbing
-     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.workflows.runtime.artifacts`
+     - :mod:`gkx.runtime`, :mod:`gkx.workflows.runtime.artifacts`
      - single-run and scan execution, TOML/executable overrides, JSON/CSV
        artifact writing
    * - Input schema
-     - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.workflows.runtime.toml`
+     - :mod:`gkx.workflows.runtime.config`, :mod:`gkx.workflows.runtime.toml`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
-     - :mod:`spectraxgk.diagnostics.quasilinear_calibration`
+     - :mod:`gkx.diagnostics.quasilinear_calibration`
      - train/holdout/audit schemas, spectrum integration, nonlinear-window
        ingestion, scale fitting, and report scoring
    * - Plotting tools
@@ -415,7 +415,7 @@ Implementation map
        ``tools/artifacts/plot_quasilinear_calibration.py``
      - publication-facing spectrum and calibration figures
    * - Differentiability gates
-     - :mod:`spectraxgk.objectives.autodiff_validation`
+     - :mod:`gkx.objectives.autodiff_validation`
      - finite-difference checks, covariance diagnostics, dense operator
        fixtures, and implicit isolated-eigenpair sensitivities
 
@@ -461,9 +461,9 @@ For nonlinear calibration:
 Numerics and differentiability
 ------------------------------
 
-SPECTRAX-GK production linear solves remain matrix-free. Dense matrices are
+GKX production linear solves remain matrix-free. Dense matrices are
 only materialized in tiny validation fixtures through
-:func:`spectraxgk.objectives.autodiff_validation.explicit_complex_operator_matrix`.
+:func:`gkx.objectives.autodiff_validation.explicit_complex_operator_matrix`.
 
 Eigenvalue sensitivities use JAX derivatives of the matrix entries and the
 standard isolated-branch relation
@@ -499,7 +499,7 @@ observables use the implicit perturbation system
 
 The gauge condition ``w^\dagger \partial_i v = 0`` makes the derivative unique
 for phase-invariant observables. This path is now tested on a tiny
-SPECTRAX-GK linear-RHS fixture and compared against nearest-branch central
+GKX linear-RHS fixture and compared against nearest-branch central
 finite differences. Direct JAX differentiation through non-Hermitian
 eigenvectors is
 still explicitly guarded because JAX does not provide that JVP; the implicit
@@ -520,14 +520,14 @@ The fast test suite currently checks:
 * branch-isolated eigenvalue AD-vs-finite-difference checks, which are the
   lightweight gate used before differentiating full linear growth/frequency
   outputs.
-* a tiny dense SPECTRAX-GK linear-RHS fixture that materializes the otherwise
+* a tiny dense GKX linear-RHS fixture that materializes the otherwise
   matrix-free operator, disables the production custom-VJP field solve for
   forward-mode validation, and checks an isolated eigenvalue derivative against
   central finite differences.
 * an explicit guard showing that direct JAX differentiation through
   non-Hermitian eigenvectors is unsupported;
 * an implicit left/right eigenpair sensitivity gate for phase-invariant
-  eigenfunction observables, including a tiny SPECTRAX-GK linear-RHS
+  eigenfunction observables, including a tiny GKX linear-RHS
   quasilinear-style objective checked against finite differences.
 * a fast promotion guardrail that scans the calibration/model-selection JSON
   reports, conservative documentation wording, and the manuscript-readiness
@@ -588,13 +588,13 @@ Calibration reports
 -------------------
 
 Calibration artifacts should use
-``spectraxgk.diagnostics.quasilinear_calibration`` so training, holdout, and
+``gkx.diagnostics.quasilinear_calibration`` so training, holdout, and
 audit points carry the same schema. A report is promoted
 to ``calibrated_absolute_flux`` only when it contains at least one training
 point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
-``spectraxgk.diagnostics.transport_windows`` or
+``gkx.diagnostics.transport_windows`` or
 ``tools/release/check_nonlinear_transport_gates.py convergence`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
@@ -604,7 +604,7 @@ from an uncalibrated
 saturation rule.
 
 Replicated nonlinear windows should additionally be checked with
-``spectraxgk.diagnostics.transport_windows.nonlinear_window_ensemble_report`` before they
+``gkx.diagnostics.transport_windows.nonlinear_window_ensemble_report`` before they
 are used as seed, initial-condition, or timestep-robust transport evidence.
 The ensemble gate consumes already-built nonlinear-window convergence reports,
 requires each input window to be promotion-ready by default, and checks the
@@ -696,7 +696,7 @@ absolute-flux claim.
 
 Existing nonlinear window summaries can be converted into calibration points
 with ``calibration_point_from_nonlinear_window_summary`` when the summary points
-to either a diagnostics CSV or a SPECTRAX-GK runtime NetCDF file. CSV inputs use
+to either a diagnostics CSV or a GKX runtime NetCDF file. CSV inputs use
 the ``t`` column and the selected heat-flux column, usually ``heat_flux``.
 NetCDF inputs use ``Grids/time`` and map ``heat_flux`` to
 ``Diagnostics/HeatFlux_st``; ``heat_flux_es``, ``heat_flux_apar``, and
@@ -813,7 +813,7 @@ machine-specific benchmark WOUT:
    cd examples/vmec
    vmex input.NuhrenbergZille_1988_QHS
    cd ../..
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
      --Nl 4 --Nm 8 --solver time --dt 0.005 --steps 400 \
@@ -877,7 +877,7 @@ ignored local ``tools_out/*.eik.nc`` file:
    cd examples/vmec
    vmex input.nfp3_QI_fixed_resolution_final
    cd ../..
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
      --Nl 4 --Nm 8 --solver time --dt 0.005 --steps 400 \
@@ -1143,7 +1143,7 @@ state can involve many subdominant and stable eigenmodes [Pueschel16]_, energy
 transfer to damped modes [Hegna18]_, and zonal-flow dynamics [Tiwari25]_. The
 QHS/QAS comparison in [McKinney19]_ likewise emphasizes that linear growth
 rates alone are a weak proxy for saturated heat flux across quasi-symmetric
-stellarators. The SPECTRAX-GK conclusion is therefore: quasilinear metrics are
+stellarators. The GKX conclusion is therefore: quasilinear metrics are
 useful for exploratory screening, differentiable optimization research, and
 model-development figures, but reliable absolute nonlinear heat-flux prediction
 for QA, QH, W7-X, and HSX requires more matched nonlinear holdouts and a richer
@@ -1353,7 +1353,7 @@ The next quasilinear promotion attempt needs more matched nonlinear holdout
 windows, not more fit parameters. The local ``vmex`` checkout includes a
 useful portfolio of small VMEC equilibria that can seed those future linear
 scans and nonlinear validation runs without adding the VMEC files to the
-SPECTRAX-GK repository. The inventory tool records file sizes, checksums,
+GKX repository. The inventory tool records file sizes, checksums,
 ``nfp``, resolution, aspect ratio, edge rotational transform, beta, and a
 selection score for follow-up cases.
 
@@ -1398,7 +1398,7 @@ physics scans:
      - ``-0.0669, -0.0562``
 
 These are **not** accepted quasilinear transport calibration points yet. Each
-candidate must first get a reproducible production-resolution SPECTRAX-GK
+candidate must first get a reproducible production-resolution GKX
 linear quasilinear scan, a matched nonlinear heat-flux window, and a passed
 nonlinear comparison/physics gate before entering the leave-one-out
 calibration reports above.
@@ -1773,7 +1773,7 @@ heat-flux-weight distribution is compared with the resolved nonlinear
 
    python tools/artifacts/plot_quasilinear_diagnostics.py shape-gate \
      --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
-     --nonlinear tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc \
+     --nonlinear tools_out/final_nonlinear_audit/w7x_gkx_current_adaptive_t200.out.nc \
      --out docs/_static/quasilinear_w7x_spectrum_shape_gate.png \
      --ql-column heat_flux_weight_total \
      --nonlinear-variable Diagnostics/HeatFlux_kyst \

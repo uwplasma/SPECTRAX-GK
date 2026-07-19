@@ -16,7 +16,7 @@
       "objective_reduction_fraction": 0.9999999947036775,
       "optimizer_method": "scipy",
       "qs_final": 8.911808800393997e-06,
-      "spectrax_weight": 0.05,
+      "gkx_weight": 0.05,
       "transport_kind": "nonlinear_window_heat_flux",
       "transport_metric_final": NaN
     },
@@ -38,7 +38,7 @@
       "objective_reduction_fraction": 0.9707650312014506,
       "optimizer_method": "scalar_trust",
       "qs_final": 0.0005097840112125825,
-      "spectrax_weight": 0.1,
+      "gkx_weight": 0.1,
       "transport_kind": "growth",
       "transport_metric_final": 0.06974835426425598
     },
@@ -60,7 +60,7 @@
       "objective_reduction_fraction": 0.9612055081320696,
       "optimizer_method": "scalar_trust",
       "qs_final": 0.0006924652318489914,
-      "spectrax_weight": 0.1,
+      "gkx_weight": 0.1,
       "transport_kind": "quasilinear_flux",
       "transport_metric_final": 0.081787646664499
     },
@@ -82,7 +82,7 @@
       "objective_reduction_fraction": 0.9746115933082731,
       "optimizer_method": "scalar_trust",
       "qs_final": 0.0004423338587686629,
-      "spectrax_weight": 0.1,
+      "gkx_weight": 0.1,
       "transport_kind": "nonlinear_window_heat_flux",
       "transport_metric_final": 0.06364721463489577
     }
@@ -547,7 +547,7 @@
   "optimizer_recommendations": [
     {
       "method": "vmex_exact_discrete_adjoint_least_squares",
-      "reason": "Start from the same simple-seed max-mode-5 path as VMEC-JAX QA_optimization.py, solve the aspect, iota, and QS residuals, then append one SPECTRAX-GK transport residual.",
+      "reason": "Start from the same simple-seed max-mode-5 path as VMEC-JAX QA_optimization.py, solve the aspect, iota, and QS residuals, then append one GKX transport residual.",
       "stage": "strict_qa_baseline",
       "status": "preferred_for_smooth_aspect_iota_qs_constraints"
     },

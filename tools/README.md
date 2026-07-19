@@ -42,7 +42,7 @@ than shipping it as part of the maintained repository.
 ## What Does Not Belong Here
 
 - Solver, geometry, diagnostic, objective, or artifact-library functionality.
-  Put that in `src/spectraxgk` only if it is promoted and reusable.
+  Put that in `src/gkx` only if it is promoted and reusable.
 - User tutorials. Put those in `examples/`.
 - Lightweight benchmark entry points and manifests. Put those in `benchmarks/`.
 - Test-only helpers. Put those under `tests/` fixtures or test packages.

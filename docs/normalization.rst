@@ -1,15 +1,15 @@
 Normalization
 =============
 
-This section documents the normalization conventions used in SPECTRAX-GK and
+This section documents the normalization conventions used in GKX and
 the calibration parameters that scale drift/drive terms for benchmark
 comparisons.
 
 Canonical normalization contract
 --------------------------------
 
-SPECTRAX-GK now centralizes benchmark-family normalization values in
-``spectraxgk.diagnostics.normalization`` via :class:`spectraxgk.diagnostics.normalization.NormalizationContract`.
+GKX now centralizes benchmark-family normalization values in
+``gkx.diagnostics.normalization`` via :class:`gkx.diagnostics.normalization.NormalizationContract`.
 This is the single source of truth for case defaults:
 
 .. list-table:: Canonical per-case normalization contracts
@@ -73,7 +73,7 @@ that the input gradients are expressed as
 Kinetic species conventions
 ---------------------------
 
-SPECTRAX-GK supports multi-species kinetic systems. Species-dependent arrays
+GKX supports multi-species kinetic systems. Species-dependent arrays
 carry the charge, mass, density, temperature, and gradient inputs:
 
 - ``charge_sign``: :math:`Z_s` (e.g., :math:`+1` for ions, :math:`-1` for electrons).
@@ -93,7 +93,7 @@ For the Cyclone base case we use a field-aligned grid with:
 
    y_0 = 20,\qquad n_\theta = 32,\qquad n_{period} = 2.
 
-In SPECTRAX-GK these map to ``GridConfig(y0=20, ntheta=32, nperiod=2)``, which
+In GKX these map to ``GridConfig(y0=20, ntheta=32, nperiod=2)``, which
 sets:
 
 .. math::
@@ -108,7 +108,7 @@ grid to match the discrete ky set used in the reference CSV.
 Spectral grids
 -------------------------
 
-SPECTRAX-GK’s explicit benchmark integrator uses the compressed Fourier conventions required by the tracked reference data.
+GKX’s explicit benchmark integrator uses the compressed Fourier conventions required by the tracked reference data.
 The perpendicular wave numbers are defined as
 
 .. math::
@@ -124,7 +124,7 @@ with ``x0 = Lx / (2π)`` and ``y0 = Ly / (2π)``. The parallel wave number is
 where :math:`Z_p` sets the field-line length
 (:math:`z \in [-\pi Z_p, \pi Z_p)`), and :math:`k_z` is defined *without* the
 ``gradpar`` factor. These definitions are implemented by
-``spectraxgk.core.grid.build_spectral_grid`` and are consistent with the
+``gkx.core.grid.build_spectral_grid`` and are consistent with the
 audited reference-grid convention.
 
 The midplane index used by the reference growth-rate diagnostic corresponds to
@@ -134,7 +134,7 @@ Perpendicular normalization
 --------------------------------------
 
 The reference diagnostic contract defines the perpendicular metric as :math:`k_\perp^2/B^2` before applying
-the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
+the Laguerre gyroaverage. To match that convention in GKX:
 
 - ``kperp2_bmag = True`` (include the :math:`B^{-2}` factor in :math:`k_\perp^2`)
 - ``bessel_bmag_power = 0`` (no extra :math:`B` scaling inside the Bessel argument)
@@ -145,7 +145,7 @@ The Cyclone base case defaults follow this benchmark setting, and the
 Sign conventions
 ----------------
 
-The growth-rate fitting in :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate` assumes
+The growth-rate fitting in :func:`gkx.diagnostics.growth_rates.fit_growth_rate` assumes
 
 .. math::
 
@@ -172,14 +172,14 @@ drift/drive terms:
 - ``omega_star_scale``: scales the diamagnetic drive.
 
 In code, ``rho_star`` multiplies the Fourier grids inside
-:func:`spectraxgk.operators.linear.cache_builder.build_linear_cache`, while ``omega_d_scale`` and
-``omega_star_scale`` enter directly in :func:`spectraxgk.operators.linear.rhs.linear_rhs_cached`.
+:func:`gkx.operators.linear.cache_builder.build_linear_cache`, while ``omega_d_scale`` and
+``omega_star_scale`` enter directly in :func:`gkx.operators.linear.rhs.linear_rhs_cached`.
 
 Diagnostic normalization mode
 -----------------------------
 
 Benchmark runners expose ``diagnostic_norm`` and route it through
-``spectraxgk.diagnostics.normalization.apply_diagnostic_normalization``:
+``gkx.diagnostics.normalization.apply_diagnostic_normalization``:
 
 - ``none``: return raw solver ``(gamma, omega)``.
 - ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
@@ -225,7 +225,7 @@ Programmatic usage
 
 .. code-block:: python
 
-   from spectraxgk.diagnostics.normalization import get_normalization_contract
+   from gkx.diagnostics.normalization import get_normalization_contract
 
    contract = get_normalization_contract("etg")
    # contract.omega_d_scale == 1.0

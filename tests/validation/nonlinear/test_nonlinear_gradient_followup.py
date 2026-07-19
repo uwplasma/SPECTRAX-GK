@@ -6,7 +6,7 @@ from support.paths import REPO_ROOT
 
 import pytest
 
-from spectraxgk.diagnostics.nonlinear_gradient_statistics import (
+from gkx.diagnostics.nonlinear_gradient_statistics import (
     NonlinearGradientControlMeanGateConfig,
     NonlinearGradientVarianceReductionConfig,
     nonlinear_gradient_control_mean_gate,

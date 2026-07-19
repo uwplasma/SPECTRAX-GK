@@ -1,6 +1,6 @@
 {
   "kind": "vmex_qa_strict_baseline_summary",
-  "source": "office gpu strict exact SciPy run from clean SPECTRAX-GK/vmex staging directory",
+  "source": "office gpu strict exact SciPy run from clean GKX/vmex staging directory",
   "method": "scipy",
   "scipy_tr_solver": "exact",
   "max_nfev": 40,
@@ -51,5 +51,5 @@
       "passed": true
     }
   },
-  "claim_scope": "strict constraints-only VMEC-JAX QA baseline; not a SPECTRAX-GK transport optimization claim"
+  "claim_scope": "strict constraints-only VMEC-JAX QA baseline; not a GKX transport optimization claim"
 }

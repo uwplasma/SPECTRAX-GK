@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics.analysis import (
+from gkx.diagnostics.analysis import (
     ModeSelection,
     _log_amp_phase,
     density_moment,
@@ -25,9 +25,9 @@ from spectraxgk.diagnostics.analysis import (
 def test_growth_rate_public_facades_point_to_numerical_owners() -> None:
     """Growth diagnostics keep stable imports with one owner per algorithm."""
 
-    import spectraxgk.diagnostics.analysis as analysis
-    import spectraxgk.diagnostics.growth_rates as growth_rates
-    import spectraxgk.diagnostics.growth_windows as growth_windows
+    import gkx.diagnostics.analysis as analysis
+    import gkx.diagnostics.growth_rates as growth_rates
+    import gkx.diagnostics.growth_windows as growth_windows
 
     assert growth_rates.select_fit_window is growth_windows.select_fit_window
     assert (
@@ -35,10 +35,10 @@ def test_growth_rate_public_facades_point_to_numerical_owners() -> None:
         is growth_windows.select_fit_window_loglinear
     )
     assert growth_rates.instantaneous_growth_rate_from_phi.__module__ == (
-        "spectraxgk.diagnostics.growth_rates"
+        "gkx.diagnostics.growth_rates"
     )
     assert growth_rates.windowed_growth_rate_from_omega_series.__module__ == (
-        "spectraxgk.diagnostics.growth_rates"
+        "gkx.diagnostics.growth_rates"
     )
     assert analysis.fit_growth_rate is growth_rates.fit_growth_rate
     assert analysis.fit_growth_rate_auto is growth_rates.fit_growth_rate_auto
@@ -470,7 +470,7 @@ def test_fit_growth_rate_auto_with_stats_fallback(monkeypatch) -> None:
         raise ValueError("forced")
 
     monkeypatch.setattr(
-        "spectraxgk.diagnostics.analysis.fit_growth_rate_with_stats", _boom
+        "gkx.diagnostics.analysis.fit_growth_rate_with_stats", _boom
     )
     gamma, omega, tmin, tmax, r2_log, r2_phase = fit_growth_rate_auto_with_stats(
         t, signal
@@ -743,7 +743,7 @@ def test_fit_growth_rate_auto_invalid_window_method_and_stats_fallback(
         fit_growth_rate_auto(t, signal, window_method="bad")
 
     monkeypatch.setattr(
-        "spectraxgk.diagnostics.analysis.fit_growth_rate_with_stats",
+        "gkx.diagnostics.analysis.fit_growth_rate_with_stats",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("forced")),
     )
     gamma, omega, tmin, tmax, r2_log, r2_phase = fit_growth_rate_auto_with_stats(

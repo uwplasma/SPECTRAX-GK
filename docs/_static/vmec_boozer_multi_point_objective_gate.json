@@ -50,7 +50,7 @@
   "builder": "tools/artifacts/build_vmec_boozer_aggregate_objective_gate.py multi-point",
   "case_name": "nfp4_QH_warm_start",
   "central_derivative": 100788.69008106229,
-  "claim_scope": "bounded finite-difference sensitivity of a reduced linear/quasilinear VMEC/Boozer/SPECTRAX-GK objective over multiple fixed field-line alphas and/or surfaces; not a nonlinear turbulent transport claim",
+  "claim_scope": "bounded finite-difference sensitivity of a reduced linear/quasilinear VMEC/Boozer/GKX objective over multiple fixed field-line alphas and/or surfaces; not a nonlinear turbulent transport claim",
   "curvature_abs": 0.00013961919485205865,
   "curvature_ratio": 0.006926332445622906,
   "finite_difference_consistent": true,

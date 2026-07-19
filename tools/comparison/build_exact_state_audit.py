@@ -29,8 +29,8 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.workflows.runtime.toml import load_toml
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.workflows.runtime.toml import load_toml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -376,9 +376,9 @@ def parse_diagnostic_csv(path: Path) -> list[dict[str, object]]:
     required = {
         "metric",
         "gx_out",
-        "spectrax_dump",
+        "gkx_dump",
         "rel_dump",
-        "spectrax_solve",
+        "gkx_solve",
         "rel_solve",
     }
     missing = required.difference(table.columns)
@@ -397,18 +397,18 @@ def parse_diagnostic_csv(path: Path) -> list[dict[str, object]]:
                     "max_ref": float(item["gx_out"]),
                     "max_test": float(
                         item[
-                            "spectrax_dump"
+                            "gkx_dump"
                             if quantity == "rel_dump"
-                            else "spectrax_solve"
+                            else "gkx_solve"
                         ]
                     ),
                     "max_diff": abs(
                         float(item["gx_out"])
                         - float(
                             item[
-                                "spectrax_dump"
+                                "gkx_dump"
                                 if quantity == "rel_dump"
-                                else "spectrax_solve"
+                                else "gkx_solve"
                             ]
                         )
                     ),

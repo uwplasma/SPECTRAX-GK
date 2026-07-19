@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Benchmark nonlinear Cyclone runtime for SPECTRAX and parse GX runtimes.
+"""Benchmark nonlinear Cyclone runtime for GKX and parse GX runtimes.
 
 Example:
   python benchmarks/performance/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
-    --out /tmp/spectrax_nl_bench.csv
+    --out /tmp/gkx_nl_bench.csv
 """
 
 from __future__ import annotations
@@ -51,8 +51,8 @@ def _parse_gx_runtime(path: Path) -> tuple[float | None, float | None]:
 def main() -> None:
     args = _parse_args()
 
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-    from spectraxgk.runtime import run_runtime_nonlinear
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.runtime import run_runtime_nonlinear
 
     cfg, _data = load_runtime_from_toml(args.config)
 
@@ -93,7 +93,7 @@ def main() -> None:
 
     rows = [
         {
-            "backend": "spectrax",
+            "backend": "gkx",
             "warmup_s": warmup_time,
             "run_s": run_time,
             "steps": args.steps,

@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from spectraxgk.geometry.kernels import (
+from gkx.geometry.kernels import (
     finite_diff_nonuniform,
     centered_reflected_difference,
     weighted_centered_difference,
@@ -114,9 +114,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 
-from spectraxgk.geometry.analytic import MillerCoreParams, build_collocation_surfaces
-from spectraxgk.geometry.kernels import _safe_denom, cumulative_trapezoid
-from spectraxgk.geometry.imported_miller import (
+from gkx.geometry.analytic import MillerCoreParams, build_collocation_surfaces
+from gkx.geometry.kernels import _safe_denom, cumulative_trapezoid
+from gkx.geometry.imported_miller import (
     _request_attr,
     generate_miller_eik_internal,
 )
@@ -221,17 +221,17 @@ def test_generate_miller_eik_internal_writes_netcdf(tmp_path: Path) -> None:
 
 from unittest.mock import MagicMock
 
-from spectraxgk.config import (
+from gkx.config import (
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.geometry.miller_eik import (
+from gkx.geometry.miller_eik import (
     build_miller_geometry_request,
     generate_runtime_miller_eik,
 )
-from spectraxgk.workflows.runtime.config import (
+from gkx.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,
@@ -313,7 +313,7 @@ def test_generate_runtime_miller_eik_invokes_internal_generator(
 
     mock_gen = MagicMock(return_value=out_path.resolve())
     monkeypatch.setattr(
-        "spectraxgk.geometry.miller_eik.generate_miller_eik_internal", mock_gen
+        "gkx.geometry.miller_eik.generate_miller_eik_internal", mock_gen
     )
     out_path.write_bytes(b"stale")
     out = generate_runtime_miller_eik(cfg, force=True)
@@ -334,7 +334,7 @@ def test_generate_runtime_miller_eik_reuses_existing_output(
     cfg = _miller_runtime_cfg(tmp_path, geometry_file=str(out_path))
     mock_gen = MagicMock()
     monkeypatch.setattr(
-        "spectraxgk.geometry.miller_eik.generate_miller_eik_internal", mock_gen
+        "gkx.geometry.miller_eik.generate_miller_eik_internal", mock_gen
     )
 
     out = generate_runtime_miller_eik(cfg)

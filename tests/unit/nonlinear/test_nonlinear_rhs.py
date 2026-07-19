@@ -6,12 +6,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.operators.nonlinear.rhs import (
+from gkx.operators.nonlinear.rhs import (
     linear_rhs_jit_for_terms_impl,
     nonlinear_em_term_cached_impl,
     nonlinear_rhs_cached_impl,
 )
-from spectraxgk.terms.config import FieldState, TermConfig
+from gkx.terms.config import FieldState, TermConfig
 
 
 def _minimal_cache() -> SimpleNamespace:

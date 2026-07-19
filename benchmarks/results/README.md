@@ -1,7 +1,7 @@
 # Benchmark Results Index
 
 This directory is the root-level index for benchmark outputs promoted into the
-SPECTRAX-GK documentation. It intentionally contains only small pointer files.
+GKX documentation. It intentionally contains only small pointer files.
 
 Tracked benchmark result artifacts remain under `docs/_static/` because Sphinx
 serves them directly. Raw simulation directories, NetCDF outputs, restart files,

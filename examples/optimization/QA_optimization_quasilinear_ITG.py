@@ -2,7 +2,7 @@
 """Optimize quasi-axisymmetry plus a quasilinear ITG heat-flux proxy.
 
 This is VMEC-JAX's current ``QA_optimization.py`` workflow with one additional
-SPECTRAX-GK objective tuple. Edit the constants below and run without arguments.
+GKX objective tuple. Edit the constants below and run without arguments.
 The proxy uses a dominant eigenvector, so current JAX requires finite-difference
 optimization (``JAC = None``). It is a screening objective, not absolute flux.
 """

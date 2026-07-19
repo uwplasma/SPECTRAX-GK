@@ -6,18 +6,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spectraxgk.config import (
+from gkx.config import (
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.artifacts.io import (
+from gkx.artifacts.io import (
     load_netcdf_restart_state,
     write_netcdf_restart_state,
 )
-from spectraxgk.runtime import run_runtime_nonlinear
-from spectraxgk.workflows.runtime.artifacts import (
+from gkx.runtime import run_runtime_nonlinear
+from gkx.workflows.runtime.artifacts import (
     _condense_kx,
     _condense_kykx,
     _restart_to_netcdf_layout,
@@ -25,7 +25,7 @@ from spectraxgk.workflows.runtime.artifacts import (
     run_runtime_nonlinear_with_artifacts,
     write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.workflows.runtime.config import (
+from gkx.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,

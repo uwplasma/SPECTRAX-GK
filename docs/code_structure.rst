@@ -53,15 +53,15 @@ Public surfaces that examples, scripts, and external users are expected to rely
 on:
 
 - documented module pages in :doc:`api`
-- ``spectraxgk.artifacts``
-- ``spectraxgk.geometry``
-- ``spectraxgk.cli``
-- ``spectraxgk.runtime``
-- ``spectraxgk.workflows.runtime.config``
-- ``spectraxgk.workflows.runtime.artifacts``
-- ``spectraxgk.artifacts.plotting``
-- ``spectraxgk.parallel``
-- ``spectraxgk.operators.nonlinear.parallel``
+- ``gkx.artifacts``
+- ``gkx.geometry``
+- ``gkx.cli``
+- ``gkx.runtime``
+- ``gkx.workflows.runtime.config``
+- ``gkx.workflows.runtime.artifacts``
+- ``gkx.artifacts.plotting``
+- ``gkx.parallel``
+- ``gkx.operators.nonlinear.parallel``
 - documented benchmark/example scripts under ``benchmarks/`` and ``examples/``
 - documented repository-maintenance entry points under purpose-specific
   ``tools/`` subfolders
@@ -69,15 +69,15 @@ on:
 Internal modules that are free to move as long as the public behavior and tests
 remain unchanged:
 
-- ``spectraxgk.terms.*``
-- ``spectraxgk.workflows.runtime.startup``
-- ``spectraxgk.workflows.runtime.diagnostics``
-- ``spectraxgk.workflows.runtime.diagnostic_arrays``
-- ``spectraxgk.workflows.runtime.initial_phi``
-- ``spectraxgk.workflows.runtime.chunks``
-- ``spectraxgk.workflows.runtime.results``
-- ``spectraxgk.workflows.runtime.commands``
-- low-level geometry adapters and import bridges inside ``spectraxgk.geometry``
+- ``gkx.terms.*``
+- ``gkx.workflows.runtime.startup``
+- ``gkx.workflows.runtime.diagnostics``
+- ``gkx.workflows.runtime.diagnostic_arrays``
+- ``gkx.workflows.runtime.initial_phi``
+- ``gkx.workflows.runtime.chunks``
+- ``gkx.workflows.runtime.results``
+- ``gkx.workflows.runtime.commands``
+- low-level geometry adapters and import bridges inside ``gkx.geometry``
 
 Large refactor status for this push: the split runtime, diagnostics,
 validation-gate, zonal-validation, and parallelization-policy modules are
@@ -124,7 +124,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/demo.py``
    - ``cli.py``
 5. **benchmark and validation tooling**
-   - ``spectraxgk.benchmarking.shared``
+   - ``gkx.benchmarking.shared``
    - root ``benchmarks/`` drivers
    - purpose-specific ``tools/`` commands
    - ``tests/validation`` physics and benchmark gates
@@ -148,7 +148,7 @@ Physics / Numerics / IO Map
      - ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/collisions.py``, ``operators/linear/collision_tables.py``, ``operators/linear/dissipation.py``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, and ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests; cache-builder tests cover staged grid, geometry, twist-shift, gyro/moment, drift, and linked-boundary packing
    * - Solver objectives and eigen-AD gates
-     - top-level ``spectraxgk`` objective exports, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/portfolio.py``, ``objectives/portfolio_guard.py``, ``objectives/zonal.py``, ``objectives/stellarator.py``, ``objectives/solver_vmec.py``, ``objectives/gradient_gates.py``, and the retained ``objectives/vmec_*`` modules
+     - top-level ``gkx`` objective exports, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/portfolio.py``, ``objectives/portfolio_guard.py``, ``objectives/zonal.py``, ``objectives/stellarator.py``, ``objectives/solver_vmec.py``, ``objectives/gradient_gates.py``, and the retained ``objectives/vmec_*`` modules
      - core linear/quasilinear observables, implicit eigenpair VJP, branch locality, portfolio reduction/covariance, zonal and stellarator objectives, VMEC/Boozer geometry gradients, admission gates, and finite-difference line searches
    * - Nonlinear operators
      - ``solvers/nonlinear/state_integration.py``, ``solvers/nonlinear/diagnostic_integration.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/brackets.py``, ``operators/nonlinear/diagnostic_state.py``, ``operators/nonlinear/diagnostics.py``, ``operators/nonlinear/projection.py``, ``operators/nonlinear/collisions.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex.py``, ``solvers/nonlinear/imex_diagnostics.py``, ``core/velocity.py``, and ``terms/nonlinear.py``
@@ -161,7 +161,7 @@ Physics / Numerics / IO Map
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, saved-output plot command routing, executable artifact path display and progress/summary printing, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
      - ``api/__init__.py``
-     - compact lazy public export registry, top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
+     - compact lazy public export registry, top-level ``gkx`` export membership/order checks, public-object identity tests, API documentation build
    * - Diagnostic extraction and growth-rate fitting
      - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``, ``diagnostics/growth_windows.py``, ``diagnostics/quasilinear_transport.py``
      - mode selection, eigenfunction extraction, least-squares growth/frequency fitting, automatic fit-window selection, quasilinear transport weights and saturation helpers, late-time growth/frequency tests
@@ -169,7 +169,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarking.shared``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``gkx.benchmarking.shared``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -181,13 +181,13 @@ modules.
 
 Completed extractions:
 
-- compact public API registry in ``spectraxgk.api``. The root
-  ``spectraxgk`` package and ``spectraxgk.api`` registry are lazy facades that
+- compact public API registry in ``gkx.api``. The root
+  ``gkx`` package and ``gkx.api`` registry are lazy facades that
   derive the stable documented ``__all__`` order from one authoritative lazy
   target mapping while exporting directly from the
   owning configuration, geometry, solver, validation, parallelization,
   objective, and plotting modules. Pure-contract imports such as
-  ``spectraxgk.parallel.decomposition`` must remain dependency-light and must
+  ``gkx.parallel.decomposition`` must remain dependency-light and must
   not import NumPy/JAX-heavy solver stacks through package initializers.
 - zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
   sampled/imported flux-tube geometry data/loading:
@@ -225,7 +225,7 @@ Completed extractions:
   ``diagnostics/moments.py``, ``diagnostics/transport.py``, and
   ``diagnostics/metadata.py``. Quadrature/mode weights, channel kernels,
   energy, and resolved spectra share the same physical owner and are
-  re-exported directly by ``spectraxgk.diagnostics``.
+  re-exported directly by ``gkx.diagnostics``.
 - explicit linear step kernels, diagnostics-rich linear IVP integration,
   explicit CFL/frequency-bound policy, and progress formatting:
   ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_diagnostics.py``,
@@ -328,7 +328,7 @@ Completed extractions:
   ``workflows/runtime/commands.py`` plus ``workflows/runtime/orchestration_artifacts.py``.
   The public ``cli.py`` facade still owns executable parser dispatch and
   renderer/runtime-command patch seams, while the command workflow owns
-  ``spectraxgk --plot`` argument validation and runtime command dependency
+  ``gkx --plot`` argument validation and runtime command dependency
   construction. Command artifact display, executable headers, and nonlinear
   summaries live with the runtime artifact orchestration policy so saved-output
   behavior and restart/checkpoint handoff share one owner.
@@ -352,7 +352,7 @@ Completed extractions:
   ``workflows/linear.py``. Context preparation, time integration, Krylov
   fallback, linear fitting, and quasilinear finalization are separate private
   stages so runtime dispatch can stay compact while preserving the public
-  ``spectraxgk.runtime`` facade and monkeypatch seams.
+  ``gkx.runtime`` facade and monkeypatch seams.
 - full-GK executable nonlinear runtime workflow:
   ``workflows/nonlinear.py``
 - shared plot style plus runtime-output, benchmark/scan, diagnostic, and
@@ -446,7 +446,7 @@ Completed extractions:
   validation, objective construction, eigensystem branch checks, implicit
   AD/FD gate rows, value-evaluator checks, and report packing separately.
   The top-level
-  ``spectraxgk.objectives`` API re-exports the portfolio helpers directly from
+  ``gkx.objectives`` API re-exports the portfolio helpers directly from
   these owner modules.
 - production nonlinear turbulent-flux optimization guardrails now live in
   ``diagnostics/nonlinear_transport_optimization.py``. The diagnostics owner
@@ -538,11 +538,11 @@ Completed extractions:
   diagnostics, resolved field/transport group evaluation, and resolved
   spectra/channel schema packing while preserving the
   explicit/IMEX scan tuple schema. The old root nonlinear helper shims were
-  removed; normal users should use the top-level ``spectraxgk`` public API and
-  developer helpers should import from ``spectraxgk.solvers.nonlinear`` and
-  ``spectraxgk.operators.nonlinear``.
+  removed; normal users should use the top-level ``gkx`` public API and
+  developer helpers should import from ``gkx.solvers.nonlinear`` and
+  ``gkx.operators.nonlinear``.
 - full-GK nonlinear executable orchestration lives in
-  ``workflows/nonlinear.py`` behind the public ``spectraxgk.runtime`` facade.
+  ``workflows/nonlinear.py`` behind the public ``gkx.runtime`` facade.
   The owner separates runtime context construction, fixed-mode/source policy,
   diagnostic keyword forwarding, adaptive/fixed diagnostic execution,
   final-state integration, and result assembly so runtime branch tests can
@@ -570,7 +570,7 @@ Completed extractions:
   fixed-point/GMRES solve policy: ``solvers/nonlinear/explicit.py``,
   ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex_diagnostics.py``,
   and ``solvers/nonlinear/imex.py``. Developer helpers should import from
-  ``spectraxgk.solvers.nonlinear``.
+  ``gkx.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter
   pytrees, cache-backed RHS assembly, implicit linear GMRES/preconditioner
   policy, fixed-step/diagnostic integration policy, eigenmode policy/operator/
@@ -598,7 +598,7 @@ Completed extractions:
   matrix-free operator application and compiled iterations share the focused
   ``krylov_algorithms.py`` owner. The old root
   ``linear_*`` helper shims were
-  removed; normal users should use the top-level ``spectraxgk`` public API for
+  removed; normal users should use the top-level ``gkx`` public API for
   the public linear surface or import focused developer helpers from the domain
   packages.
 - nonlinear turbulence-gradient paired-seed statistics, control-variate
@@ -633,7 +633,7 @@ Completed extractions:
   ``artifacts/spectral_layout.py``, and ``artifacts/nonlinear_netcdf.py``.
   The old root
   ``runtime_artifact_*`` helper modules were removed; import implementation
-  helpers from ``spectraxgk.artifacts`` instead.
+  helpers from ``gkx.artifacts`` instead.
 
 Next planned extractions:
 
@@ -656,7 +656,7 @@ high-risk refactor modules. Smaller implementation modules are listed in an
 owner row's ``owned_modules`` field when their behavior is validated by the
 same fast tests and artifacts. Package plumbing such as ``__init__.py`` and
 version metadata is the only normal exclusion. Adding a new
-``src/spectraxgk/*.py`` file without one of those declarations should fail the
+``src/gkx/*.py`` file without one of those declarations should fail the
 manifest checker.
 
 Use this rule of thumb when changing ownership:
@@ -669,7 +669,7 @@ Use this rule of thumb when changing ownership:
   debt that is not closed in the same change.
 
 The refactor manifest tests also cross-check public and size-sensitive
-surfaces. Every ``.. automodule:: spectraxgk.*`` entry in :doc:`api` must
+surfaces. Every ``.. automodule:: gkx.*`` entry in :doc:`api` must
 resolve to a source file or package ``__init__`` that is accounted for by the
 manifest, and public package ``__init__`` entries must be explicit exceptions
 rather than generic plumbing. The same test requires any non-``__init__``
@@ -684,13 +684,13 @@ are acceptance gates in the root plan rather than a second migration ledger.
 
 Refactor-only metadata containers have been removed from the runtime package.
 The one structural protocol used by the equations is the compact
-``spectraxgk.operators.collision`` interface; validation and migration policy
+``gkx.operators.collision`` interface; validation and migration policy
 remain in release manifests and tests rather than becoming runtime objects.
 
-Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``,
+Runtime command dispatch now keeps parser construction in ``gkx.cli``,
 with parser registration split by command family, and moves runtime linear,
 runtime scan, and runtime nonlinear command execution into
-``spectraxgk.workflows.runtime.commands``. The generic ``run`` executable path
+``gkx.workflows.runtime.commands``. The generic ``run`` executable path
 attaches the already-loaded runtime config/data to the parser namespace before
 dispatch, so command execution does not parse the same TOML twice.
 Linear, scan, and nonlinear command flags are resolved once into typed
@@ -701,11 +701,11 @@ and optional artifact writing for linear, scan, quasilinear, and nonlinear
 commands also live in focused command-output helpers so user-facing executable
 messages can be tested without launching solver runs.
 Programmatic TOML case helpers and executable command dispatch now share
-``spectraxgk.workflows.runtime.commands``. Path override, progress,
+``gkx.workflows.runtime.commands``. Path override, progress,
 quasilinear override, dependency injection, and preload-reuse policies therefore
 have one canonical workflow owner rather than two forwarding modules.
 Runtime initial-condition construction is staged inside
-``spectraxgk.workflows.runtime.initial_conditions``. Validation of initializer
+``gkx.workflows.runtime.initial_conditions``. Validation of initializer
 options, restart-state scaling, kinetic-species targeting, single-mode profile
 assembly, random/Gaussian multimode seeding, electrostatic-potential seeding,
 Hermitian full-``ky`` completion, and restart merge policy now have named helper
@@ -716,14 +716,14 @@ one long branch.
 
 The benchmark stack has two explicit roles:
 
-- ``spectraxgk.benchmarking.shared`` owns compact reference containers, CSV
+- ``gkx.benchmarking.shared`` owns compact reference containers, CSV
   loaders, normalization constants, and comparison-only defaults.
 - Canonical TOML inputs plus ``run_runtime_linear`` and ``run_runtime_scan``
   own promoted solver execution. ETG and Cyclone use only this path; artifact
   figures consume reviewed tables rather than launching a second hidden solve.
 
 Reviewed reference data and comparison policies live in
-``spectraxgk.benchmarking.shared``. KBM time histories and fixed-beta ``k_y`` scans use
+``gkx.benchmarking.shared``. KBM time histories and fixed-beta ``k_y`` scans use
 generic runtime orchestration. The former ``kbm_beta_scan.py`` was removed
 after audit showed that it incorrectly interpreted a ``k_y`` reference table
 as beta values. TEM and kinetic-electron execution also use canonical runtime
@@ -751,49 +751,49 @@ reviewable.
 
 
 Quasilinear calibration now lives in
-``spectraxgk.diagnostics.quasilinear_calibration``. It owns calibration-point
+``gkx.diagnostics.quasilinear_calibration``. It owns calibration-point
 schemas, spectrum integration, train/holdout scale fitting, nonlinear-window
 CSV/NetCDF ingestion, and report writing behind one diagnostics owner. Each
 nonlinear trace is loaded once and reused for both the selected window and its
 convergence report; persisted ensemble pass flags must be explicit booleans.
-Late-window transport gates live in ``spectraxgk.diagnostics.transport_windows``.
+Late-window transport gates live in ``gkx.diagnostics.transport_windows``.
 The public validation API re-exports user-facing helpers while
 campaign launch and artifact-building policy stays in ``tools``. Model-selection status construction keeps scoped candidate-skill gates,
 input normalization, optimized-equilibrium audit summaries, and absolute-flux
 claim guardrails in ``diagnostics/quasilinear_model_selection.py``.
 
 VMEC-JAX candidate and transport admission gates now have explicit owners.
-``spectraxgk.objectives.vmec_candidate_admission`` owns solved-equilibrium,
+``gkx.objectives.vmec_candidate_admission`` owns solved-equilibrium,
 authoritative-WOUT, and WOUT-reproducibility candidate gates. It keeps aspect,
 iota, iota-profile, quasisymmetry, and pass/fail helpers together so optimizer
 state and WOUT gates share one JSON schema and threshold semantics.
-``spectraxgk.objectives.vmec_transport_admission`` owns transport-admission
+``gkx.objectives.vmec_transport_admission`` owns transport-admission
 policy dataclasses, reduced transport metric selection, multi-surface/
 field-line/``k_y`` sample coverage, and promoted transport-candidate selection.
-The ``spectraxgk.objectives.vmec_transport`` module owns objective
+The ``gkx.objectives.vmec_transport`` module owns objective
 configuration, optional-backend path policy, differentiable sample tables,
 reductions, and the optimizer callback. Eigenbranch-locality gates remain in
 ``vmec_transport_branch`` because they evaluate a distinct three-state
 continuation contract.
-``spectraxgk.diagnostics.stellarator_transport_reports`` owns report-style
+``gkx.diagnostics.stellarator_transport_reports`` owns report-style
 nonlinear transport diagnostics: landscape admission, reduced prelaunch gates,
 next-campaign admission, and matched nonlinear audit redesign. Persisted gate
 flags must be explicit booleans and replicate counts must be finite,
 nonnegative integers; malformed values fail closed into report blockers rather
 than becoming truthy or raising during report construction. The public
-``spectraxgk.api`` re-exports user-facing admission helpers directly
+``gkx.api`` re-exports user-facing admission helpers directly
 from these owners, while installable validation-campaign subpackages have
 been removed.
 
 The first differentiable-geometry split keeps
-``spectraxgk.geometry.differentiable`` as the public facade while
+``gkx.geometry.differentiable`` as the public facade while
 moving optional backend lookup and strict AD/finite-difference gate utilities
-into ``spectraxgk.geometry.backend_discovery`` and
-``spectraxgk.geometry.autodiff_checks``. The solver-ready in-memory flux-tube
+into ``gkx.geometry.backend_discovery`` and
+``gkx.geometry.autodiff_checks``. The solver-ready in-memory flux-tube
 mapping and geometry-observable contract lives in
-``spectraxgk.geometry.flux_tube_contract``. Pure parity metrics,
+``gkx.geometry.flux_tube_contract``. Pure parity metrics,
 interpolation, radial derivative, Boozer half-mesh, Fourier field-line, and
-periodic sampling helpers live in ``spectraxgk.geometry.numerics``. This
+periodic sampling helpers live in ``gkx.geometry.numerics``. This
 separates import-side effects, validation-report plumbing, public contract
 validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
 The AD/FD validation owner stages parameter validation, observable flattening,
@@ -801,30 +801,30 @@ Jacobian construction, tangent checks, conditioning gates, failure reasons, and
 strict JSON report assembly so differentiability tests can target each
 research-grade gate directly.
 Imported VMEC/Boozer geometry generation enters through
-``spectraxgk.geometry.imported_vmec``. Its focused owners separate optional
+``gkx.geometry.imported_vmec``. Its focused owners separate optional
 backend discovery, radial spline and Boozer-mode sampling, Hegna-Nakajima and
 metric derivatives, and VMEC field-line state construction. The orchestrator
 retains only flux-tube cutting, equal-arc remapping, atomic EIK output, and the
 high-level request path. This separation keeps the formulas discoverable and
 lets backend, sampling, derivative, and orchestration tests fail independently.
 Zero-shear boundary policy and analytic s-alpha/slab geometry models live in
-``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic
+``gkx.geometry.analytic``. Sampled solver-ready geometry data, analytic
 sampling, imported-NetCDF loading, and periodic mirror-term reconstruction live
-in ``spectraxgk.geometry.flux_tube``. Twist-shift and grid-default geometry
-policy live in ``spectraxgk.geometry.core``. The
-``spectraxgk.geometry`` package remains a thin public facade that
+in ``gkx.geometry.flux_tube``. Twist-shift and grid-default geometry
+policy live in ``gkx.geometry.core``. The
+``gkx.geometry`` package remains a thin public facade that
 re-exports the same classes and functions for existing user code.
 Geometry sensitivity, inverse-design, and local UQ reports live in
-``spectraxgk.geometry.sensitivity`` so backend bridge modules can depend on
+``gkx.geometry.sensitivity`` so backend bridge modules can depend on
 the report contract without importing the public facade. Bounded VMEC
 boundary and Boozer-spectrum bridge checks, Boozer ``|B|`` field-line
 evaluation, and Boozer-to-flux-tube sensitivity diagnostics live in
-``spectraxgk.geometry.booz_xform_bridge``. Pure helper imports retain object
+``gkx.geometry.booz_xform_bridge``. Pure helper imports retain object
 identity; backend-discovery-dependent bridge functions use thin facade wrappers
 so existing monkeypatch-based optional-backend tests still target
-``spectraxgk.geometry.differentiable``. VMEC-state-to-Boozer, VMEC metric
+``gkx.geometry.differentiable``. VMEC-state-to-Boozer, VMEC metric
 tensor, and VMEC field-line tensor AD/FD sensitivity reports live in
-``spectraxgk.geometry.vmec_state_sensitivity``; the public facade uses the
+``gkx.geometry.vmec_state_sensitivity``; the public facade uses the
 same hook-preserving wrapper pattern, while the implementation owns shared
 VMEC example loading, coefficient-index validation, perturbation policy, and
 the common tensor-observable AD/finite-difference payload builder used by
@@ -832,9 +832,9 @@ metric and field-line gates. Metric and field-line tensor reports also share
 one VMEC geometry context/index helper before diverging into their
 observable-specific sampling paths.
 Boozer constant preparation and equal-arc cache prewarm helpers live in
-``spectraxgk.geometry.vmec_boozer_constants``. Core Boozer equal-arc profile
+``gkx.geometry.vmec_boozer_constants``. Core Boozer equal-arc profile
 construction, radial Boozer-profile interpolation, and equal-arc remapping
-live in ``spectraxgk.geometry.vmec_boozer_core``. That owner now stages the
+live in ``gkx.geometry.vmec_boozer_core``. That owner now stages the
 bridge as radial Boozer-profile interpolation, equal-arc field-line
 construction, zero-beta metric/drift profile assembly, and final solver-ready
 mapping assembly; optional backend execution and Boozer radial-grid validation
@@ -846,7 +846,7 @@ curvature-drift coefficients, open equal-arc remapping, and final
 coefficients can be reviewed independently. The core bridge delegates Boozer
 field-line spectral sums, cylindrical derivatives, and coordinate-gradient
 algebra to
-``spectraxgk.geometry.vmec_boozer_derivatives`` so the differentiable geometry
+``gkx.geometry.vmec_boozer_derivatives`` so the differentiable geometry
 path has a small, unit-testable tensor-algebra owner rather than one long
 VMEC/Boozer orchestration function. The core
 profile assembly shares one dtype-aware numerical floor across ``|B|``,
@@ -855,15 +855,15 @@ regularization policy is visible and consistent. Boozer metric-gradient terms
 use a separate float32-safe toroidal-flux denominator floor before
 ``grad(theta)``, ``grad(phi)``, and ``grad(alpha)`` divisions. Direct
 ``vmex`` tensor sampling and conversion into the solver-ready flux-tube
-mapping contract lives in ``spectraxgk.geometry.vmec_tensor_mapping``. That
+mapping contract lives in ``gkx.geometry.vmec_tensor_mapping``. That
 bridge is staged as surface/reference-scale validation, shared VMEC field-line
 coordinate construction, raw tensor loading, periodic line sampling,
 perpendicular metric assembly, local grad-``B`` drift closure, and final mapping
 packaging. VMEC flux-tube sensitivity and array-parity report orchestration
 lives in
-``spectraxgk.geometry.vmec_flux_tube_reports``; it reuses the shared
+``gkx.geometry.vmec_flux_tube_reports``; it reuses the shared
 VMEC-state example loading, coefficient-index validation, and perturbation
-policy from ``spectraxgk.geometry.vmec_state_sensitivity`` so the flux-tube,
+policy from ``gkx.geometry.vmec_state_sensitivity`` so the flux-tube,
 Boozer, metric-tensor, and field-line AD/FD gates stay on one setup contract.
 Direct-array parity, imported-EIK loading, optional Boozer equal-arc parity,
 production parity metrics, and final JSON packing now have separate private
@@ -873,7 +873,7 @@ parity gates easier to review without adding another module.
 VMEC boundary-gradient
 probe classification, collection row assembly, and projected-transport
 line-search admission summaries live in
-``spectraxgk.geometry.vmec_boundary_chain``. Boundary-chain scalar error
+``gkx.geometry.vmec_boundary_chain``. Boundary-chain scalar error
 construction and pass/fail policy helpers are kept explicit in that owner so
 VMEC/Boozer finite-difference, JVP, and VJP convention gates can be tested
 without launching expensive VMEC solves.

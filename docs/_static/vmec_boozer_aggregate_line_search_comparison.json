@@ -31,7 +31,7 @@
     "growth": {
       "accepted_steps": 1,
       "case_name": "nfp4_QH_warm_start",
-      "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
+      "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/GKX linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
       "final_delta": 1e-08,
       "final_objective": 0.3039503792073248,
       "history": [
@@ -90,7 +90,7 @@
     "quasilinear_flux": {
       "accepted_steps": 1,
       "case_name": "nfp4_QH_warm_start",
-      "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
+      "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/GKX linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
       "final_delta": -1e-08,
       "final_objective": 0.8850873757682598,
       "history": [

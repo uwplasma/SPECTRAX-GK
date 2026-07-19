@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_SPECTRUM = (

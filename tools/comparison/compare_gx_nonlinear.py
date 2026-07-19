@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.diagnostics.validation_gates import (
+from gkx.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,
 )
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -32,27 +32,27 @@ from spectraxgk.benchmarking.shared import (
     _apply_reference_hypercollisions,
     _two_species_params,
 )
-from spectraxgk.config import CycloneBaseCase, GridConfig, KBMBaseCase
-from spectraxgk.core.grid import build_spectral_grid, twothirds_mask
-from spectraxgk.core.velocity import laguerre_quadrature_count
-from spectraxgk.geometry import (
+from gkx.config import CycloneBaseCase, GridConfig, KBMBaseCase
+from gkx.core.grid import build_spectral_grid, twothirds_mask
+from gkx.core.velocity import laguerre_quadrature_count
+from gkx.geometry import (
     SAlphaGeometry,
     apply_imported_geometry_grid_defaults,
 )
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.runtime import (
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
+from gkx.runtime import (
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.terms.config import TermConfig
-from spectraxgk.terms.nonlinear import (
+from gkx.terms.config import TermConfig
+from gkx.terms.nonlinear import (
     _laguerre_j0_field,
     _laguerre_to_grid,
     nonlinear_em_components,
 )
-from spectraxgk.workflows.runtime.toml import (
+from gkx.workflows.runtime.toml import (
     load_runtime_from_toml,
 )
 
@@ -82,7 +82,7 @@ def _reduce_species_time(arr: np.ndarray, name: str) -> np.ndarray:
     return arr
 
 
-def _load_spectrax_csv(path: Path) -> dict[str, np.ndarray]:
+def _load_gkx_csv(path: Path) -> dict[str, np.ndarray]:
     named = np.genfromtxt(path, delimiter=",", names=True)
     if isinstance(named, np.ndarray) and named.dtype.names:
         names = set(named.dtype.names)
@@ -129,10 +129,10 @@ def _load_spectrax_csv(path: Path) -> dict[str, np.ndarray]:
             "heat_flux": data[:, 8],
             "particle_flux": data[:, 9],
         }
-    raise ValueError(f"unsupported SPECTRAX CSV shape {data.shape}")
+    raise ValueError(f"unsupported GKX CSV shape {data.shape}")
 
 
-def _load_spectrax_diag(path: Path) -> dict[str, np.ndarray]:
+def _load_gkx_diag(path: Path) -> dict[str, np.ndarray]:
     root = Dataset(path, "r")
     diag = root.groups["Diagnostics"]
     grid = root.groups["Grids"]
@@ -173,10 +173,10 @@ def _load_gx_diag(path: Path) -> dict[str, np.ndarray]:
     return out
 
 
-def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
+def _load_gkx(path: Path) -> dict[str, np.ndarray]:
     if path.suffix == ".nc":
-        return _load_spectrax_diag(path)
-    return _load_spectrax_csv(path)
+        return _load_gkx_diag(path)
+    return _load_gkx_csv(path)
 
 
 def _apply_time_window(
@@ -332,7 +332,7 @@ def _write_resolved_audit(
                 }
             )
     axes[0].legend(frameon=False, fontsize=8)
-    fig.suptitle("Resolved nonlinear diagnostic audit: GX vs SPECTRAX-GK", fontsize=14, fontweight="bold")
+    fig.suptitle("Resolved nonlinear diagnostic audit: GX vs GKX", fontsize=14, fontweight="bold")
     out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_png, dpi=220)
     print(f"saved {out_png}")
@@ -345,7 +345,7 @@ def _write_resolved_audit(
 def run_diagnostics(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
-    parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV or GX-style .out.nc")
+    parser.add_argument("--gkx", type=Path, required=True, help="GKX nonlinear CSV or GX-style .out.nc")
     parser.add_argument("--tmin", type=float, default=None, help="Optional min time for plotting and metrics")
     parser.add_argument("--tmax", type=float, default=None, help="Optional max time for plotting")
     parser.add_argument(
@@ -357,7 +357,7 @@ def run_diagnostics(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--title",
         type=str,
-        default="Nonlinear diagnostics: GX vs SPECTRAX-GK",
+        default="Nonlinear diagnostics: GX vs GKX",
         help="Figure title.",
     )
     parser.add_argument(
@@ -399,7 +399,7 @@ def run_diagnostics(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     gx = _load_gx_diag(args.gx)
-    sp = _load_spectrax(args.spectrax)
+    sp = _load_gkx(args.gkx)
 
     if args.tmin is not None or args.tmax is not None:
         gx = _apply_time_window(gx, tmin=args.tmin, tmax=args.tmax)
@@ -431,7 +431,7 @@ def run_diagnostics(argv: list[str] | None = None) -> int:
     axes = np.atleast_1d(axes).ravel()
 
     for ax, (label, gx_y, sp_y) in zip(axes, keep_specs):
-        ax.plot(sp["t"], sp_y, label="SPECTRAX-GK", **sp_style)
+        ax.plot(sp["t"], sp_y, label="GKX", **sp_style)
         gx_line = ax.plot(gx["t"], gx_y, label="GX", **gx_style)[0]
         gx_line.set_path_effects([pe.Stroke(linewidth=3.4, foreground="white"), pe.Normal()])
         ax.set_ylabel(label)
@@ -498,7 +498,7 @@ def run_diagnostics(argv: list[str] | None = None) -> int:
         args.summary_json.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "gx": str(args.gx),
-            "spectrax": str(args.spectrax),
+            "gkx": str(args.gkx),
             "case": str(args.summary_case),
             "source": str(args.summary_source),
             "tmin": None if args.tmin is None else float(args.tmin),
@@ -519,11 +519,11 @@ def run_diagnostics(argv: list[str] | None = None) -> int:
         )
         print(f"saved {args.summary_json}")
     if args.resolved_out is not None:
-        if args.gx.suffix != ".nc" or args.spectrax.suffix != ".nc":
-            raise ValueError("--resolved-out requires both --gx and --spectrax to be .nc files")
+        if args.gx.suffix != ".nc" or args.gkx.suffix != ".nc":
+            raise ValueError("--resolved-out requires both --gx and --gkx to be .nc files")
         _write_resolved_audit(
             gx_path=args.gx,
-            sp_path=args.spectrax,
+            sp_path=args.gkx,
             out_png=args.resolved_out,
             out_csv=args.resolved_csv,
             tmin=args.tmin,
@@ -1002,7 +1002,7 @@ def build_terms_parser() -> argparse.ArgumentParser:
         help="kx ordering for spectral arrays: native, fftshift, ifftshift, or auto",
     )
     parser.add_argument(
-        "--out", type=Path, default=None, help="Optional npz output for SPECTRAX terms"
+        "--out", type=Path, default=None, help="Optional npz output for GKX terms"
     )
     return parser
 
@@ -1820,7 +1820,7 @@ def run_terms(argv: list[str] | None = None) -> None:
         else:
             rho2_ref = float(np.asarray(rho_param)[0] ** 2)
         print(f"GX rho2s dump: {rho2s_dump:.6e}")
-        print(f"SPECTRAX rho2s (species {args.species_index}): {rho2_ref:.6e}")
+        print(f"GKX rho2s (species {args.species_index}): {rho2_ref:.6e}")
     if kperp2_dump is not None and rho2s_dump is not None:
         b_dump = rho2s_dump * kperp2_dump
         b_cache = np.asarray(cache.b[0, :nyc, :, :])

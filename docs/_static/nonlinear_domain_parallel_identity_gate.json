@@ -239,7 +239,7 @@
       "serial_real": 0.9588536620140076
     }
   ],
-  "source": "spectraxgk.operators.nonlinear.parallel nonlinear-domain prototype utilities",
+  "source": "gkx.operators.nonlinear.parallel nonlinear-domain prototype utilities",
   "state_shape": [
     24,
     24

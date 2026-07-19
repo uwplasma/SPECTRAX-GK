@@ -6,9 +6,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.solvers.time.explicit as eti
-from spectraxgk.solvers.time.explicit_steps import _linear_explicit_stage_update
-from spectraxgk.terms.config import FieldState
+import gkx.solvers.time.explicit as eti
+from gkx.solvers.time.explicit_steps import _linear_explicit_stage_update
+from gkx.terms.config import FieldState
 
 
 def _cache() -> SimpleNamespace:
@@ -163,10 +163,10 @@ def test_explicit_from_config_preserves_adaptive_controls(monkeypatch) -> None:
 def test_integrate_linear_explicit_from_config_runs_full_rk4_loop() -> None:
     # End-to-end explicit linear rk4 loop (public API) on a tiny Cyclone case,
     # exercising _run_linear_explicit_loop and its stepper/progress helpers.
-    from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.operators.linear.params import LinearParams
+    from gkx.config import CycloneBaseCase, GridConfig, TimeConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SAlphaGeometry
+    from gkx.operators.linear.params import LinearParams
 
     grid = build_spectral_grid(
         CycloneBaseCase(grid=GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)).grid
@@ -269,10 +269,10 @@ def test_linear_loop_progress_clock_and_history_arrays() -> None:
 
 
 def _tiny_linear_case():
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.operators.linear.params import LinearParams
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SAlphaGeometry
+    from gkx.operators.linear.params import LinearParams
 
     grid = build_spectral_grid(
         CycloneBaseCase(grid=GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)).grid

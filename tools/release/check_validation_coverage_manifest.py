@@ -225,10 +225,10 @@ def _source_path_to_module(path: Path) -> str:
 
 def _coverage_filename_to_module(filename: str) -> str | None:
     normalized = filename.replace("\\", "/").lstrip("./")
-    marker = "src/spectraxgk/"
+    marker = "src/gkx/"
     if marker in normalized:
-        normalized = "spectraxgk/" + normalized.split(marker, 1)[1]
-    if not normalized.startswith("spectraxgk/") or not normalized.endswith(".py"):
+        normalized = "gkx/" + normalized.split(marker, 1)[1]
+    if not normalized.startswith("gkx/") or not normalized.endswith(".py"):
         return None
     return normalized[:-3].replace("/", ".")
 
@@ -403,9 +403,9 @@ def validate_manifest(
     )
     excluded_modules = set(excluded_module_list)
     for module in excluded_modules:
-        if not module.startswith("spectraxgk."):
+        if not module.startswith("gkx."):
             raise ValueError(
-                f"coverage_inventory: excluded module must start with 'spectraxgk.': {module}"
+                f"coverage_inventory: excluded module must start with 'gkx.': {module}"
             )
         if not _module_to_source_path(module).exists():
             raise ValueError(
@@ -424,8 +424,8 @@ def validate_manifest(
         if module in seen_modules:
             raise ValueError(f"{module}: duplicate module entry")
         seen_modules.add(module)
-        if not module.startswith("spectraxgk."):
-            raise ValueError(f"{module}: module must start with 'spectraxgk.'")
+        if not module.startswith("gkx."):
+            raise ValueError(f"{module}: module must start with 'gkx.'")
 
         strings = {
             field: _as_nonempty_string(entry.get(field), field, module)
@@ -470,9 +470,9 @@ def validate_manifest(
         owned_modules = optional_lists.get("owned_modules", [])
         owned_modules_by_owner[module] = owned_modules
         for owned_module in owned_modules:
-            if not owned_module.startswith("spectraxgk."):
+            if not owned_module.startswith("gkx."):
                 raise ValueError(
-                    f"{module}: owned module must start with 'spectraxgk.': {owned_module}"
+                    f"{module}: owned module must start with 'gkx.': {owned_module}"
                 )
             if owned_module in seen_modules:
                 raise ValueError(
@@ -532,7 +532,7 @@ def validate_manifest(
 
     package_modules = {
         _source_path_to_module(path)
-        for path in (REPO_ROOT / "src" / "spectraxgk").rglob("*.py")
+        for path in (REPO_ROOT / "src" / "gkx").rglob("*.py")
         if path.is_file()
     }
     direct_modules = seen_modules

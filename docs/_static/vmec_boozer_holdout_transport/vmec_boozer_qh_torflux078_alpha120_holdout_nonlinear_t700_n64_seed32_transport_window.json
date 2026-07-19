@@ -8,7 +8,7 @@
     "source": "replicated nonlinear-window extraction; convergence gate is stored separately"
   },
   "seed": 32,
-  "spectrax": "vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_seed32_heat_flux_trace.csv",
+  "gkx": "vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_seed32_heat_flux_trace.csv",
   "tmax": 700.0,
   "tmin": 350.0,
   "variant": {

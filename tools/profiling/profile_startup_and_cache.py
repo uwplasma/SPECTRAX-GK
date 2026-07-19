@@ -134,13 +134,13 @@ def main_runtime_startup(argv: list[str] | None = None) -> None:
     import jax.numpy as jnp
     import numpy as np
     from jax import profiler
-    from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.solvers.nonlinear.diagnostic_integration import integrate_nonlinear_explicit_diagnostics_state
-    from spectraxgk.solvers.nonlinear.state_integration import nonlinear_rhs_cached
-    from spectraxgk.runtime import (
+    from gkx.geometry import apply_imported_geometry_grid_defaults
+    from gkx.core.grid import build_spectral_grid
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.solvers.nonlinear.diagnostic_integration import integrate_nonlinear_explicit_diagnostics_state
+    from gkx.solvers.nonlinear.state_integration import nonlinear_rhs_cached
+    from gkx.runtime import (
         _build_initial_condition,
         _runtime_external_phi,
         _select_nonlinear_mode_indices,
@@ -148,7 +148,7 @@ def main_runtime_startup(argv: list[str] | None = None) -> None:
         build_runtime_linear_params,
         build_runtime_term_config,
     )
-    from spectraxgk.terms.assembly import assemble_rhs_cached_jit, compute_fields_cached
+    from gkx.terms.assembly import assemble_rhs_cached_jit, compute_fields_cached
 
     timings: list[PhaseTiming] = []
 
@@ -358,7 +358,7 @@ def main_runtime_startup(argv: list[str] | None = None) -> None:
         if args.json_out is not None:
             _write_phase_json(args.json_out, timings, metadata)
         if args.memory_profile is not None:
-            with profiler.TraceAnnotation("spectrax_memory_snapshot"):
+            with profiler.TraceAnnotation("gkx_memory_snapshot"):
                 profiler.save_device_memory_profile(str(args.memory_profile))
     finally:
         if args.trace_dir is not None:
@@ -392,7 +392,7 @@ def build_low_rank_moment_cache(
     """
 
     import jax.numpy as jnp
-    from spectraxgk.operators.linear.cache_arrays import (
+    from gkx.operators.linear.cache_arrays import (
         _build_low_rank_moment_cache_arrays,
     )
 
@@ -482,26 +482,26 @@ def main_linear_cache(argv: list[str] | None = None) -> None:
     import jax.numpy as jnp
     import numpy as np
     from jax import profiler
-    from spectraxgk.geometry import (
+    from gkx.geometry import (
         apply_imported_geometry_grid_defaults,
         ensure_flux_tube_geometry_data,
     )
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.cache_arrays import (
+    from gkx.core.grid import build_spectral_grid
+    from gkx.core.velocity import bessel_j0, bessel_j1, laguerre_transform
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.cache_arrays import (
         _build_end_damping_profile_array,
         _build_gyroaverage_cache_arrays,
     )
-    from spectraxgk.operators.linear.linked import (
+    from gkx.operators.linear.linked import (
         _build_linked_end_damping_profile,
         _build_linked_fft_maps,
     )
-    from spectraxgk.operators.linear.params import (
+    from gkx.operators.linear.params import (
         _x64_enabled,
     )
-    from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params
+    from gkx.runtime import build_runtime_geometry, build_runtime_linear_params
 
     timings: list[CachePhaseTiming] = []
 

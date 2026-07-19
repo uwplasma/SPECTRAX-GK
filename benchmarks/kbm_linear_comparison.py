@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from spectraxgk.artifacts.plotting import scan_comparison_figure
+from gkx.artifacts.plotting import scan_comparison_figure
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TABLE = ROOT / "docs/_static/comparison/kbm_reference_candidates.csv"

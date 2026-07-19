@@ -23,13 +23,13 @@ Run from the repository root, for example:
 python benchmarks/cyclone_linear_benchmark.py --outdir tools_out/cyclone_benchmark
 python benchmarks/kbm_linear_comparison.py \
   --output tools_out/kbm_linear_comparison.png
-python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
+python -m gkx.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
 python benchmarks/secondary_slab_workflow.py
 ```
 
 The machine-readable feature and comparison contract is
 `benchmarks/capability_matrix.toml`. It separates required-core capabilities,
-SPECTRAX-GK differentiable extensions, optional research extensions, and
+GKX differentiable extensions, optional research extensions, and
 explicitly unsupported features. A comparison result is not considered matched
 unless geometry, normalization, grid, initialization, precision, timestepping,
 collisions, diagnostics, and analysis windows are all recorded.

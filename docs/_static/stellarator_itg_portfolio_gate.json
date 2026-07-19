@@ -1045,5 +1045,5 @@
     "quasilinear_csat": 0.75,
     "fd_step": 0.0001
   },
-  "next_action": "Replace the reduced surrogate row producer with real vmex -> booz_xform_jax -> SPECTRAX-GK rows, then rerun the same gate with held-out surface/alpha samples before optimization claims."
+  "next_action": "Replace the reduced surrogate row producer with real vmex -> booz_xform_jax -> GKX rows, then rerun the same gate with held-out surface/alpha samples before optimization claims."
 }

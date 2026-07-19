@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import spectraxgk.operators as operators
-import spectraxgk.operators.linear as linear_operators
-import spectraxgk.operators.nonlinear as nonlinear_operators
-import spectraxgk.operators.nonlinear.diagnostic_state as operator_diagnostics
-import spectraxgk.operators.nonlinear.rhs as operator_rhs
-import spectraxgk.solvers.nonlinear as nonlinear_solvers
-import spectraxgk.solvers.nonlinear.diagnostics as solver_diagnostics
-import spectraxgk.solvers.nonlinear.explicit as solver_explicit
-import spectraxgk.solvers.nonlinear.imex as solver_imex
+import gkx.operators as operators
+import gkx.operators.linear as linear_operators
+import gkx.operators.nonlinear as nonlinear_operators
+import gkx.operators.nonlinear.diagnostic_state as operator_diagnostics
+import gkx.operators.nonlinear.rhs as operator_rhs
+import gkx.solvers.nonlinear as nonlinear_solvers
+import gkx.solvers.nonlinear.diagnostics as solver_diagnostics
+import gkx.solvers.nonlinear.explicit as solver_explicit
+import gkx.solvers.nonlinear.imex as solver_imex
 
 
 def test_operator_package_preserves_public_linear_export_identity() -> None:

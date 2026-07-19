@@ -136,7 +136,7 @@
       "case": "hsx",
       "status": "pass",
       "config": "examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml",
-      "geometry_file": ".cache/spectrax/vmec_eik/HSX_QHS_vacuum_ns201_a6ec24c48834374f.eik.nc",
+      "geometry_file": ".cache/gkx/vmec_eik/HSX_QHS_vacuum_ns201_a6ec24c48834374f.eik.nc",
       "ky": 0.047619047619047616,
       "Nl": 3,
       "Nm": 4,

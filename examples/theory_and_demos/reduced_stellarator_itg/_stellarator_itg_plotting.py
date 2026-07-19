@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mpl_colors
 import numpy as np
 
-from spectraxgk import (
+from gkx import (
     StellaratorITGOptimizationConfig,
     nonlinear_heat_flux_trace,
     nonlinear_heat_flux_window_metrics,

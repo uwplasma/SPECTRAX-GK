@@ -34,12 +34,12 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution fallba
         make_profile_options,
     )
 
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.rhs import linear_rhs_cached
-from spectraxgk.solvers.nonlinear.state_integration import nonlinear_rhs_cached
-from spectraxgk.runtime import (
+from gkx.core.grid import build_spectral_grid
+from gkx.geometry import apply_imported_geometry_grid_defaults
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.rhs import linear_rhs_cached
+from gkx.solvers.nonlinear.state_integration import nonlinear_rhs_cached
+from gkx.runtime import (
     _build_initial_condition,
     _runtime_external_phi,
     _select_nonlinear_mode_indices,
@@ -49,13 +49,13 @@ from spectraxgk.runtime import (
     build_runtime_linear_terms,
     build_runtime_term_config,
 )
-from spectraxgk.terms.assembly import (
+from gkx.terms.assembly import (
     _is_static_zero,
     assemble_rhs_cached_jit,
     compute_fields_cached,
 )
-from spectraxgk.terms.nonlinear import nonlinear_em_contribution
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.terms.nonlinear import nonlinear_em_contribution
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 HLO_TOKENS = (
     "fusion",
@@ -271,8 +271,8 @@ def main_cyclone(argv: list[str] | None = None) -> int:
 
     from jax import profiler
 
-    from spectraxgk.solvers.nonlinear.diagnostic_integration import prepare_nonlinear_explicit_diagnostics
-    from spectraxgk.runtime import run_runtime_nonlinear
+    from gkx.solvers.nonlinear.diagnostic_integration import prepare_nonlinear_explicit_diagnostics
+    from gkx.runtime import run_runtime_nonlinear
 
     cfg, _data = load_runtime_from_toml(args.config)
     dt_effective = float(cfg.time.dt if args.dt is None else args.dt)
@@ -366,7 +366,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             return result
 
     t0 = time.perf_counter()
-    with profiler.TraceAnnotation("spectrax_warmup"):
+    with profiler.TraceAnnotation("gkx_warmup"):
         last_result = _run()
     t1 = time.perf_counter()
 
@@ -387,7 +387,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
         raise ValueError("repeats must be >= 1")
     run_times: list[float] = []
     try:
-        with profiler.TraceAnnotation("spectrax_profiled_run"):
+        with profiler.TraceAnnotation("gkx_profiled_run"):
             for _ in range(args.repeats):
                 elapsed, last_result = _time_call(_run)
                 run_times.append(elapsed)
@@ -396,7 +396,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             profiler.stop_trace()
 
     if args.memory_profile is not None:
-        with profiler.TraceAnnotation("spectrax_memory_snapshot"):
+        with profiler.TraceAnnotation("gkx_memory_snapshot"):
             profiler.save_device_memory_profile(str(args.memory_profile))
 
     run_median = float(np.median(np.asarray(run_times, dtype=float)))
@@ -861,7 +861,7 @@ def main_full_linear_rhs(argv: list[str] | None = None) -> int:
         memory_profile=args.memory_profile,
         hlo_out=args.hlo_out,
         force_electrostatic_fields=force_electrostatic_fields,
-        source="spectraxgk.operators.linear.rhs.linear_rhs_cached",
+        source="gkx.operators.linear.rhs.linear_rhs_cached",
     )
     _write_summary_json(summary, args.summary_json)
     print(json.dumps(summary, indent=2, sort_keys=True))

@@ -16,7 +16,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -182,7 +182,7 @@ def build_gradient_holdout_matrix(
         "rows": rows,
         "notes": (
             "This matrix checks differentiability from vmex state coefficients through "
-            "booz_xform_jax mode-21 equal-arc geometry into SPECTRAX-GK linear and "
+            "booz_xform_jax mode-21 equal-arc geometry into GKX linear and "
             "quasilinear solver observables plus a reduced nonlinear-window estimator. "
             "It does not validate converged nonlinear-window turbulence gradients or "
             "optimized-equilibrium nonlinear transport."

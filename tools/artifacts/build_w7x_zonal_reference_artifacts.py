@@ -15,13 +15,13 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-from spectraxgk.artifacts.plotting import set_plot_style
-from spectraxgk.diagnostics.validation_gates import (
+from gkx.artifacts.plotting import set_plot_style
+from gkx.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,
 )
-from spectraxgk.diagnostics.zonal_validation import (
+from gkx.diagnostics.zonal_validation import (
     kx_token,
     load_w7x_combined_trace_csv,
     load_w7x_trace_csv,
@@ -420,24 +420,24 @@ def _main_digitize(argv: list[str]) -> int:
 def _build_compare_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--spectrax-summary",
+        "--gkx-summary",
         type=Path,
         default=ROOT / "docs" / "_static" / "w7x_zonal_response_panel.csv",
-        help="SPECTRAX-GK zonal summary CSV written by the response-panel mode.",
+        help="GKX zonal summary CSV written by the response-panel mode.",
     )
     parser.add_argument(
-        "--spectrax-trace-dir",
+        "--gkx-trace-dir",
         type=Path,
         default=None,
         help="Optional directory containing per-kx w7x_test4_kxNNN.csv trace files.",
     )
     parser.add_argument(
-        "--spectrax-traces",
+        "--gkx-traces",
         type=Path,
         default=None,
         help=(
             "Optional combined trace CSV written next to the W7-X response panel. "
-            "This is mutually exclusive with --spectrax-trace-dir."
+            "This is mutually exclusive with --gkx-trace-dir."
         ),
     )
     parser.add_argument(
@@ -489,7 +489,7 @@ def _build_compare_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _load_spectrax_summary(path: Path) -> pd.DataFrame:
+def _load_gkx_summary(path: Path) -> pd.DataFrame:
     table = pd.read_csv(path)
     required = {"kx_target", "residual_level", "residual_std", "tmax"}
     missing = required.difference(table.columns)
@@ -554,11 +554,11 @@ def _optional_trace_metrics(
 
 def build_comparison(
     *,
-    spectrax_summary: Path,
+    gkx_summary: Path,
     reference_traces: Path,
     reference_residuals: Path,
-    spectrax_trace_dir: Path | None = None,
-    spectrax_traces: Path | None = None,
+    gkx_trace_dir: Path | None = None,
+    gkx_traces: Path | None = None,
     residual_atol: float = 0.02,
     residual_rtol: float = 0.10,
     coverage_fraction: float = 0.98,
@@ -566,11 +566,11 @@ def build_comparison(
     envelope_atol: float = 0.03,
     trace_normalization: str = "summary_initial_level",
 ):
-    if spectrax_trace_dir is not None and spectrax_traces is not None:
+    if gkx_trace_dir is not None and gkx_traces is not None:
         raise ValueError(
-            "spectrax_trace_dir and spectrax_traces are mutually exclusive"
+            "gkx_trace_dir and gkx_traces are mutually exclusive"
         )
-    summary = _load_spectrax_summary(spectrax_summary)
+    summary = _load_gkx_summary(gkx_summary)
     ref_traces = pd.read_csv(reference_traces)
     ref_residuals = reference_residual_table(reference_residuals)
     ref_limits = reference_time_limits(ref_traces)
@@ -581,7 +581,7 @@ def build_comparison(
         obs_matches = summary[np.isclose(summary["kx_target"], float(kx))]
         ref_matches = ref[np.isclose(ref["kx"], float(kx))]
         if obs_matches.empty:
-            raise ValueError(f"missing SPECTRAX summary row for kx={kx}")
+            raise ValueError(f"missing GKX summary row for kx={kx}")
         if ref_matches.empty:
             raise ValueError(f"missing reference row for kx={kx}")
         obs = obs_matches.iloc[0]
@@ -608,12 +608,12 @@ def build_comparison(
             1.0,
             atol=1.0 - float(coverage_fraction),
             rtol=0.0,
-            notes=f"Passes when SPECTRAX reaches at least {coverage_fraction:.0%} of the digitized reference window.",
+            notes=f"Passes when GKX reaches at least {coverage_fraction:.0%} of the digitized reference window.",
         )
         gates.extend([coverage_gate, residual_gate])
         trace_initial_level = None
         trace_source_provided = (
-            spectrax_trace_dir is not None or spectrax_traces is not None
+            gkx_trace_dir is not None or gkx_traces is not None
         )
         if (
             str(trace_normalization).strip().lower().replace("-", "_")
@@ -622,7 +622,7 @@ def build_comparison(
             if trace_source_provided and "initial_level" not in obs.index:
                 raise ValueError(
                     "summary_initial_level trace normalization requires an initial_level column "
-                    "in the SPECTRAX summary CSV"
+                    "in the GKX summary CSV"
                 )
             trace_initial_level = (
                 float(obs["initial_level"]) if trace_source_provided else None
@@ -635,8 +635,8 @@ def build_comparison(
                 "trace_normalization must be one of {'summary_initial_level', 'first_nonzero'}"
             )
         trace_metrics = _optional_trace_metrics(
-            trace_dir=spectrax_trace_dir,
-            combined_trace_csv=spectrax_traces,
+            trace_dir=gkx_trace_dir,
+            combined_trace_csv=gkx_traces,
             reference_traces=ref_traces,
             kx=kx,
             tail_fraction=float(tail_fraction),
@@ -659,9 +659,9 @@ def build_comparison(
         rows.append(
             {
                 "kx": float(kx),
-                "spectrax_residual": float(obs["residual_level"]),
-                "spectrax_residual_std": float(obs["residual_std"]),
-                "spectrax_tmax": float(obs["tmax"]),
+                "gkx_residual": float(obs["residual_level"]),
+                "gkx_residual_std": float(obs["residual_std"]),
+                "gkx_tmax": float(obs["tmax"]),
                 "reference_residual": residual_ref,
                 "reference_min": float(ref_row["reference_min"]),
                 "reference_max": float(ref_row["reference_max"]),
@@ -705,11 +705,11 @@ def _write_comparison_plot(rows: pd.DataFrame, out_png: Path) -> None:
     )
     ax.plot(
         x,
-        rows["spectrax_residual"],
+        rows["gkx_residual"],
         color="#c2410c",
         marker="s",
         linewidth=2.0,
-        label="SPECTRAX-GK",
+        label="GKX",
     )
     ax.set_xticks(x, [f"{value:.2f}" for value in rows["kx"]])
     ax.set_xlabel(r"$k_x \rho_i$")
@@ -737,11 +737,11 @@ def _write_comparison_plot(rows: pd.DataFrame, out_png: Path) -> None:
 def _main_compare(argv: list[str]) -> int:
     args = _build_compare_parser().parse_args(argv)
     rows, report = build_comparison(
-        spectrax_summary=args.spectrax_summary,
+        gkx_summary=args.gkx_summary,
         reference_traces=args.reference_traces,
         reference_residuals=args.reference_residuals,
-        spectrax_trace_dir=args.spectrax_trace_dir,
-        spectrax_traces=args.spectrax_traces,
+        gkx_trace_dir=args.gkx_trace_dir,
+        gkx_traces=args.gkx_traces,
         residual_atol=float(args.residual_atol),
         residual_rtol=float(args.residual_rtol),
         coverage_fraction=float(args.coverage_fraction),
@@ -757,20 +757,20 @@ def _main_compare(argv: list[str]) -> int:
         "validation_status": "closed" if report.passed else "open",
         "gate_index_include": bool(args.gate_index_include),
         "gate_report": gate_report_to_dict(report),
-        "spectrax_summary": _repo_relative(args.spectrax_summary),
-        "spectrax_trace_dir": None
-        if args.spectrax_trace_dir is None
-        else _repo_relative(args.spectrax_trace_dir),
-        "spectrax_traces": None
-        if args.spectrax_traces is None
-        else _repo_relative(args.spectrax_traces),
+        "gkx_summary": _repo_relative(args.gkx_summary),
+        "gkx_trace_dir": None
+        if args.gkx_trace_dir is None
+        else _repo_relative(args.gkx_trace_dir),
+        "gkx_traces": None
+        if args.gkx_traces is None
+        else _repo_relative(args.gkx_traces),
         "reference_traces": _repo_relative(args.reference_traces),
         "reference_residuals": _repo_relative(args.reference_residuals),
         "comparison_csv": _repo_relative(args.out_csv),
         "comparison_png": _repo_relative(args.out_png),
         "trace_normalization": str(args.trace_normalization),
         "notes": (
-            "This gate compares SPECTRAX-GK W7-X test-4 zonal-flow residuals and, when trace CSVs are available, "
+            "This gate compares GKX W7-X test-4 zonal-flow residuals and, when trace CSVs are available, "
             "late-window oscillation envelopes against digitized stella/GENE Figure 11 references. The current "
             "paper-normalized long-window artifact closes the time-coverage gates, but residuals remain open at "
             "three wavelengths and the late-window envelope gates remain open. This is tracked as a physics/numerics "

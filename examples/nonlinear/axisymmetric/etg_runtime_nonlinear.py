@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from spectraxgk import run_nonlinear_case
+from gkx import run_nonlinear_case
 
 CONFIG = Path(__file__).resolve().parent / "runtime_etg_nonlinear.toml"
 

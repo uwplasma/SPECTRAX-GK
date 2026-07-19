@@ -2,10 +2,10 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 
-from spectraxgk.artifacts.plotting import scan_comparison_figure
-from spectraxgk.benchmarking.shared import load_cyclone_reference_kinetic
-from spectraxgk.runtime import run_runtime_scan
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.artifacts.plotting import scan_comparison_figure
+from gkx.benchmarking.shared import load_cyclone_reference_kinetic
+from gkx.runtime import run_runtime_scan
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 ROOT = Path(__file__).resolve().parents[1]

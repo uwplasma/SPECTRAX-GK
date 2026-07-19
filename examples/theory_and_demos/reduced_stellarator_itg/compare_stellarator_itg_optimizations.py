@@ -25,7 +25,7 @@ from _stellarator_itg_workflow import (  # noqa: E402
     compare_scripted_stellarator_itg_objectives,
     config_from_args,
 )
-from spectraxgk import StellaratorITGOptimizationConfig  # noqa: E402
+from gkx import StellaratorITGOptimizationConfig  # noqa: E402
 
 
 OBJECTIVE_KINDS = ("growth", "quasilinear_flux", "nonlinear_heat_flux")

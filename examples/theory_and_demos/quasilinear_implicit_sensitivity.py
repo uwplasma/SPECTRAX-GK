@@ -15,19 +15,19 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectraxgk.objectives.autodiff_validation import (
+from gkx.objectives.autodiff_validation import (
     explicit_complex_operator_matrix,
     implicit_eigenpair_observable_sensitivity_report,
 )
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diagnostics import fieldline_quadrature_weights, heat_flux_species
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.operators.linear.rhs import linear_rhs_cached
-from spectraxgk.artifacts.plotting import set_plot_style
-from spectraxgk.diagnostics.quasilinear_transport import effective_kperp2, phi_norm2, saturated_flux_from_linear_weight
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.diagnostics import fieldline_quadrature_weights, heat_flux_species
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.operators.linear.rhs import linear_rhs_cached
+from gkx.artifacts.plotting import set_plot_style
+from gkx.diagnostics.quasilinear_transport import effective_kperp2, phi_norm2, saturated_flux_from_linear_weight
 
 
 OBSERVABLE_LABELS = (r"$\gamma$", r"$\omega$", r"$k_{\perp,\mathrm{eff}}^2$", r"$\hat Q_i$", r"$Q_i^{ML}$")

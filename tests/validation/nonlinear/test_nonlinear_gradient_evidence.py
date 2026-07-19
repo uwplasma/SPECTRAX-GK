@@ -8,11 +8,11 @@ from support.paths import load_release_tool
 import numpy as np
 import pytest
 
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence
-import spectraxgk.diagnostics.metadata as evidence_metadata
-import spectraxgk.diagnostics.nonlinear_replicates as evidence_replicates
-import spectraxgk.diagnostics.transport as evidence_transport
-from spectraxgk.diagnostics.nonlinear_gradient_evidence import (
+import gkx.diagnostics.nonlinear_gradient_evidence as evidence
+import gkx.diagnostics.metadata as evidence_metadata
+import gkx.diagnostics.nonlinear_replicates as evidence_replicates
+import gkx.diagnostics.transport as evidence_transport
+from gkx.diagnostics.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
     NonlinearTurbulenceGradientFiniteDifferenceConfig,
@@ -26,7 +26,7 @@ from spectraxgk.diagnostics.nonlinear_gradient_evidence import (
     nonlinear_turbulence_gradient_finite_difference_report,
     summarize_window_evidence,
 )
-from spectraxgk.diagnostics.transport_windows import (
+from gkx.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     nonlinear_window_convergence_report,
 )

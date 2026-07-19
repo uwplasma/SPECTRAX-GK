@@ -19,7 +19,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -36,23 +36,23 @@ from spectraxgk.benchmarking.shared import (
     load_tem_reference,
     LinearScanResult,
 )
-from spectraxgk.config import (
+from gkx.config import (
     CycloneBaseCase,
     GridConfig,
     TimeConfig,
 )
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.runtime import run_runtime_linear, run_runtime_scan
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.solvers.time.explicit import (
+from gkx.geometry import SAlphaGeometry
+from gkx.runtime import run_runtime_linear, run_runtime_scan
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.solvers.time.explicit import (
     ExplicitTimeConfig,
     integrate_linear_explicit,
 )
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.solvers.linear.krylov import KrylovConfig
-from spectraxgk.diagnostics.analysis import (
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.solvers.linear.krylov import KrylovConfig
+from gkx.diagnostics.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate_auto,
@@ -71,7 +71,7 @@ TEM_KRYLOV = TEM_KRYLOV_DEFAULT
 
 
 def _build_rows(scan, ref):
-    rows = ["ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"]
+    rows = ["ky,gamma_ref,omega_ref,gamma_gkx,omega_gkx,rel_gamma,rel_omega"]
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
         gamma_ref = float(ref.gamma[idx])
@@ -139,7 +139,7 @@ def _rows_from_reference_columns(
     gamma: np.ndarray,
     omega: np.ndarray,
 ) -> list[str]:
-    rows = ["ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"]
+    rows = ["ky,gamma_ref,omega_ref,gamma_gkx,omega_gkx,rel_gamma,rel_omega"]
     for ky, g_ref, w_ref, g, w in zip(x, gamma_ref, omega_ref, gamma, omega):
         rel_gamma = (g - g_ref) / g_ref if g_ref != 0.0 else np.nan
         rel_omega = (w - w_ref) / w_ref if w_ref != 0.0 else np.nan

@@ -61,7 +61,7 @@ score.
        calibration remain future gates.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
-     - The ``vmex -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
+     - The ``vmex -> booz_xform_jax -> GKX`` bridge is validated
        for equal-arc field-line parity where the current ``mboz=nboz=21``
        parity artifact passes QH, QI, and shaped-pressure finite-beta rows.
        The fixed-resolution QI row now passes after the Boozer half-mesh
@@ -304,12 +304,12 @@ Quasilinear model-selection state:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``6.49``.
 - ``tools/release/check_nonlinear_transport_gates.py convergence`` and
-  ``spectraxgk.diagnostics.transport_windows`` provide the reusable late-window
+  ``gkx.diagnostics.transport_windows`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
   guardrail over existing traces, not a substitute for new long nonlinear
   simulations.
-- ``spectraxgk.diagnostics.transport_windows.nonlinear_window_ensemble_report`` provides
+- ``gkx.diagnostics.transport_windows.nonlinear_window_ensemble_report`` provides
   the next guardrail for replicated windows: seed, initial-condition, timestep,
   or restart variants must have individually passed late-window reports and
   mutually consistent late means before a nonlinear turbulent-flux optimization

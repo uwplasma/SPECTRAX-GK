@@ -4,7 +4,7 @@
 # Keep `gaussian_init = true` and `init_single = false` for the
 # shipped ETG pilot initialization contract.
 # For parity-sensitive reproduction, prefer:
-#   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml
+#   JAX_ENABLE_X64=1 gkx examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml
 # For faster exploratory runs, leave JAX_ENABLE_X64 unset.
 
 [[species]]

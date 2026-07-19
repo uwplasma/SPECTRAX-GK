@@ -1,6 +1,6 @@
 {
   "failures": [],
-  "kind": "spectraxgk_release_readiness",
+  "kind": "gkx_release_readiness",
   "lane_status": {
     "active_fraction_closed": 1.0,
     "frozen_outputs": {
@@ -440,10 +440,10 @@
   },
   "passed": true,
   "project": {
-    "name": "spectraxgk",
+    "name": "gkx",
     "scripts": [
-      "spectrax-gk",
-      "spectraxgk"
+      "gkx",
+      "gkx"
     ],
     "version": "1.7.0"
   },
@@ -475,8 +475,8 @@
     "- wide-package"
   ],
   "required_readme_snippets": [
-    "pip install spectraxgk",
-    "spectraxgk",
+    "pip install gkx",
+    "gkx",
     "MIT"
   ],
   "required_release_snippets": [
@@ -520,7 +520,7 @@
     "docs/_static/nonlinear_campaign_admission_report.json",
     "docs/_static/strict_qa_top12_edge_prelaunch_gate.json"
   ],
-  "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
+  "root": "/Users/rogeriojorge/local/GKX",
   "technical_status": {
     "completion_percent": 100.0,
     "failed_required": [],
@@ -531,7 +531,7 @@
   "version": {
     "checked_pypi": false,
     "duplicate_on_pypi": false,
-    "package": "spectraxgk",
+    "package": "gkx",
     "project_version": "1.7.0",
     "require_tag": false,
     "source_version": "1.7.0",

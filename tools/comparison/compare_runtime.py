@@ -26,22 +26,22 @@ if str(REPO_ROOT) not in sys.path:
 from tools.comparison.compare_gx_rhs_terms import (
     _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary,
 )
-from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid
-from spectraxgk.diagnostics import (
+from gkx.core.grid import build_spectral_grid, select_real_fft_ky_grid
+from gkx.diagnostics import (
     magnetic_vector_potential_energy, distribution_free_energy,
     electrostatic_field_energy, heat_flux_total, heat_flux_species,
     particle_flux_total, particle_flux_species, fieldline_quadrature_weights,
 )
-from spectraxgk.geometry import (
+from gkx.geometry import (
     apply_imported_geometry_grid_defaults, ensure_flux_tube_geometry_data,
 )
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.runtime import (
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.runtime import (
     _build_initial_condition, _species_to_linear, build_runtime_geometry,
     build_runtime_linear_params, build_runtime_term_config, run_runtime_nonlinear,
 )
-from spectraxgk.terms.assembly import compute_fields_cached
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.terms.assembly import compute_fields_cached
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 def _default_comparison_repo() -> Path | None:
@@ -169,7 +169,7 @@ def build_startup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory containing GX field dump binaries")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for ky metadata")
-    parser.add_argument("--config", type=Path, required=True, help="Runtime TOML config used by SPECTRAX")
+    parser.add_argument("--config", type=Path, required=True, help="Runtime TOML config used by GKX")
     parser.add_argument("--ky", type=float, required=True, help="ky value to compare")
     parser.add_argument("--kx-target", type=float, default=0.0, help="kx target within the selected ky block")
     parser.add_argument("--y0", type=float, default=None, help="Optional y0 override; defaults to GX ky metadata")
@@ -395,7 +395,7 @@ def build_diagnostic_state_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory containing GX diag_state dump binaries")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for dimensions/diagnostics")
-    parser.add_argument("--config", type=Path, required=True, help="Runtime TOML config used by SPECTRAX")
+    parser.add_argument("--config", type=Path, required=True, help="Runtime TOML config used by GKX")
     parser.add_argument("--time-index", type=int, required=True, help="GX diagnostic time index to compare")
     parser.add_argument("--y0", type=float, default=None, help="Optional y0 override; defaults to GX ky metadata")
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV summary output")
@@ -532,7 +532,7 @@ def main_diagnostic_state() -> None:
     )
 
     print(f"time_index={args.time_index} t={t_val:.8f}")
-    print("metric     gx_out        spectrax_dump  rel_dump      spectrax_solve rel_solve")
+    print("metric     gx_out        gkx_dump  rel_dump      gkx_solve rel_solve")
     rows: list[dict[str, float | str]] = []
     for key in ("Wg", "Wphi", "Wapar", "heat", "pflux"):
         gx_val = float(gx_diag[key])
@@ -546,9 +546,9 @@ def main_diagnostic_state() -> None:
                 "t": t_val,
                 "metric": key,
                 "gx_out": gx_val,
-                "spectrax_dump": dump_val,
+                "gkx_dump": dump_val,
                 "rel_dump": rel_dump,
-                "spectrax_solve": solve_val,
+                "gkx_solve": solve_val,
                 "rel_solve": rel_solve,
             }
         )
@@ -558,9 +558,9 @@ def main_diagnostic_state() -> None:
         )
 
     if gx_heat_s is not None:
-        print("heat_flux_species gx_out=", np.asarray(gx_heat_s, dtype=float), "spectrax_dump=", sp_dump["heat_s"])
+        print("heat_flux_species gx_out=", np.asarray(gx_heat_s, dtype=float), "gkx_dump=", sp_dump["heat_s"])
     if gx_pflux_s is not None:
-        print("particle_flux_species gx_out=", np.asarray(gx_pflux_s, dtype=float), "spectrax_dump=", sp_dump["pflux_s"])
+        print("particle_flux_species gx_out=", np.asarray(gx_pflux_s, dtype=float), "gkx_dump=", sp_dump["pflux_s"])
 
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -571,7 +571,7 @@ def build_window_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory containing GX diag_state dump binaries")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for dimensions/diagnostics")
-    parser.add_argument("--config", type=Path, required=True, help="Runtime TOML config used by SPECTRAX")
+    parser.add_argument("--config", type=Path, required=True, help="Runtime TOML config used by GKX")
     parser.add_argument("--time-index-start", type=int, required=True, help="GX diagnostic time index for the start state")
     parser.add_argument("--time-index-stop", type=int, required=True, help="GX diagnostic time index for the target state")
     parser.add_argument("--steps", type=int, default=None, help="Optional maximum step count override for the runtime audit")
@@ -726,9 +726,9 @@ def main_window() -> None:
         f"time_index_start={args.time_index_start} t_start={t_start:.8f} "
         f"time_index_stop={args.time_index_stop} t_stop={t_stop:.8f} "
         f"delta_t={dt_window:.8f} steps={args.steps if args.steps is not None else -1} "
-        f"spectrax_t_match={t_match:.8f}"
+        f"gkx_t_match={t_match:.8f}"
     )
-    print("metric     gx_stop       spectrax      rel")
+    print("metric     gx_stop       gkx      rel")
     rows: list[dict[str, float | str]] = []
     for key in ("Wg", "Wphi", "Wapar", "heat", "pflux"):
         gx_val = float(gx_diag_stop[key])
@@ -742,10 +742,10 @@ def main_window() -> None:
                 "t_stop": t_stop,
                 "delta_t": dt_window,
                 "steps": float(args.steps) if args.steps is not None else -1.0,
-                "spectrax_t": t_match,
+                "gkx_t": t_match,
                 "metric": key,
                 "gx_stop": gx_val,
-                "spectrax": sp_val,
+                "gkx": sp_val,
                 "rel": rel,
             }
         )
@@ -754,14 +754,14 @@ def main_window() -> None:
         print(
             "heat_flux_species gx_stop=",
             np.asarray(gx_heat_s, dtype=float),
-            "spectrax=",
+            "gkx=",
             sp_diag_species.get("heat_s", np.asarray([])),
         )
     if gx_pflux_s is not None:
         print(
             "particle_flux_species gx_stop=",
             np.asarray(gx_pflux_s, dtype=float),
-            "spectrax=",
+            "gkx=",
             sp_diag_species.get("pflux_s", np.asarray([])),
         )
 

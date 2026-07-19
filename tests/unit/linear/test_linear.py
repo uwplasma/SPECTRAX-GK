@@ -7,23 +7,23 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
-from spectraxgk.diagnostics.analysis import estimate_observed_order
-from spectraxgk.geometry import SAlphaGeometry, SlabGeometry, sample_flux_tube_geometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.cache_model import LinearCache
-from spectraxgk.operators.linear.moments import apply_hermite_v, apply_laguerre_x, build_H, compute_b, diamagnetic_drive_coeffs, energy_operator, grad_z_periodic, quasineutrality_phi, streaming_term
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-from spectraxgk.operators.linear.rhs import linear_rhs, linear_rhs_cached
-from spectraxgk.solvers.linear.integrators import integrate_linear
-from spectraxgk.operators.linear.linked import _build_linked_fft_maps
-from spectraxgk.operators.linear.params import _x64_enabled
-from spectraxgk.operators.linear.streaming import grad_z_linked_fft
-from spectraxgk.core.velocity import J_l_all
-from spectraxgk.solvers.linear.krylov import dominant_eigenpair
-from spectraxgk.solvers.linear.implicit import _build_implicit_operator
-from spectraxgk.terms.linear_terms import (
+from gkx.config import CycloneBaseCase, GridConfig, GeometryConfig
+from gkx.diagnostics.analysis import estimate_observed_order
+from gkx.geometry import SAlphaGeometry, SlabGeometry, sample_flux_tube_geometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.cache_model import LinearCache
+from gkx.operators.linear.moments import apply_hermite_v, apply_laguerre_x, build_H, compute_b, diamagnetic_drive_coeffs, energy_operator, grad_z_periodic, quasineutrality_phi, streaming_term
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.operators.linear.rhs import linear_rhs, linear_rhs_cached
+from gkx.solvers.linear.integrators import integrate_linear
+from gkx.operators.linear.linked import _build_linked_fft_maps
+from gkx.operators.linear.params import _x64_enabled
+from gkx.operators.linear.streaming import grad_z_linked_fft
+from gkx.core.velocity import J_l_all
+from gkx.solvers.linear.krylov import dominant_eigenpair
+from gkx.solvers.linear.implicit import _build_implicit_operator
+from gkx.terms.linear_terms import (
     collision_invariant_rates,
     collision_quadratic_rate,
     collisions_contribution,
@@ -33,8 +33,8 @@ from spectraxgk.terms.linear_terms import (
     drift_kinetic_sugama_six_moment_contribution,
     multispecies_collision_invariant_rates,
 )
-from spectraxgk.terms.assembly import assemble_rhs_terms_cached
-from spectraxgk.terms.config import TermConfig
+from gkx.terms.assembly import assemble_rhs_terms_cached
+from gkx.terms.config import TermConfig
 
 
 def test_grad_z_periodic_sine():
@@ -68,10 +68,10 @@ def test_build_linked_fft_maps_keeps_real_fft_positive_ky_modes():
 
 
 def test_build_linear_cache_zero_shat_periodic_uses_periodic_fft_without_end_damping():
-    from spectraxgk.geometry import SlabGeometry, apply_geometry_grid_defaults
-    from spectraxgk.config import GeometryConfig
-    from spectraxgk.core.grid import select_real_fft_ky_grid
-    from spectraxgk.operators.linear.params import Species, build_linear_params
+    from gkx.geometry import SlabGeometry, apply_geometry_grid_defaults
+    from gkx.config import GeometryConfig
+    from gkx.core.grid import select_real_fft_ky_grid
+    from gkx.operators.linear.params import Species, build_linear_params
 
     geom = SlabGeometry.from_config(
         GeometryConfig(model="slab", s_hat=1.0e-8, zero_shat=True)
@@ -1989,7 +1989,7 @@ def test_rho_star_scales_cache_ky():
 
 def test_shift_axis_noop():
     """shift_axis should return the input when offset is zero."""
-    from spectraxgk.operators.linear.moments import shift_axis
+    from gkx.operators.linear.moments import shift_axis
 
     arr = jnp.arange(6.0).reshape(2, 3)
     out = shift_axis(arr, 0, axis=0)

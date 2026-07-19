@@ -110,7 +110,7 @@
     }
   ],
   "rtol": 1e-06,
-  "source": "spectraxgk.parallel.velocity.hermite_streaming_ladder_shard_map",
+  "source": "gkx.parallel.velocity.hermite_streaming_ladder_shard_map",
   "state_shape": [
     2,
     8,

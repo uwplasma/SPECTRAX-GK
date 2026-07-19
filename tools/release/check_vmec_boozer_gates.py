@@ -1235,7 +1235,7 @@ def _reduced_portfolio_guard_helpers():
     for path in (src, ROOT):
         if str(path) not in sys.path:
             sys.path.insert(0, str(path))
-    from spectraxgk.objectives.portfolio_guard import (
+    from gkx.objectives.portfolio_guard import (
         ReducedPortfolioArtifactGuardConfig,
         reduced_portfolio_artifact_guard_report,
     )
@@ -1445,7 +1445,7 @@ def build_high_grid_admission_payload(
     min_replicates: int = DEFAULT_MIN_REPLICATES,
     value_floor: float = DEFAULT_VALUE_FLOOR,
 ) -> dict[str, Any]:
-    from spectraxgk.diagnostics.validation_gates import (
+    from gkx.diagnostics.validation_gates import (
         evaluate_scalar_gate,
         gate_report,
         gate_report_to_dict,

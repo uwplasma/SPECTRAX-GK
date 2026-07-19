@@ -5,15 +5,15 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics import SimulationDiagnostics
-from spectraxgk.workflows.runtime.chunks import (
+from gkx.diagnostics import SimulationDiagnostics
+from gkx.workflows.runtime.chunks import (
     _effective_diagnostics_stride,
     _next_elapsed_time,
     _offset_chunk_diagnostics_time,
     format_duration,
     run_adaptive_runtime_chunk_loop,
 )
-from spectraxgk.terms.config import FieldState
+from gkx.terms.config import FieldState
 
 
 def _diag(times: list[float]) -> SimulationDiagnostics:
@@ -68,7 +68,7 @@ def test_run_adaptive_runtime_chunk_loop_reports_wall_eta(
 ) -> None:
     clock = iter([0.0, 0.0, 10.0, 10.0, 10.0, 25.0, 25.0])
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.chunks.time.perf_counter", lambda: next(clock)
+        "gkx.workflows.runtime.chunks.time.perf_counter", lambda: next(clock)
     )
 
     messages: list[str] = []

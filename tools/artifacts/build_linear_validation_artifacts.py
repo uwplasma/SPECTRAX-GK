@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from spectraxgk.benchmarking.shared import LinearScanResult
+    from gkx.benchmarking.shared import LinearScanResult
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -53,7 +53,7 @@ DEFAULT_KBM_CANDIDATES = (
 )
 DEFAULT_KBM_BRANCH_OUT = REPO_ROOT / "docs" / "_static" / "kbm_branch_gate_summary.json"
 DEFAULT_COLLISION_TABLE = (
-    REPO_ROOT / "src" / "spectraxgk" / "data" / "advanced_collision_six_moment.npy"
+    REPO_ROOT / "src" / "gkx" / "data" / "advanced_collision_six_moment.npy"
 )
 DEFAULT_COLLISION_METADATA = DEFAULT_COLLISION_TABLE.with_suffix(".json")
 DEFAULT_COLLISION_VERIFICATION_JSON = (
@@ -5214,7 +5214,7 @@ def write_coulomb_operator_verification_figure(
         color=colors["ink"],
     )
     out_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, dpi=220, metadata={"Software": "SPECTRAX-GK"})
+    fig.savefig(out_png, dpi=220, metadata={"Software": "GKX"})
     plt.close(fig)
 
 
@@ -6047,8 +6047,8 @@ def write_drift_kinetic_response_convergence_figure(
         color=colors["ink"],
     )
     out_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, dpi=220, metadata={"Software": "SPECTRAX-GK"})
-    fig.savefig(out_png.with_suffix(".pdf"), metadata={"Creator": "SPECTRAX-GK"})
+    fig.savefig(out_png, dpi=220, metadata={"Software": "GKX"})
+    fig.savefig(out_png.with_suffix(".pdf"), metadata={"Creator": "GKX"})
     plt.close(fig)
 
 
@@ -6090,13 +6090,13 @@ def finite_wavelength_itg_growth_curve(
     jax.config.update("jax_enable_x64", True)
     import jax.numpy as jnp
 
-    from spectraxgk.config import GridConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SlabGeometry
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
-    from spectraxgk.operators.linear.collisions import (
+    from gkx.config import GridConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SlabGeometry
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams, LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.operators.linear.collisions import (
         FiniteWavelengthCoulombOperator,
     )
 
@@ -6232,12 +6232,12 @@ def collisionless_slab_itg_hierarchy(
     jax.config.update("jax_enable_x64", True)
     import jax.numpy as jnp
 
-    from spectraxgk.config import GridConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SlabGeometry
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.operators.linear.params import LinearParams, LinearTerms
-    from spectraxgk.operators.linear.rhs import linear_rhs_cached
+    from gkx.config import GridConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SlabGeometry
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams, LinearTerms
+    from gkx.operators.linear.rhs import linear_rhs_cached
 
     if len(resolutions) < 2 or any(p < 0 or j < 0 for p, j in resolutions):
         raise ValueError("at least two non-negative resolutions are required")
@@ -6540,7 +6540,7 @@ def write_finite_wavelength_itg_figure(summary: dict[str, Any], out_png: Path) -
         out_png,
         dpi=220,
         facecolor="white",
-        metadata={"Software": "SPECTRAX-GK"},
+        metadata={"Software": "GKX"},
     )
     plt.close(fig)
 
@@ -6625,7 +6625,7 @@ def write_collision_table(
         np.save(stream, matrices, allow_pickle=False)
     digest = hashlib.sha256(out.read_bytes()).hexdigest()
     metadata = {
-        "kind": "spectraxgk_collision_moment_coefficients",
+        "kind": "gkx_collision_moment_coefficients",
         "models": ["sugama", "improved_sugama", "coulomb"],
         "shape": list(matrices.shape),
         "dtype": str(matrices.dtype),
@@ -6634,7 +6634,7 @@ def write_collision_table(
         "moment_order": "hermite_major_index=p*Nl+j",
         "Nl": 2,
         "Nm": 4,
-        "laguerre_convention": "spectraxgk_opposite_to_paper",
+        "laguerre_convention": "gkx_opposite_to_paper",
         "source": "Frei, Ernst & Ricci (2022), arXiv:2202.06293",
         "equations": {
             "sugama": "C6a-C6f",
@@ -6827,21 +6827,21 @@ def build_figures_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _load_spectrax_scan_from_mismatch(
+def _load_gkx_scan_from_mismatch(
     csv_path: Path, *, x_col: str = "ky"
 ) -> LinearScanResult:
-    from spectraxgk.benchmarking.shared import LinearScanResult
+    from gkx.benchmarking.shared import LinearScanResult
 
     table = pd.read_csv(csv_path).sort_values(x_col)
     return LinearScanResult(
         ky=table[x_col].to_numpy(dtype=float),
-        gamma=table["gamma_spectrax"].to_numpy(dtype=float),
-        omega=table["omega_spectrax"].to_numpy(dtype=float),
+        gamma=table["gamma_gkx"].to_numpy(dtype=float),
+        omega=table["omega_gkx"].to_numpy(dtype=float),
     )
 
 
 def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
-    from spectraxgk.benchmarking.shared import LinearScanResult
+    from gkx.benchmarking.shared import LinearScanResult
 
     keep = np.asarray(ref.ky) <= 0.45 + 1.0e-12
     return LinearScanResult(
@@ -6852,15 +6852,15 @@ def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
 
 
 def _run_etg_figures(*, outdir: Path, progress: bool) -> None:
-    from spectraxgk.artifacts.plotting import scan_comparison_figure
-    from spectraxgk.benchmarking.shared import load_etg_reference
-    from spectraxgk.runtime import run_runtime_scan
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.artifacts.plotting import scan_comparison_figure
+    from gkx.benchmarking.shared import load_etg_reference
+    from gkx.runtime import run_runtime_scan
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
 
     reference = load_etg_reference()
     mismatch_csv = outdir / "etg_mismatch_table.csv"
     if mismatch_csv.exists():
-        scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
+        scan = _load_gkx_scan_from_mismatch(mismatch_csv)
     else:
         config, _ = load_runtime_from_toml(
             REPO_ROOT / "examples/linear/axisymmetric/etg.toml"
@@ -6892,7 +6892,7 @@ def _run_etg_figures(*, outdir: Path, progress: bool) -> None:
         x_ref=reference.ky,
         gamma_ref=reference.gamma,
         omega_ref=reference.omega,
-        label="SPECTRAX-GK",
+        label="GKX",
         ref_label="Reference",
         log_x=True,
     )
@@ -6901,8 +6901,8 @@ def _run_etg_figures(*, outdir: Path, progress: bool) -> None:
 
 
 def _run_kbm_figures(*, outdir: Path) -> None:
-    from spectraxgk.artifacts.plotting import scan_comparison_figure
-    from spectraxgk.benchmarking.shared import load_kbm_reference
+    from gkx.artifacts.plotting import scan_comparison_figure
+    from gkx.benchmarking.shared import load_kbm_reference
 
     reference = load_kbm_reference()
     mismatch_csv = outdir / "kbm_mismatch_table.csv"
@@ -6910,7 +6910,7 @@ def _run_kbm_figures(*, outdir: Path) -> None:
         raise FileNotFoundError(
             f"missing {mismatch_csv}; generate the KBM mismatch table first"
         )
-    scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
+    scan = _load_gkx_scan_from_mismatch(mismatch_csv)
     fig, _axes = scan_comparison_figure(
         scan.ky,
         scan.gamma,
@@ -6920,7 +6920,7 @@ def _run_kbm_figures(*, outdir: Path) -> None:
         x_ref=reference.ky,
         gamma_ref=reference.gamma,
         omega_ref=reference.omega,
-        label="SPECTRAX-GK",
+        label="GKX",
         ref_label="Reference",
         log_x=False,
     )
@@ -6929,11 +6929,11 @@ def _run_kbm_figures(*, outdir: Path) -> None:
 
 
 def main_figures(argv: list[str] | None = None) -> int:
-    from spectraxgk.artifacts.plotting import (
+    from gkx.artifacts.plotting import (
         cyclone_comparison_figure,
         cyclone_reference_figure,
     )
-    from spectraxgk.benchmarking.shared import load_cyclone_reference
+    from gkx.benchmarking.shared import load_cyclone_reference
 
     args = build_figures_parser().parse_args(argv)
     outdir = REPO_ROOT / "docs" / "_static"
@@ -6947,7 +6947,7 @@ def main_figures(argv: list[str] | None = None) -> int:
     fig, _axes = cyclone_reference_figure(reference)
     fig.savefig(outdir / "cyclone_reference.png", dpi=200)
     fig.savefig(outdir / "cyclone_reference.pdf")
-    scan = _load_spectrax_scan_from_mismatch(outdir / "cyclone_mismatch_table.csv")
+    scan = _load_gkx_scan_from_mismatch(outdir / "cyclone_mismatch_table.csv")
     fig, _axes = cyclone_comparison_figure(reference, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
@@ -7035,8 +7035,8 @@ def build_summary(
 ) -> dict[str, object]:
     """Build the JSON payload for an observed-order convergence gate."""
 
-    from spectraxgk.diagnostics.analysis import estimate_observed_order
-    from spectraxgk.diagnostics.validation_gates import (
+    from gkx.diagnostics.analysis import estimate_observed_order
+    from gkx.diagnostics.validation_gates import (
         gate_report_to_dict,
         observed_order_gate_report,
     )
@@ -7129,8 +7129,8 @@ def _branch_gate_report_from_selected_rows(
     max_rel_omega_jump: float,
     min_successive_overlap: float | None,
 ) -> dict[str, object] | None:
-    from spectraxgk.diagnostics.analysis import branch_continuity_metrics
-    from spectraxgk.diagnostics.validation_gates import (
+    from gkx.diagnostics.analysis import branch_continuity_metrics
+    from gkx.diagnostics.validation_gates import (
         branch_continuity_gate_report,
         gate_report_to_dict,
     )

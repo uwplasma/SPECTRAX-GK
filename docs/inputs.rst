@@ -1,14 +1,14 @@
 Input Files and Executable
 ==========================
 
-SPECTRAX-GK supports lightweight TOML inputs that map directly onto the
+GKX supports lightweight TOML inputs that map directly onto the
 ``GridConfig``, ``TimeConfig``, ``GeometryConfig``, and ``ModelConfig`` dataclasses.
 You can use these inputs from the executable or from a Python driver.
 
 Unified Runtime Schema
 ----------------------
 
-In addition to benchmark-case TOMLs, SPECTRAX-GK supports a **case-agnostic**
+In addition to benchmark-case TOMLs, GKX supports a **case-agnostic**
 runtime schema (``RuntimeConfig``) with explicit species and physics toggles.
 This allows Cyclone/ETG/KBM to run through the same solver path without
 changing solver internals.
@@ -96,7 +96,7 @@ Equivalent executable flags are available for single-point runtime runs:
 
 .. code-block:: bash
 
-   spectraxgk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/axisymmetric/cyclone.toml \
      --quasilinear \
      --ql-mode saturated \
@@ -154,7 +154,7 @@ decimated with ``sample_stride`` (record every ``N`` steps) and
 ``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the executable) to
 disable diagnostics entirely for speed. For CFL-controlled timestep control, use
 ``fixed_dt = false`` along with ``cfl`` and optional ``cfl_fac`` /
-``dt_min`` / ``dt_max`` limits. When ``cfl_fac`` is omitted, SPECTRAX uses
+``dt_min`` / ``dt_max`` limits. When ``cfl_fac`` is omitted, GKX uses
 the benchmark-locked method default instead of a universal constant:
 ``rk3``/``sspx3`` use ``1.73``, ``rk4`` uses ``2.82``, and other methods keep
 ``1.0``. When adaptive timestepping is enabled, diagnostics include
@@ -192,7 +192,7 @@ RHS because its field-particle correction is not diagonal. The
 diagonal operators).
 
 The ``[geometry]`` section supports ``drift_scale`` to switch between benchmark-compatible
-(``drift_scale = 1.0``) and the alternate doubled-drift convention (``drift_scale = 2.0``). The default configuration in SPECTRAX-GK uses the tracked benchmark value.
+(``drift_scale = 1.0``) and the alternate doubled-drift convention (``drift_scale = 2.0``). The default configuration in GKX uses the tracked benchmark value.
 The physical meaning of the runtime terms and geometry coefficients is detailed
 in :doc:`theory` and :doc:`operators`; the TOML layer here documents how those
 implemented models are selected and parameterized.
@@ -205,18 +205,18 @@ It also accepts ``model = "imported-netcdf"`` with
 field-line geometry instead of the analytic ``s-alpha`` model. The imported
 file can be a tracked benchmark ``*.out.nc`` or a root-level ``*.eik.nc`` geometry
 file produced by the VMEC workflow. When that imported geometry is used with a
-linked boundary, SPECTRAX-GK now follows the file's own ``theta`` range,
+linked boundary, GKX now follows the file's own ``theta`` range,
 ``jtwist/x0`` geometry factor, and ``kxfac`` metadata instead of forcing the
 analytic s-alpha grid defaults.
 For direct VMEC workflows, the runtime also accepts ``model = "vmec"``.
-In that mode SPECTRAX-GK calls the VMEC geometry helper to generate a
+In that mode GKX calls the VMEC geometry helper to generate a
 matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
 geometry path as the VMEC examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
 as an explicit output path for the generated ``*.eik.nc`` file, and
 ``geometry_helper_repo`` can point to a non-default helper checkout if needed.
 The preferred VMEC path is the internal ``booz_xform_jax`` backend, discovered from
-``BOOZ_XFORM_JAX_PATH`` or ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` when it is not
+``BOOZ_XFORM_JAX_PATH`` or ``GKX_BOOZ_XFORM_JAX_PATH`` when it is not
 installed into the active Python environment. This is now the recommended
 imported-geometry route for new stellarator cases. The shipped VMEC TOMLs
 point to locally generated files under ``examples/vmec``; generate those files
@@ -226,14 +226,14 @@ against the TOML directory first. Command-line overrides are resolved from the
 shell working directory.
 Use ``geometry_helper_repo`` and ``geometry_helper_python`` when an imported
 geometry helper checkout or interpreter must be selected explicitly.
-When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
+When ``geometry_file`` is set for ``model = "vmec"``, GKX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
-For VMEC ``fix aspect`` runs, SPECTRAX follows the helper default contract and
+For VMEC ``fix aspect`` runs, GKX follows the helper default contract and
 does not inject ``x0`` from the runtime ``Lx``. That keeps the generated
 ``*.eik.nc`` file aligned with the imported W7-X/HSX geometry output.
 
 For Miller tokamak workflows, the runtime also accepts ``model = "miller"``.
-In that mode SPECTRAX-GK uses its in-package Miller backend to generate a matching
+In that mode GKX uses its in-package Miller backend to generate a matching
 root-level ``*.eiknc.nc`` file, then immediately re-enters the same imported
 geometry path used for VMEC ``eik.nc`` files.
 Set the Miller inputs directly in ``[geometry]``:
@@ -244,21 +244,21 @@ ratio explicitly when reproducing a benchmark; the separate ``epsilon`` field
 belongs to analytic geometry metadata and does not replace the surface radius.
 ``geometry_file`` can be used as an explicit output path for the generated
 Miller ``*.eiknc.nc`` file. Existing output is reused by default; pass
-``--force`` to ``spectraxgk geometry miller`` to regenerate it. The
+``--force`` to ``gkx geometry miller`` to regenerate it. The
 ``geometry_helper_python`` and ``geometry_helper_repo`` settings apply to VMEC
 helper discovery, not to this in-package Miller backend.
 
 Executable path overrides
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``spectraxgk`` and ``spectrax-gk`` executables accept path overrides for
+The ``gkx`` and ``gkx`` executables accept path overrides for
 runtime-configured runs:
 
 .. code-block:: bash
 
-   spectrax-gk run --config case.toml --vmec-file examples/vmec/wout_circular_tokamak.nc
-   spectrax-gk run --config case.toml --geometry-file external_geometry.eik.nc
-   spectrax-gk run-runtime-nonlinear --config case.toml --init-file ~/restart.nc
+   gkx run --config case.toml --vmec-file examples/vmec/wout_circular_tokamak.nc
+   gkx run --config case.toml --geometry-file external_geometry.eik.nc
+   gkx run-runtime-nonlinear --config case.toml --init-file ~/restart.nc
 
 These override paths expand ``~`` and environment variables and are resolved
 against the shell's current working directory. TOML paths still resolve against
@@ -299,11 +299,11 @@ Executable usage
 
 .. code-block:: bash
 
-  cd examples/linear/axisymmetric && spectrax-gk cyclone.toml
-  spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
-  spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
-   spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
-   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
+  cd examples/linear/axisymmetric && gkx cyclone.toml
+  gkx scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
+  gkx run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
+   gkx scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
+   gkx run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
 
 For ``run-runtime-nonlinear``, omit ``--steps`` when ``fixed_dt = false`` unless
 you explicitly want a capped step count. The executable now preserves ``steps = None``
@@ -328,7 +328,7 @@ table and the JSON summary is written next to it as ``*.summary.json``.
 
 If the nonlinear output path ends in ``.out.nc`` (recommended) or another
 ``.nc`` suffix, the runtime switches to NetCDF restart/diagnostic artifacts
-instead of the lightweight JSON/CSV pair. In that mode SPECTRAX-GK writes:
+instead of the lightweight JSON/CSV pair. In that mode GKX writes:
 
 * ``*.out.nc``: diagnostic history together with ``Grids``, ``Geometry``, and
   ``Inputs`` groups.
@@ -453,7 +453,7 @@ Notable runtime-only keys:
   multi-mode perturbations are host-platform independent and reproduce the
   same seeded pattern on macOS and Linux.
 * ``[init] init_file``: load a saved complex state from either the full-``ky``
-  SPECTRAX layout or a packed positive-``ky`` interchange layout.
+  GKX layout or a packed positive-``ky`` interchange layout.
 * ``[init] init_file_scale`` / ``init_file_mode``: scale a loaded restart state
   and either ``replace`` the analytic seed (default) or ``add`` it to the
   fresh perturbation. This is the general runtime equivalent of
@@ -521,7 +521,7 @@ diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
 ``backend = "electrostatic_linear_slices"``. ``backend = "auto"`` selects the
 electrostatic-slices route when the active terms satisfy that gate; otherwise
 the runtime raises instead of silently falling back to an unvalidated path.
-These backends are accepted only by ``spectraxgk.linear_rhs_parallel_cached``.
+These backends are accepted only by ``gkx.linear_rhs_parallel_cached``.
 The first two require all non-streaming linear terms disabled. The
 electrostatic-slices backend allows only streaming, mirror, curvature, grad-B,
 and diamagnetic-drive weights; collisions, linked boundaries, electromagnetic
@@ -536,7 +536,7 @@ their own identity gates, so requesting velocity parallelization there raises a
 clear error.
 
 For independent scan, sensitivity, and UQ workloads, use
-``spectraxgk.batch_map`` for JAX-array maps and ``spectraxgk.independent_map``
+``gkx.batch_map`` for JAX-array maps and ``gkx.independent_map``
 for file-backed Python tasks such as calibration rows or leave-one-out UQ
 holdouts. Require a serial identity artifact before using timing results in a
 publication claim. The helpers preserve ordering, so diagnostics such as growth

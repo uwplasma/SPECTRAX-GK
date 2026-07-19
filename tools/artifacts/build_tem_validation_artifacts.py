@@ -17,25 +17,25 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TABLE = ROOT / "docs" / "_static" / "tem_mismatch_table.csv"
-DEFAULT_REFERENCE = ROOT / "src" / "spectraxgk" / "data" / "tem_reference.csv"
+DEFAULT_REFERENCE = ROOT / "src" / "gkx" / "data" / "tem_reference.csv"
 DEFAULT_BRANCH_OUT = ROOT / "docs" / "_static" / "tem_branch_parity_audit.png"
 
 REFERENCE_PROVENANCE = (
     "Digitized low-ky TEM branch from the literature figure tracked in "
-    "src/spectraxgk/data/tem_reference.csv; this is not a direct code-to-code dump."
+    "src/gkx/data/tem_reference.csv; this is not a direct code-to-code dump."
 )
 
 REQUIRED_COLUMNS = (
     "ky",
     "gamma_ref",
     "omega_ref",
-    "gamma_spectrax",
-    "omega_spectrax",
+    "gamma_gkx",
+    "omega_gkx",
     "rel_gamma",
     "rel_omega",
 )
@@ -134,17 +134,17 @@ def build_branch_audit_payload(
     ky = np.array([row["ky"] for row in rows], dtype=float)
     gamma_ref = np.array([row["gamma_ref"] for row in rows], dtype=float)
     omega_ref = np.array([row["omega_ref"] for row in rows], dtype=float)
-    gamma_spectrax = np.array([row["gamma_spectrax"] for row in rows], dtype=float)
-    omega_spectrax = np.array([row["omega_spectrax"] for row in rows], dtype=float)
+    gamma_gkx = np.array([row["gamma_gkx"] for row in rows], dtype=float)
+    omega_gkx = np.array([row["omega_gkx"] for row in rows], dtype=float)
     rel_gamma = np.array([row["rel_gamma"] for row in rows], dtype=float)
     rel_omega = np.array([row["rel_omega"] for row in rows], dtype=float)
 
-    gamma_error = gamma_spectrax - gamma_ref
-    omega_error = omega_spectrax - omega_ref
+    gamma_error = gamma_gkx - gamma_ref
+    omega_error = omega_gkx - omega_ref
     gamma_abs_error = np.abs(gamma_error)
     omega_abs_error = np.abs(omega_error)
-    gamma_sign_mismatch = np.signbit(gamma_ref) != np.signbit(gamma_spectrax)
-    omega_sign_mismatch = np.signbit(omega_ref) != np.signbit(omega_spectrax)
+    gamma_sign_mismatch = np.signbit(gamma_ref) != np.signbit(gamma_gkx)
+    omega_sign_mismatch = np.signbit(omega_ref) != np.signbit(omega_gkx)
     safe_omega = np.abs(omega_ref) >= 0.2
     if np.any(safe_omega):
         max_safe_rel_omega = float(np.max(np.abs(rel_omega[safe_omega])))
@@ -155,8 +155,8 @@ def build_branch_audit_payload(
         max_safe_rel_omega = None
         worst_safe_rel_omega_ky = None
 
-    omega_spearman = _spearman(omega_ref, omega_spectrax)
-    gamma_spearman = _spearman(gamma_ref, gamma_spectrax)
+    omega_spearman = _spearman(omega_ref, omega_gkx)
+    gamma_spearman = _spearman(gamma_ref, gamma_gkx)
     branch_inversion = omega_spearman is not None and omega_spearman < 0.0
 
     worst_gamma_idx = int(np.argmax(gamma_abs_error))
@@ -208,7 +208,7 @@ def build_branch_audit_payload(
         },
         "rows": rows_out,
         "interpretation": (
-            "The tracked SPECTRAX-GK low-ky TEM branch does not match the digitized reference: "
+            "The tracked GKX low-ky TEM branch does not match the digitized reference: "
             "growth-rate amplitude/sign and frequency branch orientation fail simultaneously. "
             "Because the reference is a reconstructed literature digitization rather than a direct "
             "case dump, this artifact blocks broad TEM validation claims but should not be used by "
@@ -241,8 +241,8 @@ def write_branch_artifacts(
         "ky",
         "gamma_ref",
         "omega_ref",
-        "gamma_spectrax",
-        "omega_spectrax",
+        "gamma_gkx",
+        "omega_gkx",
         "rel_gamma",
         "rel_omega",
         "gamma_error",
@@ -260,16 +260,16 @@ def write_branch_artifacts(
     ky = np.array([row["ky"] for row in rows], dtype=float)
     gamma_ref = np.array([row["gamma_ref"] for row in rows], dtype=float)
     omega_ref = np.array([row["omega_ref"] for row in rows], dtype=float)
-    gamma_spectrax = np.array([row["gamma_spectrax"] for row in rows], dtype=float)
-    omega_spectrax = np.array([row["omega_spectrax"] for row in rows], dtype=float)
-    gamma_error = np.abs(gamma_spectrax - gamma_ref)
-    omega_error = np.abs(omega_spectrax - omega_ref)
+    gamma_gkx = np.array([row["gamma_gkx"] for row in rows], dtype=float)
+    omega_gkx = np.array([row["omega_gkx"] for row in rows], dtype=float)
+    gamma_error = np.abs(gamma_gkx - gamma_ref)
+    omega_error = np.abs(omega_gkx - omega_ref)
     metrics = payload["metrics"]
 
     fig, axes = plt.subplots(2, 2, figsize=(12.0, 8.0))
     ax = axes[0, 0]
     ax.plot(ky, gamma_ref, "o-", label="digitized reference", color="#264653")
-    ax.plot(ky, gamma_spectrax, "s--", label="SPECTRAX-GK tracked", color="#e76f51")
+    ax.plot(ky, gamma_gkx, "s--", label="GKX tracked", color="#e76f51")
     ax.axhline(0.0, color="#444444", linewidth=0.8, alpha=0.5)
     ax.set_xlabel(r"$k_y \rho_i$")
     ax.set_ylabel(r"$\gamma$")
@@ -278,7 +278,7 @@ def write_branch_artifacts(
 
     ax = axes[0, 1]
     ax.plot(ky, omega_ref, "o-", label="digitized reference", color="#264653")
-    ax.plot(ky, omega_spectrax, "s--", label="SPECTRAX-GK tracked", color="#e76f51")
+    ax.plot(ky, omega_gkx, "s--", label="GKX tracked", color="#e76f51")
     ax.axhline(0.0, color="#444444", linewidth=0.8, alpha=0.5)
     ax.set_xlabel(r"$k_y \rho_i$")
     ax.set_ylabel(r"$\omega$")

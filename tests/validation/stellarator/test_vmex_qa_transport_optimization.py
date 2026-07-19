@@ -12,8 +12,8 @@ from types import SimpleNamespace
 
 import numpy as np
 
-import spectraxgk
-from spectraxgk.objectives.vmec_candidate_admission import (
+import gkx
+from gkx.objectives.vmec_candidate_admission import (
     build_solved_vmec_candidate_gate,
 )
 
@@ -210,7 +210,7 @@ def test_reduced_surface_comparison_is_not_current_primary_optimization_figure()
 
 def test_solved_wout_candidate_gate_passes_valid_qa_branch() -> None:
     assert (
-        spectraxgk.build_solved_vmec_candidate_gate is build_solved_vmec_candidate_gate
+        gkx.build_solved_vmec_candidate_gate is build_solved_vmec_candidate_gate
     )
     result = SimpleNamespace(
         history={

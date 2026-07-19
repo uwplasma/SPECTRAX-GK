@@ -6,11 +6,11 @@ matplotlib.use("Agg")
 
 import numpy as np
 
-from spectraxgk.benchmarking.shared import CycloneReference, CycloneScanResult
+from gkx.benchmarking.shared import CycloneReference, CycloneScanResult
 import matplotlib.pyplot as plt
 import pytest
-import spectraxgk.artifacts.plotting as plotting
-from spectraxgk.artifacts.plotting import (
+import gkx.artifacts.plotting as plotting
+from gkx.artifacts.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     eigenfunction_reference_overlay_figure,

@@ -83,7 +83,7 @@ PRODUCTION_GATE_REFERENCE_BLOCKERS = {
 PROFILE_SOURCE_CONTRACT_VERSION = 1
 PROFILE_SOURCE_CONTRACT_VERSION_KEYS = (
     "python",
-    "spectraxgk",
+    "gkx",
     "jax",
     "jaxlib",
     "numpy",

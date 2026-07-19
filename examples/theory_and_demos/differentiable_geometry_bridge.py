@@ -2,10 +2,10 @@
 """Differentiable geometry bridge validation and inverse-design demo.
 
 The example validates the Phase-A geometry contract used by
-``vmex -> booz_xform_jax -> SPECTRAX-GK`` workflows:
+``vmex -> booz_xform_jax -> GKX`` workflows:
 
 1. a boundary-parameter vector produces solver-ready flux-tube geometry arrays;
-2. SPECTRAX-GK differentiates geometry observables through that in-memory
+2. GKX differentiates geometry observables through that in-memory
    contract;
 3. autodiff sensitivities are checked against central finite differences;
 4. a small two-parameter inverse problem recovers target geometry observables
@@ -19,8 +19,8 @@ Boozer bridge is audited by differentiating both a bounded spectral objective an
 Boozer-spectrum-to-flux-tube mapping through the real ``booz_xform_jax``
 functional API. A final optional gate starts from a real ``vmex``
 ``VMECState`` and differentiates VMEC Fourier coefficients through
-both ``vmex -> booz_xform_jax -> SPECTRAX-GK`` and the direct
-VMEC-tensor-to-SPECTRAX flux-tube contract.
+both ``vmex -> booz_xform_jax -> GKX`` and the direct
+VMEC-tensor-to-GKX flux-tube contract.
 """
 
 from __future__ import annotations
@@ -36,8 +36,8 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectraxgk.objectives.autodiff_validation import covariance_diagnostics
-from spectraxgk.geometry.differentiable import (
+from gkx.objectives.autodiff_validation import covariance_diagnostics
+from gkx.geometry.differentiable import (
     booz_xform_flux_tube_sensitivity_report,
     booz_xform_spectral_sensitivity_report,
     discover_differentiable_geometry_backends,

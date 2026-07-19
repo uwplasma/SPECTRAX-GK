@@ -14,8 +14,8 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.runtime import run_runtime_scan
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.runtime import run_runtime_scan
 
 
 _DEFAULT_CONFIG = Path(__file__).with_name("runtime_batch_ky_scan.toml")

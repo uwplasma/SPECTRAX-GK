@@ -7,8 +7,8 @@ from support.paths import REPO_ROOT, load_release_tool
 
 import pytest
 
-import spectraxgk
-from spectraxgk.diagnostics.nonlinear_transport_optimization import (
+import gkx
+from gkx.diagnostics.nonlinear_transport_optimization import (
     ProductionNonlinearOptimizationGuardConfig,
     matched_optimized_transport_report,
     optimized_equilibrium_transport_report,
@@ -341,7 +341,7 @@ def test_matched_optimized_transport_report_requires_reduction_and_uncertainty()
     assert "insufficient_matched_optimized_reduction" in weak["blockers"]
     assert "insufficient_matched_optimized_uncertainty_separation" in weak["blockers"]
     assert (
-        spectraxgk.matched_optimized_transport_report
+        gkx.matched_optimized_transport_report
         is matched_optimized_transport_report
     )
 

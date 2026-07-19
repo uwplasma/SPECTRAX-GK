@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.workflows.nonlinear import (
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.workflows.nonlinear import (
     build_secondary_stage2_config,
     run_secondary_modes,
     run_secondary_seed,
@@ -27,7 +27,7 @@ def main() -> None:
     cfg_path = Path(__file__).resolve().parent / "runtime_secondary_slab.toml"
     cfg, _data = load_runtime_from_toml(cfg_path)
 
-    with TemporaryDirectory(prefix="spectrax_secondary_") as tmpdir:
+    with TemporaryDirectory(prefix="gkx_secondary_") as tmpdir:
         restart_path = Path(tmpdir) / "secondary_seed.bin"
         run_secondary_seed(
             cfg,

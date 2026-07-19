@@ -160,7 +160,7 @@
   ],
   "next_action": "do not launch another blind scalar-weight ladder; change the transport observable, sample set, or finite-difference scale until the local boundary sensitivity is measurable",
   "setup": {
-    "input": "/home/rjorge/tmp/spectrax-authoritative-qa-baseline-direct-metric-20260602151201/input.final",
+    "input": "/home/rjorge/tmp/gkx-authoritative-qa-baseline-direct-metric-20260602151201/input.final",
     "max_mode": 5,
     "min_vmec_mode": 7,
     "transport_kind": "nonlinear_window_heat_flux",
@@ -181,7 +181,7 @@
       "reduction": "weighted_mean",
       "n_samples": 1
     },
-    "spectrax_config": {
+    "gkx_config": {
       "ntheta": 24,
       "mboz": 21,
       "nboz": 21,
@@ -323,7 +323,7 @@
       "ad_fd_mismatch"
     ],
     "classification": "ad_fd_inconsistent_or_underresolved",
-    "next_action": "do not use this reverse gradient for VMEC-JAX optimization; repair the differentiable VMEC/Boozer/SPECTRAX path or use finite differences only as diagnostics"
+    "next_action": "do not use this reverse gradient for VMEC-JAX optimization; repair the differentiable VMEC/Boozer/GKX path or use finite differences only as diagnostics"
   },
   "objective_sample_summary": {
     "surfaces": [

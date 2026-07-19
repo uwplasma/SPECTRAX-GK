@@ -196,7 +196,7 @@ def write_rhs_profile_panel(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     kernels = ["field_solve", "linear_rhs", "nonlinear_bracket", "full_rhs"]
     labels = list(profiles)
@@ -248,7 +248,7 @@ def write_diffrax_speedup_panel(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     df = pd.read_csv(data_path)
     set_plot_style()
@@ -337,7 +337,7 @@ def write_independent_ky_artifacts(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")
@@ -518,7 +518,7 @@ def write_nonlinear_sharding_artifacts(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

@@ -10,9 +10,9 @@ import math
 
 import pytest
 
-import spectraxgk
-import spectraxgk.geometry.vmec_boundary_chain as boundary_chain
-from spectraxgk.geometry.vmec_boundary_chain import (
+import gkx
+import gkx.geometry.vmec_boundary_chain as boundary_chain
+from gkx.geometry.vmec_boundary_chain import (
     boundary_chain_summary_from_probe,
     build_boundary_chain_collection_summary,
     build_boundary_chain_summary,
@@ -59,7 +59,7 @@ def test_boundary_chain_collection_helpers_have_canonical_owner() -> None:
         boundary_chain._boundary_chain_collection_counts,
         boundary_chain._boundary_chain_collection_decision,
     ):
-        assert helper.__module__ == "spectraxgk.geometry.vmec_boundary_chain"
+        assert helper.__module__ == "gkx.geometry.vmec_boundary_chain"
 
 
 def test_boundary_chain_summary_classifies_frozen_axis_branch_sensitivity() -> None:
@@ -249,9 +249,9 @@ def test_boundary_chain_summary_from_probe_and_public_api() -> None:
         "frozen_axis_initial_fd_norm": 1.8,
     }
 
-    assert spectraxgk.build_boundary_chain_summary is build_boundary_chain_summary
+    assert gkx.build_boundary_chain_summary is build_boundary_chain_summary
     assert (
-        spectraxgk.boundary_chain_summary_from_probe
+        gkx.boundary_chain_summary_from_probe
         is boundary_chain_summary_from_probe
     )
     summary = boundary_chain_summary_from_probe(payload, exact_relative_tolerance=0.1)
@@ -472,7 +472,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from spectraxgk.objectives.vmec_candidate_admission import (
+from gkx.objectives.vmec_candidate_admission import (
     build_authoritative_wout_candidate_gate,
     build_solved_vmec_candidate_gate,
     build_wout_reproducibility_gate,
@@ -876,24 +876,24 @@ def test_authoritative_wout_candidate_gate_reports_wout_load_errors(
 # ---- test_vmex_transport_admission.py ----
 
 
-import spectraxgk.diagnostics.stellarator_transport_reports as transport_reports
-from spectraxgk.diagnostics.stellarator_transport_reports import (
+import gkx.diagnostics.stellarator_transport_reports as transport_reports
+from gkx.diagnostics.stellarator_transport_reports import (
     build_nonlinear_audit_redesign_report,
     build_nonlinear_campaign_admission_report,
     build_nonlinear_landscape_admission_report,
     build_reduced_nonlinear_audit_prelaunch_report,
 )
-from spectraxgk.objectives.vmec_transport_admission import (
-    VMECJAXNonlinearAuditPolicy,
-    VMECJAXNonlinearCampaignPolicy,
-    VMECJAXReducedPrelaunchPolicy,
-    VMECJAXTransportAdmissionPolicy,
+from gkx.objectives.vmec_transport_admission import (
+    VMEXNonlinearAuditPolicy,
+    VMEXNonlinearCampaignPolicy,
+    VMEXReducedPrelaunchPolicy,
+    VMEXTransportAdmissionPolicy,
 )
-from spectraxgk.objectives.vmec_transport_admission import (
+from gkx.objectives.vmec_transport_admission import (
     candidate_transport_metric,
     transport_objective_sample_summary,
 )
-from spectraxgk.objectives.vmec_transport_admission import (
+from gkx.objectives.vmec_transport_admission import (
     build_transport_admission_report,
     select_admitted_transport_candidate,
 )
@@ -931,7 +931,7 @@ def test_transport_metric_prefers_explicit_transport_metric_over_total_objective
     metric = candidate_transport_metric(
         {
             "objective_final": 4.0,
-            "spectrax_objective_final": 2.0,
+            "gkx_objective_final": 2.0,
             "transport_objective_final": 1.0,
         }
     )
@@ -990,7 +990,7 @@ def test_transport_admission_blocks_non_authoritative_gate() -> None:
 
 
 def test_transport_admission_can_require_stronger_relative_improvement() -> None:
-    policy = VMECJAXTransportAdmissionPolicy(minimum_relative_improvement=0.25)
+    policy = VMEXTransportAdmissionPolicy(minimum_relative_improvement=0.25)
     summaries = [
         _candidate("baseline", objective=1.0, baseline=True),
         _candidate("small", objective=0.9, weight=0.001),
@@ -1004,13 +1004,13 @@ def test_transport_admission_can_require_stronger_relative_improvement() -> None
 
 
 def test_transport_admission_exports_public_api() -> None:
-    assert spectraxgk.VMECJAXTransportAdmissionPolicy is VMECJAXTransportAdmissionPolicy
+    assert gkx.VMEXTransportAdmissionPolicy is VMEXTransportAdmissionPolicy
     assert (
-        spectraxgk.build_transport_admission_report is build_transport_admission_report
+        gkx.build_transport_admission_report is build_transport_admission_report
     )
-    assert spectraxgk.candidate_transport_metric is candidate_transport_metric
+    assert gkx.candidate_transport_metric is candidate_transport_metric
     assert (
-        spectraxgk.select_admitted_transport_candidate
+        gkx.select_admitted_transport_candidate
         is select_admitted_transport_candidate
     )
 
@@ -1057,7 +1057,7 @@ def test_nonlinear_landscape_admission_selects_uncertainty_resolved_candidate() 
             _ensemble(6.42653555490751, 0.04399590111876854),
         ],
         candidate_labels=("+3%", "+6%"),
-        policy=VMECJAXNonlinearAuditPolicy(
+        policy=VMEXNonlinearAuditPolicy(
             minimum_relative_reduction=0.02,
             minimum_uncertainty_z_score=2.0,
             maximum_combined_sem_rel=0.05,
@@ -1071,7 +1071,7 @@ def test_nonlinear_landscape_admission_selects_uncertainty_resolved_candidate() 
     assert report["selected_candidate"]["uncertainty_z_score"] > 17.0
     assert all(row["admitted"] for row in report["candidates"])
     assert (
-        spectraxgk.build_nonlinear_landscape_admission_report
+        gkx.build_nonlinear_landscape_admission_report
         is build_nonlinear_landscape_admission_report
     )
     assert (
@@ -1091,7 +1091,7 @@ def test_nonlinear_landscape_admission_fails_closed_for_noisy_or_unresolved_cand
             _ensemble(6.0, 2.0, n_reports=2),
             _ensemble(5.0, 0.1, passed=False),
         ],
-        policy=VMECJAXNonlinearAuditPolicy(
+        policy=VMEXNonlinearAuditPolicy(
             minimum_relative_reduction=0.02,
             minimum_uncertainty_z_score=2.0,
             maximum_combined_sem_rel=0.2,
@@ -1173,7 +1173,7 @@ def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() 
             "weighted_standard_error": 0.014457225619392737,
         },
         failed_reference_relative_reduction=0.022876,
-        policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
+        policy=VMEXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
     )
 
     assert report["passed"] is True
@@ -1183,9 +1183,9 @@ def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() 
     assert report["gates"][0]["passed"] is True
     assert report["reduced_cross_sample_statistics"]["passed"] is True
     assert report["gates"][2]["metric"] == "reduced_cross_sample_dispersion"
-    assert spectraxgk.VMECJAXReducedPrelaunchPolicy is VMECJAXReducedPrelaunchPolicy
+    assert gkx.VMEXReducedPrelaunchPolicy is VMEXReducedPrelaunchPolicy
     assert (
-        spectraxgk.build_reduced_nonlinear_audit_prelaunch_report
+        gkx.build_reduced_nonlinear_audit_prelaunch_report
         is build_reduced_nonlinear_audit_prelaunch_report
     )
     assert (
@@ -1204,7 +1204,7 @@ def test_reduced_nonlinear_audit_prelaunch_blocks_weak_failed_transfer_margin() 
             "ky_values": [0.1, 0.3, 0.5],
         },
         failed_reference_relative_reduction=0.022876,
-        policy=VMECJAXReducedPrelaunchPolicy(
+        policy=VMEXReducedPrelaunchPolicy(
             minimum_relative_reduction=0.04,
             failed_reference_safety_factor=1.5,
         ),
@@ -1235,7 +1235,7 @@ def test_reduced_prelaunch_blocks_excessive_reduced_cross_sample_spread() -> Non
             "weighted_mean": 0.064,
             "weighted_standard_error": 0.04,
         },
-        policy=VMECJAXReducedPrelaunchPolicy(
+        policy=VMEXReducedPrelaunchPolicy(
             minimum_relative_reduction=0.04,
             maximum_cross_sample_sem_rel=0.35,
         ),
@@ -1263,13 +1263,13 @@ def test_campaign_admission_combines_reduced_and_replicated_landscape_gates() ->
             "weighted_mean": 0.06450805792574345,
             "weighted_standard_error": 0.014457225619392737,
         },
-        policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
+        policy=VMEXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
     )
     landscape = build_nonlinear_landscape_admission_report(
         _ensemble(8.554362366164424, 0.11951503416978174),
         [_ensemble(6.274543846475065, 0.04213243251063571)],
         candidate_labels=("+3% RBC(0,1)",),
-        policy=VMECJAXNonlinearAuditPolicy(
+        policy=VMEXNonlinearAuditPolicy(
             minimum_relative_reduction=0.02,
             minimum_uncertainty_z_score=2.0,
             maximum_combined_sem_rel=0.05,
@@ -1288,9 +1288,9 @@ def test_campaign_admission_combines_reduced_and_replicated_landscape_gates() ->
     assert report["claim_scope"].startswith(
         "next nonlinear optimizer-campaign admission"
     )
-    assert spectraxgk.VMECJAXNonlinearCampaignPolicy is VMECJAXNonlinearCampaignPolicy
+    assert gkx.VMEXNonlinearCampaignPolicy is VMEXNonlinearCampaignPolicy
     assert (
-        spectraxgk.build_nonlinear_campaign_admission_report
+        gkx.build_nonlinear_campaign_admission_report
         is build_nonlinear_campaign_admission_report
     )
     assert (
@@ -1311,19 +1311,19 @@ def test_campaign_admission_fails_closed_without_cross_sample_gate_or_landscape_
             "alphas": [0.0, 0.7853981633974483],
             "ky_values": [0.1, 0.3, 0.5],
         },
-        policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
+        policy=VMEXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
     )
     landscape = build_nonlinear_landscape_admission_report(
         _ensemble(8.0, 0.3),
         [_ensemble(7.4, 0.3)],
         candidate_labels=("weak",),
-        policy=VMECJAXNonlinearAuditPolicy(minimum_relative_reduction=0.02),
+        policy=VMEXNonlinearAuditPolicy(minimum_relative_reduction=0.02),
     )
 
     report = build_nonlinear_campaign_admission_report(
         reduced_prelaunch_report=prelaunch,
         landscape_admission_report=landscape,
-        policy=VMECJAXNonlinearCampaignPolicy(
+        policy=VMEXNonlinearCampaignPolicy(
             minimum_landscape_relative_reduction=0.10,
             minimum_landscape_uncertainty_z_score=3.0,
         ),
@@ -1401,7 +1401,7 @@ def test_nonlinear_audit_redesign_blocks_negative_transfer_and_recommends_multis
 def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_pass() -> (
     None
 ):
-    policy = VMECJAXNonlinearAuditPolicy(
+    policy = VMEXNonlinearAuditPolicy(
         minimum_relative_reduction=0.02,
         minimum_uncertainty_z_score=1.0,
         minimum_surface_count=3,
@@ -1426,9 +1426,9 @@ def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_p
     assert report["blockers"] == []
     assert report["objective_sample_summary"]["sample_count"] == 18
     assert all(gate["passed"] for gate in report["gates"])
-    assert spectraxgk.VMECJAXNonlinearAuditPolicy is VMECJAXNonlinearAuditPolicy
+    assert gkx.VMEXNonlinearAuditPolicy is VMEXNonlinearAuditPolicy
     assert (
-        spectraxgk.build_nonlinear_audit_redesign_report
+        gkx.build_nonlinear_audit_redesign_report
         is build_nonlinear_audit_redesign_report
     )
     assert (
@@ -1436,7 +1436,7 @@ def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_p
         is transport_reports.build_nonlinear_audit_redesign_report
     )
     assert (
-        spectraxgk.transport_objective_sample_summary
+        gkx.transport_objective_sample_summary
         is transport_objective_sample_summary
     )
 
@@ -1484,7 +1484,7 @@ def test_transport_sample_summary_rejects_ky_values_not_supported_by_single_solv
 from dataclasses import dataclass
 
 
-from spectraxgk.objectives.vmec_transport_optimization import (
+from gkx.objectives.vmec_transport_optimization import (
     boundary_spec_record,
     build_boundary_transport_gradient_report,
     write_boundary_transport_gradient_report,
@@ -1592,7 +1592,7 @@ def test_transport_gradient_report_requires_params_without_specs() -> None:
 
 def test_transport_gradient_report_writer_and_public_api(tmp_path) -> None:
     assert (
-        spectraxgk.build_boundary_transport_gradient_report
+        gkx.build_boundary_transport_gradient_report
         is build_boundary_transport_gradient_report
     )
     report = build_boundary_transport_gradient_report(FakeOptimizer(), top_n=1)
@@ -1606,7 +1606,7 @@ def test_transport_gradient_report_writer_and_public_api(tmp_path) -> None:
 # ---- test_vmex_transport_line_search.py ----
 
 
-from spectraxgk.objectives.vmec_transport_optimization import (
+from gkx.objectives.vmec_transport_optimization import (
     ProjectedLineSearchPolicy,
     boundary_chain_accepted_parameter_indices,
     projected_line_search_input_manifest,
@@ -1918,7 +1918,7 @@ def test_projected_line_search_admission_reports_missing_metrics_and_higher_is_b
             {
                 "label": "higher",
                 "step": 0.1,
-                "spectrax_objective_final": 11.0,
+                "gkx_objective_final": 11.0,
                 "gate_passed": False,
             }
         ],
@@ -1936,45 +1936,45 @@ def test_projected_line_search_admission_reports_missing_metrics_and_higher_is_b
 
 
 def test_projected_line_search_public_api_exports() -> None:
-    assert spectraxgk.ProjectedLineSearchPolicy is ProjectedLineSearchPolicy
+    assert gkx.ProjectedLineSearchPolicy is ProjectedLineSearchPolicy
     assert (
-        spectraxgk.boundary_chain_accepted_parameter_indices
+        gkx.boundary_chain_accepted_parameter_indices
         is boundary_chain_accepted_parameter_indices
     )
     assert (
-        spectraxgk.sparse_descent_direction_from_gradient_report
+        gkx.sparse_descent_direction_from_gradient_report
         is sparse_descent_direction_from_gradient_report
     )
     assert (
-        spectraxgk.projected_line_search_input_manifest
+        gkx.projected_line_search_input_manifest
         is projected_line_search_input_manifest
     )
     assert (
-        spectraxgk.select_projected_line_search_candidate
+        gkx.select_projected_line_search_candidate
         is select_projected_line_search_candidate
     )
 
 
 # ---- test_vmex_transport_objective.py ----
 
-"""Tests for VMEC-JAX to SPECTRAX-GK transport objective plumbing."""
+"""Tests for VMEC-JAX to GKX transport objective plumbing."""
 
 
 from types import ModuleType
 
 import jax.numpy as jnp
 
-from spectraxgk import (
+from gkx import (
     StellaratorITGSampleSet,
-    VMECJAXSpectraxTransportObjective,
-    VMECJAXTransportObjectiveConfig,
+    VMEXGKXTransportObjective,
+    VMEXTransportObjectiveConfig,
     vmex_transport_growth_branch_locality_report_from_states,
     vmex_transport_objective_from_state,
 )
-from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
-import spectraxgk.objectives.vmec_transport_branch as transport_branch
-import spectraxgk.objectives.vmec_transport as transport_config
-import spectraxgk.objectives.vmec_transport as transport_tables
+from gkx.objectives.core import SOLVER_OBJECTIVE_NAMES
+import gkx.objectives.vmec_transport_branch as transport_branch
+import gkx.objectives.vmec_transport as transport_config
+import gkx.objectives.vmec_transport as transport_tables
 
 
 def _fake_geometry() -> SimpleNamespace:
@@ -2036,7 +2036,7 @@ def test_vmex_transport_objective_reduces_fake_solver_rows(monkeypatch) -> None:
     samples = StellaratorITGSampleSet(
         surfaces=(0.5, 0.7), alphas=(0.0,), ky_values=(0.2, 0.4)
     )
-    cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples, ny=4)
+    cfg = VMEXTransportObjectiveConfig(kind="growth", sample_set=samples, ny=4)
 
     value = vmex_transport_objective_from_state(
         object(),
@@ -2081,7 +2081,7 @@ def test_vmex_transport_surface_chunking_matches_unchunked_weighted_mean(
             ky_values=(0.2, 0.4),
             surface_weights=(3.0, 1.0),
         )
-        cfg = VMECJAXTransportObjectiveConfig(
+        cfg = VMEXTransportObjectiveConfig(
             kind="growth",
             sample_set=samples,
             ny=4,
@@ -2128,7 +2128,7 @@ def test_vmex_transport_growth_branch_locality_report_accepts_consistent_branch(
         transport_branch, "solver_linear_operator_matrix_from_geometry", fake_matrix
     )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
-    cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
+    cfg = VMEXTransportObjectiveConfig(kind="growth", sample_set=samples)
 
     report = vmex_transport_growth_branch_locality_report_from_states(
         "base",
@@ -2142,7 +2142,7 @@ def test_vmex_transport_growth_branch_locality_report_accepts_consistent_branch(
     )
 
     assert (
-        spectraxgk.vmex_transport_growth_branch_locality_report_from_states
+        gkx.vmex_transport_growth_branch_locality_report_from_states
         is vmex_transport_growth_branch_locality_report_from_states
     )
     assert report["passed"] is True
@@ -2176,7 +2176,7 @@ def test_vmex_transport_growth_branch_locality_report_fails_on_branch_switch(
         transport_branch, "solver_linear_operator_matrix_from_geometry", fake_matrix
     )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
-    cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
+    cfg = VMEXTransportObjectiveConfig(kind="growth", sample_set=samples)
 
     report = vmex_transport_growth_branch_locality_report_from_states(
         "base",
@@ -2219,7 +2219,7 @@ def test_vmex_transport_objective_nonlinear_proxy_is_positive_and_exported(
     samples = StellaratorITGSampleSet(
         surfaces=(0.5, 0.7), alphas=(0.0,), ky_values=(0.2, 0.4)
     )
-    cfg = VMECJAXTransportObjectiveConfig(
+    cfg = VMEXTransportObjectiveConfig(
         kind="nonlinear_window_heat_flux", sample_set=samples
     )
 
@@ -2231,10 +2231,10 @@ def test_vmex_transport_objective_nonlinear_proxy_is_positive_and_exported(
         "state", "static", "indata", object(), cfg
     )
 
-    assert spectraxgk.VMECJAXTransportObjectiveConfig is VMECJAXTransportObjectiveConfig
+    assert gkx.VMEXTransportObjectiveConfig is VMEXTransportObjectiveConfig
     assert (
-        spectraxgk.VMECJAXSpectraxTransportObjective
-        is VMECJAXSpectraxTransportObjective
+        gkx.VMEXGKXTransportObjective
+        is VMEXGKXTransportObjective
     )
     assert float(low) > 0.0
     assert float(high) > float(low)
@@ -2257,18 +2257,18 @@ def test_vmex_transport_objective_transform_scales_large_residuals(
         transport_tables, "solver_growth_rate_from_geometry", fake_growth
     )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
-    raw_cfg = VMECJAXTransportObjectiveConfig(
+    raw_cfg = VMEXTransportObjectiveConfig(
         kind="nonlinear_window_heat_flux",
         sample_set=samples,
         objective_transform="raw",
     )
-    scaled_cfg = VMECJAXTransportObjectiveConfig(
+    scaled_cfg = VMEXTransportObjectiveConfig(
         kind="nonlinear_window_heat_flux",
         sample_set=samples,
         objective_transform="scaled",
         objective_scale=10.0,
     )
-    log_cfg = VMECJAXTransportObjectiveConfig(
+    log_cfg = VMEXTransportObjectiveConfig(
         kind="nonlinear_window_heat_flux",
         sample_set=samples,
         objective_transform="log1p",
@@ -2294,7 +2294,7 @@ def test_vmex_transport_objective_transform_scales_large_residuals(
 def test_vmex_transport_objective_vmec_callback_builds_reference_wout(
     monkeypatch,
 ) -> None:
-    import spectraxgk.objectives.vmec_transport as mod
+    import gkx.objectives.vmec_transport as mod
 
     captured: dict[str, object] = {}
 
@@ -2307,7 +2307,7 @@ def test_vmex_transport_objective_vmec_callback_builds_reference_wout(
         return jnp.asarray(0.125)
 
     monkeypatch.setattr(mod, "vmex_transport_objective_from_state", fake_eval)
-    objective = VMECJAXSpectraxTransportObjective()
+    objective = VMEXGKXTransportObjective()
     ctx = SimpleNamespace(
         static=SimpleNamespace(cfg=SimpleNamespace(nfp=3)), indata="indata", signgs=-1
     )
@@ -2323,23 +2323,23 @@ def test_vmex_transport_objective_vmec_callback_builds_reference_wout(
 
 def test_vmex_transport_config_rejects_underresolved_boozer_modes() -> None:
     assert (
-        VMECJAXTransportObjectiveConfig(kind="growth").gradient_scope
+        VMEXTransportObjectiveConfig(kind="growth").gradient_scope
         == "eigenvalue_growth_ad"
     )
     assert (
-        VMECJAXTransportObjectiveConfig(kind="quasilinear_flux").gradient_scope
+        VMEXTransportObjectiveConfig(kind="quasilinear_flux").gradient_scope
         == "eigenvalue_growth_ad_with_geometry_transport_weights"
     )
     try:
-        VMECJAXTransportObjectiveConfig(mboz=12, nboz=21)
+        VMEXTransportObjectiveConfig(mboz=12, nboz=21)
     except ValueError as exc:
         assert "at least 21" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("underresolved Boozer mode count should fail")
     with pytest.raises(ValueError, match="objective_scale"):
-        VMECJAXTransportObjectiveConfig(objective_scale=0.0)
+        VMEXTransportObjectiveConfig(objective_scale=0.0)
     with pytest.raises(ValueError, match="objective transform"):
-        VMECJAXTransportObjectiveConfig(objective_transform="bad")  # type: ignore[arg-type]
+        VMEXTransportObjectiveConfig(objective_transform="bad")  # type: ignore[arg-type]
 
 
 def test_vmex_transport_objective_pins_imported_backend_paths(
@@ -2364,15 +2364,15 @@ def test_vmex_transport_objective_pins_imported_backend_paths(
     booz_module.__file__ = str(booz_file)
     monkeypatch.setitem(sys.modules, "vmex", vmec_module)
     monkeypatch.setitem(sys.modules, "booz_xform_jax", booz_module)
-    monkeypatch.delenv("SPECTRAX_VMEX_PATH", raising=False)
+    monkeypatch.delenv("GKX_VMEX_PATH", raising=False)
     monkeypatch.delenv("VMEX_PATH", raising=False)
-    monkeypatch.delenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", raising=False)
+    monkeypatch.delenv("GKX_BOOZ_XFORM_JAX_PATH", raising=False)
     monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
     transport_config._pin_current_optional_backend_paths()
 
-    assert str(vmec_root) == transport_config.os.environ["SPECTRAX_VMEX_PATH"]
-    assert str(booz_root) == transport_config.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
+    assert str(vmec_root) == transport_config.os.environ["GKX_VMEX_PATH"]
+    assert str(booz_root) == transport_config.os.environ["GKX_BOOZ_XFORM_JAX_PATH"]
 
 
 def test_module_search_root_handles_paths_and_missing_modules(
@@ -2399,7 +2399,7 @@ def test_module_search_root_handles_paths_and_missing_modules(
     assert transport_config._module_search_root("missing_path_backend") is None
     assert transport_config._module_search_root("no_path_backend") is None
     assert (
-        transport_config._module_search_root("spectraxgk_missing_backend_for_test")
+        transport_config._module_search_root("gkx_missing_backend_for_test")
         is None
     )
 
@@ -2412,17 +2412,17 @@ def test_pin_current_optional_backend_paths_respects_explicit_environment(
         raise AssertionError(f"backend search should be skipped for {module_name}")
 
     monkeypatch.setattr(transport_config, "_module_search_root", unexpected_search)
-    monkeypatch.delenv("SPECTRAX_VMEX_PATH", raising=False)
+    monkeypatch.delenv("GKX_VMEX_PATH", raising=False)
     monkeypatch.setenv("VMEX_PATH", "/explicit/vmec-jax")
-    monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", "/explicit/booz-xform-jax")
+    monkeypatch.setenv("GKX_BOOZ_XFORM_JAX_PATH", "/explicit/booz-xform-jax")
     monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
     transport_config._pin_current_optional_backend_paths()
 
-    assert "SPECTRAX_VMEX_PATH" not in transport_config.os.environ
+    assert "GKX_VMEX_PATH" not in transport_config.os.environ
     assert transport_config.os.environ["VMEX_PATH"] == "/explicit/vmec-jax"
     assert (
-        transport_config.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
+        transport_config.os.environ["GKX_BOOZ_XFORM_JAX_PATH"]
         == "/explicit/booz-xform-jax"
     )
 
@@ -2481,12 +2481,12 @@ def test_vmex_transport_config_rejects_invalid_edges(
     message: str,
 ) -> None:
     with pytest.raises(ValueError, match=message):
-        VMECJAXTransportObjectiveConfig(**kwargs)
+        VMEXTransportObjectiveConfig(**kwargs)
 
 
 def test_vmex_transport_config_objective_options_filter_none_values() -> None:
-    default_options = VMECJAXTransportObjectiveConfig().objective_options()
-    configured_options = VMECJAXTransportObjectiveConfig(
+    default_options = VMEXTransportObjectiveConfig().objective_options()
+    configured_options = VMEXTransportObjectiveConfig(
         reference_length=2.5,
         reference_b=0.7,
         validate_finite=False,
@@ -2549,7 +2549,7 @@ def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
         transport_tables, "solver_growth_rate_from_geometry", fake_growth
     )
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
-    cfg = VMECJAXTransportObjectiveConfig(kind="quasilinear_flux", sample_set=samples)
+    cfg = VMEXTransportObjectiveConfig(kind="quasilinear_flux", sample_set=samples)
 
     value = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), cfg

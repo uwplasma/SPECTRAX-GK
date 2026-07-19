@@ -4,53 +4,53 @@ Differentiable Stellarator Optimization
 Purpose
 -------
 
-SPECTRAX-GK's public optimization examples are actual VMEC-JAX QA
-stellarator workflows with SPECTRAX-GK transport objectives appended to the
+GKX's public optimization examples are actual VMEC-JAX QA
+stellarator workflows with GKX transport objectives appended to the
 VMEC-JAX objective tuple list.
 
 - The paper-facing VMEC-JAX path starts from the upstream fixed-boundary QA
   script ``examples/optimization/QA_optimization.py`` and keeps its solved-
   equilibrium objective structure: aspect ratio, high-weight mean iota, and
-  quasisymmetry. SPECTRAX-GK transport enters as one additional objective tuple.
+  quasisymmetry. GKX transport enters as one additional objective tuple.
 - Reduced max-mode-1 synthetic controls are development diagnostics only. They
   live outside ``examples/optimization`` and are not README-facing
   stellarator-optimization examples.
 
 The VMEC-JAX-style scripts preserve the current upstream QA constants:
 mode-1-through-5 continuation, ``ASPECT_TARGET = 6.0``, ``IOTA_TARGET = 0.42``,
-and a weight of 10 on the mean-iota residual. The SPECTRAX-GK objective is
+and a weight of 10 on the mean-iota residual. The GKX objective is
 appended with a small editable weight so the QA/aspect/iota gates remain
 dominant. Any production nonlinear heat-flux claim still requires matched long
-post-transient SPECTRAX-GK audits, replicate statistics, and running-average
+post-transient GKX audits, replicate statistics, and running-average
 convergence checks.
 
 Source Map
 ----------
 
-- Core API: :mod:`spectraxgk.objectives.stellarator`
+- Core API: :mod:`gkx.objectives.stellarator`
 - Current VMEC-JAX equilibrium-to-flux-tube adapter:
   ``vmex.core.turbulence.flux_tube_geometry``
 - Current growth, quasilinear, and reduced nonlinear-window callbacks:
   ``vmex.core.turbulence.turbulent_growth_rate``,
   ``quasilinear_flux_proxy``, and ``nonlinear_heat_flux_proxy``
-- Lower-level SPECTRAX objective kernels used by those callbacks:
-  :func:`spectraxgk.solver_linear_operator_matrix_from_geometry`,
-  :func:`spectraxgk.solver_objective_vector_from_geometry`
+- Lower-level GKX objective kernels used by those callbacks:
+  :func:`gkx.solver_linear_operator_matrix_from_geometry`,
+  :func:`gkx.solver_objective_vector_from_geometry`
 - Production in-memory geometry boundary:
-  :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
+  :func:`gkx.flux_tube_geometry_from_vmec_boozer_state`
 - Production-adjacent linear/quasilinear objective evaluator:
-  :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
+  :func:`gkx.vmec_boozer_solver_objective_vector_from_state`
 - Scalar optimizer hook:
-  :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
+  :func:`gkx.vmec_boozer_scalar_objective_from_state`
 - Multi-point objective table and aggregate hooks:
-  :func:`spectraxgk.vmec_boozer_solver_objective_table_from_state`,
-  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_from_state`
+  :func:`gkx.vmec_boozer_solver_objective_table_from_state`,
+  :func:`gkx.vmec_boozer_aggregate_scalar_objective_from_state`
 - VMEC-state finite-difference sensitivity audit:
-  :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
+  :func:`gkx.vmec_boozer_scalar_objective_finite_difference_report`
 - Multi-point finite-difference sensitivity audit:
-  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report`
+  :func:`gkx.vmec_boozer_aggregate_scalar_objective_finite_difference_report`
 - Fast branch-continuity and sensitivity gate:
-  :func:`spectraxgk.solver_objective_branch_gradient_report`
+  :func:`gkx.solver_objective_branch_gradient_report`
 - VMEC-JAX-style growth-rate script:
   :download:`QA_optimization_linear_ITG.py <../examples/optimization/QA_optimization_linear_ITG.py>`
 - VMEC-JAX-style quasilinear-flux script:
@@ -76,7 +76,7 @@ is involved:
    python examples/optimization/QA_optimization_nonlinear_ITG.py
 
 The circular seed perturbation, mode-1-through-5 continuation, QA residual,
-aspect target ``A=6``, and mean-iota target ``0.42`` match upstream. SPECTRAX-GK
+aspect target ``A=6``, and mean-iota target ``0.42`` match upstream. GKX
 adds only the last tuple:
 
 .. code-block:: python
@@ -96,7 +96,7 @@ adds only the last tuple:
    )
 
 ``transport_objective(state, runtime)`` calls one of the current VMEC-JAX
-SPECTRAX adapters on a fixed ITG flux tube:
+GKX adapters on a fixed ITG flux tube:
 
 - ``turbulent_growth_rate`` returns the dominant linear growth rate. It is
   traceable through geometry and the eigensolve, so ``JAC="implicit"`` composes
@@ -150,7 +150,7 @@ The optimizer choice depends on the observable being optimized:
   expensive, rugged scans, but they must be judged by matched nonlinear audits,
   not by reduced startup-window residuals.
 
-Practical SPECTRAX-GK policy:
+Practical GKX policy:
 
 1. Use current VMEC-JAX least squares for the strict constraints-only QA
    baseline, and keep an independently replayed WOUT as the common starting
@@ -162,7 +162,7 @@ Practical SPECTRAX-GK policy:
    screening. These runs choose candidates; they do not prove turbulent-flux
    reduction.
 4. Promote a candidate only after matched initial/final nonlinear
-   SPECTRAX-GK audits pass the strict long-window policy: staged horizons
+   GKX audits pass the strict long-window policy: staged horizons
    ``700,1100,1500``, accepted average over ``t=[1100,1500]``, seed/timestep
    replication, and follow-up grid/window convergence for both baseline and
    optimized states.
@@ -415,7 +415,7 @@ than baseline (``-0.49%``, ``z = -0.19``; ``-0.25%``, ``z = -0.09``).
    :align: center
 
    README-facing strict QA optimizer sweep built from tracked VMEC-JAX WOUTs and
-   SPECTRAX-GK reduced transport residuals. The sidecar
+   GKX reduced transport residuals. The sidecar
    :download:`vmex_qa_full_sweep_panel.json <_static/vmex_qa_full_sweep_panel.json>`
    records the exact artifact provenance.
 
@@ -434,15 +434,15 @@ uses the strict max-mode-5 QA baseline and three transport restarts from that
 baseline. It plots objective histories, solved-WOUT ``iota`` profiles, final
 aspect/``iota``/QS diagnostics, reduced transport metrics, 3-D LCFS surfaces
 colored by ``|B|``, and LCFS ``|B|`` maps. It only plots nonlinear heat-flux
-traces when matched long-window SPECTRAX-GK audit CSV files are present below
+traces when matched long-window GKX audit CSV files are present below
 the corresponding candidate directory.
 
 This distinction is deliberate. The optimizer residual named
 ``nonlinear_window_heat_flux`` is a differentiable screening objective based on
-linear SPECTRAX-GK rows and a smooth late-window envelope. It is useful for
+linear GKX rows and a smooth late-window envelope. It is useful for
 ranking candidate directions, but it is not a saturated turbulent heat-flux
 measurement. A candidate can be promoted to a nonlinear transport claim only
-after generating replicated post-transient SPECTRAX-GK runs from its concrete
+after generating replicated post-transient GKX runs from its concrete
 ``wout_final.nc`` and demonstrating running-average convergence of ``Q(t)``.
 If a constraints-only QA baseline stops below the requested iota, increase the
 solve budget or use a small target buffer and rerun it. Do not promote it by
@@ -464,7 +464,7 @@ optimizer WOUT, and use only the authoritative replay for downstream transport
 audits.
 
 .. figure:: _static/vmex_qa_full_sweep_panel.png
-   :alt: VMEC-JAX QA max-mode-5 optimizer sweep with SPECTRAX-GK transport objectives
+   :alt: VMEC-JAX QA max-mode-5 optimizer sweep with GKX transport objectives
    :width: 98%
    :align: center
 
@@ -566,7 +566,7 @@ Solved QA Transport Optimization
 --------------------------------
 
 The production workflow starts from the current VMEC-JAX precise-QA seed and
-adds one validated SPECTRAX-GK transport objective while retaining the aspect,
+adds one validated GKX transport objective while retaining the aspect,
 iota, and quasisymmetry residuals. Candidate equilibria remain unpromoted until
 solved-WOUT geometry gates and matched long-window nonlinear audits pass. This
 preserves the fixed-boundary equilibrium and precise-QA conventions of
@@ -576,13 +576,13 @@ The solved-boundary VMEC-JAX path assembles the objective from in-memory VMEC
 states and requires the optional ``vmex`` and ``booz_xform_jax`` packages.
 It first solves a constraints-only QA baseline and then restarts a
 transport-weighted branch from that solved input. The current VMEC-JAX
-least-squares implementation owns the optimizer. SPECTRAX-GK selects only the
+least-squares implementation owns the optimizer. GKX selects only the
 derivative policy appropriate to the observable; it no longer maintains a
 parallel optimizer-method abstraction.
 
 The two branches use the upstream simple-seed perturbation and explicit mode
 continuation.
-The SPECTRAX-GK study targets ``A=6`` and mean ``iota=0.42``; a passed optimizer
+The GKX study targets ``A=6`` and mean ``iota=0.42``; a passed optimizer
 run is still only a candidate. The required next audit is an independent WOUT
 profile/replay check followed by matched, replicated, long-window nonlinear
 heat-flux comparisons of baseline and candidate equilibria.
@@ -629,7 +629,7 @@ as historical negative and conditioning evidence.
 
 New campaigns use current VMEC-JAX ``opt.least_squares`` directly. Growth-rate
 optimization uses its implicit equilibrium Jacobian and must pass the local
-SPECTRAX eigenbranch/tangent gates; eigenvector-weighted QL and reduced
+GKX eigenbranch/tangent gates; eigenvector-weighted QL and reduced
 nonlinear objectives use finite-difference outer Jacobians. Candidate boundaries
 are replayed independently and evaluated before any matched nonlinear
 audit. This current path replaces the former private fixed-boundary stage,
@@ -646,7 +646,7 @@ and reduced local objective descent is not a turbulent-transport claim.
    :alt: VMEC-JAX transport-gradient line-search audit
    :width: 100%
 
-   VMEC-JAX/SPECTRAX-GK transport-gradient line-search audit. Green points pass
+   VMEC-JAX/GKX transport-gradient line-search audit. Green points pass
    the solved-equilibrium aspect, iota, and QS gates; the red point is rejected
    by the QS gate. The best accepted projected step reduces the reduced
    transport metric by ``3.55%`` and defines the candidate for the next matched
@@ -720,7 +720,7 @@ blocked portfolios are never copied into the release figure index.
 Boundary-Coefficient Objective Landscapes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before launching another optimizer, SPECTRAX-GK now includes a
+Before launching another optimizer, GKX now includes a
 boundary-coefficient landscape diagnostic.
 It perturbs one VMEC input coefficient, writes the corresponding ``input.*``
 decks, evaluates deterministic reduced transport objectives, and optionally
@@ -737,7 +737,7 @@ multi-point optimizer sample set: ``s = (0.45, 0.64, 0.78)``,
 ``alpha = (0, pi/4)``, and ``k_y rho_i = (0.10, 0.30, 0.50)``.  The lower
 panel is deliberately not a reduced nonlinear-window objective.  It accepts
 only long-window post-transient nonlinear heat-flux ensemble sidecars produced
-from concrete SPECTRAX-GK nonlinear outputs.  This separation is part of the
+from concrete GKX nonlinear outputs.  This separation is part of the
 claim boundary: reduced/startup nonlinear-window diagnostics can guide launch
 choices, but they cannot be plotted or cited as turbulent heat-flux
 landscapes.
@@ -786,10 +786,10 @@ for the current strict-baseline ``[-75%, +75%]`` figure.
    are excluded from this figure.
 
 Current VMEC-JAX WOUT files provide ``Aminor_p``, ``Rmajor_p``, ``aspect``, and
-``volume_p`` from the solved equilibrium. SPECTRAX-GK consumes those values
+``volume_p`` from the solved equilibrium. GKX consumes those values
 directly; the runtime EIK path rejects an invalid ``Aminor_p``. In-memory bridge
 workflows may instead pass an explicit reference length for normalization.
-SPECTRAX-GK does not estimate or rewrite equilibrium scalars from the LCFS
+GKX does not estimate or rewrite equilibrium scalars from the LCFS
 boundary.
 
 Implementation Map
@@ -816,9 +816,9 @@ separate EIK generation for the common demo path:
    ./generate_wouts.sh
    cd ../..
 
-   spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
-   spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
-   spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
+   gkx run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
+   gkx run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
+   gkx run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
 
 Run ``vmex input.NAME`` inside ``examples/vmec`` when only one WOUT is
 needed. These bundled QHS/QI/QA decks are self-contained demonstration
@@ -828,7 +828,7 @@ with ``--vmec-file`` pointing to the benchmark WOUT.
 This disk-WOUT path is the runtime example path, not the production optimizer
 gradient contract. The production optimizer starts from an in-memory solved
 ``vmex`` state, transforms through ``booz_xform_jax``, and then builds the
-SPECTRAX-GK flux tube without relying on intermediate NetCDF files.
+GKX flux tube without relying on intermediate NetCDF files.
 
 Production VMEC-JAX Optimization Plan
 -------------------------------------
@@ -836,7 +836,7 @@ Production VMEC-JAX Optimization Plan
 The production lane starts from the ``vmex`` fixed-boundary QA optimizer:
 aspect ratio is constrained, the mean rotational transform uses the original
 VMEC-JAX high-weight ``MeanIota`` target by default, the quasisymmetry residual
-is penalized, and a SPECTRAX-GK transport objective is added as another
+is penalized, and a GKX transport objective is added as another
 residual block. The default paper-facing seed now targets ``A = 6`` and
 ``iota = 0.41`` at a fixed ITG flux tube, initially ``torflux = 0.64`` and
 ``alpha = 0.0``. A one-sided floor mode remains available for experiments, but
@@ -845,16 +845,16 @@ failure observed with the absolute-floor smoke. The optimized result must also
 pass held-out field-line and surface gates before any stellarator-wide claim.
 
 A bounded VMEC-JAX smoke run has been checked with ``max_mode=1``,
-``mboz=nboz=21``, a SPECTRAX-GK growth residual, and a single scalar-trust
+``mboz=nboz=21``, a GKX growth residual, and a single scalar-trust
 evaluation. It assembled the four residual blocks (aspect, absolute-iota
-floor, quasisymmetry, SPECTRAX-GK transport) and retained the iota floor with
+floor, quasisymmetry, GKX transport) and retained the iota floor with
 ``min |iota| = 0.410000`` and mean iota ``0.481850``. This validates the
 in-memory optimizer hook and iota-floor convention; it is not yet the final
 transport-aware optimized equilibrium used for a turbulence claim.
 
 The public VMEC-JAX QA transport scripts are:
 
-- ``QA_optimization_linear_ITG.py``: append a SPECTRAX-GK ITG
+- ``QA_optimization_linear_ITG.py``: append a GKX ITG
   growth-rate objective to the upstream QA/aspect/iota tuple list.
 - ``QA_optimization_quasilinear_ITG.py``: append a quasilinear transport
   diagnostic objective to the same solved-equilibrium optimization.
@@ -871,7 +871,7 @@ For the geometry layer, the user-facing runtime examples use WOUT files
 generated from the small ``examples/vmec/input.*`` decks with ``vmex``.
 The optimizer path should avoid disk I/O: it should pass a solved
 ``vmex`` state through ``booz_xform_jax`` with ``mboz >= 21`` and
-``nboz >= 21``, then into the SPECTRAX-GK flux-tube contract. Disk WOUTs
+``nboz >= 21``, then into the GKX flux-tube contract. Disk WOUTs
 remain useful for reproducibility, release artifacts, and external benchmark
 comparison.
 
@@ -950,7 +950,7 @@ validation evidence.
    nonlinear turbulent-transport optimization claim.
 
 The production bridge now uses the same portfolio layout for real
-``vmex -> booz_xform_jax -> SPECTRAX-GK`` row production:
+``vmex -> booz_xform_jax -> GKX`` row production:
 ``stellarator_itg_vmec_boozer_sample_objective_table_from_state`` evaluates
 physical toroidal-flux, field-line ``alpha``, and ``k_y rho_i`` samples, while
 ``stellarator_itg_vmec_boozer_portfolio_objective_from_state`` applies the
@@ -1156,7 +1156,7 @@ Small geometry and objective-observable checks should use the shared
 flags, absolute and relative AD/finite-difference errors, tangent-direction
 agreement, rank, singular values, condition number, and a pass/fail gate in a
 strict JSON-compatible payload. The tiny solver-ready objective gate in
-The focused objective owners exposed through ``spectraxgk`` exercise this path without running
+The focused objective owners exposed through ``gkx`` exercise this path without running
 VMEC, Boozer, or a linear eigenproblem; it is a CI and documentation check for
 the reporting contract, not a transport-gradient claim.
 
@@ -1205,12 +1205,12 @@ Objective-portfolio artifact guard
 Multi-surface, multi-field-line, and multi-``k_y`` stellarator studies should
 separate two contracts:
 
-- row production, where VMEC/Boozer/SPECTRAX-GK evaluates one objective vector
+- row production, where VMEC/Boozer/GKX evaluates one objective vector
   per sample;
 - row reduction, where those fixed samples are combined into one scalar for an
   optimizer or UQ ensemble.
 
-The reducer in :mod:`spectraxgk.objectives.portfolio` requires a real
+The reducer in :mod:`gkx.objectives.portfolio` requires a real
 numeric ``(surface, alpha, ky, objective)`` table, finite non-negative
 normalized weights, and an explicit reduction policy. Its unit tests cover
 shape, weighting, JVP, reverse-mode, and finite-difference contracts. The
@@ -1327,7 +1327,7 @@ Zonal-flow Objective Contract
 
 The next stellarator-optimization lane targets geometries with stronger zonal
 response before claiming nonlinear turbulence suppression. The backend-free
-contract lives in :mod:`spectraxgk.objectives.zonal`. It reduces tensors of
+contract lives in :mod:`gkx.objectives.zonal`. It reduces tensors of
 ``residual_level``, ``damping_rate``, optional ``linear_growth_rate``, and
 optional ``recurrence_amplitude`` over a ``(surface, alpha, kx)`` portfolio.
 The minimization objective rewards large residual zonal flow through an
@@ -1335,7 +1335,7 @@ The minimization objective rewards large residual zonal flow through an
 residual, and late-time recurrence amplitude.
 
 This is deliberately a reduced objective gate. It is appropriate for
-``vmex -> booz_xform_jax -> SPECTRAX-GK`` sensitivity analysis once each
+``vmex -> booz_xform_jax -> GKX`` sensitivity analysis once each
 row is produced by a validated zonal-response run and the
 AD/finite-difference gate passes. It is not, by itself, a turbulence-reduction
 claim. A promoted result must still show matched baseline and optimized
@@ -1390,7 +1390,7 @@ can fail when nonlinear saturation physics changes.
 The next manuscript-level step is therefore not to promote this reduced model
 as an absolute flux predictor. The correct next step is to replace the reduced
 feature map with a parity-checked in-memory geometry pipeline and then audit
-the optimized shapes with converged nonlinear SPECTRAX-GK runs.
+the optimized shapes with converged nonlinear GKX runs.
 
 Solver-objective Geometry Gradients
 -----------------------------------
@@ -1433,7 +1433,7 @@ transport claims.
 
    Full-chain VMEC/Boozer eigenfrequency-gradient gate. A real ``vmex``
    state coefficient is perturbed, converted through ``booz_xform_jax`` with
-   ``mboz=nboz=21``, mapped into the SPECTRAX-GK linear solver, and checked
+   ``mboz=nboz=21``, mapped into the GKX linear solver, and checked
    against central finite differences.
    The artifact tools also accept explicit VMEC ``radial_index``,
    ``mode_index``, and ``surface_index`` controls so conditioning scans can
@@ -1447,7 +1447,7 @@ transport claims.
 
    Full-chain VMEC/Boozer quasilinear-gradient gate. The same state
    coefficient is mapped through ``vmex`` and ``booz_xform_jax`` with
-   ``mboz=nboz=21`` and a richer ``Nl=2, Nm=3`` SPECTRAX-GK moment basis.
+   ``mboz=nboz=21`` and a richer ``Nl=2, Nm=3`` GKX moment basis.
    The implicit left/right eigenpair sensitivity of ``gamma``, ``omega``,
    ``<k_perp^2>``, the electrostatic heat-flux weight, and
    ``gamma Q_i/k_perp^2`` agrees with central finite differences to
@@ -1467,7 +1467,7 @@ transport claims.
    Multi-point VMEC/Boozer aggregate-objective gate. The tracked QH fixture
    evaluates the quasilinear proxy at two resolved ``k_y`` samples using
    ``mboz=nboz=21`` and records the aggregate finite-difference response
-   through the same in-memory VMEC/Boozer/SPECTRAX-GK value path. This closes
+   through the same in-memory VMEC/Boozer/GKX value path. This closes
    the software and artifact path for multi-``k_y`` reduced objectives; it is
    not a nonlinear turbulent heat-flux optimization claim. The tracked
    two-``k_y`` artifact intentionally does not satisfy the held-out
@@ -1614,7 +1614,7 @@ the following pass:
    ``booz_xform_jax`` spectral derivative, and a bounded
    Boozer-``|B|``-to-flux-tube mapping derivative. It now also starts from a
    real ``vmex`` ``VMECState``, perturbs VMEC Fourier coefficients,
-   converts through ``booz_xform_jax``, and checks SPECTRAX-GK field-line
+   converts through ``booz_xform_jax``, and checks GKX field-line
    geometry-observable derivatives against central finite differences. The
    same artifact now records a direct-VMEC-tensor vs imported-VMEC/EIK
    array-parity audit plus a Boozer equal-arc core audit. The core audit now
@@ -1703,7 +1703,7 @@ the following pass:
    SEM/mean ``0.021``.
 
    The current QA ``vmex`` optimized-equilibrium candidate has also been
-   screened through the SPECTRAX-GK linear/quasilinear runtime before launching
+   screened through the GKX linear/quasilinear runtime before launching
    the large nonlinear campaign. On the sampled ITG branch
    ``k_y rho_i = 0.095, 0.190, 0.300, 0.476, 0.667``, all fitted growth rates
    are negative, with the least damped point at ``gamma≈-0.015``. The
@@ -1787,7 +1787,7 @@ the following pass:
    transfer evidence, so broad multi-surface, multi-field-line nonlinear
    transport-optimization claims still require separate gates.
 
-The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
+The release claim is now: GKX has a tested differentiable stellarator
 ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a
 scoped optimized-equilibrium replicated nonlinear transport audit with a matched
 finite-transform no-ESS reference comparison. It is still not a universal
@@ -1849,7 +1849,7 @@ specific bracket; it does not justify a broad nonlinear turbulent-flux
 optimization claim.
 
 Because both single-control amplitude sweeps point away from more blind
-replicas, SPECTRAX-GK now also targets a smoother
+replicas, GKX now also targets a smoother
 multi-coefficient direction. The tracked
 ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` uses the
 current long-window evidence signs to define a 2% descent-oriented direction:

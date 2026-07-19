@@ -2,7 +2,7 @@
 """Optimize quasi-axisymmetry plus a reduced nonlinear-window ITG proxy.
 
 This is VMEC-JAX's current ``QA_optimization.py`` workflow with one additional
-SPECTRAX-GK objective tuple. Edit the constants below and run without arguments.
+GKX objective tuple. Edit the constants below and run without arguments.
 The smooth saturation-rule proxy uses a dominant eigenvector and therefore uses
 finite-difference optimization. A long replicated nonlinear audit is mandatory.
 """

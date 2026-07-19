@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.solvers.nonlinear.explicit import (
+from gkx.solvers.nonlinear.explicit import (
     advance_explicit_nonlinear_state,
     integrate_cached_explicit_scan,
     make_explicit_diagnostic_step,

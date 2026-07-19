@@ -1,7 +1,7 @@
 # VMEC-JAX Geometry Inputs
 
 This directory contains small VMEC input decks copied from the `vmex`
-example set so SPECTRAX-GK examples can be run from a normal clone without
+example set so GKX examples can be run from a normal clone without
 shipping large `wout_*.nc` files.
 
 Generate the needed equilibrium files with:
@@ -19,7 +19,7 @@ vmex input.li383_low_res
 ```
 
 The command writes `wout_<input-name-without-input.>.nc` next to the input
-deck. The checked-in SPECTRAX-GK TOMLs use relative paths to those expected
+deck. The checked-in GKX TOMLs use relative paths to those expected
 outputs, for example:
 
 - `wout_circular_tokamak.nc`

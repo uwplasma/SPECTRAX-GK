@@ -12,27 +12,27 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.workflows.runtime.startup as startup
-from spectraxgk.diagnostics.analysis import late_time_linear_metrics
-from spectraxgk.config import (
+import gkx.workflows.runtime.startup as startup
+from gkx.diagnostics.analysis import late_time_linear_metrics
+from gkx.config import (
     CycloneBaseCase,
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
-from spectraxgk.diagnostics.modes import ModeSelection
-from spectraxgk.geometry import (
+from gkx.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
+from gkx.diagnostics.modes import ModeSelection
+from gkx.geometry import (
     SAlphaGeometry,
     apply_geometry_grid_defaults,
     sample_flux_tube_geometry,
 )
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.runtime import (
+from gkx.core.grid import build_spectral_grid
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
+from gkx.runtime import (
     _build_initial_condition,
     _centered_glibc_random_pairs,
     _dealiased_initial_mode_pairs,
@@ -47,8 +47,8 @@ from spectraxgk.runtime import (
     run_runtime_nonlinear,
     run_runtime_scan,
 )
-from spectraxgk.workflows.runtime.commands import run_linear_case, run_nonlinear_case
-from spectraxgk.workflows.runtime.config import (
+from gkx.workflows.runtime.commands import run_linear_case, run_nonlinear_case
+from gkx.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeExpertConfig,
@@ -58,11 +58,11 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
-from spectraxgk.workflows.runtime.orchestration_scan import run_runtime_parameter_scan
-from spectraxgk.workflows.runtime.diagnostics import refit_runtime_linear_trajectory
-from spectraxgk.workflows.runtime.results import RuntimeParameterScanResult
-from spectraxgk.terms.assembly import compute_fields_cached
-from spectraxgk.terms.config import FieldState
+from gkx.workflows.runtime.orchestration_scan import run_runtime_parameter_scan
+from gkx.workflows.runtime.diagnostics import refit_runtime_linear_trajectory
+from gkx.workflows.runtime.results import RuntimeParameterScanResult
+from gkx.terms.assembly import compute_fields_cached
+from gkx.terms.config import FieldState
 
 pytestmark = pytest.mark.integration
 
@@ -227,7 +227,7 @@ def test_runtime_linear_cyclone_etg_kbm_time_smoke() -> None:
 def test_runtime_linear_etg_defaults_to_frequency_targeted_krylov(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     electron = RuntimeSpeciesConfig(
         name="electron",
@@ -663,7 +663,7 @@ def test_runtime_linear_rejects_invalid_fit_signal() -> None:
 def test_runtime_linear_auto_fit_prefers_density_signal(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg = replace(
         _base_runtime_cfg(),
@@ -741,7 +741,7 @@ def test_runtime_linear_auto_fit_prefers_density_signal(
 def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg0 = _base_runtime_cfg()
     cfg = replace(
@@ -810,7 +810,7 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(
 def test_runtime_linear_forwards_velocity_parallel_config(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg0 = _base_runtime_cfg()
     cfg = replace(
@@ -891,7 +891,7 @@ def test_runtime_linear_forwards_velocity_parallel_config(
 def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg0 = _base_runtime_cfg()
     cfg = replace(
@@ -969,7 +969,7 @@ def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(
 def test_runtime_linear_auto_solver_falls_back_to_krylov(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg = replace(
         _base_runtime_cfg(),
@@ -1357,7 +1357,7 @@ def test_runtime_nonlinear_disable_diagnostics() -> None:
 def test_runtime_nonlinear_disable_diagnostics_uses_final_state_integrator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg = replace(
         _base_runtime_cfg(),
@@ -1445,7 +1445,7 @@ def test_runtime_nonlinear_validates_dt_steps_and_fixed_mode_contract() -> None:
 def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg = replace(
         _base_runtime_cfg(),
@@ -2015,7 +2015,7 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         return t, diag, np.asarray(G0) + 1.0, fields
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        "gkx.runtime.integrate_nonlinear_explicit_diagnostics_state",
         _fake_integrator,
     )
 
@@ -2215,7 +2215,7 @@ def test_runtime_nonlinear_resolves_cfl_factor(
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        "gkx.runtime.integrate_nonlinear_explicit_diagnostics_state",
         _fake_integrator,
     )
 
@@ -2465,7 +2465,7 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
     _write_root_eik_geometry(path, sampled, Dataset)
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.generate_runtime_vmec_eik", lambda cfg: path
+        "gkx.runtime.generate_runtime_vmec_eik", lambda cfg: path
     )
 
     cfg_vmec = replace(
@@ -2537,7 +2537,7 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(
     _write_root_eik_geometry(path, sampled, Dataset)
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.generate_runtime_miller_eik", lambda cfg: path
+        "gkx.runtime.generate_runtime_miller_eik", lambda cfg: path
     )
 
     cfg_miller = replace(
@@ -3169,7 +3169,7 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        "gkx.runtime.integrate_nonlinear_explicit_diagnostics_state",
         _fake_integrator,
     )
     _res = run_runtime_nonlinear(cfg, ky_target=0.3, Nl=3, Nm=4, steps=1)
@@ -3234,7 +3234,7 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        "gkx.runtime.integrate_nonlinear_explicit_diagnostics_state",
         _fake_integrator,
     )
     _res = run_runtime_nonlinear(
@@ -3250,7 +3250,7 @@ def test_run_linear_case_uses_toml_output_path(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     base = _base_runtime_cfg()
     cfg = replace(base, output=replace(base.output, path=str(tmp_path / "linear_case")))
@@ -3267,7 +3267,7 @@ def test_run_linear_case_uses_toml_output_path(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        "gkx.workflows.runtime.toml.load_runtime_from_toml",
         fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
@@ -3285,7 +3285,7 @@ def test_run_linear_case_toml_velocity_auto_reaches_parallel_rhs(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.solvers.linear.integrators as linear_integrators
+    import gkx.solvers.linear.integrators as linear_integrators
 
     cfg_path = tmp_path / "velocity_auto.toml"
     cfg_path.write_text(
@@ -3376,7 +3376,7 @@ def test_run_nonlinear_case_uses_toml_output_path(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     base = _base_runtime_cfg()
     cfg = replace(
@@ -3422,11 +3422,11 @@ def test_run_nonlinear_case_uses_toml_output_path(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        "gkx.workflows.runtime.toml.load_runtime_from_toml",
         fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear_with_artifacts",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear_with_artifacts",
         fake_run_runtime_nonlinear_with_artifacts,
     )
 
@@ -3445,7 +3445,7 @@ def test_run_linear_case_without_output_path_prints_summary_only(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg = _base_runtime_cfg()
 
@@ -3461,7 +3461,7 @@ def test_run_linear_case_without_output_path_prints_summary_only(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        "gkx.workflows.runtime.toml.load_runtime_from_toml",
         fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
@@ -3478,7 +3478,7 @@ def test_run_nonlinear_case_without_output_path_and_without_diagnostics(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     cfg = _base_runtime_cfg()
 
@@ -3497,7 +3497,7 @@ def test_run_nonlinear_case_without_output_path_and_without_diagnostics(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        "gkx.workflows.runtime.toml.load_runtime_from_toml",
         fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
@@ -3539,7 +3539,7 @@ def test_run_runtime_scan_serial_forwards_per_ky(
             selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
 
@@ -3586,7 +3586,7 @@ def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
             },
         )
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
 
@@ -3640,7 +3640,7 @@ def test_run_runtime_scan_parallel_config_batch_selects_independent_workers(
         captured["ky"] = [item["ky"] for item in items]
         return [fn(item) for item in items]
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
     monkeypatch.setattr(runtime, "independent_map", _fake_independent_map)
@@ -3687,7 +3687,7 @@ def test_run_runtime_scan_explicit_workers_override_parallel_config(
         captured["executor"] = executor
         return [fn(item) for item in values]
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
     monkeypatch.setattr(runtime, "independent_map", _fake_independent_map)
@@ -3738,7 +3738,7 @@ def test_run_runtime_scan_parallel_config_selects_combined_ky(
             omega=-(np.asarray(ky_arr, dtype=float) + 2.0),
         )
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(
         runtime, "_run_runtime_scan_batch", _fake_run_runtime_scan_batch
@@ -3759,7 +3759,7 @@ def test_run_runtime_scan_batch_empty_raises(monkeypatch: pytest.MonkeyPatch) ->
         species=(RuntimeSpeciesConfig(name="ion"),),
         normalization=RuntimeNormalizationConfig(contract="cyclone"),
     )
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: object())
     monkeypatch.setattr(
@@ -3793,7 +3793,7 @@ def test_runtime_linear_explicit_time_rejects_return_state_before_setup(
             contract="cyclone", diagnostic_norm="none"
         ),
     )
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(
         runtime, "build_runtime_geometry", lambda _cfg: SimpleNamespace()
@@ -3832,8 +3832,8 @@ def test_runtime_linear_explicit_time_rejects_return_state_before_setup(
 
 
 def test_direct_linear_and_nonlinear_integrators_fast_smoke() -> None:
-    from spectraxgk.solvers.nonlinear.state_integration import integrate_nonlinear
-    from spectraxgk.solvers.linear.integrators import integrate_linear
+    from gkx.solvers.nonlinear.state_integration import integrate_nonlinear
+    from gkx.solvers.linear.integrators import integrate_linear
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -3878,7 +3878,7 @@ def test_runtime_parameter_scan_updates_config_and_continues_state(
             state=states[index],
         )
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run)
     result = run_runtime_parameter_scan(
@@ -3922,7 +3922,7 @@ def test_runtime_parameter_scan_rejects_invalid_contracts(
             cfg, [1.0], parameter_name="beta", update_config=lambda *_args: object()
         )
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(
         runtime,
@@ -3979,7 +3979,7 @@ def test_runtime_parameter_scan_selects_one_candidate_branch(
             state=np.asarray([target]),
         )
 
-    import spectraxgk.runtime as runtime
+    import gkx.runtime as runtime
 
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run)
     result = run_runtime_parameter_scan(
@@ -4036,7 +4036,7 @@ def test_runtime_explicit_time_routes_cfl_trajectory(monkeypatch) -> None:
         return t, phi
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.integrate_linear_explicit_from_config",
+        "gkx.workflows.linear.integrate_linear_explicit_from_config",
         fake_explicit,
     )
     result = run_runtime_linear(

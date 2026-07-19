@@ -1,7 +1,7 @@
 Benchmarks
 ==========
 
-SPECTRAX-GK’s benchmark figures are organized as a compact atlas instead of a
+GKX’s benchmark figures are organized as a compact atlas instead of a
 case-by-case gallery. The layout follows the standard gyrokinetic comparison
 pattern:
 
@@ -41,7 +41,7 @@ Quick driver examples:
 
    python benchmarks/cyclone_linear_benchmark.py --outdir tools_out/cyclone_benchmark
    python benchmarks/kbm_linear_comparison.py
-   python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
+   python -m gkx.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
    python benchmarks/secondary_slab_workflow.py
 
 The Cyclone publication driver fits the terminal ``t=7--10`` interval. A
@@ -154,18 +154,18 @@ now links one local OpenMPI 4.1.6, parallel netCDF 4.9.2, and HDF5 1.14.5 stack.
 The canonical Cyclone s-alpha probe completed 2,145 steps to ``t=10`` in 23.1 s
 and wrote valid netCDF/restart outputs; at ``ky=0.3`` its terminal diagnostic is
 ``(gamma, omega)=(0.101814, 0.286777)``. GX remains the mature baseline for conventional GPU nonlinear
-initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
+initial-value runs and species/Hermite multi-device execution. GKX's
 distinct validated scope is its Python/JAX API, differentiable objectives,
 implicit gradient paths, CPU execution, and in-memory ``vmex``/
-``booz_xform_jax`` integration. SPECTRAX-GK does not claim the complete finite-
+``booz_xform_jax`` integration. GKX does not claim the complete finite-
 wavelength multispecies linearized Landau hierarchy: its published reduced
 Sugama/Coulomb slice remains a separately gated Python research boundary.
 
-Feature parity is intentionally not blanket parity. SPECTRAX-GK's required
+Feature parity is intentionally not blanket parity. GKX's required
 comparison scope is the standard electrostatic/electromagnetic gyrokinetic
 system, not GX's optional KREHM, Vlasov--Poisson, collisional-ETG, forcing,
 transport-coupling, or Beer/Smith closure paths. Conversely, differentiable
-eigen/objective solves and the in-memory JAX geometry chain are SPECTRAX-GK
+eigen/objective solves and the in-memory JAX geometry chain are GKX
 extensions rather than comparison requirements.
 
 The audit also identifies equilibrium :math:`E\times B` flow shear as a
@@ -271,7 +271,7 @@ runtime with the benchmark-aligned midplane observable returned
 respectively. The compact machine-readable record is
 ``docs/_static/cyclone_runtime_parity_refresh.json``. Its wall times must not be
 read as a speedup: the reference invocation advanced 12 ky modes, while the
-SPECTRAX-GK invocation advanced one.
+GKX invocation advanced one.
 
 Primary publication set
 -----------------------
@@ -349,13 +349,13 @@ Benchmark runner internals
 --------------------------
 
 Reusable reference loaders and comparison policies live in
-``spectraxgk.benchmarking.shared``; timestepping, scans, geometry, and physical
+``gkx.benchmarking.shared``; timestepping, scans, geometry, and physical
 operators use the same runtime and solver APIs as ordinary simulations.
 Case-level reproduction policy stays in root ``benchmarks/`` drivers rather
 than creating a second installed solver stack.
 
 Generic pointwise scans and representative-mode extraction are owned by
-``spectraxgk.workflows.linear``. They deliberately call one linear solve per
+``gkx.workflows.linear``. They deliberately call one linear solve per
 ``k_y`` and accept optional resolution and Krylov policies. Benchmark drivers
 provide case policy; the reusable workflow owns iteration, result assembly,
 mode selection, and fit-window extraction. The former ``scan_fn`` argument was

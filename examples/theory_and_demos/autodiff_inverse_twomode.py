@@ -12,15 +12,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
-from spectraxgk.objectives.autodiff_validation import covariance_diagnostics
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.solvers.linear.integrators import integrate_linear
-from spectraxgk.artifacts.plotting import set_plot_style
-from spectraxgk.operators.linear.params import Species, build_linear_params
+from gkx.objectives.autodiff_validation import covariance_diagnostics
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
+from gkx.solvers.linear.integrators import integrate_linear
+from gkx.artifacts.plotting import set_plot_style
+from gkx.operators.linear.params import Species, build_linear_params
 
 
 def _estimate_growth(phi_t: jnp.ndarray, t: jnp.ndarray, start_idx: int) -> tuple[jnp.ndarray, jnp.ndarray]:

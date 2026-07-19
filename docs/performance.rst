@@ -14,7 +14,7 @@ office-GPU timings are retained as rejected provenance because both A4000s were
 already at 100% utilization; they do not update the published speed claim. An
 uncontended rerun is required before replacing the historical GPU panel.
 
-SPECTRAX-GK uses JAX to compile array kernels ahead of time, enabling
+GKX uses JAX to compile array kernels ahead of time, enabling
 vectorized, accelerator-ready performance while retaining automatic
 differentiation. The linear operator and time integrator are designed to be
 ``jit``-friendly and to avoid Python-side loops in performance-critical paths.
@@ -106,7 +106,7 @@ artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
 passes the transport-window identity gate (``max_abs_error=7.45e-9``), but only
 reaches ``1.48x`` versus one GPU. Its Perfetto/TensorBoard trace was written
-under ``/tmp/spectrax_traces`` during generation, and its HLO summary likewise
+under ``/tmp/gkx_traces`` during generation, and its HLO summary likewise
 shows no collectives. The GPU blocker is therefore speedup/work granularity,
 not numerical identity or a hidden global reconstruction. This remains a
 micro-route transport-window claim, not a full production nonlinear
@@ -163,8 +163,8 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 .. code-block:: bash
 
    python tools/profiling/profile_runtime_kernels.py cyclone \
-     --trace-dir /tmp/spectrax_nl_trace \
-     --xla-dump-dir /tmp/spectrax_nl_xla \
+     --trace-dir /tmp/gkx_nl_trace \
+     --xla-dump-dir /tmp/gkx_nl_xla \
      --steps 400 --dt 0.0377 --Nl 4 --Nm 8
 
 For repeated Python objective or ensemble calls with fixed geometry and model
@@ -243,7 +243,7 @@ benchmark harness:
 .. code-block:: bash
 
    python benchmarks/performance/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
-     --out /tmp/spectrax_nl_bench.csv
+     --out /tmp/gkx_nl_bench.csv
 
 The harness records scalar diagnostics through the compact diagnostics path, so
 it measures runtime without materializing mode-resolved history arrays unless a
@@ -275,7 +275,7 @@ full RHS kernels after compilation:
      --out docs/_static/nonlinear_rhs_profile_gpu.csv
 
 .. image:: _static/nonlinear_rhs_profile.png
-   :alt: SPECTRAX-GK nonlinear RHS kernel profile
+   :alt: GKX nonlinear RHS kernel profile
    :align: center
 
 The current bounded Cyclone profile separates CPU and ``office`` GPU timings
@@ -334,7 +334,7 @@ short Cyclone case.
      --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
 
 .. image:: _static/nonlinear_rhs_profile_miller.png
-   :alt: SPECTRAX-GK nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
+   :alt: GKX nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
    :align: center
 
 The May 10, 2026 local CPU refresh after the independent-worker
@@ -391,7 +391,7 @@ verify that the optimized grid-Laguerre path, VMEC/EIK geometry inputs, and
 CPU/GPU hot-path accounting remain consistent on non-axisymmetric cases.
 
 .. image:: _static/nonlinear_rhs_profile_stellarator_runtime.png
-   :alt: SPECTRAX-GK nonlinear RHS kernel profile on W7-X and HSX runtime-mode stellarator cases
+   :alt: GKX nonlinear RHS kernel profile on W7-X and HSX runtime-mode stellarator cases
    :align: center
 
 The tracked artifact
@@ -504,7 +504,7 @@ helper:
      --summary-json docs/_static/full_linear_rhs_trace_summary.json
 
 The May 11, 2026 local CPU production-path artifacts record
-``source="spectraxgk.operators.linear.rhs.linear_rhs_cached"`` and
+``source="gkx.operators.linear.rhs.linear_rhs_cached"`` and
 ``force_electrostatic_fields=true``. The initial-state companion reports
 ``warm_seconds=1.54e-1`` and ``compile_execute_seconds=1.02``. The active
 ``z_wave`` companion injects resolved parallel variation and reports
@@ -520,7 +520,7 @@ artifacts.
 The May 11, 2026 one-RTX-A4000 production-path artifacts
 ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
 ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` report
-``source="spectraxgk.operators.linear.rhs.linear_rhs_cached"``, ``2779`` HLO lines, and
+``source="gkx.operators.linear.rhs.linear_rhs_cached"``, ``2779`` HLO lines, and
 ``force_electrostatic_fields=true``. The initial and active ``z_wave`` states
 measure ``warm_seconds=5.13e-3`` and ``5.15e-3``, respectively. These GPU
 artifacts show that the production linear-RHS path remains about five
@@ -537,7 +537,7 @@ figures below, because those paths preserve serial ordering and have explicit
 solver-observable identity gates.
 
 .. image:: _static/scaling_speedup.png
-   :alt: SPECTRAX-GK scaling speedup
+   :alt: GKX scaling speedup
    :align: center
 
 The raw sweep data lives in ``docs/_static/scaling_speedup_data.csv`` and can
@@ -554,7 +554,7 @@ overhead rather than near-ideal scaling.
 
 Production parallelization should start with independent work rather than
 nonlinear domain decomposition. The public helpers
-``spectraxgk.ky_scan_batches`` and ``spectraxgk.batch_map`` split ``k_y``
+``gkx.ky_scan_batches`` and ``gkx.batch_map`` split ``k_y``
 scans, quasilinear/UQ ensembles, and sensitivity-sweep workloads while
 preserving serial ordering.
 On one device they reduce to batched ``vmap`` execution; on multiple devices
@@ -577,7 +577,7 @@ The first release-grade gate for this policy is a real Cyclone linear
 ``k_y``-scan comparison:
 
 .. image:: _static/parallel_ky_scan_gate.png
-   :alt: SPECTRAX-GK ky-batch parallelization identity gate
+   :alt: GKX ky-batch parallelization identity gate
    :align: center
 
 It is regenerated with:
@@ -599,7 +599,7 @@ parallel API preserves serial numerical identity for independent scan/UQ-style
 workloads before those workloads are connected to heavier solver paths.
 
 .. image:: _static/logical_cpu_parallel_scan_gate.png
-   :alt: SPECTRAX-GK logical CPU parallel scan identity gate
+   :alt: GKX logical CPU parallel scan identity gate
    :align: center
 
 It is regenerated with:
@@ -622,7 +622,7 @@ and every multi-worker result is compared against the one-worker reference for
 ``gamma`` and ``omega`` identity:
 
 .. image:: _static/independent_ky_scan_scaling_large.png
-   :alt: SPECTRAX-GK independent ky scan CPU/GPU strong-scaling artifact
+   :alt: GKX independent ky scan CPU/GPU strong-scaling artifact
    :align: center
 
 It is regenerated with:
@@ -660,7 +660,7 @@ The release closure status is machine-readable and separates production claims
 from diagnostic decomposition work:
 
 .. image:: _static/parallelization_completion_status.png
-   :alt: SPECTRAX-GK parallelization closure status
+   :alt: GKX parallelization closure status
    :align: center
 
 The tracked ``docs/_static/parallelization_completion_status.json`` reports
@@ -697,7 +697,7 @@ parallelization and UQ plumbing, but it is not promoted as an absolute
 nonlinear heat-flux predictor.
 
 .. image:: _static/quasilinear_uq_ensemble_scaling_large.png
-   :alt: SPECTRAX-GK quasilinear UQ ensemble CPU/GPU strong-scaling artifact
+   :alt: GKX quasilinear UQ ensemble CPU/GPU strong-scaling artifact
    :align: center
 
 It is regenerated with:
@@ -723,7 +723,7 @@ gate for quasilinear calibration grids, finite-difference checks, sensitivity
 sweeps, and UQ ensembles that can be decomposed into independent solver calls.
 
 Nonlinear-decomposition promotion follows the same conservative rule.
-``spectraxgk.build_velocity_sharding_plan`` records a species-first,
+``gkx.build_velocity_sharding_plan`` records a species-first,
 Hermite-second velocity-space layout, including which axes need Hermite ghost
 exchange and which axes need field-solve reductions and broadcasts. Periodic
 and linked ``2 species x 2 Hermite`` electrostatic operator routes now pass
@@ -737,7 +737,7 @@ two-device logical CPU mesh and compares the result against the full-array
 reference shift with zero physical boundaries:
 
 .. image:: _static/hermite_exchange_gate.png
-   :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
+   :alt: GKX Hermite ghost-exchange identity gate
    :align: center
 
 It is regenerated with:
@@ -757,7 +757,7 @@ communication primitive. It reduces the Hermite-sharded local contributions
 with ``lax.psum`` and compares against the full-array reference sum:
 
 .. image:: _static/velocity_field_reduce_gate.png
-   :alt: SPECTRAX-GK velocity field-reduction identity gate
+   :alt: GKX velocity field-reduction identity gate
    :align: center
 
 It is regenerated with:
@@ -777,7 +777,7 @@ to the actual ``m=0`` density moment used by quasineutrality and compares the
 resulting ``phi`` against the production field solve:
 
 .. image:: _static/electrostatic_field_reduce_gate.png
-   :alt: SPECTRAX-GK electrostatic field-reduction identity gate
+   :alt: GKX electrostatic field-reduction identity gate
    :align: center
 
 It is regenerated with:
@@ -798,7 +798,7 @@ ladder on top of the shard-map exchange and records the paired field-reduction
 error:
 
 .. image:: _static/hermite_streaming_ladder_gate.png
-   :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
+   :alt: GKX Hermite streaming-ladder identity gate
    :align: center
 
 It is regenerated with:
@@ -818,7 +818,7 @@ exchanges for mirror and curvature terms, together with the electrostatic
 field-reduction gate:
 
 .. image:: _static/electrostatic_drift_gate.png
-   :alt: SPECTRAX-GK electrostatic drift-slice identity gate
+   :alt: GKX electrostatic drift-slice identity gate
    :align: center
 
 It is regenerated with:
@@ -832,7 +832,7 @@ absolute/relative error for the mirror, curvature/grad-B, and combined drift
 slices. This is a single-species periodic electrostatic identity gate, not a
 full-RHS, linked-boundary, electromagnetic, or nonlinear performance claim.
 The gated slices are available together through
-``spectraxgk.linear_rhs_parallel_cached`` with
+``gkx.linear_rhs_parallel_cached`` with
 ``RuntimeParallelConfig(strategy="velocity", axis="hermite",
 backend="electrostatic_linear_slices")``.
 
@@ -842,7 +842,7 @@ reduction, then applies the local ``m=0`` and ``m=2`` density/temperature
 gradient masks on each Hermite shard:
 
 .. image:: _static/electrostatic_diamagnetic_gate.png
-   :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
+   :alt: GKX electrostatic diamagnetic-drive identity gate
    :align: center
 
 It is regenerated with:
@@ -861,10 +861,10 @@ terms until each path has its own identity gate.
 The periodic linear-streaming microkernel gate then adds the spectral
 parallel derivative along the field-line direction and compares the resulting
 ``shard_map`` path directly against the production
-``spectraxgk.operators.linear.streaming.streaming_ladder_term``:
+``gkx.operators.linear.streaming.streaming_ladder_term``:
 
 .. image:: _static/periodic_streaming_microkernel_gate.png
-   :alt: SPECTRAX-GK periodic streaming microkernel identity gate
+   :alt: GKX periodic streaming microkernel identity gate
    :align: center
 
 It is regenerated with:
@@ -883,7 +883,7 @@ non-streaming terms, keeps electromagnetic channels off, and uses non-density
 Hermite moments so that the electrostatic field solve is exactly zero:
 
 .. image:: _static/linear_rhs_streaming_gate.png
-   :alt: SPECTRAX-GK streaming-only linear RHS identity gate
+   :alt: GKX streaming-only linear RHS identity gate
    :align: center
 
 It is regenerated with:
@@ -899,7 +899,7 @@ or production speedup parity; those remain separate gates with additional
 field-solve, drive, collision, bracket, and profiler coverage.
 
 For code-level experiments the same route is available through
-``spectraxgk.linear_rhs_parallel_cached`` with
+``gkx.linear_rhs_parallel_cached`` with
 ``RuntimeParallelConfig(strategy="velocity", axis="hermite",
 backend="streaming_only")``. The helper rejects any non-streaming term weights
 so this remains a disabled-by-default diagnostic path rather than a hidden
@@ -912,7 +912,7 @@ electrostatic field solve produces nonzero ``phi``. It then compares
 ``backend="streaming_electrostatic"`` route:
 
 .. image:: _static/linear_rhs_streaming_electrostatic_gate.png
-   :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
+   :alt: GKX electrostatic streaming linear RHS identity gate
    :align: center
 
 It is regenerated with:
@@ -933,7 +933,7 @@ The current composed electrostatic linear-RHS gate then exercises the opt-in
 RHS with streaming, mirror, curvature, grad-B, and diamagnetic drive enabled:
 
 .. image:: _static/linear_rhs_electrostatic_slices_gate.png
-   :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
+   :alt: GKX composed electrostatic linear-slices identity gate
    :align: center
 
 It is regenerated with:
@@ -953,7 +953,7 @@ The matching engineering profile intentionally stays separate from the
 identity gate:
 
 .. image:: _static/linear_rhs_parallel_slices_profile.png
-   :alt: SPECTRAX-GK electrostatic linear-slices parallelization profile
+   :alt: GKX electrostatic linear-slices parallelization profile
    :align: center
 
 It is regenerated with:
@@ -976,7 +976,7 @@ A compact CPU sweep maps the same opt-in route across Hermite resolution and
 logical device count:
 
 .. image:: _static/linear_rhs_parallel_slices_sweep.png
-   :alt: SPECTRAX-GK electrostatic linear-slices parallelization sweep
+   :alt: GKX electrostatic linear-slices parallelization sweep
    :align: center
 
 It is regenerated with:
@@ -1000,7 +1000,7 @@ The same profiler can target GPUs on the office node:
 
 .. code-block:: bash
 
-   PYTHONPATH=/tmp/spectrax-gk-profile/src python3 \
+   PYTHONPATH=/tmp/gkx-profile/src python3 \
      tools/profiling/profile_linear_rhs_parallel_slices.py \
      --platform gpu --logical-devices 2 \
      --nl 4 --nm 64 --ny 32 --nz 128 --rtol 1e-5 \
@@ -1080,7 +1080,7 @@ The fixed-step nonlinear runner now has the same full-state sharding contract
 as the linear path for release-gated state axes. Set
 ``TimeConfig.state_sharding = "auto"`` (or a concrete axis such as ``"ky"`` or
 ``"kx"``) with ``use_diffrax = false`` to route through
-``spectraxgk.integrate_nonlinear_sharded``. The implementation uses a ``pjit``
+``gkx.integrate_nonlinear_sharded``. The implementation uses a ``pjit``
 scan and preserves the serial Runge-Kutta update; it is therefore an
 identity-gated state-sharding primitive, not a halo-exchange FFT domain
 decomposition claim. Sharding the ``z`` FFT axis is deliberately not exposed as
@@ -1100,7 +1100,7 @@ timings, profiler-trace status, final-state errors, final-field/RHS diagnostic
 errors, and the fastest identity-preserving candidate among the requested
 state-axis options. Refreshed profiler outputs also carry a versioned source
 contract with the exact command, command argv, source artifact, backend, device
-count, sharding axis, warmup/repeat policy, and Python/JAX/NumPy/SPECTRAX-GK
+count, sharding axis, warmup/repeat policy, and Python/JAX/NumPy/GKX
 versions. The fast parallel artifact checker validates that contract whenever
 it is present; older checked-in diagnostic profiles remain scoped until they
 are refreshed with the same metadata. The
@@ -1175,7 +1175,7 @@ evaluation:
 
 .. code-block:: python
 
-   from spectraxgk.solvers.nonlinear.diagnostic_integration import prepare_nonlinear_explicit_diagnostics
+   from gkx.solvers.nonlinear.diagnostic_integration import prepare_nonlinear_explicit_diagnostics
 
    simulation = prepare_nonlinear_explicit_diagnostics(
        initial_state, grid, geometry, parameters,
@@ -1269,7 +1269,7 @@ each device count gets a clean JAX runtime:
    python tools/artifacts/generate_nonlinear_sharding_production_gate.py
 
 .. image:: _static/nonlinear_sharding_strong_scaling_large.png
-   :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
+   :alt: GKX large nonlinear whole-state sharding strong-scaling artifact
    :align: center
 
 The refreshed large sweep remains engineering evidence rather than a speedup
@@ -1337,11 +1337,11 @@ For W7-X/HSX runs, pass ``--w7x-geometry-file`` and
 outside the default cache paths.
 
 .. image:: _static/laguerre_mode_gate.png
-   :alt: SPECTRAX-GK spectral Laguerre nonlinear mode gate on CPU
+   :alt: GKX spectral Laguerre nonlinear mode gate on CPU
    :align: center
 
 .. image:: _static/laguerre_mode_gate_gpu.png
-   :alt: SPECTRAX-GK spectral Laguerre nonlinear mode gate on GPU
+   :alt: GKX spectral Laguerre nonlinear mode gate on GPU
    :align: center
 
 On the bounded local CPU gate, Cyclone, KBM, W7-X, and HSX all passed the
@@ -1389,7 +1389,7 @@ For the publication runtime comparison pass, use the manifest-driven runner:
 .. code-block:: bash
 
    python benchmarks/performance/benchmark_runtime_memory.py --list
-   python benchmarks/performance/benchmark_runtime_memory.py --dry-run --case cyclone-linear --backend spectrax_cpu
+   python benchmarks/performance/benchmark_runtime_memory.py --dry-run --case cyclone-linear --backend gkx_cpu
    python benchmarks/performance/benchmark_runtime_memory.py --continue-on-error --log-dir tools_out/runtime_memory_logs
 
 The runner reads ``tools/runtime_memory_manifest.toml`` and writes:
@@ -1408,8 +1408,8 @@ and compressed panel are tracked.
 
 The manifest is designed to hold three rows per case:
 
-- ``spectrax_cpu``
-- ``spectrax_gpu``
+- ``gkx_cpu``
+- ``gkx_gpu``
 - ``gx``
 
 Each row may also carry a ``host`` so the same runner can execute local and
@@ -1634,7 +1634,7 @@ JIT considerations
 ------------------
 
 The linear integrator is ``jit``-compiled with the number of steps and method
-as static arguments. The operator term switches (:class:`spectraxgk.operators.linear.params.LinearTerms`)
+as static arguments. The operator term switches (:class:`gkx.operators.linear.params.LinearTerms`)
 should also remain static inside a compiled loop to avoid recompilation. The
 cached operator arrays can be constructed once and reused across multiple runs
 to avoid repeated geometry setup costs. Nonlinear IMEX paths now reuse the

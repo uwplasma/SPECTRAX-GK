@@ -8,13 +8,13 @@ import jax.numpy as jnp
 import pytest
 import solvax
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
-import spectraxgk.solvers.linear.krylov as lk
-import spectraxgk.solvers.linear.krylov_algorithms as ka
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
+import gkx.solvers.linear.krylov as lk
+import gkx.solvers.linear.krylov_algorithms as ka
 
 
 def test_published_solvax_contract_matches_consumed_interfaces() -> None:

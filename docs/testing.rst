@@ -4,7 +4,7 @@ Testing
 Testing philosophy
 ------------------
 
-SPECTRAX-GK enforces high coverage on critical solver modules and requires
+GKX enforces high coverage on critical solver modules and requires
 physics-based checks for each numerical component. The test suite is designed
 to be:
 
@@ -74,7 +74,7 @@ The manifest now has two levels of coverage ownership:
 - ``owned_modules`` entries for smaller implementation modules whose fast-test
   responsibility is intentionally carried by a direct row.
 
-The checker inventories ``src/spectraxgk`` and fails if a package module is not
+The checker inventories ``src/gkx`` and fails if a package module is not
 directly listed, owned by a listed row, or explicitly excluded as package
 plumbing such as ``__init__.py`` or version metadata. This makes source
 extractions fail fast until the coverage owner, fast tests, and next-test debt
@@ -140,25 +140,25 @@ Unit tests (numerical invariants)
 Representative unit checks include:
 
 - **Hermite/Laguerre ladder identities**:
-  :func:`spectraxgk.operators.linear.moments.apply_hermite_v`,
-  :func:`spectraxgk.operators.linear.moments.apply_laguerre_x`.
+  :func:`gkx.operators.linear.moments.apply_hermite_v`,
+  :func:`gkx.operators.linear.moments.apply_laguerre_x`.
 - **Quasineutrality consistency**:
-  :func:`spectraxgk.operators.linear.moments.quasineutrality_phi`.
+  :func:`gkx.operators.linear.moments.quasineutrality_phi`.
 - **Streaming term validation**:
-  :func:`spectraxgk.operators.linear.moments.grad_z_periodic`,
-  :func:`spectraxgk.operators.linear.moments.streaming_term`.
+  :func:`gkx.operators.linear.moments.grad_z_periodic`,
+  :func:`gkx.operators.linear.moments.streaming_term`.
 - **Growth-rate fitting windows**:
-  :func:`spectraxgk.diagnostics.growth_rates.select_fit_window`,
-  :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate_auto`.
+  :func:`gkx.diagnostics.growth_rates.select_fit_window`,
+  :func:`gkx.diagnostics.growth_rates.fit_growth_rate_auto`.
 - **Grid construction and normalization**:
-  :func:`spectraxgk.core.grid.build_spectral_grid`.
+  :func:`gkx.core.grid.build_spectral_grid`.
 - **Normalization contract consistency**:
-  :func:`spectraxgk.diagnostics.normalization.get_normalization_contract`,
-  :func:`spectraxgk.diagnostics.normalization.apply_diagnostic_normalization`.
+  :func:`gkx.diagnostics.normalization.get_normalization_contract`,
+  :func:`gkx.diagnostics.normalization.apply_diagnostic_normalization`.
 - **Modular RHS equivalence**:
-  :func:`spectraxgk.operators.linear.params.linear_terms_to_term_config`,
-  :func:`spectraxgk.terms.assemble_rhs_cached`,
-  :func:`spectraxgk.operators.linear.rhs.linear_rhs_cached`.
+  :func:`gkx.operators.linear.params.linear_terms_to_term_config`,
+  :func:`gkx.terms.assemble_rhs_cached`,
+  :func:`gkx.operators.linear.rhs.linear_rhs_cached`.
 
 These tests live in ``tests/unit/linear/test_linear.py`` and
 ``tests/unit/core/test_core_numerics.py`` and ``tests/unit/operators/test_terms_assembly.py`` and are
@@ -171,7 +171,7 @@ Physics regression tests
 The physics-focused tests exercise reduced or symmetry limits that should
 remain invariant across refactors:
 
-- **Term toggles**: :class:`spectraxgk.operators.linear.params.LinearTerms` switches individual
+- **Term toggles**: :class:`gkx.operators.linear.params.LinearTerms` switches individual
   operator components without changing the equation structure.
 - **Mirror/curvature activation**: nonzero drift terms create nonzero response
   when streaming and drive are turned off.
@@ -191,10 +191,10 @@ Benchmark regression tests
 Benchmark regression tests validate the Cyclone base case reference dataset and
 growth-rate extraction pipeline:
 
-- Loading the reference CSV via :func:`spectraxgk.benchmarking.shared.load_cyclone_reference`.
+- Loading the reference CSV via :func:`gkx.benchmarking.shared.load_cyclone_reference`.
 - Running short linear scans from the canonical
   ``examples/linear/axisymmetric/cyclone.toml`` input via
-  :func:`spectraxgk.runtime.run_runtime_scan`.
+  :func:`gkx.runtime.run_runtime_scan`.
 - Requiring independent-mode and combined-:math:`k_y` execution to agree at
   machine precision before either path is used for performance measurements.
 - Reduced ky regression with tightened tolerances on the field-aligned grid.
@@ -226,18 +226,18 @@ lanes, not as ad hoc notebooks.
 
 The first reusable tooling for this lane now exists:
 
-- :func:`spectraxgk.diagnostics.zonal_validation.zonal_flow_response_metrics`
-- :func:`spectraxgk.artifacts.io.load_diagnostic_time_series`
-- :func:`spectraxgk.diagnostics.validation_gates.evaluate_scalar_gate`
-- :func:`spectraxgk.diagnostics.validation_gates.observed_order_gate_report`
-- :func:`spectraxgk.diagnostics.validation_gates.branch_continuity_gate_report`
-- :func:`spectraxgk.diagnostics.validation_gates.eigenfunction_gate_report`
-- :func:`spectraxgk.diagnostics.validation_gates.linear_metrics_gate_report`
-- :func:`spectraxgk.diagnostics.validation_gates.nonlinear_window_gate_report`
-- :func:`spectraxgk.diagnostics.validation_gates.zonal_response_gate_report`
-- :func:`spectraxgk.diagnostics.zonal_validation.reference_residual_table`
-- :func:`spectraxgk.diagnostics.zonal_validation.tail_trace_metrics`
-- :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
+- :func:`gkx.diagnostics.zonal_validation.zonal_flow_response_metrics`
+- :func:`gkx.artifacts.io.load_diagnostic_time_series`
+- :func:`gkx.diagnostics.validation_gates.evaluate_scalar_gate`
+- :func:`gkx.diagnostics.validation_gates.observed_order_gate_report`
+- :func:`gkx.diagnostics.validation_gates.branch_continuity_gate_report`
+- :func:`gkx.diagnostics.validation_gates.eigenfunction_gate_report`
+- :func:`gkx.diagnostics.validation_gates.linear_metrics_gate_report`
+- :func:`gkx.diagnostics.validation_gates.nonlinear_window_gate_report`
+- :func:`gkx.diagnostics.validation_gates.zonal_response_gate_report`
+- :func:`gkx.diagnostics.zonal_validation.reference_residual_table`
+- :func:`gkx.diagnostics.zonal_validation.tail_trace_metrics`
+- :func:`gkx.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/artifacts/build_zonal_flow_artifacts.py`` with ``response-csv`` and ``response-output`` modes
 - ``tools/artifacts/build_zonal_flow_artifacts.py miller-panel``
 - ``tools/artifacts/build_w7x_zonal_validation_artifacts.py response-panel``
@@ -644,11 +644,11 @@ audits, not validation defaults.
 
    Digitized stella/GENE reference traces from the W7-X benchmark paper's
    Fig. 11. The horizontal lines are residual levels read from the figure
-   insets and are the reference targets for the next long-window SPECTRAX
+   insets and are the reference targets for the next long-window GKX
    zonal-response gate.
 
 .. figure:: _static/w7x_zonal_reference_compare.png
-   :alt: Current W7-X zonal SPECTRAX comparison against digitized references
+   :alt: Current W7-X zonal GKX comparison against digitized references
 
    Current W7-X zonal comparison gate. Time coverage passes for all four
    wavelengths, but the paper-normalized residuals and late-window envelopes
@@ -852,7 +852,7 @@ performance claims:
   writes ``docs/_static/electrostatic_diamagnetic_gate.{png,pdf,csv,json}``.
 - ``tools/artifacts/generate_velocity_parallel_gates.py periodic-streaming`` adds the periodic
   spectral parallel derivative and compares the shard-map path directly
-  against ``spectraxgk.operators.linear.streaming.streaming_ladder_term``. Its artifact
+  against ``gkx.operators.linear.streaming.streaming_ladder_term``. Its artifact
   ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``
   gates the first opt-in linear streaming microkernel before full RHS wiring.
 - ``tools/artifacts/generate_linear_rhs_parallel_gates.py streaming`` routes the same sharded
@@ -916,7 +916,7 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   real GX run (`kh01a_shortdense.out.nc`, 10 samples in ``omega_kxkyt``) and
   the rebuilt ``secondary_reference_out_compare.csv``. The comparison helper now uses
   the GX file horizon automatically in ``out-nc`` mode, so it no longer mixes a
-  short GX replay with a ``t_max = 100`` SPECTRAX stage-2 run. On the matched
+  short GX replay with a ``t_max = 100`` GKX stage-2 run. On the matched
   short window, growth rates match tightly (``max rel_gamma ~= 1.87e-4``) and
   the non-zonal ``omega`` modes also close tightly
   (``rel_omega ~= 3.23e-4`` and ``9.92e-4`` on the ``k_y = 0.1`` sidebands).
@@ -992,7 +992,7 @@ published benchmarks and trend tests:
 
 - **ITG/Cyclone base case**: reproduce the standard Cyclone base case growth
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
-- **GX term-by-term audit**: use the term-dump tooling to compare SPECTRAX-GK
+- **GX term-by-term audit**: use the term-dump tooling to compare GKX
   streaming and linear-kernel RHS components against GX for a single Cyclone
   state (see ``tools/comparison/compare_gx_rhs_terms.py write`` and
   ``tools/comparison/compare_gx_rhs_terms.py compare``).
@@ -1040,7 +1040,7 @@ moving parity-sensitive linear example outputs.
 Stress-matrix parity gates
 --------------------------
 
-In addition to unit/regression tests, SPECTRAX-GK includes a small set of
+In addition to unit/regression tests, GKX includes a small set of
 "stress-matrix" gates meant to catch parity regressions early (before tracked
 benchmark figures move):
 
@@ -1054,7 +1054,7 @@ benchmark figures move):
 
   .. code-block:: bash
 
-     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_parallel_core.py -k cpu_gpu
+     GKX_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_parallel_core.py -k cpu_gpu
 
 - **VMEC roundtrip determinism** (optional): ``tests/unit/geometry/test_vmec_eik.py -k roundtrip``
   regenerates an ``*.eik.nc`` from a provided VMEC file twice and asserts the
@@ -1062,7 +1062,7 @@ benchmark figures move):
 
   .. code-block:: bash
 
-     SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/unit/geometry/test_vmec_eik.py -k roundtrip
+     GKX_VMEC_FILE=/path/to/wout.nc pytest -q tests/unit/geometry/test_vmec_eik.py -k roundtrip
 
 For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
@@ -1082,7 +1082,7 @@ For ETG nonlinear audit runs, use dense short-window overrides first:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml \
+   JAX_ENABLE_X64=1 gkx examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml \
      --steps 10 \
      --sample-stride 1 \
      --diagnostics-stride 1
@@ -1131,8 +1131,8 @@ audited reference workflow while avoiding a host-level dependency on the origina
 Python package.
 
 The bridge auto-discovers ``booz_xform_jax`` from
-``BOOZ_XFORM_JAX_PATH`` / ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` or from a checkout placed
-next to the SPECTRAX-GK workspace. When a specific
+``BOOZ_XFORM_JAX_PATH`` / ``GKX_BOOZ_XFORM_JAX_PATH`` or from a checkout placed
+next to the GKX workspace. When a specific
 Python environment is needed for the helper subprocesses, set
 ``geometry.geometry_helper_python`` in the runtime TOML. On ``office``, the normal audited
 path is:
@@ -1145,11 +1145,11 @@ non-finite reverse-mode cotangents for inactive zero-mode Fourier branches.
 .. code-block:: bash
 
    export BOOZ_XFORM_JAX_PATH=/path/to/booz_xform_jax
-   export SPECTRAX_VENV_PYTHON=/path/to/venv/bin/python
-   export SPECTRAX_OFFICE_ROOT=/path/to/SPECTRAX-GK
+   export GKX_VENV_PYTHON=/path/to/venv/bin/python
+   export GKX_OFFICE_ROOT=/path/to/GKX
    W7X_VMEC_FILE=/path/to/wout_w7x.nc \
    HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
-   "$SPECTRAX_VENV_PYTHON" tools/comparison/build_exact_state_audit.py run \
+   "$GKX_VENV_PYTHON" tools/comparison/build_exact_state_audit.py run \
      --manifest tools/exact_state_lanes.office.toml \
      --outdir tools_out/exact_state_audit_office
 
@@ -1217,7 +1217,7 @@ physics rigor:
   offline artifact gates and mocked CI contracts, not by importing unavailable
   external repositories in the public coverage job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
-  ``spectraxgk.terms >= 90%`` and per-module core gates for
+  ``gkx.terms >= 90%`` and per-module core gates for
   ``solvers/linear/krylov.py`` and the ``solvers/time/diffrax_*`` owner modules.
 
 This keeps iteration latency low for development and still enforces complete
@@ -1281,7 +1281,7 @@ Core modular coverage gate
 --------------------------
 
 To keep the modular RHS path future-proof, CI also enforces a dedicated
-coverage gate for ``spectraxgk.terms``:
+coverage gate for ``gkx.terms``:
 
 .. code-block:: bash
 
@@ -1290,7 +1290,7 @@ coverage gate for ``spectraxgk.terms``:
           tests/unit/operators/test_terms_fields.py \
           tests/unit/solvers/test_nonlinear_explicit_scan.py \
           --maxfail=1 --disable-warnings \
-          --cov=src/spectraxgk/terms \
+          --cov=src/gkx/terms \
           --cov-fail-under=90
 
 This guard ensures term-wise kernels, field solves, custom-VJP behavior, and
@@ -1303,8 +1303,8 @@ Core solver coverage gates
 CI also enforces dedicated per-module thresholds for the two linear solver
 engines that are most likely to regress during algorithm work:
 
-- ``spectraxgk.solvers.linear.krylov`` (matrix-free Arnoldi/shift-invert path)
-- ``spectraxgk.solvers.time.diffrax_linear``/``diffrax_nonlinear``/``diffrax_core`` (Diffrax explicit/IMEX/implicit paths)
+- ``gkx.solvers.linear.krylov`` (matrix-free Arnoldi/shift-invert path)
+- ``gkx.solvers.time.diffrax_linear``/``diffrax_nonlinear``/``diffrax_core`` (Diffrax explicit/IMEX/implicit paths)
 
 The gate runs focused tests and checks each module from ``coverage-core.xml``:
 
@@ -1313,7 +1313,7 @@ The gate runs focused tests and checks each module from ``coverage-core.xml``:
    pytest -q tests/unit/solvers/test_linear_krylov_core.py \
           tests/unit/solvers/test_diffrax_integrators_core.py \
           --maxfail=1 --disable-warnings \
-          --cov=src/spectraxgk \
+          --cov=src/gkx \
           --cov-report=xml:coverage-core.xml
 
 Both modules are required to stay at or above 90% line coverage in CI.

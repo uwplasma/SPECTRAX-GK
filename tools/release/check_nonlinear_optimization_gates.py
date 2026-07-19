@@ -26,14 +26,14 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.diagnostics.nonlinear_gradient_evidence import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.diagnostics.nonlinear_gradient_evidence import (  # noqa: E402
     NonlinearTurbulenceGradientEvidenceConfig,
     NonlinearTurbulenceGradientGapConfig,
     load_json_artifact,
     nonlinear_turbulence_gradient_evidence_report,
 )
-from spectraxgk.diagnostics.nonlinear_transport_optimization import (  # noqa: E402
+from gkx.diagnostics.nonlinear_transport_optimization import (  # noqa: E402
     ProductionNonlinearOptimizationGuardConfig,
     production_nonlinear_optimization_guard_report,
 )

@@ -22,7 +22,7 @@
       "reduction": "weighted_mean",
       "n_samples": 1
     },
-    "spectrax_config": {
+    "gkx_config": {
       "ntheta": 24,
       "mboz": 21,
       "nboz": 21,

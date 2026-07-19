@@ -10,11 +10,11 @@ import sys
 import numpy as np
 
 from support.paths import REPO_ROOT, load_release_tool
-from spectraxgk.diagnostics.transport_windows import (
+from gkx.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     nonlinear_window_convergence_report,
 )
-from spectraxgk.diagnostics.validation_gates import matched_nonlinear_transport_report
+from gkx.diagnostics.validation_gates import matched_nonlinear_transport_report
 
 ROOT = REPO_ROOT
 OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_transport_gates.py"
@@ -200,7 +200,7 @@ def test_fixed_step_flow_shear_artifact_preserves_negative_evidence() -> None:
     assert payload["conclusion"]["input_file_exposure_allowed"] is False
     assert payload["configuration"]["time"]["analysis_window"] == [240.0, 300.0]
 
-    internal = payload["spectrax_gk"]
+    internal = payload["gkx_gk"]
     comparison = payload["comparison"]
     assert internal["baseline_window"]["passed"] is False
     assert internal["treatment_window"]["passed"] is False
@@ -295,7 +295,7 @@ def _write_summary(
     payload: dict[str, object] = {
         "kind": "nonlinear_window_summary",
         "case": case,
-        "spectrax": trace.name,
+        "gkx": trace.name,
         "tmin": 50.0,
         "tmax": 100.0,
         "promotion_gate": {"passed": True},

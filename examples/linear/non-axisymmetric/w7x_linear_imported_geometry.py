@@ -5,14 +5,14 @@ from __future__ import annotations
 
 import argparse
 
-from spectraxgk.config import (
+from gkx.config import (
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.runtime import run_runtime_linear
-from spectraxgk.workflows.runtime.config import (
+from gkx.runtime import run_runtime_linear
+from gkx.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,

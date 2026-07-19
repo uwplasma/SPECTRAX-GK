@@ -6,14 +6,14 @@ Install
 
 .. code-block:: bash
 
-   pip install spectraxgk
+   pip install gkx
 
 or install the development checkout:
 
 .. code-block:: bash
 
-   git clone https://github.com/uwplasma/SPECTRAX-GK
-   cd SPECTRAX-GK
+   git clone https://github.com/uwplasma/GKX
+   cd GKX
    pip install -e .
 
 Executable demo
@@ -21,23 +21,23 @@ Executable demo
 
 .. code-block:: bash
 
-   spectraxgk
-   spectrax-gk
-   spectraxgk examples/linear/axisymmetric/cyclone.toml
-   spectraxgk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out cyclone_runtime
-   spectraxgk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
-   spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
-   spectraxgk --plot spectraxgk_default_linear.summary.json
+   gkx
+   gkx
+   gkx examples/linear/axisymmetric/cyclone.toml
+   gkx run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out cyclone_runtime
+   gkx run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
+   gkx --plot tools_out/cyclone_nonlinear.out.nc
+   gkx --plot gkx_default_linear.summary.json
 
-Running ``spectraxgk`` with no TOML launches a short Cyclone initial-value
+Running ``gkx`` with no TOML launches a short Cyclone initial-value
 linear demo, prints live progress with elapsed time and ETA, and writes the
 artifacts in the current directory:
 
-- ``spectraxgk_default_linear.toml``: the input file that reproduces the run
-- ``spectraxgk_default_linear.summary.json``
-- ``spectraxgk_default_linear.timeseries.csv``
-- ``spectraxgk_default_linear.eigenfunction.csv``
-- ``spectraxgk_default_linear.png``
+- ``gkx_default_linear.toml``: the input file that reproduces the run
+- ``gkx_default_linear.summary.json``
+- ``gkx_default_linear.timeseries.csv``
+- ``gkx_default_linear.eigenfunction.csv``
+- ``gkx_default_linear.png``
 
 The plot is the standard two-panel linear quickstart view: the log-scale
 ``|\phi|^2`` time history with fitted ``(\gamma, \omega)`` on the left, and
@@ -46,7 +46,7 @@ numerical case explicitly:
 
 .. code-block:: bash
 
-   spectraxgk spectraxgk_default_linear.toml --progress
+   gkx gkx_default_linear.toml --progress
 
 When progress output is enabled (for example on a TTY or with the explicit
 progress flags), the executable prints live status lines with step/time
@@ -92,8 +92,8 @@ Plot diagnostics directly from the output:
 
 .. code-block:: bash
 
-   spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
-   spectraxgk --plot spectraxgk_default_linear.summary.json
+   gkx --plot tools_out/cyclone_nonlinear.out.nc
+   gkx --plot gkx_default_linear.summary.json
 
 Self-contained VMEC geometry
 ----------------------------
@@ -111,9 +111,9 @@ files. Generate the needed equilibria locally, then run the TOMLs directly:
    vmex input.nfp3_QI_fixed_resolution_final
    cd ../..
 
-   spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
-   spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
-   spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
+   gkx run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
+   gkx run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
+   gkx run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
 
 The bundled QHS/QI/QA decks are self-contained demonstrators. Exact
 machine-specific HSX or W7-X validation should use the same TOMLs with
@@ -130,7 +130,7 @@ VMEC-backed geometry model:
 
 .. code-block:: bash
 
-   spectrax-gk run \
+   gkx run \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
      --vmec-file /absolute/or/relative/wout_machine_specific.nc \
      --out tools_out/hsx_vmec_run
@@ -141,7 +141,7 @@ already use ``model = "vmec-eik"``, ``model = "imported-eik"``, or
 
 .. code-block:: bash
 
-   spectrax-gk run \
+   gkx run \
      --config external_imported_geometry_case.toml \
      --geometry-file /absolute/or/relative/external_geometry.eik.nc \
      --out tools_out/imported_run
@@ -155,7 +155,7 @@ Python demo
 
 .. code-block:: python
 
-   from spectraxgk import load_runtime_from_toml, run_runtime_linear
+   from gkx import load_runtime_from_toml, run_runtime_linear
 
    config, _ = load_runtime_from_toml(
        "examples/linear/axisymmetric/cyclone.toml"
@@ -164,7 +164,7 @@ Python demo
 
    print(result.gamma, result.omega)
 
-Tracked comparison tables are available through :mod:`spectraxgk.benchmarking.shared`;
+Tracked comparison tables are available through :mod:`gkx.benchmarking.shared`;
 all simulations use the unified runtime API above.
 
 Run from TOML

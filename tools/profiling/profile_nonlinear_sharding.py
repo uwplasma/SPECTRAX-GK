@@ -24,16 +24,16 @@ import jaxlib
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk._version import __version__ as spectraxgk_version
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.operators.linear.cache_builder import build_linear_cache
-from spectraxgk.operators.linear.params import LinearParams
-from spectraxgk.solvers.nonlinear.state_integration import integrate_nonlinear_cached, nonlinear_rhs_cached
-from spectraxgk.parallel.integrators import integrate_nonlinear_sharded
-from spectraxgk.parallel.state import resolve_state_sharding
-from spectraxgk.terms.config import TermConfig
+from gkx._version import __version__ as gkx_version
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
+from gkx.solvers.nonlinear.state_integration import integrate_nonlinear_cached, nonlinear_rhs_cached
+from gkx.parallel.integrators import integrate_nonlinear_sharded
+from gkx.parallel.state import resolve_state_sharding
+from gkx.terms.config import TermConfig
 
 try:
     from tools.profiling._profiler_options import git_source_state
@@ -82,7 +82,7 @@ def _profile_command(argv: list[str] | None) -> str:
 def _software_versions() -> dict[str, str]:
     return {
         "python": platform.python_version(),
-        "spectraxgk": str(spectraxgk_version),
+        "gkx": str(gkx_version),
         "jax": str(getattr(jax, "__version__", "unknown")),
         "jaxlib": str(getattr(jaxlib, "__version__", "unknown")),
         "numpy": str(np.__version__),
@@ -626,7 +626,7 @@ def run_sweep(
     rows: list[dict[str, Any]] = []
     profiles: dict[str, Any] = {}
     with tempfile.TemporaryDirectory(
-        prefix="spectraxgk-nonlinear-scaling-"
+        prefix="gkx-nonlinear-scaling-"
     ) as tmp_name:
         tmp = Path(tmp_name)
         for requested_devices in devices:
@@ -774,7 +774,7 @@ def write_sweep_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

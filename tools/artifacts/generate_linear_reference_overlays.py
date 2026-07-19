@@ -46,32 +46,32 @@ from tools.comparison.compare_gx_kbm import (  # noqa: E402
     _prepare_gx_reference,
     _runtime_config_from_kbm_case,
 )
-from spectraxgk.artifacts.plotting import (  # noqa: E402
+from gkx.artifacts.plotting import (  # noqa: E402
     eigenfunction_overlap_summary_figure,
     eigenfunction_reference_overlay_figure,
 )
-from spectraxgk.diagnostics.modes import (  # noqa: E402
+from gkx.diagnostics.modes import (  # noqa: E402
     compare_eigenfunctions,
     load_eigenfunction_reference_bundle,
     save_eigenfunction_reference_bundle,
 )
-from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
+from gkx.diagnostics.validation_gates import (  # noqa: E402
     eigenfunction_gate_report,
     gate_report_to_dict,
 )
-from spectraxgk.artifacts.spectral_layout import infer_triple_dealiased_ny  # noqa: E402
-from spectraxgk.diagnostics.growth_windows import late_time_window  # noqa: E402
-from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions  # noqa: E402
-from spectraxgk.runtime import run_runtime_linear  # noqa: E402
-from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
-from spectraxgk.core.grid import build_spectral_grid  # noqa: E402
-from spectraxgk.operators.linear.params import build_linear_params  # noqa: E402
-from spectraxgk.diagnostics.analysis import extract_eigenfunction  # noqa: E402
-from spectraxgk.geometry import (  # noqa: E402
+from gkx.artifacts.spectral_layout import infer_triple_dealiased_ny  # noqa: E402
+from gkx.diagnostics.growth_windows import late_time_window  # noqa: E402
+from gkx.benchmarking.shared import _apply_reference_hypercollisions  # noqa: E402
+from gkx.runtime import run_runtime_linear  # noqa: E402
+from gkx.config import GridConfig, resolve_cfl_fac  # noqa: E402
+from gkx.core.grid import build_spectral_grid  # noqa: E402
+from gkx.operators.linear.params import build_linear_params  # noqa: E402
+from gkx.diagnostics.analysis import extract_eigenfunction  # noqa: E402
+from gkx.geometry import (  # noqa: E402
     apply_imported_geometry_grid_defaults,
     load_imported_geometry_netcdf,
 )
-from spectraxgk.solvers.time.explicit import ExplicitTimeConfig  # noqa: E402
+from gkx.solvers.time.explicit import ExplicitTimeConfig  # noqa: E402
 
 KBM_EIGENFUNCTION_GATE_TOLERANCES = {
     "min_overlap": 0.95,
@@ -116,14 +116,14 @@ def load_eigenfunction_csv(path: Path) -> tuple[np.ndarray, np.ndarray]:
 def plot_saved_reference_overlay(
     *,
     reference: Path,
-    spectrax: Path,
+    gkx: Path,
     out: Path = DEFAULT_REFERENCE_OVERLAY_OUT,
     title: str = "Eigenfunction overlay against frozen reference",
 ) -> dict[str, str]:
     """Write a phase-aligned saved-mode overlay."""
 
     bundle = load_eigenfunction_reference_bundle(reference)
-    theta, mode = load_eigenfunction_csv(spectrax)
+    theta, mode = load_eigenfunction_csv(gkx)
     fig, _axes = eigenfunction_reference_overlay_figure(
         theta, mode, bundle.theta, bundle.mode, title=title
     )
@@ -169,7 +169,7 @@ def plot_overlap_summary(
 def build_reference_overlay_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Plot a saved mode against a reference bundle.")
     parser.add_argument("reference", type=Path)
-    parser.add_argument("spectrax", type=Path)
+    parser.add_argument("gkx", type=Path)
     parser.add_argument("--out", type=Path, default=DEFAULT_REFERENCE_OVERLAY_OUT)
     parser.add_argument("--title", default="Eigenfunction overlay against frozen reference")
     return parser
@@ -186,7 +186,7 @@ def build_overlap_summary_parser() -> argparse.ArgumentParser:
 def main_reference_overlay(argv: list[str] | None = None) -> int:
     args = build_reference_overlay_parser().parse_args(argv)
     plot_saved_reference_overlay(
-        reference=args.reference, spectrax=args.spectrax, out=args.out, title=args.title
+        reference=args.reference, gkx=args.gkx, out=args.out, title=args.title
     )
     return 0
 
@@ -272,7 +272,7 @@ def _load_finite_reference(bundle_path: Path):
     return bundle
 
 
-def _run_w7x_spectrax_mode(
+def _run_w7x_gkx_mode(
     args: argparse.Namespace, *, reference_times: np.ndarray, output_steps: np.ndarray
 ):
     gx_contract = _load_gx_input_contract(args.gx_input)
@@ -404,7 +404,7 @@ def build_kbm_parser() -> argparse.ArgumentParser:
         help="Per-candidate KBM comparison table with the selected branch rows.",
     )
     parser.add_argument("--ky", type=float, default=0.3, help="Target ky value.")
-    parser.add_argument("--dt", type=float, default=0.01, help="SPECTRAX time step.")
+    parser.add_argument("--dt", type=float, default=0.01, help="GKX time step.")
     parser.add_argument(
         "--fit-padding",
         type=float,
@@ -430,8 +430,8 @@ def build_kbm_parser() -> argparse.ArgumentParser:
         / "docs"
         / "_static"
         / "reference_modes"
-        / "kbm_linear_spectrax_ky0p3000.csv",
-        help="Output CSV path for the SPECTRAX eigenfunction.",
+        / "kbm_linear_gkx_ky0p3000.csv",
+        help="Output CSV path for the GKX eigenfunction.",
     )
     parser.add_argument(
         "--out-png",
@@ -492,7 +492,7 @@ def build_w7x_parser() -> argparse.ArgumentParser:
         "--geometry-file",
         type=Path,
         required=True,
-        help="Imported GX/VMEC geometry file for the SPECTRAX-GK run.",
+        help="Imported GX/VMEC geometry file for the GKX run.",
     )
     parser.add_argument("--ky", type=float, default=0.3, help="Target ky value.")
     parser.add_argument(
@@ -531,8 +531,8 @@ def build_w7x_parser() -> argparse.ArgumentParser:
         / "docs"
         / "_static"
         / "reference_modes"
-        / "w7x_linear_spectrax_ky0p3000.csv",
-        help="Output CSV path for the SPECTRAX-GK eigenfunction.",
+        / "w7x_linear_gkx_ky0p3000.csv",
+        help="Output CSV path for the GKX eigenfunction.",
     )
     parser.add_argument(
         "--out-png",
@@ -717,7 +717,7 @@ def main_w7x(argv: list[str] | None = None) -> int:
         sample_window=str(args.sample_window),
     )
     reference_times = np.asarray(gx_time[: int(output_steps[-1]) + 1], dtype=float)
-    run = _run_w7x_spectrax_mode(
+    run = _run_w7x_gkx_mode(
         args, reference_times=reference_times, output_steps=output_steps
     )
 
@@ -781,7 +781,7 @@ def main_w7x(argv: list[str] | None = None) -> int:
                 if validation_gate_report.passed
                 else "open",
                 "reference_bundle": _artifact_path(args.bundle_out),
-                "spectrax_csv": _artifact_path(args.out_csv),
+                "gkx_csv": _artifact_path(args.out_csv),
             },
             indent=2,
             sort_keys=True,

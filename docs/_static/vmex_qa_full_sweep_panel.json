@@ -1,6 +1,6 @@
 {
   "kind": "vmex_qa_full_max_mode5_sweep",
-  "claim_scope": "real VMEC-JAX max_mode=5 optimizer-output comparison; reduced growth/quasilinear/nonlinear-window objectives are optimizer diagnostics; production nonlinear Q claims require matched long post-transient SPECTRAX-GK audit traces",
+  "claim_scope": "real VMEC-JAX max_mode=5 optimizer-output comparison; reduced growth/quasilinear/nonlinear-window objectives are optimizer diagnostics; production nonlinear Q claims require matched long post-transient GKX audit traces",
   "run_root": "tools_out/vmex_qa_full_sweep_20260605",
   "campaign_root": "tools_out/vmex_qa_full_sweep_20260605",
   "runs_root": "tools_out/vmex_qa_full_sweep_20260605/runs",
@@ -13,14 +13,14 @@
       "run_completed": 1,
       "setup": {
         "kind": "vmex_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.simple_seed",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.simple_seed",
         "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/vmex/examples/data/input.minimal_seed_nfp2",
         "use_simple_seed": 1,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy",
         "target_aspect": 5.0,
         "min_iota": 0.41019999999999995,
         "strict_upstream_qa_baseline": 1,
@@ -28,7 +28,7 @@
         "iota_objective": "target",
         "iota_profile_floor": null,
         "iota_profile_floor_weight": 0.0,
-        "spectrax_weight": 0.05,
+        "gkx_weight": 0.05,
         "constraints_only": 1,
         "transport_kind": "nonlinear_window_heat_flux",
         "sample_set": {
@@ -52,7 +52,7 @@
           "reduction": "weighted_mean",
           "n_samples": 18
         },
-        "spectrax_config": {
+        "gkx_config": {
           "ntheta": 24,
           "mboz": 21,
           "nboz": 21,
@@ -99,7 +99,7 @@
           "iota",
           "qs"
         ],
-        "claim_scope": "vmex fixed-boundary QA optimization without SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization without GKX transport residual; production nonlinear flux claims require matched long-window GKX audits"
       },
       "optimizer_comparison": {
         "case_id": "qa_baseline_scipy",
@@ -215,7 +215,7 @@
             "passed": 1
           }
         },
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
+        "claim_level": "solved VMEC candidate gate before expensive GKX nonlinear transport audit",
         "next_action": "candidate may proceed to matched long-window nonlinear transport audits"
       },
       "solved_wout_gate_passed": 1,
@@ -223,14 +223,14 @@
         "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
           "aspect": 4.999998728306318,
           "mean_iota": 0.4102000063210299,
           "min_iotas_excluding_axis": 0.40520024851102965,
           "min_iotaf": 0.4050565444372784
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
           "aspect": 4.999998728306318,
           "mean_iota": 0.41102099219110516,
           "min_iotas_excluding_axis": 0.4019869369759107,
@@ -277,11 +277,11 @@
             "passed": 0
           }
         },
-        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
+        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before GKX transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
@@ -289,7 +289,7 @@
         "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
           "aspect": 4.999998728306318,
           "mean_iota": 0.41102099219110516,
           "min_iotas_excluding_axis": 0.4019869369759107,
@@ -343,7 +343,7 @@
           }
         },
         "claim_level": "deterministic WOUT artifact passes solved-equilibrium admission; optimizer-state reproducibility must be reported separately",
-        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream SPECTRAX-GK audits"
+        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream GKX audits"
       },
       "rerun_wout_admission_gate_passed": 1,
       "gate_passed": 1,
@@ -520,14 +520,14 @@
       "run_completed": 1,
       "setup": {
         "kind": "vmex_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
         "use_simple_seed": 0,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
         "target_aspect": 5.0,
         "min_iota": 0.41,
         "strict_upstream_qa_baseline": 0,
@@ -535,7 +535,7 @@
         "iota_objective": "target",
         "iota_profile_floor": null,
         "iota_profile_floor_weight": 0.0,
-        "spectrax_weight": 0.1,
+        "gkx_weight": 0.1,
         "constraints_only": 0,
         "transport_kind": "growth",
         "sample_set": {
@@ -554,7 +554,7 @@
           "reduction": "weighted_mean",
           "n_samples": 1
         },
-        "spectrax_config": {
+        "gkx_config": {
           "ntheta": 24,
           "mboz": 21,
           "nboz": 21,
@@ -600,9 +600,9 @@
           "aspect",
           "iota",
           "qs",
-          "spectraxgk_transport"
+          "gkx_transport"
         ],
-        "claim_scope": "vmex fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization with GKX transport residual; production nonlinear flux claims require matched long-window GKX audits"
       },
       "optimizer_comparison": {
         "case_id": "growth_from_strict_baseline",
@@ -719,7 +719,7 @@
             "passed": 1
           }
         },
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
+        "claim_level": "solved VMEC candidate gate before expensive GKX nonlinear transport audit",
         "next_action": "do not promote this candidate; refine constraints or reduce/re-scale the transport residual"
       },
       "solved_wout_gate_passed": 0,
@@ -727,14 +727,14 @@
         "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
           "aspect": 5.004308467177275,
           "mean_iota": 0.4099766900469461,
           "min_iotas_excluding_axis": 0.4037749194492824,
           "min_iotaf": 0.4034415454180686
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004308467177275,
           "mean_iota": 0.4121247252927308,
           "min_iotas_excluding_axis": 0.4030707384486464,
@@ -781,11 +781,11 @@
             "passed": 0
           }
         },
-        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
+        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before GKX transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
@@ -793,7 +793,7 @@
         "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004308467177275,
           "mean_iota": 0.4121247252927308,
           "min_iotas_excluding_axis": 0.4030707384486464,
@@ -847,7 +847,7 @@
           }
         },
         "claim_level": "deterministic WOUT artifact passes solved-equilibrium admission; optimizer-state reproducibility must be reported separately",
-        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream SPECTRAX-GK audits"
+        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream GKX audits"
       },
       "rerun_wout_admission_gate_passed": 1,
       "gate_passed": 0,
@@ -1026,14 +1026,14 @@
       "run_completed": 1,
       "setup": {
         "kind": "vmex_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
         "use_simple_seed": 0,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
         "target_aspect": 5.0,
         "min_iota": 0.41,
         "strict_upstream_qa_baseline": 0,
@@ -1041,7 +1041,7 @@
         "iota_objective": "target",
         "iota_profile_floor": null,
         "iota_profile_floor_weight": 0.0,
-        "spectrax_weight": 0.1,
+        "gkx_weight": 0.1,
         "constraints_only": 0,
         "transport_kind": "quasilinear_flux",
         "sample_set": {
@@ -1060,7 +1060,7 @@
           "reduction": "weighted_mean",
           "n_samples": 1
         },
-        "spectrax_config": {
+        "gkx_config": {
           "ntheta": 24,
           "mboz": 21,
           "nboz": 21,
@@ -1106,9 +1106,9 @@
           "aspect",
           "iota",
           "qs",
-          "spectraxgk_transport"
+          "gkx_transport"
         ],
-        "claim_scope": "vmex fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization with GKX transport residual; production nonlinear flux claims require matched long-window GKX audits"
       },
       "optimizer_comparison": {
         "case_id": "quasilinear_from_strict_baseline",
@@ -1229,7 +1229,7 @@
             "passed": 1
           }
         },
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
+        "claim_level": "solved VMEC candidate gate before expensive GKX nonlinear transport audit",
         "next_action": "do not promote this candidate; refine constraints or reduce/re-scale the transport residual"
       },
       "solved_wout_gate_passed": 0,
@@ -1237,14 +1237,14 @@
         "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
           "aspect": 5.004321533731937,
           "mean_iota": 0.40997897310909476,
           "min_iotas_excluding_axis": 0.40377617922820574,
           "min_iotaf": 0.40344281924916015
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004321533731937,
           "mean_iota": 0.4121272962875881,
           "min_iotas_excluding_axis": 0.4030730759182478,
@@ -1291,11 +1291,11 @@
             "passed": 0
           }
         },
-        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
+        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before GKX transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
@@ -1303,7 +1303,7 @@
         "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004321533731937,
           "mean_iota": 0.4121272962875881,
           "min_iotas_excluding_axis": 0.4030730759182478,
@@ -1357,7 +1357,7 @@
           }
         },
         "claim_level": "deterministic WOUT artifact passes solved-equilibrium admission; optimizer-state reproducibility must be reported separately",
-        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream SPECTRAX-GK audits"
+        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream GKX audits"
       },
       "rerun_wout_admission_gate_passed": 1,
       "gate_passed": 0,
@@ -1536,14 +1536,14 @@
       "run_completed": 1,
       "setup": {
         "kind": "vmex_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
         "use_simple_seed": 0,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
         "target_aspect": 5.0,
         "min_iota": 0.41,
         "strict_upstream_qa_baseline": 0,
@@ -1551,7 +1551,7 @@
         "iota_objective": "target",
         "iota_profile_floor": null,
         "iota_profile_floor_weight": 0.0,
-        "spectrax_weight": 0.1,
+        "gkx_weight": 0.1,
         "constraints_only": 0,
         "transport_kind": "nonlinear_window_heat_flux",
         "sample_set": {
@@ -1570,7 +1570,7 @@
           "reduction": "weighted_mean",
           "n_samples": 1
         },
-        "spectrax_config": {
+        "gkx_config": {
           "ntheta": 24,
           "mboz": 21,
           "nboz": 21,
@@ -1616,9 +1616,9 @@
           "aspect",
           "iota",
           "qs",
-          "spectraxgk_transport"
+          "gkx_transport"
         ],
-        "claim_scope": "vmex fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization with GKX transport residual; production nonlinear flux claims require matched long-window GKX audits"
       },
       "optimizer_comparison": {
         "case_id": "nonlinear_window_from_strict_baseline",
@@ -1747,7 +1747,7 @@
             "passed": 1
           }
         },
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
+        "claim_level": "solved VMEC candidate gate before expensive GKX nonlinear transport audit",
         "next_action": "do not promote this candidate; refine constraints or reduce/re-scale the transport residual"
       },
       "solved_wout_gate_passed": 0,
@@ -1755,14 +1755,14 @@
         "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
           "aspect": 5.004339789413267,
           "mean_iota": 0.4099940357439537,
           "min_iotas_excluding_axis": 0.4038034235655028,
           "min_iotaf": 0.4034714060079266
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004339789413267,
           "mean_iota": 0.4121398327625339,
           "min_iotas_excluding_axis": 0.40308434514816893,
@@ -1809,11 +1809,11 @@
             "passed": 0
           }
         },
-        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
+        "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before GKX transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
@@ -1821,7 +1821,7 @@
         "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/GKX/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004339789413267,
           "mean_iota": 0.4121398327625339,
           "min_iotas_excluding_axis": 0.40308434514816893,
@@ -1875,7 +1875,7 @@
           }
         },
         "claim_level": "deterministic WOUT artifact passes solved-equilibrium admission; optimizer-state reproducibility must be reported separately",
-        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream SPECTRAX-GK audits"
+        "next_action": "this WOUT may be used as the authoritative equilibrium for downstream GKX audits"
       },
       "rerun_wout_admission_gate_passed": 1,
       "gate_passed": 0,
