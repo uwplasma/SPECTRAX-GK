@@ -658,6 +658,23 @@ Use large coherent commits, each independently green:
      ``LinearParams`` -> ``cache_builder`` populates ``collision_lam`` for the
      moment-matrix operators / selects the analytic contribution), validated
      and defaulting to the current Lenard-Bernstein behavior.
+- 2026-07-19 **Phase 6 atomic rename SPECTRAX-GK -> GKX (code, `e0817914`).**
+  Package moved ``src/spectraxgk`` -> ``src/gkx``; import root, pyproject name,
+  and the two consolidated console scripts are now ``gkx``; every identifier,
+  string value, env var (``SPECTRAX_*`` -> ``GKX_*``), progress prefix
+  ``[gkx]``, data label, and the 271 frozen docs/_static + benchmarks
+  provenance values renamed in lockstep with the release gates. Also cleared
+  the residual no-underscore ``VMECJAX`` -> ``VMEX``. x64 is switched by
+  ``JAX_ENABLE_X64`` (not the renamed ``SPECTRAX_X64``), so unaffected.
+  Verified: ``import gkx`` (362 API names, ``spectraxgk`` gone), reinstall,
+  ruff, ``gkx --help``, collection (2173), architecture manifest, ``sphinx -W``
+  (0 warnings), CI coherent (``--cov=gkx``, ``import gkx`` smoke), and the
+  release/core/cli subset pass under x64 (full-suite + coverage confirm in
+  flight). **Not done (out of my scope):** reserving the PyPI ``gkx`` name and
+  renaming the GitHub repo ``uwplasma/SPECTRAX-GK`` -> ``uwplasma/GKX`` are
+  GitHub/PyPI actions for the maintainer; the local working directory keeps its
+  name because renaming it would break the editable venv. Per step 6, the
+  ``SPECTRAX-GK`` name is retained only in this plan's migration/history text.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
@@ -784,7 +801,8 @@ flake.
    full x64 suite (2149 passed / 0 failed).
 4. **Single combined push of the local commit stack** (AWAITS user
    authorization; outward-facing). Both push-blockers are cleared: x64 CI-green
-   and the >=95% coverage gate. Remote ``origin`` -> ``uwplasma/spectrax-gk``,
+   and the >=95% coverage gate. Remote ``origin`` -> ``uwplasma/SPECTRAX-GK``
+   (GitHub repo rename to ``uwplasma/GKX`` pending; a maintainer action),
    branch ``refactor/gkx-2.0``. Do not push without an explicit go-ahead.
 
 **Then** continue the scientific-core lane (consolidate term/field/dissipation
