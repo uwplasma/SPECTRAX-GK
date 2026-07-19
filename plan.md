@@ -595,10 +595,23 @@ Use large coherent commits, each independently green:
   injected retired ``static``/``indata`` bundle keys (now ``runtime``/``inp``).
   (3) a pre-existing parallel runtime-scan flake (``f25289f9``): worker
   invocation order asserted as deterministic under an 8-worker thread executor;
-  made order-insensitive (12/12 stable). Full x64 suite: 2052 passed
-  (re-confirm sweep in flight). Coverage restoration (94% -> 95%) is the next
-  push-blocker, measured under x64 to match the two CI ``--fail-under 95``
-  gates.
+  made order-insensitive (12/12 stable). Full x64 suite: 2052 passed / 0 failed.
+- 2026-07-19 coverage restoration to the >=95% gate (measured under x64 to
+  match CI). The deleted ``tests/tools`` monoliths had implicitly covered
+  helper paths; rebuilt that as direct behavioral tests (no coverage theater,
+  no source edits). ``solvers/time/explicit.py`` 45->97% (wall-time format,
+  adaptive-CFL dt clamping, progress-trigger logic, max-mode + adaptive
+  integration); ``geometry/vmec_flux_tube_reports.py`` 57->89% (parity metric
+  packers, report schemas, validation errors); ``geometry/vmec_state_sensitivity``
+  63->100% (observable packing, AD/FD Jacobian rows, unavailable/failed
+  branches); ``geometry/vmec_state_controls`` 83->100% (family accessors, index
+  resolution, immutability); ``operators/linear/collisions`` 93->100%
+  (fail-closed provenance, guard/validator branches, pytree round-trips). Four
+  geometry/operator files were written by parallel subagents under strict
+  anti-theater guardrails and reviewed before commit. Result: package coverage
+  **95.19%** (1338 missing of 27819, +243 statements vs the ~193 the gate
+  required); full x64 suite **2149 passed / 0 failed**; package-coverage
+  manifest gate and architecture gate (79 test files <= baseline 95) both pass.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
@@ -704,17 +717,20 @@ flake.
 
 1. ~~**VMEX piece B**~~ — DONE (``1c567abe``); the geometry bridge runs on
    VMEX's public API and the VMEC-native optimization path is live again.
-   ~~x64 CI-green~~ — Sugama/Piece-B-fallout/flake fixes landed; full-suite
-   re-confirm sweep in flight.
-2. **Restore package coverage to >=95%** (current top priority) — rebuild the
-   tests the deleted ``tests/tools`` monoliths implicitly provided
-   (explicit-linear path and others); this is the leading edge of Phase 3.
-   Measure under ``JAX_ENABLE_X64=1`` to match CI's two ``--fail-under 95``
-   gates (release-surface + wide 24-shard package). A fresh x64 ``--cov`` run
-   of the full suite is the input to targeting.
+   ~~x64 CI-green~~ — DONE; Sugama/Piece-B-fallout/flake fixes landed and the
+   full x64 suite is green (2149 passed / 0 failed).
+2. ~~**Restore package coverage to >=95%**~~ — DONE (95.19%, x64). Rebuilt the
+   coverage the deleted ``tests/tools`` monoliths implicitly provided by
+   testing helpers directly: ``solvers/time/explicit.py`` 45->97%,
+   ``geometry/vmec_flux_tube_reports.py`` 57->89%, and
+   ``geometry/vmec_state_sensitivity.py`` / ``geometry/vmec_state_controls.py``
+   / ``operators/linear/collisions.py`` 63/83/93 -> 100%. +243 statements over
+   the ~193 the gate needed. Full x64 suite 2149 passed / 0 failed; the
+   package-coverage manifest gate and architecture gate both pass.
 3. **Coordinated ``vmec_jax_*`` -> ``vmex_*`` identifier + frozen-artifact
-   rename** (see the dependency section), then the single combined push of the
-   local commit stack.
+   rename** (current top priority; see the dependency section), then the single
+   combined push of the local commit stack. This is the last push-blocker: both
+   CI-green (x64) and the >=95% coverage gate are now satisfied.
 
 **Then** continue the scientific-core lane (consolidate term/field/dissipation
 ownership under ``terms``/``physics`` and remove the duplicated
