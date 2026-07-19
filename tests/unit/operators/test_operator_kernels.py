@@ -1169,6 +1169,38 @@ def test_improved_sugama_pair_matches_published_equal_and_unequal_coefficients()
     assert improved_error / original_error < 0.41
 
 
+def test_drift_kinetic_collision_operators_obey_h_theorem_and_conserve_density() -> None:
+    # Physics-limit benchmark for the promoted single-species drift-kinetic
+    # collision operators (Coulomb, Sugama, improved Sugama) in the
+    # Hermite-Laguerre moment basis. Each operator C acts as dG/dt = C @ G on
+    # the eight lowest moments, and must satisfy the collision-operator
+    # invariants regardless of the closure it approximates:
+    #
+    #   (i)  H-theorem / entropy production: the symmetrized moment matrix is
+    #        negative semi-definite, so the quadratic free-energy rate
+    #        <G, C G> <= 0 for every perturbation (collisions dissipate, never
+    #        amplify, free energy).
+    #   (ii) Density is an exact collisional invariant: the density moment is
+    #        neither produced (row 0 = 0) nor acted upon (column 0 = 0), i.e.
+    #        a Maxwellian density perturbation sits in the operator's null
+    #        space.
+    #   (iii) The non-conserved moments are genuinely damped (a strictly
+    #        negative part of the spectrum), so the operator is not trivially
+    #        zero.
+    for name in ("coulomb", "sugama", "improved_sugama"):
+        matrix = np.asarray(load_collision_moment_matrix(name), dtype=float)
+        assert matrix.shape == (8, 8), name
+        symmetric = 0.5 * (matrix + matrix.T)
+        eigenvalues = np.linalg.eigvalsh(symmetric)
+        # (i) H-theorem: no growing free-energy direction.
+        assert float(eigenvalues.max()) < 1.0e-10, name
+        # (iii) real dissipation of the damped moments.
+        assert float(eigenvalues.min()) < -0.1, name
+        # (ii) density (moment 0) is an exact two-sided collisional invariant.
+        np.testing.assert_allclose(matrix[0, :], 0.0, atol=1.0e-12)
+        np.testing.assert_allclose(matrix[:, 0], 0.0, atol=1.0e-12)
+
+
 def test_improved_sugama_multispecies_matrix_conserves_and_differentiates() -> None:
     # Run the differentiability check in the ambient precision.  The central
     # finite difference below is a float-precision-limited reference: with
