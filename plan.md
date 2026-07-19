@@ -630,6 +630,34 @@ Use large coherent commits, each independently green:
   (0 warnings, all renamed figures resolve), and the full x64 suite (2149
   passed / 0 failed). This clears the plan's last listed push-blocker; the
   single combined push of the local stack awaits explicit user authorization.
+- 2026-07-19 pushed the 23-commit stack to ``origin/refactor/gkx-2.0``
+  (``874501b5..6db26a51``); remote canonicalized to ``uwplasma/SPECTRAX-GK``.
+- 2026-07-19 opened the **advanced-collision lane (task #4)**. Scoping: the
+  operators already exist and are literature-sound -- single-species
+  drift-kinetic Coulomb/Sugama/improved-Sugama moment matrices
+  (``operators/linear/collisions.py``, tabulated via
+  ``load_collision_moment_matrix``), the six-moment Coulomb/Dougherty/Sugama
+  contributions and Dougherty operator (``operators/linear/dissipation.py``),
+  Lenard-Bernstein rates (``operators/linear/moments.py``), and the
+  finite-wavelength Coulomb operator (Frei et al. 2021). The linear RHS applies
+  collisions through the cache ``collision_lam`` slot (empty by default -> the
+  analytic Lenard-Bernstein ``lb_lam`` is the current default), so the *gap* is
+  operator **selection** plus the missing physics-limit benchmarks. Sequenced
+  lane work:
+  1. DONE (``de0ecb99``) -- H-theorem + density-invariant benchmark for the
+     drift-kinetic family: symmetrized moment matrix negative semi-definite
+     (entropy production <= 0), density an exact two-sided collisional
+     invariant, non-trivial dissipation. This is the b=0 part of the finite-b
+     H-theorem item.
+  2. Finite-b H-theorem: sweep ``b = kperp^2 T m/(q B)^2`` on the
+     ``FiniteWavelengthCoulombOperator`` and assert dissipativity at each b.
+  3. Collisionless-growth-rate limit: as the ``collisions`` weight -> 0 the
+     linear growth rate converges to the collisionless value and is
+     operator-independent.
+  4. TOML-selectable operator: add a ``collision_operator`` field (config ->
+     ``LinearParams`` -> ``cache_builder`` populates ``collision_lam`` for the
+     moment-matrix operators / selects the analytic contribution), validated
+     and defaulting to the current Lenard-Bernstein behavior.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
