@@ -675,6 +675,32 @@ Use large coherent commits, each independently green:
   GitHub/PyPI actions for the maintainer; the local working directory keeps its
   name because renaming it would break the editable venv. Per step 6, the
   ``SPECTRAX-GK`` name is retained only in this plan's migration/history text.
+- 2026-07-19 collision ``collision_operator`` TOML selection (``d77cf1f6``):
+  ``TimeConfig.collision_operator`` + ``collision_operator_from_config`` factory
+  (none/lenard_bernstein -> None diagonal default; sugama/improved_sugama ->
+  dense drift-kinetic operator), tested (selection/validation + H-theorem) both
+  precisions. Last mile: thread it through ``workflows/linear.py`` +
+  ``integrate_linear_from_config`` for end-to-end TOML selection.
+- 2026-07-19 **README figure branding finding (Phase 5, task #9 in progress).**
+  After the SPECTRAX-GK -> GKX rename all *generator source* is GKX (0 spectrax
+  remnants), but the committed README result PNGs were rendered *before* the
+  rename and still show "SPECTRAX-GK"/"GX vs SPECTRAX-GK" in their pixels. They
+  must be regenerated. Split:
+  - **Offline-regenerable (GKX-branded, no GX needed):** the linear master
+    panels and any figure that renders from committed CSV/JSON
+    (``make_reference_panels.py``/``make_benchmark_atlas.py`` linear groups,
+    collision, autodiff, quasilinear, QA, runtime). Re-running the (already
+    renamed) generators produces GKX branding.
+  - **Office-GPU + GX blocked:** the nonlinear GX-comparison sub-panels
+    (``nonlinear_{cyclone,kbm,w7x,hsx,miller}_diag_compare_*.png``,
+    ``hsx_nonlinear_compare_t50_true.png``) are committed as PNGs *only* -- no
+    regenerable time-series source is tracked -- so they need re-running the
+    nonlinear GKX+GX comparison on the office GPU (ties into task #7). The
+    benchmark atlas composites these, so its hero panel is only fully
+    GKX-branded after the office-GPU refresh.
+  Do the offline regeneration as one consistent batch; fold the nonlinear
+  panels into the office-GPU GX benchmark so the atlas is regenerated once,
+  uniformly, rather than leaving mixed branding.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
