@@ -591,7 +591,21 @@ migration, not a string rename.
   ``vmex.optimize``, ``vmex.core.turbulence``) and README. Verified: the QA
   optimization examples import VMEX and its public optimize/turbulence API
   resolves.
-- **Piece B (next best step):** the geometry bridge
+- **Piece B, Boozer route (done, ``3b4d4f1e``):** the differentiable
+  VMEC/Boozer bridge now runs on vmex public seams — ``load_solved_vmex_case``
+  (``VmecInput.from_file`` + ``solve_equilibrium``, cached), per-surface
+  ``vmex.core.boozer_tables.boozer_input_tables`` stacked into the
+  ``booz_xform_jax`` inputs contract, and vmex-named state accessors.
+  Verified: mode-matched WOUT parity at machine precision (~2e-16), AD vs
+  centered FD on d sum(bmnc)/d R_cos at 2e-10, 40 gate tests green,
+  ``vmec_boozer_core`` at 999/1000 lines. Stellarator-symmetric only
+  (asym fails closed).
+- **Piece B, remaining routes (next):** the tensor-mapping/state-sensitivity
+  (PEST field-line) route should move onto
+  ``vmex.core.turbulence.gk_fieldline_geometry`` (which returns exactly the
+  ``flux_tube_geometry_from_mapping`` contract, differentiably), and
+  ``objectives/vmec_transport.py`` still path-searches a ``vmec_jax`` checkout
+  via ``_module_search_root``. The old geometry bridge
   (``geometry/{vmec_tensor_mapping,vmec_state_sensitivity,vmec_boozer_core,
   vmec_boozer_constants,vmec_state_controls}.py``,
   ``objectives/{vmec_boozer_context,vmec_boozer_fd}.py``) calls ~8 removed
