@@ -158,3 +158,40 @@ def test_explicit_from_config_preserves_adaptive_controls(monkeypatch) -> None:
     assert captured["kwargs"]["show_progress"] is True
     np.testing.assert_allclose(t, [0.1])
     assert phi.shape == (1, 1, 1, 2)
+
+
+def test_integrate_linear_explicit_from_config_runs_full_rk4_loop() -> None:
+    # End-to-end explicit linear rk4 loop (public API) on a tiny Cyclone case,
+    # exercising _run_linear_explicit_loop and its stepper/progress helpers.
+    from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.geometry import SAlphaGeometry
+    from spectraxgk.operators.linear.params import LinearParams
+
+    grid = build_spectral_grid(
+        CycloneBaseCase(grid=GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)).grid
+    )
+    geom = SAlphaGeometry.from_config(CycloneBaseCase().geometry)
+    params = LinearParams(
+        omega_d_scale=0.0, omega_star_scale=0.0, nu=0.0, nu_hyper=0.0,
+        damp_ends_amp=0.0, damp_ends_widthfrac=0.0,
+    )
+    n_l, n_m = 2, 3
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
+    g0 = jnp.zeros(
+        (n_l, n_m, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
+    g0 = g0.at[0, 0, 1, 0, :].set(1.0e-3 * jnp.exp(1j * z))
+    time_cfg = TimeConfig(
+        t_max=0.2, dt=0.02, method="rk4", sample_stride=1, use_diffrax=False
+    )
+    t, phi = eti.integrate_linear_explicit_from_config(
+        g0, grid, geom, params, time_cfg, Nl=n_l, Nm=n_m, z_index=grid.z.size // 2
+    )
+    t = np.asarray(t)
+    phi = np.asarray(phi)
+    assert t.shape[0] == phi.shape[0]
+    assert t.shape[0] >= 2
+    assert np.all(np.isfinite(t))
+    assert np.all(np.isfinite(phi))
+    assert float(t[-1]) > float(t[0])
