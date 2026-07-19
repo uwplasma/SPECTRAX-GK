@@ -195,3 +195,138 @@ def test_integrate_linear_explicit_from_config_runs_full_rk4_loop() -> None:
     assert np.all(np.isfinite(t))
     assert np.all(np.isfinite(phi))
     assert float(t[-1]) > float(t[0])
+
+
+def test_resolve_and_validate_method_reject_unknown() -> None:
+    assert eti._resolve_explicit_method("  RK4 ") == "rk4"
+    with pytest.raises(ValueError, match="method must be one of"):
+        eti._resolve_explicit_method("nonexistent")
+    eti._validate_mode_method("max")
+    with pytest.raises(ValueError, match="mode_method must be"):
+        eti._validate_mode_method("bogus")
+
+
+def test_format_wall_time_hours_minutes_and_clamped_branches() -> None:
+    assert eti._format_wall_time(3661.0) == "1:01:01"
+    assert eti._format_wall_time(7200.0) == "2:00:00"
+    assert eti._format_wall_time(65.0) == "01:05"
+    assert eti._format_wall_time(0.0) == "00:00"
+    # Negative wall times are clamped to zero rather than formatting garbage.
+    assert eti._format_wall_time(-5.0) == "00:00"
+
+
+def test_adaptive_linear_dt_fixed_disabled_and_cfl_clamped() -> None:
+    fixed = eti.ExplicitTimeConfig(t_max=1.0, dt=0.02, fixed_dt=True, cfl=0.5, cfl_fac=2.0)
+    # fixed_dt short-circuits regardless of wmax.
+    assert eti._adaptive_linear_dt(fixed, dt=0.02, dt_min=1e-6, dt_max=0.04, wmax=1e3) == 0.02
+
+    adaptive = eti.ExplicitTimeConfig(
+        t_max=1.0, dt=0.02, fixed_dt=False, cfl=0.5, cfl_fac=2.0
+    )
+    # Non-positive wmax cannot form a CFL estimate -> keep the requested dt.
+    assert eti._adaptive_linear_dt(adaptive, dt=0.02, dt_min=1e-6, dt_max=0.04, wmax=0.0) == 0.02
+    # cfl_fac*cfl/wmax = 2*0.5/100 = 0.01, in range.
+    assert eti._adaptive_linear_dt(
+        adaptive, dt=0.02, dt_min=1e-6, dt_max=0.04, wmax=100.0
+    ) == pytest.approx(0.01)
+    # Same guess clamped up to dt_min and down to dt_max.
+    assert eti._adaptive_linear_dt(
+        adaptive, dt=0.02, dt_min=0.02, dt_max=0.04, wmax=100.0
+    ) == pytest.approx(0.02)
+    assert eti._adaptive_linear_dt(
+        adaptive, dt=0.02, dt_min=1e-6, dt_max=0.005, wmax=100.0
+    ) == pytest.approx(0.005)
+
+
+def test_should_emit_linear_progress_trigger_conditions() -> None:
+    # First step, final step, and stride multiples emit; interior steps do not.
+    assert eti._should_emit_linear_progress(step=1, total_steps_est=100, progress_stride=10)
+    assert eti._should_emit_linear_progress(step=100, total_steps_est=100, progress_stride=10)
+    assert eti._should_emit_linear_progress(step=20, total_steps_est=100, progress_stride=10)
+    assert not eti._should_emit_linear_progress(
+        step=23, total_steps_est=100, progress_stride=10
+    )
+
+
+def test_linear_loop_progress_clock_and_history_arrays() -> None:
+    total_steps_est, progress_stride, started_at = eti._linear_loop_progress_clock(0.2, 0.02)
+    assert total_steps_est == 10
+    assert progress_stride >= 1
+    assert isinstance(started_at, float)
+    # A zero/degenerate dt must not divide-by-zero and still yields >=1 step.
+    assert eti._linear_loop_progress_clock(0.0, 0.0)[0] == 1
+
+    history = eti._LinearHistory()
+    for k in range(3):
+        history.ts.append(0.1 * k)
+        history.phi.append(np.full((2,), float(k)))
+        history.gamma.append(np.asarray(0.5 * k))
+        history.omega.append(np.asarray(-0.5 * k))
+    ts, phi, gamma, omega = eti._linear_history_arrays(history)
+    np.testing.assert_allclose(ts, [0.0, 0.1, 0.2])
+    assert phi.shape == (3, 2)
+    assert gamma.shape == (3,) and omega.shape == (3,)
+
+
+def _tiny_linear_case():
+    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.geometry import SAlphaGeometry
+    from spectraxgk.operators.linear.params import LinearParams
+
+    grid = build_spectral_grid(
+        CycloneBaseCase(grid=GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)).grid
+    )
+    geom = SAlphaGeometry.from_config(CycloneBaseCase().geometry)
+    params = LinearParams(
+        omega_d_scale=1.0, omega_star_scale=1.0, nu=0.0, nu_hyper=0.0,
+        damp_ends_amp=0.0, damp_ends_widthfrac=0.0,
+    )
+    n_l, n_m = 2, 3
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
+    g0 = jnp.zeros(
+        (n_l, n_m, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
+    g0 = g0.at[0, 0, 1, 0, :].set(1.0e-3 * jnp.exp(1j * z))
+    cache = eti.build_linear_cache(grid, geom, params, n_l, n_m)
+    return g0, grid, geom, params, cache, n_l, n_m
+
+
+def test_integrate_linear_explicit_show_progress_and_max_mode(capsys) -> None:
+    # Drive the public integrator with progress emission and max-mode growth
+    # diagnostics, covering the start/step/complete progress helpers and the
+    # max-mode sampling branch.
+    g0, grid, geom, params, cache, _n_l, _n_m = _tiny_linear_case()
+    time_cfg = eti.ExplicitTimeConfig(
+        t_max=0.2, dt=0.02, method="rk4", sample_stride=1, fixed_dt=True
+    )
+    t, phi, gamma, omega = eti.integrate_linear_explicit(
+        g0, grid, cache, params, geom, time_cfg,
+        mode_method="max", jit=False, show_progress=True,
+    )
+    out = capsys.readouterr().out
+    assert "linear initial-value integration started" in out
+    assert "linear initial-value integration complete" in out
+    assert "step=" in out
+    for arr in (t, phi, gamma, omega):
+        assert np.all(np.isfinite(np.asarray(arr)))
+    assert np.asarray(t).shape[0] >= 2
+
+
+def test_integrate_linear_explicit_adaptive_dt_completes() -> None:
+    # fixed_dt=False with a physical frequency bound exercises the adaptive CFL
+    # dt selection inside the stepping loop.
+    g0, grid, geom, params, cache, _n_l, _n_m = _tiny_linear_case()
+    time_cfg = eti.ExplicitTimeConfig(
+        t_max=0.1, dt=0.05, method="rk3", sample_stride=1,
+        fixed_dt=False, dt_min=1.0e-4, dt_max=0.05, cfl=0.8,
+    )
+    t, phi, gamma, omega = eti.integrate_linear_explicit(
+        g0, grid, cache, params, geom, time_cfg,
+        mode_method="z_index", jit=False, show_progress=False,
+    )
+    t = np.asarray(t)
+    assert t.shape[0] >= 1
+    assert np.all(np.isfinite(t))
+    assert np.all(np.isfinite(np.asarray(phi)))
+    assert float(t[-1]) <= 0.1 + 1.0e-9
