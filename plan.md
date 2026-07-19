@@ -579,6 +579,26 @@ Use large coherent commits, each independently green:
   ``vmex``/``vmex.optimize``/``vmex.core.turbulence`` plus README; GKX's QA
   turbulence-optimization path now uses VMEX directly. See the dependency
   section below for pieces B and the coordinated identifier rename.
+- 2026-07-19 VMEX piece B completion + full x64 CI-green pass. Finished the
+  PEST/tensor route and candidate-admission migration (``1c567abe``); see the
+  dependency section. Then swept the whole suite under CI precision
+  (``JAX_ENABLE_X64=1``) -- the authoritative gate, since **every** CI pytest
+  job runs x64 and local runs default to float32, so float32-only validation
+  had masked five x64/full-suite failures. Fixed: (1) the improved-Sugama JVP
+  differentiability check (``62d2149d``) -- float32 finite-difference reference
+  is cancellation-limited to ~3e-3 so an exact x64 tangent broke the 1.5e-3
+  tol; made it precision-aware (float64 inputs + small step under x64,
+  certified AD-vs-FD to 3e-8). (2) piece B fallout the objectives/stellarator
+  validation missed (``0d03522e``): a "GX" token in the new
+  ``vmec_tensor_mapping`` docstring tripped the comparison-terminology release
+  gate (reworded to "GS2-style"), and the solver FD-gate test fake still
+  injected retired ``static``/``indata`` bundle keys (now ``runtime``/``inp``).
+  (3) a pre-existing parallel runtime-scan flake (``f25289f9``): worker
+  invocation order asserted as deterministic under an 8-worker thread executor;
+  made order-insensitive (12/12 stable). Full x64 suite: 2052 passed
+  (re-confirm sweep in flight). Coverage restoration (94% -> 95%) is the next
+  push-blocker, measured under x64 to match the two CI ``--fail-under 95``
+  gates.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
@@ -682,13 +702,16 @@ flake.
 
 **Immediate best next steps, in order:**
 
-1. **VMEX piece B** — re-integrate the geometry bridge onto VMEX's public API.
-   This is the top priority because it is a *functional* gap: the bridge is
-   currently broken against VMEX 0.2.0, so the VMEC-native optimization path
-   does not run.
-2. **Restore package coverage to >=95%** — rebuild the tests the deleted
-   ``tests/tools`` monoliths implicitly provided (explicit-linear path and
-   others); this is the leading edge of Phase 3.
+1. ~~**VMEX piece B**~~ — DONE (``1c567abe``); the geometry bridge runs on
+   VMEX's public API and the VMEC-native optimization path is live again.
+   ~~x64 CI-green~~ — Sugama/Piece-B-fallout/flake fixes landed; full-suite
+   re-confirm sweep in flight.
+2. **Restore package coverage to >=95%** (current top priority) — rebuild the
+   tests the deleted ``tests/tools`` monoliths implicitly provided
+   (explicit-linear path and others); this is the leading edge of Phase 3.
+   Measure under ``JAX_ENABLE_X64=1`` to match CI's two ``--fail-under 95``
+   gates (release-surface + wide 24-shard package). A fresh x64 ``--cov`` run
+   of the full suite is the input to targeting.
 3. **Coordinated ``vmec_jax_*`` -> ``vmex_*`` identifier + frozen-artifact
    rename** (see the dependency section), then the single combined push of the
    local commit stack.
