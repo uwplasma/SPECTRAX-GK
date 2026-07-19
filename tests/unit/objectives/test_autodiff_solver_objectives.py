@@ -1552,9 +1552,9 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
 ) -> None:
     @dataclass(frozen=True)
     class FakeState:
-        Rcos: jnp.ndarray
+        R_cos: jnp.ndarray
 
-    fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
+    fake_state = FakeState(R_cos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
         solver_vmec,
         "_load_vmec_jax_example_state_bundle",
@@ -1563,14 +1563,14 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
             "input_path": "input.test",
             "wout_path": "wout.test",
             "state": fake_state,
-            "static": "static",
-            "indata": "indata",
+            "runtime": "runtime",
+            "inp": "inp",
             "wout": "wout",
         },
     )
 
     def fake_vector(state, *_args, **_kwargs):  # noqa: ANN001, ANN202
-        coeff = float(np.asarray(state.Rcos[2, 1]))
+        coeff = float(np.asarray(state.R_cos[2, 1]))
         return jnp.asarray([1.0 + 3.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0 + coeff])
 
     monkeypatch.setattr(
@@ -1612,12 +1612,12 @@ def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_fam
 ) -> None:
     @dataclass(frozen=True)
     class FakeState:
-        Rcos: jnp.ndarray
-        Zsin: jnp.ndarray
+        R_cos: jnp.ndarray
+        Z_sin: jnp.ndarray
 
     fake_state = FakeState(
-        Rcos=jnp.zeros((5, 3), dtype=jnp.float32),
-        Zsin=jnp.zeros((5, 3), dtype=jnp.float32),
+        R_cos=jnp.zeros((5, 3), dtype=jnp.float32),
+        Z_sin=jnp.zeros((5, 3), dtype=jnp.float32),
     )
     monkeypatch.setattr(
         solver_vmec,
@@ -1627,14 +1627,14 @@ def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_fam
             "input_path": "input.test",
             "wout_path": "wout.test",
             "state": fake_state,
-            "static": "static",
-            "indata": "indata",
+            "runtime": "runtime",
+            "inp": "inp",
             "wout": "wout",
         },
     )
 
     def fake_vector(state, *_args, **_kwargs):  # noqa: ANN001, ANN202
-        coeff = float(np.asarray(state.Zsin[2, 1]))
+        coeff = float(np.asarray(state.Z_sin[2, 1]))
         return jnp.asarray([2.0 + 4.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0])
 
     monkeypatch.setattr(
@@ -1666,9 +1666,9 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
 ) -> None:
     @dataclass(frozen=True)
     class FakeState:
-        Rcos: jnp.ndarray
+        R_cos: jnp.ndarray
 
-    fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
+    fake_state = FakeState(R_cos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
         solver_vmec,
         "_load_vmec_jax_example_state_bundle",
@@ -1677,14 +1677,14 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
             "input_path": "input.multi",
             "wout_path": "wout.multi",
             "state": fake_state,
-            "static": "static",
-            "indata": "indata",
+            "runtime": "runtime",
+            "inp": "inp",
             "wout": "wout",
         },
     )
 
     def fake_table(state, *_args, **kwargs):  # noqa: ANN001, ANN202
-        coeff = float(np.asarray(state.Rcos[2, 1]))
+        coeff = float(np.asarray(state.R_cos[2, 1]))
         ky_indices = tuple(kwargs["selected_ky_indices"])
         rows = []
         metadata = []

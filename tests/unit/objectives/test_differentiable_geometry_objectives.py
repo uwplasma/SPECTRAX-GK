@@ -520,7 +520,7 @@ def test_differentiable_backend_path_helpers_prefer_configured_checkout(
 def test_discover_differentiable_geometry_backends_reports_optional_apis(
     tmp_path: Path, monkeypatch
 ) -> None:
-    vmec_root = tmp_path / "vmec_jax" / "src" / "vmec_jax"
+    vmec_root = tmp_path / "vmec_jax" / "src" / "vmex"
     booz_root = tmp_path / "booz_xform_jax" / "src" / "booz_xform_jax"
     vmec_root.mkdir(parents=True)
     booz_root.mkdir(parents=True)
@@ -532,7 +532,7 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(
         "def booz_xform_jax_impl(*args, **kwargs): return None\n",
         encoding="utf-8",
     )
-    for name in ("vmec_jax", "booz_xform_jax", "booz_xform_jax.jax_api"):
+    for name in ("vmex", "booz_xform_jax", "booz_xform_jax.jax_api"):
         sys.modules.pop(name, None)
     monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(tmp_path / "vmec_jax"))
     monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", str(tmp_path / "booz_xform_jax"))
@@ -548,7 +548,7 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(
 def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
     tmp_path: Path, monkeypatch
 ) -> None:
-    vmec_root = tmp_path / "vmec_jax" / "src" / "vmec_jax"
+    vmec_root = tmp_path / "vmec_jax" / "src" / "vmex"
     vmec_root.mkdir(parents=True)
     (vmec_root / "__init__.py").write_text(
         "import jax.numpy as jnp\n"
@@ -564,7 +564,7 @@ def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
         "    return 2.0 * boundary.R_cos[1] + 0.5 * boundary.Z_sin[1]\n",
         encoding="utf-8",
     )
-    sys.modules.pop("vmec_jax", None)
+    sys.modules.pop("vmex", None)
     monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(tmp_path / "vmec_jax"))
 
     report = vmec_boundary_aspect_sensitivity_report(
@@ -708,9 +708,8 @@ def test_vmec_state_sensitivity_report_helpers_are_fail_closed_and_json_ready() 
     ctx = vmec_state_sensitivity._VMECStateContext(
         input_path=Path("input.example"),
         wout_path=Path("wout_example.nc"),
-        cfg=object(),
-        indata=object(),
-        static=object(),
+        inp=object(),
+        runtime=object(),
         wout=object(),
         state=object(),
         base_Rcos=jnp.ones((3, 4)),
@@ -1138,16 +1137,24 @@ def test_boozer_half_mesh_s_grid_uses_fortran_half_mesh_indices() -> None:
 def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
     monkeypatch,
 ) -> None:
-    vmec_pkg = types.ModuleType("vmec_jax")
-    vmec_pkg.__path__ = []  # type: ignore[attr-defined]
-    booz_pkg = types.ModuleType("booz_xform_jax")
-    booz_pkg.__path__ = []  # type: ignore[attr-defined]
-    booz_input = types.ModuleType("vmec_jax.booz_input")
+    boozer_tables_mod = types.ModuleType("vmex.core.boozer_tables")
     booz_api = types.ModuleType("booz_xform_jax.jax_api")
     captured: dict[str, list[int] | None] = {}
 
-    def booz_xform_inputs_from_state(*args, **kwargs):
-        return types.SimpleNamespace(bmns=None)
+    def boozer_input_tables(state, runtime, j):
+        return {
+            "rmnc": jnp.asarray([2.0 + 0.02 * j, 0.03], dtype=jnp.float64),
+            "zmns": jnp.asarray([0.0, 0.12], dtype=jnp.float64),
+            "lmns": jnp.asarray([0.0, 0.01], dtype=jnp.float64),
+            "bmnc": jnp.asarray([1.0 + 0.01 * j, 0.04], dtype=jnp.float64),
+            "bsubumnc": jnp.asarray([0.08, 0.0], dtype=jnp.float64),
+            "bsubvmnc": jnp.asarray([1.1, 0.0], dtype=jnp.float64),
+            "iota": jnp.asarray(0.42 + 0.01 * j, dtype=jnp.float64),
+            "G": jnp.asarray(1.1, dtype=jnp.float64),
+            "I": jnp.asarray(0.08, dtype=jnp.float64),
+            "xm": np.asarray([0, 1], dtype=np.int32),
+            "xn": np.asarray([0, 0], dtype=np.int32),
+        }
 
     def prepare_booz_xform_constants_from_inputs(*args, **kwargs):
         return object(), object()
@@ -1175,29 +1182,23 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
             "jlist": idx + 2,
         }
 
-    booz_input.booz_xform_inputs_from_state = booz_xform_inputs_from_state
+    boozer_tables_mod.boozer_input_tables = boozer_input_tables
     booz_api.prepare_booz_xform_constants_from_inputs = (
         prepare_booz_xform_constants_from_inputs
     )
     booz_api.booz_xform_from_inputs = booz_xform_from_inputs
-    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_pkg)
-    monkeypatch.setitem(sys.modules, "vmec_jax.booz_input", booz_input)
-    monkeypatch.setitem(sys.modules, "booz_xform_jax", booz_pkg)
+    monkeypatch.setitem(sys.modules, "vmex.core.boozer_tables", boozer_tables_mod)
     monkeypatch.setitem(sys.modules, "booz_xform_jax.jax_api", booz_api)
-    monkeypatch.setattr(
-        diff_geom,
-        "discover_differentiable_geometry_backends",
-        lambda: {"vmec_jax_available": True, "booz_xform_jax_api_available": True},
-    )
 
-    state = types.SimpleNamespace(Rcos=jnp.ones((6, 2), dtype=jnp.float64))
+    state = types.SimpleNamespace(R_cos=jnp.ones((6, 2), dtype=jnp.float64))
+    runtime = object()  # no .resolution: forces the from-inputs constants path
     wout = types.SimpleNamespace(
         signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, -np.pi]), nfp=4
     )
     mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
         state,
-        static=object(),
-        indata=object(),
+        runtime,
+        inp=object(),
         wout=wout,
         ntheta=8,
         surface_stencil_width=3,
@@ -1210,8 +1211,8 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
 
     zero_flux_mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
         state,
-        static=object(),
-        indata=object(),
+        runtime,
+        inp=object(),
         wout=types.SimpleNamespace(
             signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, 0.0]), nfp=4
         ),
@@ -1224,8 +1225,8 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
     with pytest.raises(ValueError, match="surface_stencil_width"):
         vmec_jax_boozer_equal_arc_core_profiles_from_state(
             state,
-            static=object(),
-            indata=object(),
+            runtime,
+            inp=object(),
             wout=wout,
             ntheta=8,
             surface_stencil_width=2,
