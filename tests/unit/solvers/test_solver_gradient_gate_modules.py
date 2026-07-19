@@ -20,8 +20,8 @@ def _fake_state_bundle(_case_name: str) -> dict[str, object]:
         "input_path": "input.fake",
         "wout_path": "wout.fake.nc",
         "state": object(),
-        "static": object(),
-        "indata": object(),
+        "runtime": object(),
+        "inp": object(),
         "wout": object(),
     }
 
