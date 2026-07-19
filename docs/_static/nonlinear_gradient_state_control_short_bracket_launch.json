@@ -82,9 +82,9 @@
       },
       "state_parameter": "Rsin_mid_surface_m1",
       "vmec_run_commands": {
-        "baseline": "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "minus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "plus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+        "baseline": "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "minus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "plus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
       }
     },
     {
@@ -160,9 +160,9 @@
       },
       "state_parameter": "Zcos_mid_surface_m1",
       "vmec_run_commands": {
-        "baseline": "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "minus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "plus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+        "baseline": "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "minus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "plus_delta": "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
       }
     }
   ],
@@ -191,11 +191,11 @@
   },
   "source_runbook": "docs/_static/nonlinear_gradient_state_control_runbook.json",
   "vmec_run_commands": [
-    "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmec_jax input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+    "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1 && vmex input.qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
   ]
 }

@@ -29,7 +29,7 @@
       ]
     }
   ],
-  "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+  "kind": "vmex_reduced_nonlinear_audit_prelaunch_report",
   "metric_key": "nonlinear_window_heat_flux",
   "next_action": "launch replicated long-window nonlinear audit only with baseline/candidate ensembles",
   "nonlinear_policy": {

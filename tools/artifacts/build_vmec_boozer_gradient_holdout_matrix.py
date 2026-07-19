@@ -181,7 +181,7 @@ def build_gradient_holdout_matrix(
         },
         "rows": rows,
         "notes": (
-            "This matrix checks differentiability from vmec_jax state coefficients through "
+            "This matrix checks differentiability from vmex state coefficients through "
             "booz_xform_jax mode-21 equal-arc geometry into SPECTRAX-GK linear and "
             "quasilinear solver observables plus a reduced nonlinear-window estimator. "
             "It does not validate converged nonlinear-window turbulence gradients or "

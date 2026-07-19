@@ -30,7 +30,7 @@ GENE, ORB5, and XGC
 
 VMEC and Boozer-coordinate tools
   File-based VMEC geometry remains an important compatibility path. The planned
-  differentiable path should use ``vmec_jax`` in memory, and add
+  differentiable path should use ``vmex`` in memory, and add
   ``booz_xform_jax`` when Boozer-coordinate quantities are required.
 
 DESC, SIMSOPT, TORAX, Equinox, and Lineax

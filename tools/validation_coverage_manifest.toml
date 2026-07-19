@@ -1535,11 +1535,11 @@ coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "W7-X and HSX imported-geometry GX parity lanes",
-  "planned vmec_jax and booz_xform_jax differentiable-geometry bridge",
+  "planned vmex and booz_xform_jax differentiable-geometry bridge",
 ]
 physics_contracts = [
   "metric, curvature, and magnetic-field arrays preserve flux-tube conventions",
-  "VMEC-file and future in-memory vmec_jax paths produce equivalent geometry contracts",
+  "VMEC-file and future in-memory vmex paths produce equivalent geometry contracts",
 ]
 numerics_contracts = [
   "periodic remaps and interpolation preserve shape, handedness, and finite values",
@@ -1557,7 +1557,7 @@ artifact_paths = [
   "docs/_static/hsx_linear_t2_scan.csv",
 ]
 next_tests = [
-  "add vmec_jax in-memory parity fixtures after the core refactor lands",
+  "add vmex in-memory parity fixtures after the core refactor lands",
   "add a multi-process VMEC cache stress test when the slow backend is available in CI",
 ]
 
@@ -1580,12 +1580,12 @@ owned_modules = [
   "spectraxgk.geometry.vmec_state_sensitivity",
   "spectraxgk.geometry.vmec_tensor_mapping",
 ]
-owner_lane = "in-memory vmec_jax/booz_xform_jax bridge into the flux-tube geometry contract"
+owner_lane = "in-memory vmex/booz_xform_jax bridge into the flux-tube geometry contract"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "vmec_jax differentiable VMEC fixed-boundary state and wout-like output APIs",
+  "vmex differentiable VMEC fixed-boundary state and wout-like output APIs",
   "booz_xform_jax in-memory read_wout_data and jax_api Boozer transform path",
 ]
 physics_contracts = [
@@ -1594,7 +1594,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "in-memory geometry arrays must be finite, one-dimensional, shape-aligned, and use a constant gradpar field-line contract",
-  "optional backend discovery must not force vmec_jax or booz_xform_jax imports on users who only run analytic geometry",
+  "optional backend discovery must not force vmex or booz_xform_jax imports on users who only run analytic geometry",
   "JAX-traced geometry mappings must preserve autodiff and match central finite differences for geometry observables",
 ]
 fast_tests = [
@@ -2045,7 +2045,7 @@ coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates",
-  "full vmec_jax state coefficient to booz_xform_jax equal-arc geometry to solver-objective gradient reports",
+  "full vmex state coefficient to booz_xform_jax equal-arc geometry to solver-objective gradient reports",
 ]
 physics_contracts = [
   "mode-21 VMEC/Boozer gradient gates must keep frequency, quasilinear, and reduced nonlinear-window estimator claims distinct",
@@ -2252,11 +2252,11 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_vmec_transport_objectives.py",
-  "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
+  "tests/validation/stellarator/test_vmex_qa_transport_optimization.py",
 ]
 artifact_paths = [
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.json",
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.png",
+  "docs/_static/vmex_qa_transport_candidate_comparison.json",
+  "docs/_static/vmex_qa_transport_candidate_comparison.png",
 ]
 next_tests = [
   "add a WOUT fixture with intentionally inconsistent optimizer-state history and solved-WOUT iota profiles",
@@ -2286,8 +2286,8 @@ fast_tests = [
   "tests/unit/objectives/test_vmec_transport_objectives.py",
 ]
 artifact_paths = [
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.json",
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.png",
+  "docs/_static/vmex_qa_transport_candidate_comparison.json",
+  "docs/_static/vmex_qa_transport_candidate_comparison.png",
 ]
 next_tests = [
   "add an admission fixture where all physical gates pass but only total-objective proxy metrics are available",
@@ -2344,7 +2344,7 @@ reference_anchors = [
 ]
 physics_contracts = [
   "actual linear-RHS growth/frequency and quasilinear-weight observables must be differentiated before optimization claims",
-  "solver-ready geometry gates are complemented by full vmec_jax/booz_xform_jax state-gradient gates before optimization claims",
+  "solver-ready geometry gates are complemented by full vmex/booz_xform_jax state-gradient gates before optimization claims",
   "VMEC-JAX boundary-chain audits distinguish exact solved-equilibrium finite differences from frozen-axis replay derivatives before promotion",
   "mode-21 VMEC/Boozer state-to-solver eigenfrequency and quasilinear heat-flux-weight gradients must pass before reduced stellarator objective promotion",
   "multi-equilibrium reduced linear/quasilinear VMEC/Boozer state-gradient holdouts must pass before broadening differentiable stellarator-objective claims beyond one fixture",
@@ -2371,7 +2371,7 @@ fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/validation/nonlinear/test_nonlinear_transport_release_gates.py",
   "tests/unit/objectives/test_vmec_transport_objectives.py",
-  "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
+  "tests/validation/stellarator/test_vmex_qa_transport_optimization.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2384,12 +2384,12 @@ artifact_paths = [
   "docs/_static/vmec_boozer_aggregate_objective_gate.png",
   "docs/_static/vmec_boozer_aggregate_line_search_gate.json",
   "docs/_static/vmec_boozer_aggregate_line_search_gate.png",
-  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
-  "docs/_static/vmec_jax_transport_gradient_line_search.json",
-  "docs/_static/vmec_jax_transport_gradient_line_search.svg",
-  "docs/_static/vmec_jax_boundary_chain_idx28_iter500.json",
-  "docs/_static/vmec_jax_boundary_chain_multicomponent.json",
-  "docs/_static/vmec_jax_boundary_chain_multicomponent.png",
+  "docs/_static/vmex_transport_gradient_diagnostic.json",
+  "docs/_static/vmex_transport_gradient_line_search.json",
+  "docs/_static/vmex_transport_gradient_line_search.svg",
+  "docs/_static/vmex_boundary_chain_idx28_iter500.json",
+  "docs/_static/vmex_boundary_chain_multicomponent.json",
+  "docs/_static/vmex_boundary_chain_multicomponent.png",
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
   "docs/_static/vmec_boozer_multi_point_objective_gate.png",
   "docs/_static/vmec_boozer_aggregate_line_search_comparison.json",
@@ -2435,9 +2435,9 @@ artifact_paths = [
   "docs/_static/nonlinear_window_fd_audit.png",
   "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
   "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.json",
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.csv",
-  "docs/_static/vmec_jax_qa_transport_candidate_comparison.png",
+  "docs/_static/vmex_qa_transport_candidate_comparison.json",
+  "docs/_static/vmex_qa_transport_candidate_comparison.csv",
+  "docs/_static/vmex_qa_transport_candidate_comparison.png",
   "docs/_static/quasilinear_vmec_dshape_linear_spectrum.png",
   "docs/_static/quasilinear_vmec_itermodel_linear_spectrum.png",
   "docs/_static/quasilinear_vmec_updown_asym_linear_spectrum.png",
@@ -2583,7 +2583,7 @@ fast_tests = [
   "tests/unit/objectives/test_vmec_transport_objectives.py",
 ]
 artifact_paths = [
-  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
+  "docs/_static/vmex_transport_gradient_diagnostic.json",
   "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json",
 ]
 next_tests = [

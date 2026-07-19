@@ -111,7 +111,7 @@ The remaining work should be closed in this order.
 5. **Validate differentiability explicitly.**
    Autodiff examples should carry finite-difference or tangent checks, inverse
    recovery diagnostics, and covariance/uncertainty estimates. The Phase-A
-   ``vmec_jax`` and ``booz_xform_jax`` bridge now carries a tracer-safe
+   ``vmex`` and ``booz_xform_jax`` bridge now carries a tracer-safe
    geometry-observable sensitivity check, a two-parameter inverse design, and
    local UQ covariance diagnostics. Reduced linear, quasilinear, and
    nonlinear-window-estimator derivatives now have AD/finite-difference gates,

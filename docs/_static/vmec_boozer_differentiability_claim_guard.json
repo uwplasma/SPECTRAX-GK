@@ -22,7 +22,7 @@
         "equal_arc_drift_passed": true,
         "equal_arc_metric_passed": true
       },
-      "vmec_jax_boozer_available": true
+      "vmex_boozer_available": true
     },
     "finite_beta_frequency_gate": {
       "case_name": "shaped_tokamak_pressure",

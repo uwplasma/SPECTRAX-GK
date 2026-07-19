@@ -198,5 +198,5 @@
   "passed": true,
   "schema_version": 1,
   "source_campaign": "docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.json",
-  "source_scope": "Re-equilibrated VMEC input perturbations mapped to vmec_jax state_from_wout internal controls. A failed artifact is a valid negative guardrail and must not launch nonlinear-gradient campaigns."
+  "source_scope": "Re-equilibrated VMEC input perturbations mapped to vmex state_from_wout internal controls. A failed artifact is a valid negative guardrail and must not launch nonlinear-gradient campaigns."
 }

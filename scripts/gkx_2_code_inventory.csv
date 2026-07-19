@@ -281,7 +281,7 @@ tests/validation/quasilinear/test_quasilinear_window.py,tests/validation,organiz
 tests/validation/stellarator/test_check_vmec_boozer_gates.py,tests/validation,organized test,merge-by-domain,.py,26256,751,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_external_vmec_validation_policy.py,tests/validation,organized test,merge-by-domain,.py,22429,685,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tests/validation/stellarator/test_vmec_example_inventory.py,tests/validation,organized test,merge-by-domain,.py,2998,87,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
-tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,18522,539,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
+tests/validation/stellarator/test_vmex_qa_transport_optimization.py,tests/validation,organized test,merge-by-domain,.py,18522,539,"target=tests/{unit,integration,physics,release}; retain detection power and coverage"
 tools/README.md,tools/README.md,tool documentation,keep,.md,3668,77,documents maintenance-tool ownership
 tools/artifacts/build_linear_validation_artifacts.py,tools/artifacts,artifact builder,keep-or-merge,.py,294663,7571,owned by tools/artifacts
 tools/artifacts/build_nonlinear_validation_panels.py,tools/artifacts,artifact builder,keep-or-merge,.py,23458,679,owned by tools/artifacts

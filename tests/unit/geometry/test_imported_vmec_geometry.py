@@ -1104,7 +1104,7 @@ def test_vmec_fieldlines_respects_overrides_and_closes_dataset(
     assert np.isfinite(out.gbdrift).all()
 
 
-def test_vmec_fieldlines_falls_back_for_square_vmec_jax_wout(
+def test_vmec_fieldlines_falls_back_for_square_vmex_wout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_nc = _FakeNCDataset(mpol=3, ntor=2)

@@ -83,7 +83,7 @@
       "passed": true
     },
     {
-      "detail": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json; docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.json; docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
+      "detail": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json; docs/_static/vmex_qa_projected_weight_0p0005_matched_comparison.json; docs/_static/vmex_qa_projected_weight_0p001_matched_comparison.json",
       "metric": "matched_baseline_to_optimized_transport_reduction",
       "passed": true
     }
@@ -114,7 +114,7 @@
       "kind": "matched_nonlinear_transport_comparison",
       "optimized_ensemble_qualified": true,
       "passed": true,
-      "path": "docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.json",
+      "path": "docs/_static/vmex_qa_projected_weight_0p0005_matched_comparison.json",
       "qualifies_for_production_optimization": true,
       "relative_reduction": 0.0267601685844722,
       "relative_reduction_ok": true,
@@ -130,7 +130,7 @@
       "kind": "matched_nonlinear_transport_comparison",
       "optimized_ensemble_qualified": true,
       "passed": true,
-      "path": "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
+      "path": "docs/_static/vmex_qa_projected_weight_0p001_matched_comparison.json",
       "qualifies_for_production_optimization": true,
       "relative_reduction": 0.0335304210026822,
       "relative_reduction_ok": true,

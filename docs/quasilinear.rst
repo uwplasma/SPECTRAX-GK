@@ -805,13 +805,13 @@ Non-axisymmetric HSX holdout
 The first non-axisymmetric quasilinear calibration audit uses the same
 adiabatic-electron ITG setup as the tracked nonlinear window gate. The checked
 TOML points to a self-contained QHS VMEC deck generated locally by
-``vmec_jax``; exact HSX validation should override ``--vmec-file`` with the
+``vmex``; exact HSX validation should override ``--vmec-file`` with the
 machine-specific benchmark WOUT:
 
 .. code-block:: bash
 
    cd examples/vmec
-   vmec_jax input.NuhrenbergZille_1988_QHS
+   vmex input.NuhrenbergZille_1988_QHS
    cd ../..
    spectraxgk scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml \
@@ -875,7 +875,7 @@ ignored local ``tools_out/*.eik.nc`` file:
 .. code-block:: bash
 
    cd examples/vmec
-   vmec_jax input.nfp3_QI_fixed_resolution_final
+   vmex input.nfp3_QI_fixed_resolution_final
    cd ../..
    spectraxgk scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml \
@@ -886,7 +886,7 @@ ignored local ``tools_out/*.eik.nc`` file:
      --no-progress
 
 The bundled command above regenerates the demo spectrum from the shipped QI
-VMEC input deck after ``vmec_jax`` creates
+VMEC input deck after ``vmex`` creates
 ``examples/vmec/wout_nfp3_QI_fixed_resolution_final.nc``. Exact W7-X
 validation should use the same TOML with ``--vmec-file`` pointing to the
 machine-specific benchmark WOUT; the benchmark WOUT itself is not shipped in
@@ -1350,15 +1350,15 @@ VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 
 The next quasilinear promotion attempt needs more matched nonlinear holdout
-windows, not more fit parameters. The local ``vmec_jax`` checkout includes a
+windows, not more fit parameters. The local ``vmex`` checkout includes a
 useful portfolio of small VMEC equilibria that can seed those future linear
 scans and nonlinear validation runs without adding the VMEC files to the
 SPECTRAX-GK repository. The inventory tool records file sizes, checksums,
 ``nfp``, resolution, aspect ratio, edge rotational transform, beta, and a
 selection score for follow-up cases.
 
-.. image:: _static/vmec_jax_equilibrium_inventory.png
-   :alt: vmec_jax equilibrium inventory for future validation holdouts
+.. image:: _static/vmex_equilibrium_inventory.png
+   :alt: vmex equilibrium inventory for future validation holdouts
    :width: 100%
 
 The current inventory finds ``11`` local VMEC equilibria. The best immediate
@@ -1415,11 +1415,11 @@ CTH-like reaches ``gamma = 0.0488`` at the same sampled ``ky``. The figures
 below are still linear-feasibility artifacts only; they motivate matched
 nonlinear windows but do not validate an absolute quasilinear saturation rule.
 
-.. image:: _static/quasilinear_vmec_jax_qh_linear_spectrum.png
+.. image:: _static/quasilinear_vmex_qh_linear_spectrum.png
    :alt: External nfp4 QH VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
-.. image:: _static/quasilinear_vmec_jax_cth_like_linear_spectrum.png
+.. image:: _static/quasilinear_vmex_cth_like_linear_spectrum.png
    :alt: External CTH-like VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
@@ -1462,7 +1462,7 @@ or absolute-flux calibration point.
    :width: 100%
 
 Solved VMEC optimization outputs use the same launch discipline. The screen
-consumes runtime linear-scan spectra from solved ``vmec_jax`` WOUTs and
+consumes runtime linear-scan spectra from solved ``vmex`` WOUTs and
 blocks nonlinear launches unless growth, metric, and heat-flux weights are all
 finite and launchable. The tracked screen artifact is
 ``docs/_static/vmec_optimization_candidate_screen_gate.json``.

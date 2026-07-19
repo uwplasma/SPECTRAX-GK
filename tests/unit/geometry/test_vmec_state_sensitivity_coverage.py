@@ -212,7 +212,7 @@ def test_vmec_state_sensitivity_report_from_run_merges_metadata_and_payload() ->
     )
 
     report = vss._vmec_state_sensitivity_report_from_run(
-        backend_info={"vmec_jax_available": True},
+        backend_info={"vmex_available": True},
         run=run,
         case_name="case",
         params=jnp.asarray([0.1, -0.2]),
@@ -238,7 +238,7 @@ def test_optional_vmec_state_sensitivity_report_returns_unavailable(monkeypatch)
     monkeypatch.setattr(
         vss,
         "discover_differentiable_geometry_backends",
-        lambda: {"vmec_jax_available": False},
+        lambda: {"vmex_available": False},
     )
 
     def build_run(_p):  # noqa: ANN001, ANN202
@@ -249,18 +249,18 @@ def test_optional_vmec_state_sensitivity_report_returns_unavailable(monkeypatch)
         default_param=1.0e-3,
         case_name="case",
         fd_step=2.0e-5,
-        backend_available=lambda info: bool(info.get("vmec_jax_available")),
-        unavailable_reason="vmec_jax is not available",
+        backend_available=lambda info: bool(info.get("vmex_available")),
+        unavailable_reason="vmex is not available",
         build_run=build_run,
     )
 
     assert report == {
         "available": False,
-        "backend_info": {"vmec_jax_available": False},
+        "backend_info": {"vmex_available": False},
         "sensitivity": None,
         "fd_step": 2.0e-5,
         "case_name": "case",
-        "reason": "vmec_jax is not available",
+        "reason": "vmex is not available",
     }
 
 
@@ -268,7 +268,7 @@ def test_optional_vmec_state_sensitivity_report_returns_failed(monkeypatch) -> N
     monkeypatch.setattr(
         vss,
         "discover_differentiable_geometry_backends",
-        lambda: {"vmec_jax_available": True},
+        lambda: {"vmex_available": True},
     )
 
     def build_run(_p):  # noqa: ANN001, ANN202
@@ -279,7 +279,7 @@ def test_optional_vmec_state_sensitivity_report_returns_failed(monkeypatch) -> N
         default_param=1.0e-3,
         case_name="case",
         fd_step=1.0e-6,
-        backend_available=lambda info: bool(info.get("vmec_jax_available")),
+        backend_available=lambda info: bool(info.get("vmex_available")),
         unavailable_reason="unused",
         build_run=build_run,
     )
@@ -288,14 +288,14 @@ def test_optional_vmec_state_sensitivity_report_returns_failed(monkeypatch) -> N
     assert report["error"] == "ValueError: boom"
     assert report["sensitivity"] is None
     assert report["case_name"] == "case"
-    assert report["backend_info"] == {"vmec_jax_available": True}
+    assert report["backend_info"] == {"vmex_available": True}
 
 
 def test_optional_vmec_state_sensitivity_report_returns_full_report(monkeypatch) -> None:
     monkeypatch.setattr(
         vss,
         "discover_differentiable_geometry_backends",
-        lambda: {"vmec_jax_available": True},
+        lambda: {"vmex_available": True},
     )
     ctx = _make_state_context(ns=2, nmode=3)
     seen: dict[str, object] = {}
@@ -315,7 +315,7 @@ def test_optional_vmec_state_sensitivity_report_returns_full_report(monkeypatch)
         default_param=1.0e-3,
         case_name="case",
         fd_step=4.0e-5,
-        backend_available=lambda info: bool(info.get("vmec_jax_available")),
+        backend_available=lambda info: bool(info.get("vmex_available")),
         unavailable_reason="unused",
         build_run=build_run,
     )
@@ -323,7 +323,7 @@ def test_optional_vmec_state_sensitivity_report_returns_full_report(monkeypatch)
     # params=None resolves to the length-two default vector before build_run
     assert seen["p"] == [1.0e-3, 1.0e-3]
     assert report["available"] is True
-    assert report["backend_info"] == {"vmec_jax_available": True}
+    assert report["backend_info"] == {"vmex_available": True}
     np.testing.assert_allclose(report["params"], [1.0e-3, 1.0e-3])
     assert report["state_shape"] == [2, 3]
     assert report["sensitivity"] == {"k": 2}
@@ -510,7 +510,7 @@ def test_run_vmec_boozer_flux_tube_report_bundles_sensitivity_and_meta(
     # the sensitivity gate is tagged with the state->boozer source model
     assert seen_report["mapping_fn"] is fake_mapping_fn
     assert seen_report["source_model"] == (
-        "vmec_jax:state->booz_xform_jax:field-line-bmag"
+        "vmex:state->booz_xform_jax:field-line-bmag"
     )
     assert seen_report["fd_step"] == pytest.approx(1.0e-5)
     np.testing.assert_allclose(seen_report["params"], [1.0e-3, 1.0e-3])
@@ -547,7 +547,7 @@ def test_metric_tensor_report_payload_builds_pest_metric_sensitivity() -> None:
         rms_epsilon=0.0,
     )
 
-    assert payload["source_model"] == "vmec_jax:state->metric-tensors"
+    assert payload["source_model"] == "vmex:state->metric-tensors"
     assert payload["observable_names"] == list(vss._VMEC_METRIC_OBSERVABLE_NAMES)
     np.testing.assert_allclose(
         payload["observables"],
@@ -568,7 +568,7 @@ def test_metric_tensor_report_payload_builds_pest_metric_sensitivity() -> None:
 def test_run_vmec_metric_tensor_sensitivity_wraps_payload(monkeypatch) -> None:
     ctx = _make_state_context()
     turbulence = SimpleNamespace(name="turbulence")
-    sentinel_payload = {"source_model": "vmec_jax:state->metric-tensors", "tag": "m"}
+    sentinel_payload = {"source_model": "vmex:state->metric-tensors", "tag": "m"}
     seen_load: dict[str, object] = {}
     seen_payload: dict[str, object] = {}
 
@@ -644,7 +644,7 @@ def test_field_line_tensor_report_payload_builds_field_line_sensitivity() -> Non
         rms_epsilon=0.0,
     )
 
-    assert payload["source_model"] == "vmec_jax:state->field-line-metric-and-b"
+    assert payload["source_model"] == "vmex:state->field-line-metric-and-b"
     assert payload["field_line_convention"] == "pest"
     assert payload["observable_names"] == list(vss._VMEC_FIELD_LINE_OBSERVABLE_NAMES)
     np.testing.assert_allclose(
@@ -668,7 +668,7 @@ def test_field_line_tensor_report_payload_builds_field_line_sensitivity() -> Non
 def test_run_vmec_field_line_tensor_sensitivity_wraps_payload(monkeypatch) -> None:
     ctx = _make_state_context()
     turbulence = SimpleNamespace(name="turbulence")
-    sentinel_payload = {"source_model": "vmec_jax:state->field-line-metric-and-b"}
+    sentinel_payload = {"source_model": "vmex:state->field-line-metric-and-b"}
     seen_load: dict[str, object] = {}
     seen_payload: dict[str, object] = {}
 

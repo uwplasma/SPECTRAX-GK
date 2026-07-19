@@ -33,7 +33,7 @@ cfl = 1.0
 [geometry]
 model = "vmec"
 # Backward-compatible filename, but the default is now direct VMEC import so
-# users can generate the wout with vmec_jax instead of preparing an EIK file.
+# users can generate the wout with vmex instead of preparing an EIK file.
 vmec_file = "../../vmec/wout_nfp3_QI_fixed_resolution_final.nc"
 torflux = 0.64
 alpha = 0.0

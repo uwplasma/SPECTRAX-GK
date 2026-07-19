@@ -1,5 +1,5 @@
 {
-  "kind": "vmec_jax_boundary_chain_collection_summary",
+  "kind": "vmex_boundary_chain_collection_summary",
   "finite": true,
   "classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
   "exact_relative_tolerance": 0.1,
@@ -69,7 +69,7 @@
   "next_action": "use frozen-axis derivatives only as diagnostics; exclude or regularize branch-sensitive modes before projected VMEC updates",
   "environment": {
     "spectraxgk_commit": "225605b",
-    "vmec_jax_commit": "f14787b",
+    "vmex_commit": "f14787b",
     "booz_xform_jax_commit": "1d5e8c8",
     "python_env": "/Users/rogeriojorge/local/venvs/spectrax_vmec_latest_20260603",
     "input": "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final",

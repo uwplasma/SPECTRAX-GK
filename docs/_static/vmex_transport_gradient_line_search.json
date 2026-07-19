@@ -1,5 +1,5 @@
 {
-  "kind": "vmec_jax_transport_gradient_line_search_report",
+  "kind": "vmex_transport_gradient_line_search_report",
   "source_commit": "90f266a",
   "baseline": {
     "label": "baseline",
@@ -28,14 +28,14 @@
         "value": 0.001589399362255084,
         "maximum": 0.02,
         "margin": 0.018410600637744915,
-        "source": "vmec_jax_state",
+        "source": "vmex_state",
         "passed": true
       },
       "iota_profile": {
         "minimum_iotas_excluding_axis": 0.41375499331381277,
         "minimum_iotaf": 0.41410772389200134,
         "floor": 0.41,
-        "source": "vmec_jax_state",
+        "source": "vmex_state",
         "passed": true
       }
     }
@@ -228,14 +228,14 @@
           "value": 0.003366411914133017,
           "maximum": 0.05,
           "margin": 0.046633588085866984,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         },
         "iota_profile": {
           "minimum_iotas_excluding_axis": 0.4132124974642207,
           "minimum_iotaf": 0.4135473773202682,
           "floor": 0.41,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         }
       }
@@ -270,14 +270,14 @@
           "value": 0.008870490889087541,
           "maximum": 0.05,
           "margin": 0.04112950911091246,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         },
         "iota_profile": {
           "minimum_iotas_excluding_axis": 0.41286092340599845,
           "minimum_iotaf": 0.41316913915903414,
           "floor": 0.41,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         }
       }
@@ -312,14 +312,14 @@
           "value": 0.03104631829613754,
           "maximum": 0.05,
           "margin": 0.01895368170386246,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         },
         "iota_profile": {
           "minimum_iotas_excluding_axis": 0.41204264286290493,
           "minimum_iotaf": 0.4123150210031382,
           "floor": 0.41,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         }
       }
@@ -354,14 +354,14 @@
           "value": 0.11984610937297421,
           "maximum": 0.05,
           "margin": -0.06984610937297421,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": false
         },
         "iota_profile": {
           "minimum_iotas_excluding_axis": 0.41180799691557696,
           "minimum_iotaf": 0.4118611422483285,
           "floor": 0.41,
-          "source": "vmec_jax_state",
+          "source": "vmex_state",
           "passed": true
         }
       }

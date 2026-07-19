@@ -125,7 +125,7 @@
       "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
       "shape_gate": null,
       "shape_gate_passed": null,
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmex_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {
@@ -135,7 +135,7 @@
       "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_shaped_tokamak_pressure_replicates_t650/replicate_ensemble_gate.json",
       "shape_gate": null,
       "shape_gate_passed": null,
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_jax_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmex_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {

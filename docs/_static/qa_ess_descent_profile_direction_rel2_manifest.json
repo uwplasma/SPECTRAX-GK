@@ -1,5 +1,5 @@
 {
-  "baseline_input": "/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/input.final",
+  "baseline_input": "/Users/rogeriojorge/local/vmex/results/qa_opt/ess/input.final",
   "campaign_command_after_vmec_runs": "python3 tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py --baseline-vmec-file tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/wout_qa_ess_descent_profile_rel2_baseline.nc --plus-vmec-file tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/wout_qa_ess_descent_profile_rel2_plus_delta.nc --minus-vmec-file tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/wout_qa_ess_descent_profile_rel2_minus_delta.nc --case qa_ess_descent_profile_rel2_nonlinear_gradient --parameter-name profile_direction_zbs_1_1_zbs_1_0_rbc_1_1 --delta-parameter 1.9715781992909252e-03 --out-dir tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign --horizons 250,450,700,900 --grid n64:64:64:40:40 --window-tmin 450 --window-tmax 900 --ky 0.4761904761904762 --dt 0.05 --dt-variant 0.04 --baseline-seed 22 --Nl 4 --Nm 8 --seed-variant 31 --seed-variant 32",
   "case": "qa_ess_descent_profile_rel2",
   "claim_level": "multi_coefficient_profile_direction_launch_plan_not_simulation_claim",
@@ -47,7 +47,7 @@
   "kind": "vmec_boundary_profile_direction_perturbation_manifest",
   "normalization": "The largest absolute input weight receives relative_delta times the baseline coefficient magnitude. Other controls are scaled by weight/max(abs(weight)). The downstream finite-difference scalar is the Euclidean norm of the resulting coefficient perturbation vector.",
   "parameter_name": "profile_direction_zbs_1_1_zbs_1_0_rbc_1_1",
-  "production_contract": "Run vmec_jax on each input first. Only distinct re-equilibrated wout files should be passed to the nonlinear turbulence-gradient campaign writer. Promotion still requires long-window ensemble gates and a central finite-difference audit.",
+  "production_contract": "Run vmex on each input first. Only distinct re-equilibrated wout files should be passed to the nonlinear turbulence-gradient campaign writer. Promotion still requires long-window ensemble gates and a central finite-difference audit.",
   "relative_delta": 0.02,
   "run_contract": {
     "analysis_window": [
@@ -72,8 +72,8 @@
     "plus_delta": "tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/input.qa_ess_descent_profile_rel2_plus_delta"
   },
   "vmec_run_commands": {
-    "baseline": "cd tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2 && vmec_jax input.qa_ess_descent_profile_rel2_baseline",
-    "minus_delta": "cd tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2 && vmec_jax input.qa_ess_descent_profile_rel2_minus_delta",
-    "plus_delta": "cd tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2 && vmec_jax input.qa_ess_descent_profile_rel2_plus_delta"
+    "baseline": "cd tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2 && vmex input.qa_ess_descent_profile_rel2_baseline",
+    "minus_delta": "cd tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2 && vmex input.qa_ess_descent_profile_rel2_minus_delta",
+    "plus_delta": "cd tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2 && vmex input.qa_ess_descent_profile_rel2_plus_delta"
   }
 }

@@ -2,7 +2,7 @@
 """Differentiable geometry bridge validation and inverse-design demo.
 
 The example validates the Phase-A geometry contract used by
-``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` workflows:
+``vmex -> booz_xform_jax -> SPECTRAX-GK`` workflows:
 
 1. a boundary-parameter vector produces solver-ready flux-tube geometry arrays;
 2. SPECTRAX-GK differentiates geometry observables through that in-memory
@@ -11,15 +11,15 @@ The example validates the Phase-A geometry contract used by
 4. a small two-parameter inverse problem recovers target geometry observables
    and reports local UQ covariance.
 
-When ``vmec_jax`` is available, the figure also includes an independent
+When ``vmex`` is available, the figure also includes an independent
 boundary-aspect derivative and real VMEC metric-tensor derivatives through the
-``vmec_jax`` state/geometry APIs, plus a stellarator field-line tensor gate
+``vmex`` state/geometry APIs, plus a stellarator field-line tensor gate
 that samples real VMEC ``|B|`` and metric tensors from a ``VMECState``. The
 Boozer bridge is audited by differentiating both a bounded spectral objective and a
 Boozer-spectrum-to-flux-tube mapping through the real ``booz_xform_jax``
-functional API. A final optional gate starts from a real ``vmec_jax``
+functional API. A final optional gate starts from a real ``vmex``
 ``VMECState`` and differentiates VMEC Fourier coefficients through
-both ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` and the direct
+both ``vmex -> booz_xform_jax -> SPECTRAX-GK`` and the direct
 VMEC-tensor-to-SPECTRAX flux-tube contract.
 """
 
@@ -46,11 +46,11 @@ from spectraxgk.geometry.differentiable import (
     geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
-    vmec_jax_boozer_flux_tube_sensitivity_report,
-    vmec_jax_field_line_tensor_sensitivity_report,
-    vmec_jax_flux_tube_array_parity_report,
-    vmec_jax_flux_tube_sensitivity_report,
-    vmec_jax_metric_tensor_sensitivity_report,
+    vmex_boozer_flux_tube_sensitivity_report,
+    vmex_field_line_tensor_sensitivity_report,
+    vmex_flux_tube_array_parity_report,
+    vmex_flux_tube_sensitivity_report,
+    vmex_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
 )
 
@@ -65,7 +65,7 @@ def _mapping_from_boundary_params(params: jnp.ndarray, *, ntheta: int = 96) -> d
 
     ``params[0]`` controls a mirror/ripple amplitude and ``params[1]`` controls
     shaping/elongation. The returned arrays are exactly the solver-ready
-    contract that a high-fidelity ``vmec_jax`` / ``booz_xform_jax`` pipeline
+    contract that a high-fidelity ``vmex`` / ``booz_xform_jax`` pipeline
     must supply.
     """
 
@@ -103,7 +103,7 @@ def _mapping_from_boundary_params(params: jnp.ndarray, *, ntheta: int = 96) -> d
 def _observable_fn(params: jnp.ndarray) -> jnp.ndarray:
     geom = flux_tube_geometry_from_mapping(
         _mapping_from_boundary_params(params),
-        source_model="vmec_jax:demo-contract",
+        source_model="vmex:demo-contract",
         validate_finite=False,
     )
     return flux_tube_geometry_observables(geom)
@@ -180,11 +180,11 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     axes[0, 0].set_title("Boundary controls")
     axes[0, 0].legend(frameon=True, fontsize=9)
     vmec = payload.get("vmec_boundary", {})
-    vmec_metric = payload.get("vmec_jax_metric_tensor", {})
-    vmec_field_line = payload.get("vmec_jax_field_line_tensor", {})
-    vmec_flux_tube = payload.get("vmec_jax_flux_tube", {})
-    vmec_array_parity = payload.get("vmec_jax_flux_tube_array_parity", {})
-    vmec_state = payload.get("vmec_jax_boozer_flux_tube", {})
+    vmec_metric = payload.get("vmex_metric_tensor", {})
+    vmec_field_line = payload.get("vmex_field_line_tensor", {})
+    vmec_flux_tube = payload.get("vmex_flux_tube", {})
+    vmec_array_parity = payload.get("vmex_flux_tube_array_parity", {})
+    vmec_state = payload.get("vmex_boozer_flux_tube", {})
     booz = payload.get("booz_xform_spectral", {})
     booz_flux = payload.get("booz_xform_flux_tube", {})
     vmec_text = "VMEC boundary AD/FD: n/a"
@@ -328,24 +328,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     backend_info = discover_differentiable_geometry_backends()
     vmec_boundary = vmec_boundary_aspect_sensitivity_report(jnp.asarray(final_params))
-    vmec_metric_tensor = vmec_jax_metric_tensor_sensitivity_report()
-    vmec_field_line_tensor = vmec_jax_field_line_tensor_sensitivity_report()
-    vmec_flux_tube = vmec_jax_flux_tube_sensitivity_report()
-    vmec_flux_tube_array_parity = vmec_jax_flux_tube_array_parity_report()
+    vmec_metric_tensor = vmex_metric_tensor_sensitivity_report()
+    vmec_field_line_tensor = vmex_field_line_tensor_sensitivity_report()
+    vmec_flux_tube = vmex_flux_tube_sensitivity_report()
+    vmec_flux_tube_array_parity = vmex_flux_tube_array_parity_report()
     booz_spectral = booz_xform_spectral_sensitivity_report()
     booz_flux_tube = booz_xform_flux_tube_sensitivity_report()
-    vmec_state_boozer_flux_tube = vmec_jax_boozer_flux_tube_sensitivity_report()
+    vmec_state_boozer_flux_tube = vmex_boozer_flux_tube_sensitivity_report()
 
     payload: dict[str, Any] = {
         "backend_info": backend_info,
         "booz_xform_jax_api_available": bool(backend_info.get("booz_xform_jax_api_available", False)),
         "booz_xform_flux_tube": booz_flux_tube,
         "booz_xform_spectral": booz_spectral,
-        "vmec_jax_boozer_flux_tube": vmec_state_boozer_flux_tube,
-        "vmec_jax_field_line_tensor": vmec_field_line_tensor,
-        "vmec_jax_flux_tube": vmec_flux_tube,
-        "vmec_jax_flux_tube_array_parity": vmec_flux_tube_array_parity,
-        "vmec_jax_metric_tensor": vmec_metric_tensor,
+        "vmex_boozer_flux_tube": vmec_state_boozer_flux_tube,
+        "vmex_field_line_tensor": vmec_field_line_tensor,
+        "vmex_flux_tube": vmec_flux_tube,
+        "vmex_flux_tube_array_parity": vmec_flux_tube_array_parity,
+        "vmex_metric_tensor": vmec_metric_tensor,
         "vmec_boundary": vmec_boundary,
         "observable_names": list(geometry_observable_names()),
         "initial_params": np.asarray(initial).tolist(),
@@ -363,7 +363,7 @@ def main(argv: list[str] | None = None) -> int:
             "pipeline must provide the same solver-ready field-line arrays; this artifact validates the "
             "JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real "
             "VMEC metric-tensor, VMEC field-line tensor, VMEC tensor-to-flux-tube, Boozer-spectrum-to-flux-tube, and "
-            "vmec_jax-state-to-Boozer mapping gates at that contract boundary. The VMEC/EIK array-parity "
+            "vmex-state-to-Boozer mapping gates at that contract boundary. The VMEC/EIK array-parity "
             "audit is intentionally recorded separately because production stellarator transport gradients "
             "must match the imported Boozer equal-arc metric and drift convention before promotion."
         ),

@@ -54,12 +54,12 @@ from spectraxgk.geometry.differentiable import (
     geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
-    vmec_jax_boozer_equal_arc_core_profiles_from_state,
-    vmec_jax_boozer_flux_tube_sensitivity_report,
-    vmec_jax_field_line_tensor_sensitivity_report,
-    vmec_jax_flux_tube_array_parity_report,
-    vmec_jax_flux_tube_sensitivity_report,
-    vmec_jax_metric_tensor_sensitivity_report,
+    vmex_boozer_equal_arc_core_profiles_from_state,
+    vmex_boozer_flux_tube_sensitivity_report,
+    vmex_field_line_tensor_sensitivity_report,
+    vmex_flux_tube_array_parity_report,
+    vmex_flux_tube_sensitivity_report,
+    vmex_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
     vmec_field_line_tensor_observable_names,
     vmec_metric_tensor_observable_names,
@@ -159,28 +159,28 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
         diff_geom.booz_xform_spectral_sensitivity_report
         is not booz_bridge.booz_xform_spectral_sensitivity_report
     )
-    assert callable(diff_geom.vmec_jax_boozer_flux_tube_sensitivity_report)
-    assert callable(diff_geom.vmec_jax_metric_tensor_sensitivity_report)
-    assert callable(diff_geom.vmec_jax_field_line_tensor_sensitivity_report)
+    assert callable(diff_geom.vmex_boozer_flux_tube_sensitivity_report)
+    assert callable(diff_geom.vmex_metric_tensor_sensitivity_report)
+    assert callable(diff_geom.vmex_field_line_tensor_sensitivity_report)
     assert (
-        diff_geom.vmec_jax_boozer_flux_tube_sensitivity_report
-        is not vmec_state_sensitivity.vmec_jax_boozer_flux_tube_sensitivity_report
+        diff_geom.vmex_boozer_flux_tube_sensitivity_report
+        is not vmec_state_sensitivity.vmex_boozer_flux_tube_sensitivity_report
     )
     assert (
-        diff_geom.vmec_jax_metric_tensor_sensitivity_report
-        is not vmec_state_sensitivity.vmec_jax_metric_tensor_sensitivity_report
+        diff_geom.vmex_metric_tensor_sensitivity_report
+        is not vmec_state_sensitivity.vmex_metric_tensor_sensitivity_report
     )
     assert (
-        diff_geom.vmec_jax_field_line_tensor_sensitivity_report
-        is not vmec_state_sensitivity.vmec_jax_field_line_tensor_sensitivity_report
+        diff_geom.vmex_field_line_tensor_sensitivity_report
+        is not vmec_state_sensitivity.vmex_field_line_tensor_sensitivity_report
     )
-    assert callable(diff_geom.vmec_jax_flux_tube_mapping_from_state)
+    assert callable(diff_geom.vmex_flux_tube_mapping_from_state)
     assert (
-        diff_geom.vmec_jax_flux_tube_mapping_from_state
-        is not vmec_tensor_mapping.vmec_jax_flux_tube_mapping_from_state
+        diff_geom.vmex_flux_tube_mapping_from_state
+        is not vmec_tensor_mapping.vmex_flux_tube_mapping_from_state
     )
     assert callable(diff_geom.prewarm_vmec_boozer_equal_arc_cache)
-    assert callable(diff_geom.vmec_jax_boozer_equal_arc_core_profiles_from_state)
+    assert callable(diff_geom.vmex_boozer_equal_arc_core_profiles_from_state)
     assert (
         diff_geom.prewarm_vmec_boozer_equal_arc_cache
         is not vmec_boozer_core.prewarm_vmec_boozer_equal_arc_cache
@@ -192,18 +192,18 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
         vmec_boozer_constants._cached_booz_xform_constants
     )
     assert (
-        diff_geom.vmec_jax_boozer_equal_arc_core_profiles_from_state
-        is not vmec_boozer_core.vmec_jax_boozer_equal_arc_core_profiles_from_state
+        diff_geom.vmex_boozer_equal_arc_core_profiles_from_state
+        is not vmec_boozer_core.vmex_boozer_equal_arc_core_profiles_from_state
     )
-    assert callable(diff_geom.vmec_jax_flux_tube_sensitivity_report)
-    assert callable(diff_geom.vmec_jax_flux_tube_array_parity_report)
+    assert callable(diff_geom.vmex_flux_tube_sensitivity_report)
+    assert callable(diff_geom.vmex_flux_tube_array_parity_report)
     assert (
-        diff_geom.vmec_jax_flux_tube_sensitivity_report
-        is not vmec_flux_tube_reports.vmec_jax_flux_tube_sensitivity_report
+        diff_geom.vmex_flux_tube_sensitivity_report
+        is not vmec_flux_tube_reports.vmex_flux_tube_sensitivity_report
     )
     assert (
-        diff_geom.vmec_jax_flux_tube_array_parity_report
-        is not vmec_flux_tube_reports.vmec_jax_flux_tube_array_parity_report
+        diff_geom.vmex_flux_tube_array_parity_report
+        is not vmec_flux_tube_reports.vmex_flux_tube_array_parity_report
     )
     assert (
         diff_geom.vmec_field_line_tensor_observable_names
@@ -249,10 +249,10 @@ def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert spectraxgk.geometry_observable_names is geometry_observable_names
     assert spectraxgk.flux_tube_geometry_observables is flux_tube_geometry_observables
     geom = flux_tube_geometry_from_mapping(
-        _sample_mapping(), source_model="vmec_jax:test"
+        _sample_mapping(), source_model="vmex:test"
     )
 
-    assert geom.source_model == "vmec_jax:test"
+    assert geom.source_model == "vmex:test"
     assert geom.theta.shape == (8,)
     assert geom.nfp == 5
     assert geom.gradpar() == pytest.approx(0.7)
@@ -368,7 +368,7 @@ def test_flux_tube_geometry_from_vmec_boozer_state_wraps_in_memory_bridge(
 
     monkeypatch.setattr(
         diff_geom,
-        "vmec_jax_boozer_equal_arc_core_profiles_from_state",
+        "vmex_boozer_equal_arc_core_profiles_from_state",
         fake_core_profiles,
     )
 
@@ -479,10 +479,10 @@ def test_differentiable_backend_path_helpers_handle_missing_modules(
 ) -> None:
     existing = tmp_path / "backend"
     (existing / "src").mkdir(parents=True)
-    monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(existing))
+    monkeypatch.setenv("SPECTRAX_VMEX_PATH", str(existing))
 
     paths = _candidate_paths(
-        ("SPECTRAX_VMEC_JAX_PATH",), (existing, tmp_path / "missing")
+        ("SPECTRAX_VMEX_PATH",), (existing, tmp_path / "missing")
     )
 
     assert paths == [existing.resolve(), (existing / "src").resolve()]
@@ -496,8 +496,8 @@ def test_differentiable_backend_path_helpers_prefer_configured_checkout(
 ) -> None:
     installed_root = tmp_path / "installed"
     local_root = tmp_path / "local_vmec"
-    installed_pkg = installed_root / "vmec_jax"
-    local_pkg = local_root / "vmec_jax"
+    installed_pkg = installed_root / "vmex"
+    local_pkg = local_root / "vmex"
     installed_pkg.mkdir(parents=True)
     local_pkg.mkdir(parents=True)
     (installed_pkg / "__init__.py").write_text(
@@ -505,12 +505,12 @@ def test_differentiable_backend_path_helpers_prefer_configured_checkout(
     )
     (local_pkg / "__init__.py").write_text("marker = 'local'\n", encoding="utf-8")
     monkeypatch.syspath_prepend(str(installed_root))
-    sys.modules.pop("vmec_jax", None)
+    sys.modules.pop("vmex", None)
 
-    installed = __import__("vmec_jax")
+    installed = __import__("vmex")
     assert installed.marker == "installed"
 
-    module = _find_importable_module("vmec_jax", [local_root])
+    module = _find_importable_module("vmex", [local_root])
 
     assert module is not None
     assert module.marker == "local"
@@ -520,7 +520,7 @@ def test_differentiable_backend_path_helpers_prefer_configured_checkout(
 def test_discover_differentiable_geometry_backends_reports_optional_apis(
     tmp_path: Path, monkeypatch
 ) -> None:
-    vmec_root = tmp_path / "vmec_jax" / "src" / "vmex"
+    vmec_root = tmp_path / "vmex" / "src" / "vmex"
     booz_root = tmp_path / "booz_xform_jax" / "src" / "booz_xform_jax"
     vmec_root.mkdir(parents=True)
     booz_root.mkdir(parents=True)
@@ -534,13 +534,13 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(
     )
     for name in ("vmex", "booz_xform_jax", "booz_xform_jax.jax_api"):
         sys.modules.pop(name, None)
-    monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(tmp_path / "vmec_jax"))
+    monkeypatch.setenv("SPECTRAX_VMEX_PATH", str(tmp_path / "vmex"))
     monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", str(tmp_path / "booz_xform_jax"))
 
     info = discover_differentiable_geometry_backends()
 
-    assert info["vmec_jax_available"] is True
-    assert info["vmec_jax_boundary_api_available"] is False
+    assert info["vmex_available"] is True
+    assert info["vmex_boundary_api_available"] is False
     assert info["booz_xform_jax_available"] is True
     assert info["booz_xform_jax_api_available"] is True
 
@@ -548,7 +548,7 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(
 def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
     tmp_path: Path, monkeypatch
 ) -> None:
-    vmec_root = tmp_path / "vmec_jax" / "src" / "vmex"
+    vmec_root = tmp_path / "vmex" / "src" / "vmex"
     vmec_root.mkdir(parents=True)
     (vmec_root / "__init__.py").write_text(
         "import jax.numpy as jnp\n"
@@ -565,14 +565,14 @@ def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
         encoding="utf-8",
     )
     sys.modules.pop("vmex", None)
-    monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(tmp_path / "vmec_jax"))
+    monkeypatch.setenv("SPECTRAX_VMEX_PATH", str(tmp_path / "vmex"))
 
     report = vmec_boundary_aspect_sensitivity_report(
         jnp.asarray([0.08, 0.2]), fd_step=1.0e-3
     )
 
     assert report["available"] is True
-    assert report["backend_info"]["vmec_jax_boundary_api_available"] is True
+    assert report["backend_info"]["vmex_boundary_api_available"] is True
     assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
     conditioning = report["conditioning"]
     assert conditioning["jacobian_shape"] == [1, 2]
@@ -638,26 +638,26 @@ def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> 
     assert np.asarray(report["bmnc_b"]).shape == (5,)
 
 
-def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
+def test_vmex_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
     None
 ):
     for name in (
-        "vmec_jax",
-        "vmec_jax.driver",
-        "vmec_jax.config",
-        "vmec_jax.static",
-        "vmec_jax.wout",
-        "vmec_jax.booz_input",
+        "vmex",
+        "vmex.driver",
+        "vmex.config",
+        "vmex.static",
+        "vmex.wout",
+        "vmex.booz_input",
         "booz_xform_jax",
         "booz_xform_jax.jax_api",
     ):
         sys.modules.pop(name, None)
 
-    report = vmec_jax_boozer_flux_tube_sensitivity_report(ntheta=16, fd_step=2.0e-5)
+    report = vmex_boozer_flux_tube_sensitivity_report(ntheta=16, fd_step=2.0e-5)
 
     assert (
-        spectraxgk.vmec_jax_boozer_flux_tube_sensitivity_report
-        is vmec_jax_boozer_flux_tube_sensitivity_report
+        spectraxgk.vmex_boozer_flux_tube_sensitivity_report
+        is vmex_boozer_flux_tube_sensitivity_report
     )
     assert "available" in report
     if not report["available"]:
@@ -679,7 +679,7 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
 
 
 def test_vmec_state_sensitivity_report_helpers_are_fail_closed_and_json_ready() -> None:
-    backend_info = {"vmec_jax_available": False}
+    backend_info = {"vmex_available": False}
 
     unavailable = vmec_state_sensitivity._unavailable_vmec_state_sensitivity_report(
         backend_info=backend_info,
@@ -716,7 +716,7 @@ def test_vmec_state_sensitivity_report_helpers_are_fail_closed_and_json_ready() 
         base_Zsin=jnp.ones((3, 4)),
     )
     metadata = vmec_state_sensitivity._vmec_state_sensitivity_metadata(
-        backend_info={"vmec_jax_available": True},
+        backend_info={"vmex_available": True},
         ctx=ctx,
         case_name="case",
         params=jnp.asarray([0.1, -0.2]),
@@ -810,7 +810,7 @@ def test_vmec_tensor_mapping_builds_finite_mapping_from_mocked_vmec_modules(
 
     state = object()
     runtime = object()
-    mapping = vmec_tensor_mapping.vmec_jax_flux_tube_mapping_from_state(
+    mapping = vmec_tensor_mapping.vmex_flux_tube_mapping_from_state(
         state,
         runtime,
         surface_index=2,
@@ -843,10 +843,11 @@ def test_vmec_tensor_mapping_builds_finite_mapping_from_mocked_vmec_modules(
     assert mapping["B0"] == pytest.approx(2.0)
     assert mapping["nfp"] == 4
     assert float(mapping["q"]) == pytest.approx(1.0 / 0.6, rel=2.0e-6)
-    assert "vmex" not in mapping
-    assert mapping["vmec_jax"]["surface_index"] == 2
-    assert mapping["vmec_jax"]["reference_length"] == pytest.approx(1.5)
-    assert mapping["vmec_jax"]["reference_b"] == pytest.approx(2.0)
+    # The raw gk_fieldline_geometry "vmex" diagnostics are repackaged in place
+    # under the same "vmex" key with reference_length/reference_b aliases added.
+    assert mapping["vmex"]["surface_index"] == 2
+    assert mapping["vmex"]["reference_length"] == pytest.approx(1.5)
+    assert mapping["vmex"]["reference_b"] == pytest.approx(2.0)
 
 
 def test_vmec_state_sensitivity_ad_fd_diagnostics_match_analytic_jacobian() -> None:
@@ -897,26 +898,26 @@ def test_vmec_state_rms_with_floor_matches_tensor_rms_contract() -> None:
     )
 
 
-def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
+def test_vmex_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
     None
 ):
     for name in (
-        "vmec_jax",
-        "vmec_jax.driver",
-        "vmec_jax.config",
-        "vmec_jax.static",
-        "vmec_jax.wout",
-        "vmec_jax.geom",
-        "vmec_jax.vmec_bcovar",
-        "vmec_jax.field",
+        "vmex",
+        "vmex.driver",
+        "vmex.config",
+        "vmex.static",
+        "vmex.wout",
+        "vmex.geom",
+        "vmex.vmec_bcovar",
+        "vmex.field",
     ):
         sys.modules.pop(name, None)
 
-    report = vmec_jax_flux_tube_sensitivity_report(ntheta=12, fd_step=2.0e-6)
+    report = vmex_flux_tube_sensitivity_report(ntheta=12, fd_step=2.0e-6)
 
     assert (
-        spectraxgk.vmec_jax_flux_tube_sensitivity_report
-        is vmec_jax_flux_tube_sensitivity_report
+        spectraxgk.vmex_flux_tube_sensitivity_report
+        is vmex_flux_tube_sensitivity_report
     )
     assert "available" in report
     if not report["available"]:
@@ -939,28 +940,28 @@ def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_
     assert float(report["reference_b"]) > 0.0
 
 
-def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_available() -> (
+def test_vmex_flux_tube_array_parity_report_tracks_production_gap_when_available() -> (
     None
 ):
     for name in (
-        "vmec_jax",
-        "vmec_jax.driver",
-        "vmec_jax.config",
-        "vmec_jax.static",
-        "vmec_jax.wout",
-        "vmec_jax.geom",
-        "vmec_jax.vmec_bcovar",
-        "vmec_jax.field",
+        "vmex",
+        "vmex.driver",
+        "vmex.config",
+        "vmex.static",
+        "vmex.wout",
+        "vmex.geom",
+        "vmex.vmec_bcovar",
+        "vmex.field",
         "booz_xform_jax",
         "booz_xform_jax.jax_api",
     ):
         sys.modules.pop(name, None)
 
-    report = vmec_jax_flux_tube_array_parity_report(ntheta=8)
+    report = vmex_flux_tube_array_parity_report(ntheta=8)
 
     assert (
-        spectraxgk.vmec_jax_flux_tube_array_parity_report
-        is vmec_jax_flux_tube_array_parity_report
+        spectraxgk.vmex_flux_tube_array_parity_report
+        is vmex_flux_tube_array_parity_report
     )
     assert "available" in report
     if not report["available"]:
@@ -988,8 +989,8 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
     assert bool(report["array_metrics"]["bmag"]["shape_match"])
     if report["equal_arc_core_array_metrics"]:
         assert (
-            spectraxgk.vmec_jax_boozer_equal_arc_core_profiles_from_state
-            is vmec_jax_boozer_equal_arc_core_profiles_from_state
+            spectraxgk.vmex_boozer_equal_arc_core_profiles_from_state
+            is vmex_boozer_equal_arc_core_profiles_from_state
         )
         assert set(report["equal_arc_core_array_metrics"]) >= {
             "bmag",
@@ -1023,11 +1024,11 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
         assert float(report["equal_arc_drift_worst_normalized_max_abs"]) < 1.2e-1
 
 
-def test_vmec_jax_flux_tube_array_parity_report_enforces_boozer_resolution_floor() -> (
+def test_vmex_flux_tube_array_parity_report_enforces_boozer_resolution_floor() -> (
     None
 ):
     with pytest.raises(ValueError, match="mboz and nboz"):
-        vmec_jax_flux_tube_array_parity_report(mboz=20, nboz=21)
+        vmex_flux_tube_array_parity_report(mboz=20, nboz=21)
 
 
 def test_boozer_half_mesh_s_grid_uses_fortran_half_mesh_indices() -> None:
@@ -1051,7 +1052,7 @@ def test_boozer_half_mesh_s_grid_uses_fortran_half_mesh_indices() -> None:
     np.testing.assert_allclose(np.asarray(fallback), np.asarray(s_half))
 
 
-def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
+def test_vmex_boozer_equal_arc_core_profiles_supports_surface_stencil(
     monkeypatch,
 ) -> None:
     boozer_tables_mod = types.ModuleType("vmex.core.boozer_tables")
@@ -1112,7 +1113,7 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
     wout = types.SimpleNamespace(
         signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, -np.pi]), nfp=4
     )
-    mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
+    mapping = vmex_boozer_equal_arc_core_profiles_from_state(
         state,
         runtime,
         inp=object(),
@@ -1126,7 +1127,7 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
     assert mapping["boozer_surface_indices"] == [1, 2, 3]
     assert np.all(np.isfinite(np.asarray(mapping["bmag"])))
 
-    zero_flux_mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
+    zero_flux_mapping = vmex_boozer_equal_arc_core_profiles_from_state(
         state,
         runtime,
         inp=object(),
@@ -1140,7 +1141,7 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
         assert np.all(np.isfinite(np.asarray(zero_flux_mapping[key])))
 
     with pytest.raises(ValueError, match="surface_stencil_width"):
-        vmec_jax_boozer_equal_arc_core_profiles_from_state(
+        vmex_boozer_equal_arc_core_profiles_from_state(
             state,
             runtime,
             inp=object(),
@@ -1150,24 +1151,24 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
         )
 
 
-def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> (
+def test_vmex_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> (
     None
 ):
     for name in (
-        "vmec_jax",
-        "vmec_jax.driver",
-        "vmec_jax.config",
-        "vmec_jax.static",
-        "vmec_jax.wout",
-        "vmec_jax.geom",
+        "vmex",
+        "vmex.driver",
+        "vmex.config",
+        "vmex.static",
+        "vmex.wout",
+        "vmex.geom",
     ):
         sys.modules.pop(name, None)
 
-    report = vmec_jax_metric_tensor_sensitivity_report(fd_step=2.0e-5)
+    report = vmex_metric_tensor_sensitivity_report(fd_step=2.0e-5)
 
     assert (
-        spectraxgk.vmec_jax_metric_tensor_sensitivity_report
-        is vmec_jax_metric_tensor_sensitivity_report
+        spectraxgk.vmex_metric_tensor_sensitivity_report
+        is vmex_metric_tensor_sensitivity_report
     )
     assert (
         spectraxgk.vmec_metric_tensor_observable_names
@@ -1194,26 +1195,26 @@ def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_wh
     assert len(report["metric_grid_shape"]) == 3
 
 
-def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensors_when_available() -> (
+def test_vmex_field_line_tensor_sensitivity_report_checks_stellarator_tensors_when_available() -> (
     None
 ):
     for name in (
-        "vmec_jax",
-        "vmec_jax.driver",
-        "vmec_jax.config",
-        "vmec_jax.static",
-        "vmec_jax.wout",
-        "vmec_jax.geom",
-        "vmec_jax.vmec_bcovar",
-        "vmec_jax.field",
+        "vmex",
+        "vmex.driver",
+        "vmex.config",
+        "vmex.static",
+        "vmex.wout",
+        "vmex.geom",
+        "vmex.vmec_bcovar",
+        "vmex.field",
     ):
         sys.modules.pop(name, None)
 
-    report = vmec_jax_field_line_tensor_sensitivity_report(ntheta=24, fd_step=1.0e-6)
+    report = vmex_field_line_tensor_sensitivity_report(ntheta=24, fd_step=1.0e-6)
 
     assert (
-        spectraxgk.vmec_jax_field_line_tensor_sensitivity_report
-        is vmec_jax_field_line_tensor_sensitivity_report
+        spectraxgk.vmex_field_line_tensor_sensitivity_report
+        is vmex_field_line_tensor_sensitivity_report
     )
     assert (
         spectraxgk.vmec_field_line_tensor_observable_names
@@ -1445,7 +1446,7 @@ def test_optional_vmec_boundary_report_unavailable_path(monkeypatch) -> None:
     monkeypatch.setattr(
         diff_geom,
         "discover_differentiable_geometry_backends",
-        lambda: {"vmec_jax_boundary_api_available": False},
+        lambda: {"vmex_boundary_api_available": False},
     )
 
     report = vmec_boundary_aspect_sensitivity_report(jnp.asarray([0.1, 0.2]))
@@ -1721,7 +1722,7 @@ def _minimal_artifacts(root: Path) -> None:
         root,
         "docs/_static/differentiable_geometry_bridge.json",
         {
-            "vmec_jax_flux_tube_array_parity": {
+            "vmex_flux_tube_array_parity": {
                 "production_parity_passed": False,
                 "status": "diagnostic_open",
                 "interpretation": "Direct tensor path is diagnostic; equal-arc Boozer path carries the claim.",
@@ -1730,7 +1731,7 @@ def _minimal_artifacts(root: Path) -> None:
                 "equal_arc_metric_passed": True,
                 "equal_arc_drift_passed": True,
             },
-            "vmec_jax_boozer_flux_tube": {"available": True},
+            "vmex_boozer_flux_tube": {"available": True},
             "booz_xform_flux_tube": {"available": True},
         },
     )
@@ -1925,8 +1926,8 @@ def test_vmec_boozer_differentiability_claim_guard_rejects_hidden_direct_gap(
     _minimal_artifacts(tmp_path)
     bridge_path = tmp_path / "docs/_static/differentiable_geometry_bridge.json"
     bridge = json.loads(bridge_path.read_text(encoding="utf-8"))
-    bridge["vmec_jax_flux_tube_array_parity"]["status"] = "failed"
-    bridge["vmec_jax_flux_tube_array_parity"]["interpretation"] = ""
+    bridge["vmex_flux_tube_array_parity"]["status"] = "failed"
+    bridge["vmex_flux_tube_array_parity"]["interpretation"] = ""
     bridge_path.write_text(json.dumps(bridge), encoding="utf-8")
 
     report = build_vmec_boozer_differentiability_claim_guard(tmp_path)

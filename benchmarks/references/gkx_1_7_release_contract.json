@@ -14,7 +14,7 @@
   "external_revisions": {
     "booz_xform_jax": "1d5e8c8a72db8a745e7cb56fb077b64bb85d0763",
     "solvax": "005ca3873b2a31b0da70f84a4a80d2adb0cbf062",
-    "vmec_jax": "adf2d334122999bdaafb47aaa15653d047560ef8"
+    "vmex": "adf2d334122999bdaafb47aaa15653d047560ef8"
   },
   "frozen_output_fingerprints": {
     "algorithm": "canonical numeric JSON paths are release-gated with sorted keys, compact separators, and nonfinite values encoded as strings; file SHA256 is provenance-only",
@@ -151,7 +151,7 @@
         "blockers": [],
         "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
         "expected_raw_passed": true,
-        "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+        "kind": "vmex_reduced_nonlinear_audit_prelaunch_report",
         "label": "selected reduced prelaunch",
         "metric": 0.04678021840887033,
         "next_action": "launch replicated long-window nonlinear audit only with baseline/candidate ensembles",
@@ -168,7 +168,7 @@
         ],
         "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
         "expected_raw_passed": false,
-        "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+        "kind": "vmex_reduced_nonlinear_audit_prelaunch_report",
         "label": "weak reduced-margin reference",
         "metric": 0.022875996934833345,
         "next_action": "do not launch an expensive nonlinear audit; increase reduced-objective margin or broaden the objective before spending GPU time",
@@ -183,7 +183,7 @@
         "blockers": [],
         "claim_scope": "next nonlinear optimizer-campaign admission only; not a production multi-coefficient turbulent-flux optimization claim",
         "expected_raw_passed": true,
-        "kind": "vmec_jax_nonlinear_campaign_admission_report",
+        "kind": "vmex_nonlinear_campaign_admission_report",
         "label": "next nonlinear campaign admission",
         "metric": 0.2665094629036129,
         "next_action": "launch a bounded multi-control optimizer campaign from the admitted landscape direction, with matched baseline/candidate t=[350,700] replicated nonlinear audits before promotion",
@@ -2299,48 +2299,48 @@
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_boozer_equal_arc_core_profiles_from_state",
-        "symbol": "vmec_jax_boozer_equal_arc_core_profiles_from_state"
+        "name": "vmex_boozer_equal_arc_core_profiles_from_state",
+        "symbol": "vmex_boozer_equal_arc_core_profiles_from_state"
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_boozer_flux_tube_sensitivity_report",
-        "symbol": "vmec_jax_boozer_flux_tube_sensitivity_report"
+        "name": "vmex_boozer_flux_tube_sensitivity_report",
+        "symbol": "vmex_boozer_flux_tube_sensitivity_report"
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_field_line_tensor_sensitivity_report",
-        "symbol": "vmec_jax_field_line_tensor_sensitivity_report"
+        "name": "vmex_field_line_tensor_sensitivity_report",
+        "symbol": "vmex_field_line_tensor_sensitivity_report"
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_flux_tube_array_parity_report",
-        "symbol": "vmec_jax_flux_tube_array_parity_report"
+        "name": "vmex_flux_tube_array_parity_report",
+        "symbol": "vmex_flux_tube_array_parity_report"
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_flux_tube_mapping_from_state",
-        "symbol": "vmec_jax_flux_tube_mapping_from_state"
+        "name": "vmex_flux_tube_mapping_from_state",
+        "symbol": "vmex_flux_tube_mapping_from_state"
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_flux_tube_sensitivity_report",
-        "symbol": "vmec_jax_flux_tube_sensitivity_report"
+        "name": "vmex_flux_tube_sensitivity_report",
+        "symbol": "vmex_flux_tube_sensitivity_report"
       },
       {
         "module": "spectraxgk.geometry.differentiable",
-        "name": "vmec_jax_metric_tensor_sensitivity_report",
-        "symbol": "vmec_jax_metric_tensor_sensitivity_report"
+        "name": "vmex_metric_tensor_sensitivity_report",
+        "symbol": "vmex_metric_tensor_sensitivity_report"
       },
       {
         "module": "spectraxgk.objectives.vmec_transport_branch",
-        "name": "vmec_jax_transport_growth_branch_locality_report_from_states",
-        "symbol": "vmec_jax_transport_growth_branch_locality_report_from_states"
+        "name": "vmex_transport_growth_branch_locality_report_from_states",
+        "symbol": "vmex_transport_growth_branch_locality_report_from_states"
       },
       {
         "module": "spectraxgk.objectives.vmec_transport",
-        "name": "vmec_jax_transport_objective_from_state",
-        "symbol": "vmec_jax_transport_objective_from_state"
+        "name": "vmex_transport_objective_from_state",
+        "symbol": "vmex_transport_objective_from_state"
       },
       {
         "module": "spectraxgk.geometry.differentiable",

@@ -61,7 +61,7 @@ score.
        calibration remain future gates.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
-     - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
+     - The ``vmex -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
        for equal-arc field-line parity where the current ``mboz=nboz=21``
        parity artifact passes QH, QI, and shaped-pressure finite-beta rows.
        The fixed-resolution QI row now passes after the Boozer half-mesh
@@ -162,7 +162,7 @@ Do not make these claims from the current artifacts:
   candidate comparisons fail the ``4%`` reduction gate: growth gives only
   ``0.60%`` reduction (``z=0.26``), while quasilinear and nonlinear-window give
   ``-0.49%`` (``z=-0.19``) and ``-0.25%`` (``z=-0.09``), respectively.
-- converged nonlinear transport gradients through ``vmec_jax`` and
+- converged nonlinear transport gradients through ``vmex`` and
   ``booz_xform_jax``;
 - launching nonlinear-gradient campaigns directly from admitted VMEC-state
   controls without a separate state-to-input mapping artifact;
@@ -248,8 +248,8 @@ README claims, or manuscript claims.
        ``nonlinear_gradient_state_control_short_bracket_launch.*``,
        ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
        ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
-       ``vmec_jax_transport_gradient_diagnostic.json``,
-       ``vmec_jax_transport_gradient_line_search.*``,
+       ``vmex_transport_gradient_diagnostic.json``,
+       ``vmex_transport_gradient_line_search.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and

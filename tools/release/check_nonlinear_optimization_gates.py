@@ -180,8 +180,8 @@ DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
 )
 DEFAULT_MATCHED_OPTIMIZED_AUDITS = (
     ROOT / "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
-    ROOT / "docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.json",
-    ROOT / "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
+    ROOT / "docs/_static/vmex_qa_projected_weight_0p0005_matched_comparison.json",
+    ROOT / "docs/_static/vmex_qa_projected_weight_0p001_matched_comparison.json",
     ROOT / "docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json",
     ROOT / "docs/_static/vmec_qa_t1500_baseline_to_quasilinear_comparison.json",
     ROOT / "docs/_static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.json",

@@ -1,5 +1,5 @@
 {
-  "kind": "vmec_jax_boundary_chain_probe",
+  "kind": "vmex_boundary_chain_probe",
   "setup": {
     "input": "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final",
     "max_mode": 5,
@@ -105,7 +105,7 @@
     "jvp_only_replay_fallback_reason": "basepoint_carries_not_stored"
   },
   "summary": {
-    "kind": "vmec_jax_boundary_chain_summary",
+    "kind": "vmex_boundary_chain_summary",
     "finite": true,
     "classification": "exact_fd_and_frozen_axis_replay_consistent",
     "exact_relative_tolerance": 0.1,

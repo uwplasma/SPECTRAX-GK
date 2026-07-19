@@ -95,7 +95,7 @@
     "has_material_landscape_reduction_direction": true,
     "nonlinear_absolute_optimization_promoted": false
   },
-  "kind": "vmec_jax_qa_optimizer_strategy_report",
+  "kind": "vmex_qa_optimizer_strategy_report",
   "landscape": {
     "baseline_point": {
       "coefficient_value": 0.12662450813837142,
@@ -546,7 +546,7 @@
   ],
   "optimizer_recommendations": [
     {
-      "method": "vmec_jax_exact_discrete_adjoint_least_squares",
+      "method": "vmex_exact_discrete_adjoint_least_squares",
       "reason": "Start from the same simple-seed max-mode-5 path as VMEC-JAX QA_optimization.py, solve the aspect, iota, and QS residuals, then append one SPECTRAX-GK transport residual.",
       "stage": "strict_qa_baseline",
       "status": "preferred_for_smooth_aspect_iota_qs_constraints"
@@ -570,6 +570,6 @@
       "status": "absolute_flux_promotion_blocked"
     }
   ],
-  "panel_json": "docs/_static/vmec_jax_qa_full_sweep_panel.json",
+  "panel_json": "docs/_static/vmex_qa_full_sweep_panel.json",
   "schema_version": 1
 }

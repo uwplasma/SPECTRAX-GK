@@ -1,5 +1,5 @@
 {
-  "kind": "vmec_jax_solved_wout_candidate_gate",
+  "kind": "vmex_solved_wout_candidate_gate",
   "passed": true,
   "checks": {
     "aspect": {
@@ -19,14 +19,14 @@
       "value": 0.0002600982322181188,
       "maximum": 0.05,
       "margin": 0.04973990176778188,
-      "source": "vmec_jax_state",
+      "source": "vmex_state",
       "passed": true
     },
     "iota_profile": {
       "minimum_iotas_excluding_axis": 0.4056702517223691,
       "minimum_iotaf": 0.40550592917747963,
       "floor": null,
-      "source": "vmec_jax_state",
+      "source": "vmex_state",
       "passed": true
     }
   },

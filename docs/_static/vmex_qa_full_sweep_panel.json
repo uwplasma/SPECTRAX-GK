@@ -1,26 +1,26 @@
 {
-  "kind": "vmec_jax_qa_full_max_mode5_sweep",
+  "kind": "vmex_qa_full_max_mode5_sweep",
   "claim_scope": "real VMEC-JAX max_mode=5 optimizer-output comparison; reduced growth/quasilinear/nonlinear-window objectives are optimizer diagnostics; production nonlinear Q claims require matched long post-transient SPECTRAX-GK audit traces",
-  "run_root": "tools_out/vmec_jax_qa_full_sweep_20260605",
-  "campaign_root": "tools_out/vmec_jax_qa_full_sweep_20260605",
-  "runs_root": "tools_out/vmec_jax_qa_full_sweep_20260605/runs",
+  "run_root": "tools_out/vmex_qa_full_sweep_20260605",
+  "campaign_root": "tools_out/vmex_qa_full_sweep_20260605",
+  "runs_root": "tools_out/vmex_qa_full_sweep_20260605/runs",
   "cases": [
     {
       "case_id": "qa_baseline_scipy",
       "label": "QA baseline\nscipy",
-      "root": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy",
+      "root": "tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy",
       "status": "END 2026-06-05T10:19:52-05:00 rc=0 qa_baseline_scipy",
       "run_completed": 1,
       "setup": {
-        "kind": "vmec_jax_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.simple_seed",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/vmec_jax/examples/data/input.minimal_seed_nfp2",
+        "kind": "vmex_qa_low_turbulence_optimization",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.simple_seed",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/vmex/examples/data/input.minimal_seed_nfp2",
         "use_simple_seed": 1,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy",
         "target_aspect": 5.0,
         "min_iota": 0.41019999999999995,
         "strict_upstream_qa_baseline": 1,
@@ -99,11 +99,11 @@
           "iota",
           "qs"
         ],
-        "claim_scope": "vmec_jax fixed-boundary QA optimization without SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization without SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
       },
       "optimizer_comparison": {
         "case_id": "qa_baseline_scipy",
-        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy",
+        "run_dir": "tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy",
         "method": "scipy",
         "scipy_tr_solver": "exact",
         "scipy_lsmr_maxiter": null,
@@ -157,9 +157,9 @@
         "comparison_fingerprint": "{\"constraints_only\":1,\"max_mode\":5,\"min_iota\":0.41019999999999995,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0,0.7853981633974483],\"ky_values\":[0.1,0.3,0.5],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":18,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":0,\"surfaces\":[0.45,0.64,0.78]},\"target_aspect\":5.0,\"transport_kind\":null,\"use_simple_seed\":1}"
       },
       "has_wout_final": 1,
-      "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
+      "wout_final": "tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
       "has_authoritative_wout": 1,
-      "authoritative_wout": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
+      "authoritative_wout": "tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
       "authoritative_wout_source": "wout_final_rerun.nc",
       "uses_authoritative_rerun_wout": 1,
       "history": {
@@ -184,7 +184,7 @@
         8.911810817152997e-06
       ],
       "gate": {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
+        "kind": "vmex_solved_wout_candidate_gate",
         "passed": 1,
         "checks": {
           "aspect": {
@@ -204,14 +204,14 @@
             "value": 8.911808800393972e-06,
             "maximum": 0.05,
             "margin": 0.04999108819119961,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           },
           "iota_profile": {
             "minimum_iotas_excluding_axis": 0.40520024851102965,
             "minimum_iotaf": 0.4050565444372784,
             "floor": null,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           }
         },
@@ -220,17 +220,17 @@
       },
       "solved_wout_gate_passed": 1,
       "wout_reproducibility_gate": {
-        "kind": "vmec_jax_wout_reproducibility_gate",
+        "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
           "aspect": 4.999998728306318,
           "mean_iota": 0.4102000063210299,
           "min_iotas_excluding_axis": 0.40520024851102965,
           "min_iotaf": 0.4050565444372784
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
           "aspect": 4.999998728306318,
           "mean_iota": 0.41102099219110516,
           "min_iotas_excluding_axis": 0.4019869369759107,
@@ -280,16 +280,16 @@
         "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
       "rerun_wout_admission_gate": {
-        "kind": "vmec_jax_authoritative_wout_candidate_gate",
+        "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
           "aspect": 4.999998728306318,
           "mean_iota": 0.41102099219110516,
           "min_iotas_excluding_axis": 0.4019869369759107,
@@ -320,7 +320,7 @@
             "value": 2.4352388163137463e-05,
             "maximum": 0.05,
             "margin": 0.049975647611836864,
-            "source": "vmec_jax_wout",
+            "source": "vmex_wout",
             "error": null,
             "helicity_m": 1,
             "helicity_n": 0,
@@ -354,7 +354,7 @@
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
       "iota_profile": {
-        "source": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
+        "source": "tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc",
         "s": [
           0.0,
           0.029411764705882353,
@@ -510,24 +510,24 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc --case vmec_qa_full_sweep_qa_baseline_scipy --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_qa_baseline_scipy --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc --case vmec_qa_full_sweep_qa_baseline_scipy --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_qa_baseline_scipy --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "growth_from_strict_baseline",
       "label": "growth\nfrom strict QA",
-      "root": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
+      "root": "tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
       "status": "END 2026-06-05T10:28:24-05:00 rc=0 growth_from_strict_baseline",
       "run_completed": 1,
       "setup": {
-        "kind": "vmec_jax_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "kind": "vmex_qa_low_turbulence_optimization",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
         "use_simple_seed": 0,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
         "target_aspect": 5.0,
         "min_iota": 0.41,
         "strict_upstream_qa_baseline": 0,
@@ -602,11 +602,11 @@
           "qs",
           "spectraxgk_transport"
         ],
-        "claim_scope": "vmec_jax fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
       },
       "optimizer_comparison": {
         "case_id": "growth_from_strict_baseline",
-        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
+        "run_dir": "tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
         "method": "scalar_trust",
         "scipy_tr_solver": "exact",
         "scipy_lsmr_maxiter": null,
@@ -655,9 +655,9 @@
         "comparison_fingerprint": "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"growth\",\"use_simple_seed\":0}"
       },
       "has_wout_final": 1,
-      "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
+      "wout_final": "tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
       "has_authoritative_wout": 1,
-      "authoritative_wout": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
+      "authoritative_wout": "tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
       "authoritative_wout_source": "wout_final_rerun.nc",
       "uses_authoritative_rerun_wout": 1,
       "history": {
@@ -688,7 +688,7 @@
         0.0005337804397439096
       ],
       "gate": {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
+        "kind": "vmex_solved_wout_candidate_gate",
         "passed": 0,
         "checks": {
           "aspect": {
@@ -708,14 +708,14 @@
             "value": 2.330071895545972e-05,
             "maximum": 0.05,
             "margin": 0.04997669928104454,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           },
           "iota_profile": {
             "minimum_iotas_excluding_axis": 0.4037749194492824,
             "minimum_iotaf": 0.4034415454180686,
             "floor": null,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           }
         },
@@ -724,17 +724,17 @@
       },
       "solved_wout_gate_passed": 0,
       "wout_reproducibility_gate": {
-        "kind": "vmec_jax_wout_reproducibility_gate",
+        "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
           "aspect": 5.004308467177275,
           "mean_iota": 0.4099766900469461,
           "min_iotas_excluding_axis": 0.4037749194492824,
           "min_iotaf": 0.4034415454180686
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004308467177275,
           "mean_iota": 0.4121247252927308,
           "min_iotas_excluding_axis": 0.4030707384486464,
@@ -784,16 +784,16 @@
         "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
       "rerun_wout_admission_gate": {
-        "kind": "vmec_jax_authoritative_wout_candidate_gate",
+        "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004308467177275,
           "mean_iota": 0.4121247252927308,
           "min_iotas_excluding_axis": 0.4030707384486464,
@@ -824,7 +824,7 @@
             "value": 3.339397311344464e-05,
             "maximum": 0.05,
             "margin": 0.04996660602688656,
-            "source": "vmec_jax_wout",
+            "source": "vmex_wout",
             "error": null,
             "helicity_m": 1,
             "helicity_n": 0,
@@ -860,7 +860,7 @@
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
       "iota_profile": {
-        "source": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
+        "source": "tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc",
         "s": [
           0.0,
           0.029411764705882353,
@@ -1016,24 +1016,24 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmex_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "quasilinear_from_strict_baseline",
       "label": "QL flux\nfrom strict QA",
-      "root": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
+      "root": "tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
       "status": "END 2026-06-05T10:29:10-05:00 rc=0 quasilinear_from_strict_baseline",
       "run_completed": 1,
       "setup": {
-        "kind": "vmec_jax_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "kind": "vmex_qa_low_turbulence_optimization",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
         "use_simple_seed": 0,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
         "target_aspect": 5.0,
         "min_iota": 0.41,
         "strict_upstream_qa_baseline": 0,
@@ -1108,11 +1108,11 @@
           "qs",
           "spectraxgk_transport"
         ],
-        "claim_scope": "vmec_jax fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
       },
       "optimizer_comparison": {
         "case_id": "quasilinear_from_strict_baseline",
-        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
+        "run_dir": "tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
         "method": "scalar_trust",
         "scipy_tr_solver": "exact",
         "scipy_lsmr_maxiter": null,
@@ -1161,9 +1161,9 @@
         "comparison_fingerprint": "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"quasilinear_flux\",\"use_simple_seed\":0}"
       },
       "has_wout_final": 1,
-      "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
+      "wout_final": "tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
       "has_authoritative_wout": 1,
-      "authoritative_wout": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
+      "authoritative_wout": "tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
       "authoritative_wout_source": "wout_final_rerun.nc",
       "uses_authoritative_rerun_wout": 1,
       "history": {
@@ -1198,7 +1198,7 @@
         0.0007155621870566978
       ],
       "gate": {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
+        "kind": "vmex_solved_wout_candidate_gate",
         "passed": 0,
         "checks": {
           "aspect": {
@@ -1218,14 +1218,14 @@
             "value": 2.3543317157079365e-05,
             "maximum": 0.05,
             "margin": 0.049976456682842924,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           },
           "iota_profile": {
             "minimum_iotas_excluding_axis": 0.40377617922820574,
             "minimum_iotaf": 0.40344281924916015,
             "floor": null,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           }
         },
@@ -1234,17 +1234,17 @@
       },
       "solved_wout_gate_passed": 0,
       "wout_reproducibility_gate": {
-        "kind": "vmec_jax_wout_reproducibility_gate",
+        "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
           "aspect": 5.004321533731937,
           "mean_iota": 0.40997897310909476,
           "min_iotas_excluding_axis": 0.40377617922820574,
           "min_iotaf": 0.40344281924916015
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004321533731937,
           "mean_iota": 0.4121272962875881,
           "min_iotas_excluding_axis": 0.4030730759182478,
@@ -1294,16 +1294,16 @@
         "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
       "rerun_wout_admission_gate": {
-        "kind": "vmec_jax_authoritative_wout_candidate_gate",
+        "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004321533731937,
           "mean_iota": 0.4121272962875881,
           "min_iotas_excluding_axis": 0.4030730759182478,
@@ -1334,7 +1334,7 @@
             "value": 3.3641066935050735e-05,
             "maximum": 0.05,
             "margin": 0.049966358933064954,
-            "source": "vmec_jax_wout",
+            "source": "vmex_wout",
             "error": null,
             "helicity_m": 1,
             "helicity_n": 0,
@@ -1370,7 +1370,7 @@
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
       "iota_profile": {
-        "source": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
+        "source": "tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc",
         "s": [
           0.0,
           0.029411764705882353,
@@ -1526,24 +1526,24 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmex_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "nonlinear_window_from_strict_baseline",
       "label": "NL-window\nfrom strict QA",
-      "root": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
+      "root": "tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
       "status": "END 2026-06-05T10:36:51-05:00 rc=0 nonlinear_window_from_strict_baseline",
       "run_completed": 1,
       "setup": {
-        "kind": "vmec_jax_qa_low_turbulence_optimization",
-        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "kind": "vmex_qa_low_turbulence_optimization",
+        "input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
+        "requested_input": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
         "use_simple_seed": 0,
         "simple_seed_perturbation": 1e-05,
         "max_mode": 5,
         "min_vmec_mode": 7,
         "use_mode_continuation": 0,
-        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
+        "outdir": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
         "target_aspect": 5.0,
         "min_iota": 0.41,
         "strict_upstream_qa_baseline": 0,
@@ -1618,11 +1618,11 @@
           "qs",
           "spectraxgk_transport"
         ],
-        "claim_scope": "vmec_jax fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+        "claim_scope": "vmex fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
       },
       "optimizer_comparison": {
         "case_id": "nonlinear_window_from_strict_baseline",
-        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
+        "run_dir": "tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
         "method": "scalar_trust",
         "scipy_tr_solver": "exact",
         "scipy_lsmr_maxiter": null,
@@ -1671,9 +1671,9 @@
         "comparison_fingerprint": "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"nonlinear_window_heat_flux\",\"use_simple_seed\":0}"
       },
       "has_wout_final": 1,
-      "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
+      "wout_final": "tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
       "has_authoritative_wout": 1,
-      "authoritative_wout": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
+      "authoritative_wout": "tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
       "authoritative_wout_source": "wout_final_rerun.nc",
       "uses_authoritative_rerun_wout": 1,
       "history": {
@@ -1716,7 +1716,7 @@
         0.0004615233544219823
       ],
       "gate": {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
+        "kind": "vmex_solved_wout_candidate_gate",
         "passed": 0,
         "checks": {
           "aspect": {
@@ -1736,14 +1736,14 @@
             "value": 3.7237065690620345e-05,
             "maximum": 0.05,
             "margin": 0.04996276293430938,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           },
           "iota_profile": {
             "minimum_iotas_excluding_axis": 0.4038034235655028,
             "minimum_iotaf": 0.4034714060079266,
             "floor": null,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": 1
           }
         },
@@ -1752,17 +1752,17 @@
       },
       "solved_wout_gate_passed": 0,
       "wout_reproducibility_gate": {
-        "kind": "vmec_jax_wout_reproducibility_gate",
+        "kind": "vmex_wout_reproducibility_gate",
         "passed": 0,
         "reference_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
           "aspect": 5.004339789413267,
           "mean_iota": 0.4099940357439537,
           "min_iotas_excluding_axis": 0.4038034235655028,
           "min_iotaf": 0.4034714060079266
         },
         "rerun_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004339789413267,
           "mean_iota": 0.4121398327625339,
           "min_iotas_excluding_axis": 0.40308434514816893,
@@ -1812,16 +1812,16 @@
         "claim_level": "saved VMEC input must reproduce optimizer-state WOUT before SPECTRAX-GK transport promotion",
         "next_action": "do not promote this saved input; rerun/refine the VMEC-JAX solve until input.final reproduces wout_final.nc",
         "rerun_paths": {
-          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_initial_rerun.nc",
-          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc"
+          "initial_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_initial_rerun.nc",
+          "final_rerun_wout": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc"
         }
       },
       "wout_reproducibility_gate_passed": 0,
       "rerun_wout_admission_gate": {
-        "kind": "vmec_jax_authoritative_wout_candidate_gate",
+        "kind": "vmex_authoritative_wout_candidate_gate",
         "passed": 1,
         "authoritative_wout": {
-          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
+          "source": "/home/rjorge/qa_itg_full_20260605_094949/SPECTRAX-GK/tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
           "aspect": 5.004339789413267,
           "mean_iota": 0.4121398327625339,
           "min_iotas_excluding_axis": 0.40308434514816893,
@@ -1852,7 +1852,7 @@
             "value": 4.7617150515531e-05,
             "maximum": 0.05,
             "margin": 0.04995238284948447,
-            "source": "vmec_jax_wout",
+            "source": "vmex_wout",
             "error": null,
             "helicity_m": 1,
             "helicity_n": 0,
@@ -1888,7 +1888,7 @@
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
       "iota_profile": {
-        "source": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
+        "source": "tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc",
         "s": [
           0.0,
           0.029411764705882353,
@@ -2044,7 +2044,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmex_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     }
   ],
   "summary": {

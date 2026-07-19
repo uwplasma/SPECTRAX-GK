@@ -99,16 +99,16 @@ Self-contained VMEC geometry
 ----------------------------
 
 The VMEC-backed examples are prefilled with relative ``wout_*.nc`` paths. The
-repository ships small ``vmec_jax`` input decks, not large generated WOUT
+repository ships small ``vmex`` input decks, not large generated WOUT
 files. Generate the needed equilibria locally, then run the TOMLs directly:
 
 .. code-block:: bash
 
    pip install vmec-jax
    cd examples/vmec
-   vmec_jax input.circular_tokamak
-   vmec_jax input.NuhrenbergZille_1988_QHS
-   vmec_jax input.nfp3_QI_fixed_resolution_final
+   vmex input.circular_tokamak
+   vmex input.NuhrenbergZille_1988_QHS
+   vmex input.nfp3_QI_fixed_resolution_final
    cd ../..
 
    spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! command -v vmec_jax >/dev/null 2>&1; then
-  echo "vmec_jax is required. Install it with: pip install vmec-jax" >&2
+if ! command -v vmex >/dev/null 2>&1; then
+  echo "vmex is required. Install it with: pip install vmec-jax" >&2
   exit 1
 fi
 
@@ -18,5 +18,5 @@ inputs=(
 
 for input in "${inputs[@]}"; do
   echo "Generating ${input/input./wout_}.nc from $input"
-  vmec_jax "$input"
+  vmex "$input"
 done

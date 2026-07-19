@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-# ---- test_vmec_jax_boundary_chain.py ----
+# ---- test_vmex_boundary_chain.py ----
 
 import json
 import math
@@ -465,7 +465,7 @@ def test_boundary_chain_collection_summary_fails_closed_when_empty() -> None:
     assert summary["counts"]["n_growth_branch_locality_checked"] == 0
 
 
-# ---- test_vmec_jax_candidate_gate.py ----
+# ---- test_vmex_candidate_gate.py ----
 
 import sys
 from types import SimpleNamespace
@@ -536,7 +536,7 @@ def test_final_iota_profiles_from_vmec_result_returns_none_without_solved_state(
     assert final_iota_profiles_from_vmec_result(SimpleNamespace(history={})) is None
 
 
-def test_candidate_gate_extracts_iota_profiles_from_vmec_jax_state(monkeypatch) -> None:
+def test_candidate_gate_extracts_iota_profiles_from_vmex_state(monkeypatch) -> None:
     monkeypatch.setitem(sys.modules, "vmex", SimpleNamespace())
     wout = SimpleNamespace(
         iotas=np.asarray([0.0, 0.411, 0.415]),
@@ -551,7 +551,7 @@ def test_candidate_gate_extracts_iota_profiles_from_vmec_jax_state(monkeypatch) 
 
     assert report["passed"] is True
     assert report["checks"]["mean_iota"]["value"] == 0.42
-    assert report["checks"]["iota_profile"]["source"] == "vmec_jax_state"
+    assert report["checks"]["iota_profile"]["source"] == "vmex_state"
     assert report["checks"]["iota_profile"]["minimum_iotas_excluding_axis"] == 0.411
 
 
@@ -584,7 +584,7 @@ def test_candidate_gate_prefers_independent_state_qs_over_history(monkeypatch) -
 
     assert report["passed"] is True
     assert report["checks"]["quasisymmetry"]["value"] == 0.013
-    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
+    assert report["checks"]["quasisymmetry"]["source"] == "vmex_state"
 
 
 def test_candidate_gate_uses_standalone_qs_not_assembled_transport_block(
@@ -625,7 +625,7 @@ def test_candidate_gate_uses_standalone_qs_not_assembled_transport_block(
 
     assert report["passed"] is True
     assert report["checks"]["quasisymmetry"]["value"] == 0.009
-    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
+    assert report["checks"]["quasisymmetry"]["source"] == "vmex_state"
 
 
 def test_candidate_gate_state_qs_falls_back_to_optimizer_method(monkeypatch) -> None:
@@ -661,7 +661,7 @@ def test_candidate_gate_state_qs_falls_back_to_optimizer_method(monkeypatch) -> 
     assert report["checks"]["quasisymmetry"]["value"] == 0.017
 
 
-def test_final_iota_profiles_from_vmec_result_handles_vmec_jax_failure() -> None:
+def test_final_iota_profiles_from_vmec_result_handles_vmex_failure() -> None:
     class BrokenEquilibrium:
         @property
         def wout(self):
@@ -841,7 +841,7 @@ def test_authoritative_wout_candidate_gate_reads_wout_file_with_profile_floor(
     assert report["passed"] is True
     assert report["authoritative_wout"]["mean_iota"] == pytest.approx(0.415)
     assert report["checks"]["iota_profile"]["passed"] is True
-    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_wout"
+    assert report["checks"]["quasisymmetry"]["source"] == "vmex_wout"
 
 
 def test_authoritative_wout_candidate_gate_reports_wout_load_errors(
@@ -870,10 +870,10 @@ def test_authoritative_wout_candidate_gate_reports_wout_load_errors(
     assert report["passed"] is False
     assert report["authoritative_wout"]["aspect"] is None
     assert report["checks"]["iota_profile"]["passed"] is False
-    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_wout_error"
+    assert report["checks"]["quasisymmetry"]["source"] == "vmex_wout_error"
 
 
-# ---- test_vmec_jax_transport_admission.py ----
+# ---- test_vmex_transport_admission.py ----
 
 
 import spectraxgk.diagnostics.stellarator_transport_reports as transport_reports
@@ -1479,7 +1479,7 @@ def test_transport_sample_summary_rejects_ky_values_not_supported_by_single_solv
     assert "ky_values_not_single_grid_compatible" in summary["blockers"]
 
 
-# ---- test_vmec_jax_transport_gradient.py ----
+# ---- test_vmex_transport_gradient.py ----
 
 from dataclasses import dataclass
 
@@ -1520,7 +1520,7 @@ class FakeOptimizer:
         return np.asarray([[1.0, -2.0, 0.0]])
 
 
-def test_boundary_spec_record_uses_vmec_jax_fields() -> None:
+def test_boundary_spec_record_uses_vmex_fields() -> None:
     row = boundary_spec_record(FakeSpec("zs10", "zs", 4, 1, 0), fallback_index=9)
 
     assert row == {
@@ -1599,11 +1599,11 @@ def test_transport_gradient_report_writer_and_public_api(tmp_path) -> None:
     out = write_boundary_transport_gradient_report(report, tmp_path / "gradient.json")
 
     payload = json.loads(out.read_text(encoding="utf-8"))
-    assert payload["kind"] == "vmec_jax_transport_gradient_diagnostic"
+    assert payload["kind"] == "vmex_transport_gradient_diagnostic"
     assert payload["top_gradient_components"][0]["name"] == "zs10"
 
 
-# ---- test_vmec_jax_transport_line_search.py ----
+# ---- test_vmex_transport_line_search.py ----
 
 
 from spectraxgk.objectives.vmec_transport_optimization import (
@@ -1643,7 +1643,7 @@ def test_projected_line_search_input_manifest_is_json_safe() -> None:
         _gradient_report(), steps=(0.1, 0.2), top_n=2
     )
 
-    assert manifest["kind"] == "vmec_jax_projected_transport_line_search_input_manifest"
+    assert manifest["kind"] == "vmex_projected_transport_line_search_input_manifest"
     assert manifest["parameter_count"] == 4
     assert manifest["direction_l2_norm"] == pytest.approx(1.0)
     assert manifest["steps"][0]["parameter_l2_norm"] == pytest.approx(0.1)
@@ -1690,7 +1690,7 @@ def test_sparse_descent_direction_rejects_malformed_gradient_rows() -> None:
 
 def _boundary_chain_collection() -> dict[str, object]:
     return {
-        "kind": "vmec_jax_boundary_chain_collection_summary",
+        "kind": "vmex_boundary_chain_collection_summary",
         "classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
         "rows": [
             {
@@ -1955,7 +1955,7 @@ def test_projected_line_search_public_api_exports() -> None:
     )
 
 
-# ---- test_vmec_jax_transport_objective.py ----
+# ---- test_vmex_transport_objective.py ----
 
 """Tests for VMEC-JAX to SPECTRAX-GK transport objective plumbing."""
 
@@ -1968,8 +1968,8 @@ from spectraxgk import (
     StellaratorITGSampleSet,
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
-    vmec_jax_transport_growth_branch_locality_report_from_states,
-    vmec_jax_transport_objective_from_state,
+    vmex_transport_growth_branch_locality_report_from_states,
+    vmex_transport_objective_from_state,
 )
 from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
 import spectraxgk.objectives.vmec_transport_branch as transport_branch
@@ -2008,7 +2008,7 @@ def _fake_solver_rows(scale: float = 1.0) -> jnp.ndarray:
     return jnp.asarray(rows)
 
 
-def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> None:
+def test_vmex_transport_objective_reduces_fake_solver_rows(monkeypatch) -> None:
 
     calls: list[dict[str, object]] = []
     growth_calls: list[dict[str, object]] = []
@@ -2038,7 +2038,7 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
     )
     cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples, ny=4)
 
-    value = vmec_jax_transport_objective_from_state(
+    value = vmex_transport_objective_from_state(
         object(),
         object(),
         object(),
@@ -2055,7 +2055,7 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
     assert int(growth_calls[0]["ny"]) >= 6
 
 
-def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
+def test_vmex_transport_surface_chunking_matches_unchunked_weighted_mean(
     monkeypatch,
 ) -> None:
 
@@ -2088,7 +2088,7 @@ def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
             objective_transform="log1p",
             surface_chunk_size=chunk_size,
         )
-        value = vmec_jax_transport_objective_from_state(
+        value = vmex_transport_objective_from_state(
             object(),
             object(),
             object(),
@@ -2107,7 +2107,7 @@ def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(
     assert evaluate(chunk_size=1) == pytest.approx(evaluate(chunk_size=0))
 
 
-def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_branch(
+def test_vmex_transport_growth_branch_locality_report_accepts_consistent_branch(
     monkeypatch,
 ) -> None:
 
@@ -2130,7 +2130,7 @@ def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_bra
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
 
-    report = vmec_jax_transport_growth_branch_locality_report_from_states(
+    report = vmex_transport_growth_branch_locality_report_from_states(
         "base",
         "plus",
         "minus",
@@ -2142,8 +2142,8 @@ def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_bra
     )
 
     assert (
-        spectraxgk.vmec_jax_transport_growth_branch_locality_report_from_states
-        is vmec_jax_transport_growth_branch_locality_report_from_states
+        spectraxgk.vmex_transport_growth_branch_locality_report_from_states
+        is vmex_transport_growth_branch_locality_report_from_states
     )
     assert report["passed"] is True
     assert (
@@ -2155,7 +2155,7 @@ def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_bra
     assert report["rows"][0]["classification"] == "dominant_branch_locally_consistent"
 
 
-def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch(
+def test_vmex_transport_growth_branch_locality_report_fails_on_branch_switch(
     monkeypatch,
 ) -> None:
 
@@ -2178,7 +2178,7 @@ def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
 
-    report = vmec_jax_transport_growth_branch_locality_report_from_states(
+    report = vmex_transport_growth_branch_locality_report_from_states(
         "base",
         "plus",
         "minus",
@@ -2198,7 +2198,7 @@ def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch
     )
 
 
-def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(
+def test_vmex_transport_objective_nonlinear_proxy_is_positive_and_exported(
     monkeypatch,
 ) -> None:
 
@@ -2223,11 +2223,11 @@ def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(
         kind="nonlinear_window_heat_flux", sample_set=samples
     )
 
-    low = vmec_jax_transport_objective_from_state(
+    low = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), cfg
     )
     scale["value"] = 2.0
-    high = vmec_jax_transport_objective_from_state(
+    high = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), cfg
     )
 
@@ -2240,7 +2240,7 @@ def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(
     assert float(high) > float(low)
 
 
-def test_vmec_jax_transport_objective_transform_scales_large_residuals(
+def test_vmex_transport_objective_transform_scales_large_residuals(
     monkeypatch,
 ) -> None:
 
@@ -2275,13 +2275,13 @@ def test_vmec_jax_transport_objective_transform_scales_large_residuals(
         objective_scale=10.0,
     )
 
-    raw = vmec_jax_transport_objective_from_state(
+    raw = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), raw_cfg
     )
-    scaled = vmec_jax_transport_objective_from_state(
+    scaled = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), scaled_cfg
     )
-    logged = vmec_jax_transport_objective_from_state(
+    logged = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), log_cfg
     )
 
@@ -2291,7 +2291,7 @@ def test_vmec_jax_transport_objective_transform_scales_large_residuals(
     assert float(logged) < float(scaled)
 
 
-def test_vmec_jax_transport_objective_vmec_callback_builds_reference_wout(
+def test_vmex_transport_objective_vmec_callback_builds_reference_wout(
     monkeypatch,
 ) -> None:
     import spectraxgk.objectives.vmec_transport as mod
@@ -2306,7 +2306,7 @@ def test_vmec_jax_transport_objective_vmec_callback_builds_reference_wout(
         captured["config"] = config
         return jnp.asarray(0.125)
 
-    monkeypatch.setattr(mod, "vmec_jax_transport_objective_from_state", fake_eval)
+    monkeypatch.setattr(mod, "vmex_transport_objective_from_state", fake_eval)
     objective = VMECJAXSpectraxTransportObjective()
     ctx = SimpleNamespace(
         static=SimpleNamespace(cfg=SimpleNamespace(nfp=3)), indata="indata", signgs=-1
@@ -2321,7 +2321,7 @@ def test_vmec_jax_transport_objective_vmec_callback_builds_reference_wout(
     assert captured["wout"].signgs == -1
 
 
-def test_vmec_jax_transport_config_rejects_underresolved_boozer_modes() -> None:
+def test_vmex_transport_config_rejects_underresolved_boozer_modes() -> None:
     assert (
         VMECJAXTransportObjectiveConfig(kind="growth").gradient_scope
         == "eigenvalue_growth_ad"
@@ -2342,12 +2342,12 @@ def test_vmec_jax_transport_config_rejects_underresolved_boozer_modes() -> None:
         VMECJAXTransportObjectiveConfig(objective_transform="bad")  # type: ignore[arg-type]
 
 
-def test_vmec_jax_transport_objective_pins_imported_backend_paths(
+def test_vmex_transport_objective_pins_imported_backend_paths(
     monkeypatch, tmp_path
 ) -> None:
 
-    vmec_root = tmp_path / "vmec_jax_repo"
-    vmec_pkg = vmec_root / "vmec_jax"
+    vmec_root = tmp_path / "vmex_repo"
+    vmec_pkg = vmec_root / "vmex"
     vmec_pkg.mkdir(parents=True)
     vmec_file = vmec_pkg / "__init__.py"
     vmec_file.write_text("", encoding="utf-8")
@@ -2364,14 +2364,14 @@ def test_vmec_jax_transport_objective_pins_imported_backend_paths(
     booz_module.__file__ = str(booz_file)
     monkeypatch.setitem(sys.modules, "vmex", vmec_module)
     monkeypatch.setitem(sys.modules, "booz_xform_jax", booz_module)
-    monkeypatch.delenv("SPECTRAX_VMEC_JAX_PATH", raising=False)
-    monkeypatch.delenv("VMEC_JAX_PATH", raising=False)
+    monkeypatch.delenv("SPECTRAX_VMEX_PATH", raising=False)
+    monkeypatch.delenv("VMEX_PATH", raising=False)
     monkeypatch.delenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", raising=False)
     monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
     transport_config._pin_current_optional_backend_paths()
 
-    assert str(vmec_root) == transport_config.os.environ["SPECTRAX_VMEC_JAX_PATH"]
+    assert str(vmec_root) == transport_config.os.environ["SPECTRAX_VMEX_PATH"]
     assert str(booz_root) == transport_config.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
 
 
@@ -2412,15 +2412,15 @@ def test_pin_current_optional_backend_paths_respects_explicit_environment(
         raise AssertionError(f"backend search should be skipped for {module_name}")
 
     monkeypatch.setattr(transport_config, "_module_search_root", unexpected_search)
-    monkeypatch.delenv("SPECTRAX_VMEC_JAX_PATH", raising=False)
-    monkeypatch.setenv("VMEC_JAX_PATH", "/explicit/vmec-jax")
+    monkeypatch.delenv("SPECTRAX_VMEX_PATH", raising=False)
+    monkeypatch.setenv("VMEX_PATH", "/explicit/vmec-jax")
     monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", "/explicit/booz-xform-jax")
     monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
     transport_config._pin_current_optional_backend_paths()
 
-    assert "SPECTRAX_VMEC_JAX_PATH" not in transport_config.os.environ
-    assert transport_config.os.environ["VMEC_JAX_PATH"] == "/explicit/vmec-jax"
+    assert "SPECTRAX_VMEX_PATH" not in transport_config.os.environ
+    assert transport_config.os.environ["VMEX_PATH"] == "/explicit/vmec-jax"
     assert (
         transport_config.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
         == "/explicit/booz-xform-jax"
@@ -2476,7 +2476,7 @@ def test_static_grid_options_rejects_invalid_ky_values(
         ),
     ),
 )
-def test_vmec_jax_transport_config_rejects_invalid_edges(
+def test_vmex_transport_config_rejects_invalid_edges(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
@@ -2484,7 +2484,7 @@ def test_vmec_jax_transport_config_rejects_invalid_edges(
         VMECJAXTransportObjectiveConfig(**kwargs)
 
 
-def test_vmec_jax_transport_config_objective_options_filter_none_values() -> None:
+def test_vmex_transport_config_objective_options_filter_none_values() -> None:
     default_options = VMECJAXTransportObjectiveConfig().objective_options()
     configured_options = VMECJAXTransportObjectiveConfig(
         reference_length=2.5,
@@ -2551,7 +2551,7 @@ def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
     samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
     cfg = VMECJAXTransportObjectiveConfig(kind="quasilinear_flux", sample_set=samples)
 
-    value = vmec_jax_transport_objective_from_state(
+    value = vmex_transport_objective_from_state(
         "state", "static", "indata", object(), cfg
     )
 

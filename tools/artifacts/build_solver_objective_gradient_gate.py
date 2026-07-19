@@ -198,17 +198,17 @@ def write_solver_objective_gradient_artifacts(
         fig.suptitle(f"Solver-objective geometry-gradient gate: {status}")
     if kind == "mode21_vmec_boozer_nonlinear_window_gradient_gate":
         caption = (
-            "A reduced late-window heat-flux estimator is differentiated through vmec_jax state coefficients, "
+            "A reduced late-window heat-flux estimator is differentiated through vmex state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the SPECTRAX-GK linear-RHS eigenpair path."
         )
     elif kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
         caption = (
-            "Actual linear-RHS quasilinear observables are differentiated through vmec_jax state coefficients, "
+            "Actual linear-RHS quasilinear observables are differentiated through vmex state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
         )
     elif source_scope == "mode21_vmec_boozer_state":
         caption = (
-            "Actual linear-RHS eigenfrequency is differentiated through vmec_jax state coefficients, "
+            "Actual linear-RHS eigenfrequency is differentiated through vmex state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
         )
     else:

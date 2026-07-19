@@ -59,7 +59,7 @@ from spectraxgk.utils.callbacks import (
             public_vmec_transport,
             {
                 "VMECJAXTransportObjectiveConfig",
-                "vmec_jax_transport_objective_from_state",
+                "vmex_transport_objective_from_state",
             },
         ),
     ],

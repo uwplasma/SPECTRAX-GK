@@ -57,7 +57,7 @@ Source-layout hygiene is checked separately by
 ``tools/package_architecture_manifest.toml`` and
 ``tools/release/check_package_architecture_manifest.py``. That guard follows
 the root ``plan.md`` and prevents new root-level prefix modules
-such as ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
+such as ``runtime_*``, ``nonlinear_*``, ``vmex_*``, ``quasilinear_*``, or
 ``benchmark_*`` from being added without an explicit migration entry. This keeps
 the package moving toward domain packages while the validation manifest keeps
 scientific ownership and coverage traceable.
@@ -97,7 +97,7 @@ owned modules below their row target, but release blocking remains tied to the
 package-wide gate unless the CI command is explicitly upgraded to
 ``--enforce-module-coverage``.
 
-Optional external-backend artifact builders that require local ``vmec_jax`` or
+Optional external-backend artifact builders that require local ``vmex`` or
 ``booz_xform_jax`` checkouts are kept out of the default package-wide coverage
 denominator when the public CI cannot install or execute those repositories.
 Their fast contracts are still covered by mocked backend tests and low-level
@@ -370,7 +370,7 @@ than a missing sample dimension. These artifacts are intentionally tracked so
 future transport-objective redesigns can be judged against a real long-window
 nonlinear failure, not a startup proxy.
 The tracked optimized-QA/ESS ``ZBS(1,0)`` example is deliberately kept as a
-fail-closed regression: the real ``vmec_jax`` re-equilibrated ``t=[450,900]``
+fail-closed regression: the real ``vmex`` re-equilibrated ``t=[450,900]``
 baseline/plus/minus ensembles pass their replicated transport-window gates and
 the initial three-replicate central finite difference is local, but
 ``gradient_uncertainty_rel = 0.655`` and therefore does not promote a

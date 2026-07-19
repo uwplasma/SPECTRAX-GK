@@ -53,7 +53,7 @@ you need a fixed-step stability study.
 The bundled VMEC decks are self-contained examples. Exact HSX or W7-X
 validation should use the same TOMLs with ``--vmec-file`` pointing to the
 machine-specific benchmark WOUT. If you only need one local WOUT, run
-``vmec_jax input.NAME`` in ``examples/vmec`` instead of the full
+``vmex input.NAME`` in ``examples/vmec`` instead of the full
 ``generate_wouts.sh`` helper.
 
 The shipped nonlinear stellarator runtime TOMLs now also emit artifact bundles
@@ -435,7 +435,7 @@ the in-package backend and needs no external helper:
 .. code-block:: bash
 
    cd examples/vmec
-   vmec_jax input.NuhrenbergZille_1988_QHS
+   vmex input.NuhrenbergZille_1988_QHS
    cd ../..
    export SPECTRAX_BOOZ_XFORM_JAX_PATH=/absolute/or/relative/booz_xform_jax
    spectraxgk geometry vmec \
@@ -502,7 +502,7 @@ with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
    python examples/optimization/QA_optimization_nonlinear_ITG.py
 
 The three ``QA_optimization_*_ITG.py`` scripts intentionally mirror upstream
-``vmec_jax/examples/optimization/QA_optimization.py`` on the current
+``vmex/examples/optimization/QA_optimization.py`` on the current
 ``VmecInput``/``opt.least_squares`` API. They preserve its ``A=6`` and mean-
 ``iota=0.42`` targets and add only one SPECTRAX-GK objective tuple. Keep the
 transport weight small until solved-equilibrium aspect, iota, and
@@ -535,7 +535,7 @@ flux or calibrated saturated transport. Treat the JSON sidecar as the audit
 source; the PNG/PDF summarize the same sidecar for docs and review.
 
 The production bridge now exposes the same portfolio layout for real
-``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` rows:
+``vmex -> booz_xform_jax -> SPECTRAX-GK`` rows:
 ``stellarator_itg_vmec_boozer_sample_objective_table_from_state`` returns a
 ``(surface, alpha, ky, objective)`` table and
 ``stellarator_itg_vmec_boozer_portfolio_objective_from_state`` reduces it with

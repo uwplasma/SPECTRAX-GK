@@ -1557,7 +1557,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
     fake_state = FakeState(R_cos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
         solver_vmec,
-        "_load_vmec_jax_example_state_bundle",
+        "_load_vmex_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
             "input_path": "input.test",
@@ -1621,7 +1621,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_fam
     )
     monkeypatch.setattr(
         solver_vmec,
-        "_load_vmec_jax_example_state_bundle",
+        "_load_vmex_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
             "input_path": "input.test",
@@ -1671,7 +1671,7 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
     fake_state = FakeState(R_cos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
         solver_vmec,
-        "_load_vmec_jax_example_state_bundle",
+        "_load_vmex_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
             "input_path": "input.multi",
@@ -2509,8 +2509,8 @@ def _disable_optional_backend_discovery(monkeypatch) -> None:
         so,
         "discover_differentiable_geometry_backends",
         lambda: {
-            "vmec_jax_available": False,
-            "vmec_jax_boundary_api_available": False,
+            "vmex_available": False,
+            "vmex_boundary_api_available": False,
             "booz_xform_jax_available": False,
             "booz_xform_jax_api_available": False,
         },
@@ -2685,9 +2685,9 @@ def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(
         "nonlinear_trace": None,
         "config": asdict(cfg),
         "backend_info": {
-            "vmec_jax_available": True,
+            "vmex_available": True,
             "booz_xform_jax_available": True,
-            "vmec_jax_paths": ["/Users/tester/local/vmec_jax"],
+            "vmex_paths": ["/Users/tester/local/vmex"],
             "booz_xform_jax_paths": ["/Users/tester/local/booz_xform_jax"],
         },
         "claim_level": "reduced_linear_or_quasilinear_objective_optimization",
@@ -2700,7 +2700,7 @@ def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(
     written = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert "/Users/tester" not in out.with_suffix(".json").read_text(encoding="utf-8")
     assert written["backend_info"] == {
-        "vmec_jax_available": True,
+        "vmex_available": True,
         "booz_xform_jax_available": True,
     }
     assert out.with_suffix(".history.csv").exists()
@@ -3008,7 +3008,7 @@ def test_stellarator_itg_portfolio_gate_payload_is_json_ready() -> None:
     )
     assert payload["portfolio_report"]["scalar_gradient_gate"]["passed"] is True
     assert payload["portfolio_report"]["row_jacobian_gate"]["passed"] is True
-    assert "real vmec_jax" in payload["next_action"]
+    assert "real vmex" in payload["next_action"]
 
 
 def test_stellarator_itg_vmec_boozer_portfolio_wraps_real_table_contract(

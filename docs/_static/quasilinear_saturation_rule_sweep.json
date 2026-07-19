@@ -202,7 +202,7 @@
       "shape_passed": null,
       "shape_tv": null,
       "shape_tv_gate": null,
-      "spectrum": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "spectrum": "docs/_static/quasilinear_vmex_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {
@@ -225,7 +225,7 @@
       "shape_passed": null,
       "shape_tv": null,
       "shape_tv_gate": null,
-      "spectrum": "docs/_static/quasilinear_vmec_jax_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "spectrum": "docs/_static/quasilinear_vmex_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {

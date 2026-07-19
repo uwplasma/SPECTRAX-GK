@@ -1622,7 +1622,7 @@
       "observed_heat_flux": 9.603187837312081,
       "observed_heat_flux_std": 0.4961796804978094,
       "predicted_heat_flux": 15.988970127845175,
-      "quasilinear_artifact": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "quasilinear_artifact": "docs/_static/quasilinear_vmex_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
       "raw_predicted_heat_flux": 0.2816170154580676,
       "saturation_rule": "mixing_length",
       "split": "holdout"
@@ -1792,7 +1792,7 @@
       "observed_heat_flux": 7.156474006536328,
       "observed_heat_flux_std": 0.33116969837810245,
       "predicted_heat_flux": 107.32429891034684,
-      "quasilinear_artifact": "docs/_static/quasilinear_vmec_jax_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "quasilinear_artifact": "docs/_static/quasilinear_vmex_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
       "raw_predicted_heat_flux": 1.8903249242191644,
       "saturation_rule": "mixing_length",
       "split": "holdout"

@@ -27,7 +27,7 @@ EXACT_QA_SCRIPTS = {
 }
 
 
-def test_vmec_jax_style_qa_scripts_keep_upstream_iota_tuple_and_append_transport() -> (
+def test_vmex_style_qa_scripts_keep_upstream_iota_tuple_and_append_transport() -> (
     None
 ):
     for filename, (transport_function, jacobian_policy) in EXACT_QA_SCRIPTS.items():
@@ -122,7 +122,7 @@ def test_exact_qa_scripts_reject_unexpected_arguments_before_outputs(
     assert not (tmp_path / "results").exists()
 
 
-def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
+def test_docs_scope_vmex_transport_optimizer_claims() -> None:
     docs = [
         ROOT / "README.md",
         ROOT / "docs" / "stellarator_optimization.rst",
@@ -168,16 +168,16 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
     manuscript = (ROOT / "docs" / "manuscript_figures.rst").read_text(encoding="utf-8")
     normalized_readme = re.sub(r"\s+", " ", readme)
 
-    assert "docs/_static/vmec_jax_qa_full_sweep_panel.png" in readme
+    assert "docs/_static/vmex_qa_full_sweep_panel.png" in readme
     assert "docs/_static/vmec_boundary_transport_landscape_rbc11_full.png" in readme
     assert "docs/_static/qa_itg_optimization_summary_panel.png" not in readme
-    assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" not in readme
+    assert "docs/_static/vmex_qa_solved_boundary_boozer_panel.png" not in readme
     assert "docs/_static/stellarator_itg_optimization_comparison.png" not in readme
     assert "docs/_static/stellarator_itg_optimization_uq.png" not in readme
     assert "not promoted turbulent-flux designs" in normalized_readme
     assert "matched long post-transient nonlinear" in normalized_readme
 
-    assert "_static/vmec_jax_qa_full_sweep_panel.png" in docs
+    assert "_static/vmex_qa_full_sweep_panel.png" in docs
     assert "_static/vmec_boundary_transport_landscape_rbc11_full.png" in docs
     assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" not in docs
     assert "Development-Only Reduced Diagnostics" in docs

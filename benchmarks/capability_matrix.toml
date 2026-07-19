@@ -183,7 +183,7 @@ group = "differentiable_extension"
 status = "validated_scoped"
 spectrax_owner = "spectraxgk.geometry and spectraxgk.objectives"
 comparison_owner = "file-based geometry input"
-evidence = "vmec_jax/booz_xform_jax parity, gradient holdout, and scoped QA optimization gates"
+evidence = "vmex/booz_xform_jax parity, gradient holdout, and scoped QA optimization gates"
 
 [[capabilities]]
 id = "generic_forcing_and_transport_framework_coupling"

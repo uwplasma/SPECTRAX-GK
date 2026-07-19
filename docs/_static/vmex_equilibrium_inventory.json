@@ -9,9 +9,9 @@
     "quasi-isodynamic": 2,
     "stellarator": 3
   },
-  "kind": "vmec_jax_equilibrium_inventory",
+  "kind": "vmex_equilibrium_inventory",
   "n_equilibria": 24,
-  "notes": "These VMEC files are external fixtures from vmec_jax examples/data. They can broaden linear geometry and quasilinear-feature scans, but they must not be used as quasilinear transport calibration holdouts until matched nonlinear heat-flux windows are generated and gated.",
+  "notes": "These VMEC files are external fixtures from vmex examples/data. They can broaden linear geometry and quasilinear-feature scans, but they must not be used as quasilinear transport calibration holdouts until matched nonlinear heat-flux windows are generated and gated.",
   "recommended_next_linear_portfolio": [
     "wout_li383_low_res.nc",
     "wout_QI_stel_seed_3127.nc",
@@ -624,5 +624,5 @@
       "volume": 0.0
     }
   ],
-  "source_root": "/Users/rogeriojorge/local/vmec_jax/examples/data"
+  "source_root": "/Users/rogeriojorge/local/vmex/examples/data"
 }

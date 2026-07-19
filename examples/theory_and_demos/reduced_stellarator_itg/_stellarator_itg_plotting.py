@@ -67,7 +67,7 @@ def _sanitize_artifact_payload(value: Any) -> Any:
         return {
             key: _sanitize_artifact_payload(item)
             for key, item in value.items()
-            if key not in {"vmec_jax_paths", "booz_xform_jax_paths"}
+            if key not in {"vmex_paths", "booz_xform_jax_paths"}
         }
     if isinstance(value, list):
         return [_sanitize_artifact_payload(item) for item in value]

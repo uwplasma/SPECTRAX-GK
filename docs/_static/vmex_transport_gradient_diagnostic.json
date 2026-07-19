@@ -1,6 +1,6 @@
 {
-  "kind": "vmec_jax_transport_gradient_diagnostic",
-  "label": "vmec_jax_transport_gradient",
+  "kind": "vmex_transport_gradient_diagnostic",
+  "label": "vmex_transport_gradient",
   "parameter_count": 120,
   "residual_count": 1,
   "objective_value": 0.0016852430491131785,

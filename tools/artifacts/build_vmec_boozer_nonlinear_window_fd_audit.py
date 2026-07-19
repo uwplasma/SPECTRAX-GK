@@ -2,7 +2,7 @@
 """Build a VMEC/Boozer-perturbed nonlinear startup FD audit.
 
 This is a bounded startup-path audit.  It starts from the existing mode-21
-``vmec_jax -> booz_xform_jax`` geometry bridge, perturbs one VMEC state
+``vmex -> booz_xform_jax`` geometry bridge, perturbs one VMEC state
 coefficient, materializes the resulting sampled geometry to temporary NetCDF
 files, and runs compact SPECTRAX-GK nonlinear startup windows at
 ``x = base +/- step`` plus a repeated base point.  Passing this gate validates

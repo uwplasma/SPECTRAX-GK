@@ -1,6 +1,6 @@
 # VMEC-JAX Geometry Inputs
 
-This directory contains small VMEC input decks copied from the `vmec_jax`
+This directory contains small VMEC input decks copied from the `vmex`
 example set so SPECTRAX-GK examples can be run from a normal clone without
 shipping large `wout_*.nc` files.
 
@@ -9,13 +9,13 @@ Generate the needed equilibrium files with:
 ```bash
 pip install vmec-jax
 cd examples/vmec
-vmec_jax input.circular_tokamak
-vmec_jax input.NuhrenbergZille_1988_QHS
-vmec_jax input.nfp3_QI_fixed_resolution_final
-vmec_jax input.LandremanPaul2021_QA_lowres
-vmec_jax input.LandremanPaul2021_QH_reactorScale_lowres
-vmec_jax input.QI_stel_seed_3127
-vmec_jax input.li383_low_res
+vmex input.circular_tokamak
+vmex input.NuhrenbergZille_1988_QHS
+vmex input.nfp3_QI_fixed_resolution_final
+vmex input.LandremanPaul2021_QA_lowres
+vmex input.LandremanPaul2021_QH_reactorScale_lowres
+vmex input.QI_stel_seed_3127
+vmex input.li383_low_res
 ```
 
 The command writes `wout_<input-name-without-input.>.nc` next to the input

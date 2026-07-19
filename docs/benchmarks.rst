@@ -156,7 +156,7 @@ and wrote valid netCDF/restart outputs; at ``ky=0.3`` its terminal diagnostic is
 ``(gamma, omega)=(0.101814, 0.286777)``. GX remains the mature baseline for conventional GPU nonlinear
 initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
 distinct validated scope is its Python/JAX API, differentiable objectives,
-implicit gradient paths, CPU execution, and in-memory ``vmec_jax``/
+implicit gradient paths, CPU execution, and in-memory ``vmex``/
 ``booz_xform_jax`` integration. SPECTRAX-GK does not claim the complete finite-
 wavelength multispecies linearized Landau hierarchy: its published reduced
 Sugama/Coulomb slice remains a separately gated Python research boundary.

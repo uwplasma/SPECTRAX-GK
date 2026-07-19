@@ -1,7 +1,7 @@
 """Unit contracts for VMEC flux-tube report helper functions.
 
 These exercise the pure metric/packing/error helpers behind the two public
-``vmec_jax_flux_tube_*_report`` entry points (which are ``# pragma: no cover``)
+``vmex_flux_tube_*_report`` entry points (which are ``# pragma: no cover``)
 directly, with synthetic dict/array/``SimpleNamespace`` inputs so that no real
 equilibrium solve is required.  Numeric expectations are hand-computed from the
 underlying ``_array_parity_metrics``/``_scalar_parity_metrics`` contracts.
@@ -240,7 +240,7 @@ def test_equal_arc_core_profiles_forwards_context_and_disables_jit(monkeypatch) 
         return {"ok": True}
 
     monkeypatch.setattr(
-        reports, "vmec_jax_boozer_equal_arc_core_profiles_from_state", fake_core
+        reports, "vmex_boozer_equal_arc_core_profiles_from_state", fake_core
     )
     ctx = SimpleNamespace(state="S", runtime="R", inp="I", wout="W")
 
@@ -448,10 +448,10 @@ def test_equal_arc_parity_report_packs_metrics_when_core_profiles_available(
 # Sensitivity / parity report scaffolding helpers
 # ---------------------------------------------------------------------------
 def test_vmec_sensitivity_unavailable_report_schema_and_coercions() -> None:
-    info = {"vmec_jax_available": False}
+    info = {"vmex_available": False}
 
     report = reports._vmec_sensitivity_unavailable_report(
-        info=info, case_name="demo", fd_step=2.0e-6, reason="vmec_jax is not available"
+        info=info, case_name="demo", fd_step=2.0e-6, reason="vmex is not available"
     )
 
     assert report == {
@@ -460,7 +460,7 @@ def test_vmec_sensitivity_unavailable_report_schema_and_coercions() -> None:
         "sensitivity": None,
         "fd_step": 2.0e-6,
         "case_name": "demo",
-        "reason": "vmec_jax is not available",
+        "reason": "vmex is not available",
     }
     coerced = reports._vmec_sensitivity_unavailable_report(
         info=info, case_name=123, fd_step=2, reason="x"
@@ -484,7 +484,7 @@ def test_validate_vmec_parity_inputs_enforces_resolution_floors() -> None:
 
 
 def test_vmec_array_parity_unavailable_report_schema() -> None:
-    info = {"vmec_jax_available": False}
+    info = {"vmex_available": False}
 
     report = reports._vmec_array_parity_unavailable_report(
         info=info, case_name="demo", reason="internal VMEC/EIK backend is not available"
@@ -559,7 +559,7 @@ def test_production_parity_metrics_reports_worst_core_and_scalar() -> None:
 
 def test_pack_vmec_array_parity_report_schema_and_status() -> None:
     ctx = SimpleNamespace(input_path=Path("input.demo"), wout_path=Path("wout_demo.nc"))
-    info = {"vmec_jax_available": True}
+    info = {"vmex_available": True}
     equal_arc = reports._empty_equal_arc_parity(None)
 
     kwargs = dict(
@@ -594,7 +594,7 @@ def test_pack_vmec_array_parity_report_schema_and_status() -> None:
     assert report["available"] is True
     assert report["backend_info"] is info
     assert report["source_model"] == (
-        "vmec_jax:state->tensor-flux-tube vs imported-vmec-eik"
+        "vmex:state->tensor-flux-tube vs imported-vmec-eik"
     )
     assert report["case_name"] == "demo"
     assert report["input_path"] == "input.demo"
@@ -707,7 +707,7 @@ def test_pack_vmec_array_parity_result_report_bridges_options_and_result() -> No
         worst_scalar=0.002,
         production_parity_passed=True,
     )
-    info = {"vmec_jax_available": True}
+    info = {"vmex_available": True}
 
     report = reports._pack_vmec_array_parity_result_report(
         result=result, info=info, options=options
@@ -770,27 +770,27 @@ def test_vmec_array_parity_backend_unavailable_reason_covers_each_branch(
     monkeypatch,
 ) -> None:
     assert reports._vmec_array_parity_backend_unavailable_reason(
-        {"vmec_jax_available": False}
-    ) == "vmec_jax is not available"
+        {"vmex_available": False}
+    ) == "vmex is not available"
 
     monkeypatch.setattr(
         imported_vmec, "internal_vmec_backend_available", lambda: False
     )
     assert reports._vmec_array_parity_backend_unavailable_reason(
-        {"vmec_jax_available": True}
+        {"vmex_available": True}
     ) == "internal VMEC/EIK backend is not available"
 
     monkeypatch.setattr(
         imported_vmec, "internal_vmec_backend_available", lambda: True
     )
     assert (
-        reports._vmec_array_parity_backend_unavailable_reason({"vmec_jax_available": True})
+        reports._vmec_array_parity_backend_unavailable_reason({"vmex_available": True})
         is None
     )
 
 
 def test_vmec_array_parity_error_report_stringifies_exception() -> None:
-    info = {"vmec_jax_available": True}
+    info = {"vmex_available": True}
 
     report = reports._vmec_array_parity_error_report(
         info=info, case_name="demo", exc=ValueError("boom")
@@ -831,7 +831,7 @@ def test_vmec_flux_tube_mapping_fn_wires_perturbation_into_mapping(monkeypatch) 
         return {"ok": True}
 
     monkeypatch.setattr(reports, "_perturb_vmec_state", fake_perturb)
-    monkeypatch.setattr(reports, "vmec_jax_flux_tube_mapping_from_state", fake_map)
+    monkeypatch.setattr(reports, "vmex_flux_tube_mapping_from_state", fake_map)
     ctx = SimpleNamespace(runtime="R", wout="W")
 
     mapping_fn = reports._vmec_flux_tube_mapping_fn(
@@ -863,7 +863,7 @@ def test_pack_vmec_sensitivity_report_schema() -> None:
         base_Rcos=np.zeros((6, 4)),
     )
     mapping = {
-        "vmec_jax": {
+        "vmex": {
             "surface_index": 3,
             "iota": 0.42,
             "reference_length": 1.7,
@@ -871,7 +871,7 @@ def test_pack_vmec_sensitivity_report_schema() -> None:
             "field_line_convention": "vmec",
         }
     }
-    info = {"vmec_jax_available": True}
+    info = {"vmex_available": True}
 
     report = reports._pack_vmec_sensitivity_report(
         ctx=ctx,
@@ -889,7 +889,7 @@ def test_pack_vmec_sensitivity_report_schema() -> None:
 
     assert report["available"] is True
     assert report["backend_info"] is info
-    assert report["source_model"] == "vmec_jax:state->tensor-flux-tube"
+    assert report["source_model"] == "vmex:state->tensor-flux-tube"
     assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
     assert report["params"] == [pytest.approx(0.1), pytest.approx(-0.2)]
     assert report["input_path"] == "input.demo"
@@ -926,7 +926,7 @@ def test_direct_vmec_flux_tube_geometry_builds_contract_from_mapping(
         )
         return mapping
 
-    monkeypatch.setattr(reports, "vmec_jax_flux_tube_mapping_from_state", fake_map)
+    monkeypatch.setattr(reports, "vmex_flux_tube_mapping_from_state", fake_map)
     ctx = SimpleNamespace(state="S", runtime="R", wout="W")
 
     geom = reports._direct_vmec_flux_tube_geometry(
@@ -934,7 +934,7 @@ def test_direct_vmec_flux_tube_geometry_builds_contract_from_mapping(
     )
 
     # The real flux-tube contract is built from the (mocked) mapping.
-    assert geom.source_model == "vmec_jax:state->tensor-flux-tube"
+    assert geom.source_model == "vmex:state->tensor-flux-tube"
     np.testing.assert_allclose(np.asarray(geom.theta), np.asarray(mapping["theta"]))
     assert geom.nfp == 5
     assert captured["state"] == "S"

@@ -220,7 +220,7 @@ The preferred VMEC path is the internal ``booz_xform_jax`` backend, discovered f
 installed into the active Python environment. This is now the recommended
 imported-geometry route for new stellarator cases. The shipped VMEC TOMLs
 point to locally generated files under ``examples/vmec``; generate those files
-with ``vmec_jax input.<case>`` before running the examples.
+with ``vmex input.<case>`` before running the examples.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
 against the TOML directory first. Command-line overrides are resolved from the
 shell working directory.

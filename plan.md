@@ -257,7 +257,7 @@ tool-test owners still dominate.
 
 Pin the latest reviewed VMEC-JAX revision; the planning reference is
 `adf2d334` (2026-07-17). Reproduce
-[`QA_optimization.py`](https://github.com/uwplasma/vmec_jax/blob/main/examples/optimization/QA_optimization.py)
+[`QA_optimization.py`](https://github.com/uwplasma/vmex/blob/main/examples/optimization/QA_optimization.py)
 without changing its seed, perturbation, staged `max_mode=1..5`, ESS policy,
 least-squares tolerances, QS surfaces, aspect target 6.0, or mean-iota target
 0.42. Freeze the final input, WOUT checksum, QS residual, aspect, iota profile,
@@ -657,7 +657,7 @@ migration, not a string rename.
   instead of internal modules; validate VMEC array parity, Boozer parity, and
   the differentiable equilibrium adjoint. This also clears the remaining
   bare-word ``vmec_jax`` references (some are frozen provenance labels).
-- **Identifier rename (coordinated pass):** the GKX-internal ``vmec_jax_*`` →
+- **Identifier rename (coordinated pass):** the GKX-internal ``vmex_*`` →
   ``vmex_*`` rename must rename the 46 frozen evidence artifacts (JSON
   ``"kind"``/``"source_model"`` values AND ``docs/_static`` asset filenames) and
   their gate references in the SAME change, or not at all — a mechanical prefix
@@ -727,7 +727,7 @@ flake.
    / ``operators/linear/collisions.py`` 63/83/93 -> 100%. +243 statements over
    the ~193 the gate needed. Full x64 suite 2149 passed / 0 failed; the
    package-coverage manifest gate and architecture gate both pass.
-3. **Coordinated ``vmec_jax_*`` -> ``vmex_*`` identifier + frozen-artifact
+3. **Coordinated ``vmex_*`` -> ``vmex_*`` identifier + frozen-artifact
    rename** (current top priority; see the dependency section), then the single
    combined push of the local commit stack. This is the last push-blocker: both
    CI-green (x64) and the >=95% coverage gate are now satisfied.

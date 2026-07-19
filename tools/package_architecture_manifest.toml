@@ -10,7 +10,7 @@ blocked_prefixes = [
   "nonlinear_",
   "linear_",
   "solver_",
-  "vmec_jax_",
+  "vmex_",
   "quasilinear_",
   "benchmark_",
   "stellarator_",

@@ -1,7 +1,7 @@
 {
   "artifacts": {
-    "baseline": "tools_out/vmec_jax_qa_full_sweep_onepoint_final/runs_onepoint/qa_baseline_scipy/nonlinear_transport_audit/baseline_replicate_ensemble_gate.json",
-    "candidate": "tools_out/vmec_jax_qa_full_sweep_onepoint_final/runs_onepoint/projected_guarded_ladder/transport_weight_0p001/nonlinear_transport_audit/projected_0p001_replicate_ensemble_gate.json"
+    "baseline": "tools_out/vmex_qa_full_sweep_onepoint_final/runs_onepoint/qa_baseline_scipy/nonlinear_transport_audit/baseline_replicate_ensemble_gate.json",
+    "candidate": "tools_out/vmex_qa_full_sweep_onepoint_final/runs_onepoint/projected_guarded_ladder/transport_weight_0p001/nonlinear_transport_audit/projected_0p001_replicate_ensemble_gate.json"
   },
   "baseline": {
     "combined_sem": 0.1409422986587405,

@@ -1,5 +1,5 @@
 {
-  "kind": "vmec_jax_qa_transport_candidate_comparison",
+  "kind": "vmex_qa_transport_candidate_comparison",
   "claim_scope": "bounded VMEC-JAX solved-boundary candidate comparison; validates objective assembly, trace-safe SPECTRAX-GK transport residual, WOUT writing, and authoritative solved-equilibrium admission gates; not a converged optimized-equilibrium nonlinear turbulent-flux claim",
   "target_aspect": 6.0,
   "aspect_atol": 0.05,
@@ -13,7 +13,7 @@
   "branches": [
     {
       "label": "QA constraints",
-      "root": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/constraints",
+      "root": "tools_out/vmex_qa_transport_authoritative_sidecar/constraints",
       "history": {
         "aspect_initial": 5.99923272344138,
         "aspect_final": 6.000183609867784,
@@ -151,7 +151,7 @@
         "edge": 0.4282207000617935
       },
       "gate": {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
+        "kind": "vmex_solved_wout_candidate_gate",
         "passed": true,
         "checks": {
           "aspect": {
@@ -177,7 +177,7 @@
             "minimum_iotas_excluding_axis": 0.41375499331381277,
             "minimum_iotaf": 0.41410772389200134,
             "floor": 0.41,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": true
           }
         },
@@ -192,7 +192,7 @@
     },
     {
       "label": "QA + SPECTRAX-GK transport",
-      "root": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/transport",
+      "root": "tools_out/vmex_qa_transport_authoritative_sidecar/transport",
       "history": {
         "aspect_initial": 6.000183609867784,
         "aspect_final": 6.101980940984345,
@@ -335,7 +335,7 @@
         "edge": 0.5969519608680102
       },
       "gate": {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
+        "kind": "vmex_solved_wout_candidate_gate",
         "passed": false,
         "checks": {
           "aspect": {
@@ -355,14 +355,14 @@
             "value": 9.987608372012991,
             "maximum": 0.05,
             "margin": -9.93760837201299,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": false
           },
           "iota_profile": {
             "minimum_iotas_excluding_axis": 0.31295803565961317,
             "minimum_iotaf": 0.3107066722283179,
             "floor": 0.41,
-            "source": "vmec_jax_state",
+            "source": "vmex_state",
             "passed": false
           }
         },

@@ -29,9 +29,9 @@ Source Map
 
 - Core API: :mod:`spectraxgk.objectives.stellarator`
 - Current VMEC-JAX equilibrium-to-flux-tube adapter:
-  ``vmec_jax.core.turbulence.flux_tube_geometry``
+  ``vmex.core.turbulence.flux_tube_geometry``
 - Current growth, quasilinear, and reduced nonlinear-window callbacks:
-  ``vmec_jax.core.turbulence.turbulent_growth_rate``,
+  ``vmex.core.turbulence.turbulent_growth_rate``,
   ``quasilinear_flux_proxy``, and ``nonlinear_heat_flux_proxy``
 - Lower-level SPECTRAX objective kernels used by those callbacks:
   :func:`spectraxgk.solver_linear_operator_matrix_from_geometry`,
@@ -64,7 +64,7 @@ VMEC-JAX-Style QA Transport Scripts
 -----------------------------------
 
 The three solved-boundary examples follow the current upstream
-``vmec_jax/examples/optimization/QA_optimization.py`` protocol. They use
+``vmex/examples/optimization/QA_optimization.py`` protocol. They use
 ``VmecInput``, ``solve_equilibrium``, and ``opt.least_squares`` directly; no
 legacy fixed-boundary optimizer object, objective-term wrapper, or disk bridge
 is involved:
@@ -174,7 +174,7 @@ Current optimizer evidence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The strategy artifact below is regenerated from
-:download:`vmec_jax_qa_full_sweep_panel.json <_static/vmec_jax_qa_full_sweep_panel.json>`
+:download:`vmex_qa_full_sweep_panel.json <_static/vmex_qa_full_sweep_panel.json>`
 and
 :download:`vmec_boundary_transport_landscape_rbc11_full.json <_static/vmec_boundary_transport_landscape_rbc11_full.json>`.
 It encodes the present state of the optimizer lane:
@@ -194,14 +194,14 @@ It encodes the present state of the optimizer lane:
   promotion claim, so linear/QL metrics are used for screening and candidate
   generation until held-out nonlinear gates pass.
 
-.. image:: _static/vmec_jax_qa_optimizer_strategy_report.png
+.. image:: _static/vmex_qa_optimizer_strategy_report.png
    :alt: QA optimizer strategy report from current artifacts
    :width: 100%
 
 The report sidecars
-:download:`vmec_jax_qa_optimizer_strategy_report.json <_static/vmec_jax_qa_optimizer_strategy_report.json>`
+:download:`vmex_qa_optimizer_strategy_report.json <_static/vmex_qa_optimizer_strategy_report.json>`
 and
-:download:`vmec_jax_qa_optimizer_strategy_report.csv <_static/vmec_jax_qa_optimizer_strategy_report.csv>`
+:download:`vmex_qa_optimizer_strategy_report.csv <_static/vmex_qa_optimizer_strategy_report.csv>`
 are the machine-readable claim boundary. In particular,
 ``nonlinear_absolute_optimization_promoted`` is intentionally false.
 
@@ -246,7 +246,7 @@ Optimizer comparisons should be launched from a single manifest, not from
 hand-edited shell history.
 
 The tracked manifest sidecar
-:download:`vmec_jax_qa_optimizer_comparison_manifest.json <_static/vmec_jax_qa_optimizer_comparison_manifest.json>`
+:download:`vmex_qa_optimizer_comparison_manifest.json <_static/vmex_qa_optimizer_comparison_manifest.json>`
 was generated with an older API generation and is retained as historical
 provenance. It records:
 
@@ -273,9 +273,9 @@ long-window nonlinear gates as differentiable optimizer outputs.
 
 The first office execution of this ladder is tracked as reduced-metric
 strategy evidence:
-:download:`vmec_jax_qa_optimizer_ladder_resume_status.json <_static/vmec_jax_qa_optimizer_ladder_resume_status.json>`
+:download:`vmex_qa_optimizer_ladder_resume_status.json <_static/vmex_qa_optimizer_ladder_resume_status.json>`
 and
-:download:`vmec_jax_qa_optimizer_ladder_spsa_metric_summary.json <_static/vmec_jax_qa_optimizer_ladder_spsa_metric_summary.json>`.
+:download:`vmex_qa_optimizer_ladder_spsa_metric_summary.json <_static/vmex_qa_optimizer_ladder_spsa_metric_summary.json>`.
 The scalar-trust and LBFGS-adjoint deterministic runs completed and passed the
 authoritative rerun-WOUT admission gate, but their solved-candidate gates
 remained false. The four SPSA plus/minus reduced nonlinear-window pairs also
@@ -409,14 +409,14 @@ than baseline (``-0.49%``, ``z = -0.19``; ``-0.25%``, ``z = -0.09``).
    slightly worse than the strict QA baseline in the long post-transient window
    and is not promoted.
 
-.. figure:: _static/vmec_jax_qa_full_sweep_panel.png
+.. figure:: _static/vmex_qa_full_sweep_panel.png
    :alt: VMEC-JAX QA max-mode-5 optimizer sweep
    :width: 98%
    :align: center
 
    README-facing strict QA optimizer sweep built from tracked VMEC-JAX WOUTs and
    SPECTRAX-GK reduced transport residuals. The sidecar
-   :download:`vmec_jax_qa_full_sweep_panel.json <_static/vmec_jax_qa_full_sweep_panel.json>`
+   :download:`vmex_qa_full_sweep_panel.json <_static/vmex_qa_full_sweep_panel.json>`
    records the exact artifact provenance.
 
 Full Max-Mode-5 Optimizer Sweeps
@@ -451,7 +451,7 @@ depend on an inconsistent baseline. The configurable driver writes setup,
 history, input, and WOUT files. Physical admission remains a separate validation
 step because optimizer convergence is not a transport-convergence result.
 The tracked exact SciPy/ESS strict-baseline evidence is stored in
-``docs/_static/vmec_jax_qa_strict_baseline/summary.json``. It terminates at
+``docs/_static/vmex_qa_strict_baseline/summary.json``. It terminates at
 ``nfev = 39`` with aspect ``5.000154``, mean iota ``0.4101997``, QS residual
 ``2.60e-4``, and a passed solved-WOUT gate. The iota-profile floor is disabled
 for this baseline because the upstream ``QA_optimization.py`` objective uses a
@@ -463,7 +463,7 @@ must independently solve ``input.final``, compare the replayed WOUT with the
 optimizer WOUT, and use only the authoritative replay for downstream transport
 audits.
 
-.. figure:: _static/vmec_jax_qa_full_sweep_panel.png
+.. figure:: _static/vmex_qa_full_sweep_panel.png
    :alt: VMEC-JAX QA max-mode-5 optimizer sweep with SPECTRAX-GK transport objectives
    :width: 98%
    :align: center
@@ -480,7 +480,7 @@ audits.
    panels use unfilled contours so departures from quasisymmetry remain visible
    without a filled density map.
 
-.. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
+.. figure:: _static/vmex_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate
    :width: 68%
    :align: center
@@ -498,7 +498,7 @@ audits.
    for both projected-weight families, so the single-point positives remain
    candidate-screening evidence only.
 
-.. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
+.. figure:: _static/vmex_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
    :width: 95%
    :align: center
@@ -573,7 +573,7 @@ preserves the fixed-boundary equilibrium and precise-QA conventions of
 [HirshmanWhitson83]_ and [LandremanPaul22]_.
 
 The solved-boundary VMEC-JAX path assembles the objective from in-memory VMEC
-states and requires the optional ``vmec_jax`` and ``booz_xform_jax`` packages.
+states and requires the optional ``vmex`` and ``booz_xform_jax`` packages.
 It first solves a constraints-only QA baseline and then restarts a
 transport-weighted branch from that solved input. The current VMEC-JAX
 least-squares implementation owns the optimizer. SPECTRAX-GK selects only the
@@ -592,7 +592,7 @@ The A=6 admission artifact records ``mean_iota_lower_bound`` and
 JSON only as compatibility aliases and should be interpreted as lower-bound
 admission gates, not as the upstream QA script's exact mean-iota objective.
 
-.. figure:: _static/vmec_jax_qa_transport_candidate_comparison.png
+.. figure:: _static/vmex_qa_transport_candidate_comparison.png
    :alt: VMEC-JAX QA candidate iota-profile and scalar diagnostic audit
    :width: 95%
 
@@ -642,7 +642,7 @@ metric but did not reduce the matched long-window nonlinear flux. Those results
 remain important guardrails: internal transpose consistency is insufficient,
 and reduced local objective descent is not a turbulent-transport claim.
 
-.. figure:: _static/vmec_jax_transport_gradient_line_search.svg
+.. figure:: _static/vmex_transport_gradient_line_search.svg
    :alt: VMEC-JAX transport-gradient line-search audit
    :width: 100%
 
@@ -806,7 +806,7 @@ VMEC-JAX Geometry Examples
 --------------------------
 
 The user-facing VMEC geometry examples are WOUT-backed runtime workflows. They
-use small ``vmec_jax`` input decks shipped under ``examples/vmec`` and avoid
+use small ``vmex`` input decks shipped under ``examples/vmec`` and avoid
 separate EIK generation for the common demo path:
 
 .. code-block:: bash
@@ -820,20 +820,20 @@ separate EIK generation for the common demo path:
    spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
    spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
 
-Run ``vmec_jax input.NAME`` inside ``examples/vmec`` when only one WOUT is
+Run ``vmex input.NAME`` inside ``examples/vmec`` when only one WOUT is
 needed. These bundled QHS/QI/QA decks are self-contained demonstration
 equilibria. Machine-specific HSX or W7-X validation should use the same TOMLs
 with ``--vmec-file`` pointing to the benchmark WOUT.
 
 This disk-WOUT path is the runtime example path, not the production optimizer
 gradient contract. The production optimizer starts from an in-memory solved
-``vmec_jax`` state, transforms through ``booz_xform_jax``, and then builds the
+``vmex`` state, transforms through ``booz_xform_jax``, and then builds the
 SPECTRAX-GK flux tube without relying on intermediate NetCDF files.
 
 Production VMEC-JAX Optimization Plan
 -------------------------------------
 
-The production lane starts from the ``vmec_jax`` fixed-boundary QA optimizer:
+The production lane starts from the ``vmex`` fixed-boundary QA optimizer:
 aspect ratio is constrained, the mean rotational transform uses the original
 VMEC-JAX high-weight ``MeanIota`` target by default, the quasisymmetry residual
 is penalized, and a SPECTRAX-GK transport objective is added as another
@@ -868,9 +868,9 @@ Development-only reduced diagnostics remain under
 tests; they are not production QA optimization examples.
 
 For the geometry layer, the user-facing runtime examples use WOUT files
-generated from the small ``examples/vmec/input.*`` decks with ``vmec_jax``.
+generated from the small ``examples/vmec/input.*`` decks with ``vmex``.
 The optimizer path should avoid disk I/O: it should pass a solved
-``vmec_jax`` state through ``booz_xform_jax`` with ``mboz >= 21`` and
+``vmex`` state through ``booz_xform_jax`` with ``mboz >= 21`` and
 ``nboz >= 21``, then into the SPECTRAX-GK flux-tube contract. Disk WOUTs
 remain useful for reproducibility, release artifacts, and external benchmark
 comparison.
@@ -950,7 +950,7 @@ validation evidence.
    nonlinear turbulent-transport optimization claim.
 
 The production bridge now uses the same portfolio layout for real
-``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` row production:
+``vmex -> booz_xform_jax -> SPECTRAX-GK`` row production:
 ``stellarator_itg_vmec_boozer_sample_objective_table_from_state`` evaluates
 physical toroidal-flux, field-line ``alpha``, and ``k_y rho_i`` samples, while
 ``stellarator_itg_vmec_boozer_portfolio_objective_from_state`` applies the
@@ -970,7 +970,7 @@ gate. The VMEC/Boozer offline gates remain the authority for production
 stellarator optimization claims.
 
 Optimizer drivers should use ``vmec_boozer_scalar_objective_from_state`` once
-they have a solved ``vmec_jax`` state. The supported aliases are
+they have a solved ``vmex`` state. The supported aliases are
 ``growth``/``gamma``, ``frequency``/``omega``, and
 ``quasilinear_flux``/``mixing_length_heat_flux_proxy``. This selector prevents
 each optimization example from silently using a different objective index.
@@ -1167,7 +1167,7 @@ condition number, AD row/column norms, per-parameter finite-difference step
 scaling, and the worst error location. This keeps three cases separate in the
 artifacts: a failed derivative implementation, a correct but ill-conditioned
 control direction, and a well-conditioned reduced optimization gate. The
-current full-chain ``vmec_jax`` state-coefficient reports should therefore be
+current full-chain ``vmex`` state-coefficient reports should therefore be
 read as reduced linear/quasilinear/nonlinear-window estimator differentiability
 evidence until converged nonlinear heat-flux gradients or optimized-equilibrium
 finite-difference audits also pass.
@@ -1335,7 +1335,7 @@ The minimization objective rewards large residual zonal flow through an
 residual, and late-time recurrence amplitude.
 
 This is deliberately a reduced objective gate. It is appropriate for
-``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity analysis once each
+``vmex -> booz_xform_jax -> SPECTRAX-GK`` sensitivity analysis once each
 row is produced by a validated zonal-response run and the
 AD/finite-difference gate passes. It is not, by itself, a turbulence-reduction
 claim. A promoted result must still show matched baseline and optimized
@@ -1402,7 +1402,7 @@ sensitivity system and compares the result against nearest-branch central
 finite differences for ``gamma``, ``omega``, ``<k_perp^2>``, linear
 heat/particle-flux weights, and a mixing-length heat-flux proxy. This closes
 the ``FluxTubeGeometryData`` contract-level solver-gradient check and the first
-full ``vmec_jax`` state-coefficient to ``booz_xform_jax`` to solver
+full ``vmex`` state-coefficient to ``booz_xform_jax`` to solver
 eigenfrequency-gradient gate. The companion QH all-surface artifact closes the
 reduced full-chain quasilinear heat-flux-weight gradient gate for the tracked
 manuscript fixture. A second Li383 low-resolution holdout now verifies the
@@ -1431,7 +1431,7 @@ transport claims.
    :align: center
    :alt: VMEC/Boozer state-to-solver frequency-gradient validation gate
 
-   Full-chain VMEC/Boozer eigenfrequency-gradient gate. A real ``vmec_jax``
+   Full-chain VMEC/Boozer eigenfrequency-gradient gate. A real ``vmex``
    state coefficient is perturbed, converted through ``booz_xform_jax`` with
    ``mboz=nboz=21``, mapped into the SPECTRAX-GK linear solver, and checked
    against central finite differences.
@@ -1446,7 +1446,7 @@ transport claims.
    :alt: VMEC/Boozer state-to-solver quasilinear-gradient validation gate
 
    Full-chain VMEC/Boozer quasilinear-gradient gate. The same state
-   coefficient is mapped through ``vmec_jax`` and ``booz_xform_jax`` with
+   coefficient is mapped through ``vmex`` and ``booz_xform_jax`` with
    ``mboz=nboz=21`` and a richer ``Nl=2, Nm=3`` SPECTRAX-GK moment basis.
    The implicit left/right eigenpair sensitivity of ``gamma``, ``omega``,
    ``<k_perp^2>``, the electrostatic heat-flux weight, and
@@ -1604,16 +1604,16 @@ Promotion Gates for Full VMEC/Boozer/GK Optimization
 The full production stellarator optimization claim remains open until all of
 the following pass:
 
-1. ``vmec_jax`` state to ``booz_xform_jax`` to ``FluxTubeGeometryData`` works
+1. ``vmex`` state to ``booz_xform_jax`` to ``FluxTubeGeometryData`` works
    in memory without writing intermediate VMEC or EIK files.
-   The current bridge already validates the optional ``vmec_jax`` boundary
-   derivative, real ``vmec_jax`` metric-tensor derivatives, a real
+   The current bridge already validates the optional ``vmex`` boundary
+   derivative, real ``vmex`` metric-tensor derivatives, a real
    non-axisymmetric VMEC field-line tensor derivative through
-   ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a real
+   ``vmex.geom`` plus ``vmex.vmec_bcovar``, a real
    VMEC tensor-derived flux-tube mapping derivative, a real
    ``booz_xform_jax`` spectral derivative, and a bounded
    Boozer-``|B|``-to-flux-tube mapping derivative. It now also starts from a
-   real ``vmec_jax`` ``VMECState``, perturbs VMEC Fourier coefficients,
+   real ``vmex`` ``VMECState``, perturbs VMEC Fourier coefficients,
    converts through ``booz_xform_jax``, and checks SPECTRAX-GK field-line
    geometry-observable derivatives against central finite differences. The
    same artifact now records a direct-VMEC-tensor vs imported-VMEC/EIK
@@ -1702,7 +1702,7 @@ the following pass:
    ion heat flux ``10.19``, mean-relative spread ``0.038``, and combined
    SEM/mean ``0.021``.
 
-   The current QA ``vmec_jax`` optimized-equilibrium candidate has also been
+   The current QA ``vmex`` optimized-equilibrium candidate has also been
    screened through the SPECTRAX-GK linear/quasilinear runtime before launching
    the large nonlinear campaign. On the sampled ITG branch
    ``k_y rho_i = 0.095, 0.190, 0.300, 0.476, 0.667``, all fitted growth rates
@@ -1722,7 +1722,7 @@ the following pass:
    :alt: Optimized QA equilibrium linear and quasilinear screen
 
    Linear/quasilinear screen for the QA optimized-equilibrium candidate from
-   ``vmec_jax``. The sampled ITG branch is linearly damped across the scan, so
+   ``vmex``. The sampled ITG branch is linearly damped across the scan, so
    the uncalibrated quasilinear heat-flux estimate is zero under the stable-mode
    exclusion rule. The subsequent nonlinear audit shows finite post-transient
    heat flux, so this panel should be read as a stability/branch screen rather
@@ -1747,7 +1747,7 @@ the following pass:
    :alt: QA no-ESS reference nonlinear replicate gate
 
    Matched no-ESS reference replicate gate. The valid finite-transform QA
-   ``no_ess`` equilibrium from the same ``vmec_jax`` campaign is advanced with
+   ``no_ess`` equilibrium from the same ``vmex`` campaign is advanced with
    the same grid, seeds, timestep variant, and post-transient window as the
    selected optimized QA/ESS equilibrium. The reference ensemble passes with
    mean ion heat flux ``12.50``, mean-relative spread ``0.046``, and combined
@@ -1806,7 +1806,7 @@ gradient uncertainty. Existing standalone replicated transport windows remain
 necessary evidence but are not sufficient to claim a production nonlinear
 turbulence gradient.
 The current real boundary-gradient sweep starts from the optimized QA/ESS
-equilibrium, re-equilibrates each perturbed VMEC input with ``vmec_jax``, runs
+equilibrium, re-equilibrates each perturbed VMEC input with ``vmex``, runs
 three seed/timestep nonlinear replicates to ``t=900`` for each parameter state,
 and analyzes the common ``t=[450,900]`` transport window. The tracked
 ``ZBS(1,0)`` 5% campaign closes the earlier finite-difference locality blocker:
@@ -1980,7 +1980,7 @@ promoted nonlinear turbulence-gradient claim.
    :alt: Quasilinear-seeded nonlinear-gradient control screen
 
    Quasilinear-seeded nonlinear-gradient control screen.  This upstream gate
-   uses full-chain ``vmec_jax`` state sensitivities to decide which controls
+   uses full-chain ``vmex`` state sensitivities to decide which controls
    should even be considered for nonlinear long-window finite differences. The
    current QH/Li383 screen is now an upstream seed-admission gate only, not a
    nonlinear launch gate.  The tracked ``Rcos`` and ``Zsin`` controls
@@ -2027,7 +2027,7 @@ promoted nonlinear turbulence-gradient claim.
    :alt: VMEC state-to-input measured response matrix
 
    VMEC state-to-input measured response matrix.  The nine
-   baseline/plus/minus ``vmec_jax`` solves terminated normally with the stricter
+   baseline/plus/minus ``vmex`` solves terminated normally with the stricter
    explicit iteration budget, but the measured response of the admitted
    ``Rsin/Zcos`` controls to the stellarator-symmetric ``RBC/ZBS`` directions
    is identically zero. The least-squares target residual remains ``1`` for
@@ -2054,7 +2054,7 @@ promoted nonlinear turbulence-gradient claim.
    :alt: Asymmetric VMEC state-to-input measured response matrix
 
    Asymmetric VMEC state-to-input measured response matrix.  The twelve
-   ``LASYM=true`` ``vmec_jax`` solves terminated normally, and the measured
+   ``LASYM=true`` ``vmex`` solves terminated normally, and the measured
    response from ``RBS/ZBC`` input coefficients to the admitted ``Rsin/Zcos``
    state controls has rank ``2`` with condition number about ``1.02``.  The
    least-squares residuals are near machine precision, so this artifact can be

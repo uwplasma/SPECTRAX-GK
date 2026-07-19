@@ -1,6 +1,6 @@
 {
   "case_name": "li383_low_res",
-  "claim_scope": "full vmec_jax state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> SPECTRAX-GK linear-RHS eigenpair -> reduced nonlinear-window estimator gradient",
+  "claim_scope": "full vmex state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> SPECTRAX-GK linear-RHS eigenpair -> reduced nonlinear-window estimator gradient",
   "eigenpair_gate": {
     "ad_supported": true,
     "atol": 0.05,

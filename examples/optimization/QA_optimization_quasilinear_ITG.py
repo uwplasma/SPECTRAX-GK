@@ -41,7 +41,7 @@ MAX_NFEV = 2000
 FTOL = 1.0e-6
 JAC = None
 USE_ESS = True
-if os.environ.get("VMEC_JAX_EXAMPLES_CI") == "1":
+if os.environ.get("VMEX_EXAMPLES_CI") == "1":
     MAX_MODE_SCHEDULE, MAX_NFEV, FTOL = (1,), 4, 1.0e-4
 
 SURFACE_INDEX = 7

@@ -1,6 +1,6 @@
 # VMEC-backed circular tokamak nonlinear ITG example.
 # Generate the equilibrium with:
-#   cd examples/vmec && vmec_jax input.circular_tokamak
+#   cd examples/vmec && vmex input.circular_tokamak
 
 [[species]]
 name = "ion"

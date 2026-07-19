@@ -6,7 +6,7 @@ optimizer adapter.
 
 ## QA Transport Optimizations
 
-Each script follows `vmec_jax/examples/optimization/QA_optimization.py`: it
+Each script follows `vmex/examples/optimization/QA_optimization.py`: it
 starts from the same perturbed circular seed, continues boundary modes 1 through
 5, and retains the QA, aspect-ratio 6, and mean-iota 0.42 objective terms. The
 only added tuple is one SPECTRAX-GK ITG observable:
