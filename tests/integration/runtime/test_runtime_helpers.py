@@ -1697,7 +1697,10 @@ def test_run_runtime_scan_collects_quasilinear_payloads_and_worker_metadata(
         show_progress=False,
     )
 
-    np.testing.assert_allclose(calls, [0.4, 0.2, 0.1])
+    # Parallel (thread) executor: worker invocation order is nondeterministic,
+    # so assert every ky was dispatched exactly once rather than a fixed order.
+    # The input-order contract is verified below on the reassembled results.
+    np.testing.assert_allclose(sorted(calls), [0.1, 0.2, 0.4])
     np.testing.assert_allclose(result.gamma, [1.4, 1.2, 1.1])
     assert result.quasilinear is not None
     assert [payload["ky"] for payload in result.quasilinear] == [0.4, 0.2, 0.1]
