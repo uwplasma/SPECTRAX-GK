@@ -600,12 +600,18 @@ migration, not a string rename.
   centered FD on d sum(bmnc)/d R_cos at 2e-10, 40 gate tests green,
   ``vmec_boozer_core`` at 999/1000 lines. Stellarator-symmetric only
   (asym fails closed).
-- **Piece B, remaining routes (next):** the tensor-mapping/state-sensitivity
-  (PEST field-line) route should move onto
-  ``vmex.core.turbulence.gk_fieldline_geometry`` (which returns exactly the
-  ``flux_tube_geometry_from_mapping`` contract, differentiably), and
-  ``objectives/vmec_transport.py`` still path-searches a ``vmec_jax`` checkout
-  via ``_module_search_root``. The old geometry bridge
+- **Piece B, PEST route + admission (done, ``1c567abe``):** the
+  tensor-mapping route is now a thin differentiable adapter over
+  ``vmex.core.turbulence.gk_fieldline_geometry`` (383 -> 84 lines), the
+  state-sensitivity reports run on the same seams, candidate admission
+  extracts iota/QS from the vmex ``Equilibrium``/``WoutData`` bundle with
+  ``QuasisymmetryRatioResidual``, and backend pinning targets the imported
+  ``vmex`` package. Cross-route check: the safety factor q from the
+  independent PEST and Boozer constructions agrees to 2.4e-16, and the
+  PEST-route AD gradient matches centered FD at 4e-11. No ``vmec_jax``
+  import or ``import_module`` call remains in ``src``; only bare-word prose
+  and frozen provenance labels stay for the coordinated identifier rename.
+  The old geometry bridge
   (``geometry/{vmec_tensor_mapping,vmec_state_sensitivity,vmec_boozer_core,
   vmec_boozer_constants,vmec_state_controls}.py``,
   ``objectives/{vmec_boozer_context,vmec_boozer_fd}.py``) calls ~8 removed
