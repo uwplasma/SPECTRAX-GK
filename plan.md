@@ -669,8 +669,8 @@ Use large coherent commits, each independently green:
   Verified: ``import gkx`` (362 API names, ``spectraxgk`` gone), reinstall,
   ruff, ``gkx --help``, collection (2173), architecture manifest, ``sphinx -W``
   (0 warnings), CI coherent (``--cov=gkx``, ``import gkx`` smoke), and the
-  release/core/cli subset pass under x64 (full-suite + coverage confirm in
-  flight). **Not done (out of my scope):** reserving the PyPI ``gkx`` name and
+  **full x64 suite: 2150 passed / 0 failed, coverage 95.19% (gate PASS)**.
+  **Not done (out of my scope):** reserving the PyPI ``gkx`` name and
   renaming the GitHub repo ``uwplasma/SPECTRAX-GK`` -> ``uwplasma/GKX`` are
   GitHub/PyPI actions for the maintainer; the local working directory keeps its
   name because renaming it would break the editable venv. Per step 6, the
