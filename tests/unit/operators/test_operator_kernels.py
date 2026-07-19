@@ -1170,15 +1170,26 @@ def test_improved_sugama_pair_matches_published_equal_and_unequal_coefficients()
 
 
 def test_improved_sugama_multispecies_matrix_conserves_and_differentiates() -> None:
-    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
-    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
-    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    # Run the differentiability check in the ambient precision.  The central
+    # finite difference below is a float-precision-limited reference: with
+    # float32 inputs, catastrophic cancellation in ``f(t+h) - f(t-h)`` floors
+    # its accuracy near a few 1e-3 regardless of ``h``, which cannot certify
+    # the (exact) JVP once x64 makes the AD tangent itself exact.  Under x64 we
+    # therefore promote the inputs to float64 and shrink the step so the FD
+    # reference is genuinely accurate; under float32 we keep the historical
+    # step/tolerance that already balanced truncation against rounding noise.
+    x64_enabled = bool(jax.config.jax_enable_x64)
+    real_dtype = jnp.float64 if x64_enabled else jnp.float32
+    complex_dtype = jnp.complex128 if x64_enabled else jnp.complex64
+    density = jnp.asarray([1.3, 0.7], dtype=real_dtype)
+    mass = jnp.asarray([2.0, 1.0], dtype=real_dtype)
+    temperature = jnp.asarray([1.2, 0.8], dtype=real_dtype)
     matrix = jax.jit(assemble_drift_kinetic_improved_sugama_matrix)(
         density, mass, temperature
     )
     state = (
-        jnp.arange(16, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 1) + 0.13j
-    ).astype(jnp.complex64)
+        jnp.arange(16, dtype=real_dtype).reshape(2, 2, 4, 1, 1, 1) + 0.13j
+    ).astype(complex_dtype)
     contribution = apply_multispecies_collision_moment_matrix(state, matrix)
     rates = multispecies_collision_invariant_rates(
         contribution, density=density, mass=mass, temperature=temperature
@@ -1197,19 +1208,25 @@ def test_improved_sugama_multispecies_matrix_conserves_and_differentiates() -> N
         < 0.0
     )
 
-    direction = jnp.asarray([0.15, -0.08], dtype=jnp.float32)
+    direction = jnp.asarray([0.15, -0.08], dtype=real_dtype)
 
     def response(values):
         operator = assemble_drift_kinetic_improved_sugama_matrix(density, mass, values)
         return apply_multispecies_collision_moment_matrix(state, operator)
 
     tangent = jax.jvp(response, (temperature,), (direction,))[1]
-    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    # x64 (the authoritative CI precision) certifies the JVP tightly; the
+    # float32 local path is FD-rounding limited to a ~3e-3 plateau here, so its
+    # tolerance reflects that floor rather than sitting on the failure edge.
+    fd_step = 2.0e-5 if x64_enabled else 1.0e-3
+    fd_rtol = 5.0e-4 if x64_enabled else 5.0e-3
+    fd_atol = 5.0e-6 if x64_enabled else 5.0e-3
+    step = jnp.asarray(fd_step, dtype=real_dtype)
     finite_difference = (
         response(temperature + step * direction)
         - response(temperature - step * direction)
     ) / (2.0 * step)
-    np.testing.assert_allclose(tangent, finite_difference, rtol=1.5e-3, atol=1.5e-3)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=fd_rtol, atol=fd_atol)
 
     equal_temperature = jnp.ones_like(temperature)
     equal_matrix = assemble_drift_kinetic_improved_sugama_matrix(
