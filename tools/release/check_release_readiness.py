@@ -260,11 +260,6 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
     ),
     "refactor_modularity": (
         EvidenceCheck(
-            "architecture refactor plan",
-            "plan.md",
-            "single implementation plan",
-        ),
-        EvidenceCheck(
             "package architecture manifest",
             "tools/package_architecture_manifest.toml",
             "allowed_root_prefix_modules",

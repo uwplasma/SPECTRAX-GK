@@ -55,8 +55,8 @@ implemented physics or numerics.
 
 Source-layout hygiene is checked separately by
 ``tools/package_architecture_manifest.toml`` and
-``tools/release/check_package_architecture_manifest.py``. That guard follows
-the root ``plan.md`` and prevents new root-level prefix modules
+``tools/release/check_package_architecture_manifest.py``. That guard enforces
+that manifest and prevents new root-level prefix modules
 such as ``runtime_*``, ``nonlinear_*``, ``vmex_*``, ``quasilinear_*``, or
 ``benchmark_*`` from being added without an explicit migration entry. This keeps
 the package moving toward domain packages while the validation manifest keeps

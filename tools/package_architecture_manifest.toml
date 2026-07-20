@@ -1,7 +1,7 @@
 [metadata]
 schema_version = 1
 title = "Package architecture policy"
-layout_authority = "plan.md"
+layout_authority = "README.md"
 status = "active"
 
 [root_prefix_policy]
@@ -36,7 +36,7 @@ required_domain_packages = [
   "gkx.workflows.runtime",
 ]
 required_docs = [
-  "plan.md",
+  "README.md",
 ]
 target_domain_packages = [
   "gkx.physics",
