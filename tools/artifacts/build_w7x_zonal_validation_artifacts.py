@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build W7-X zonal response, contract, and state-convention artifacts.
 
-This script does not run simulations. It combines the tracked SPECTRAX-GK
+This script does not run simulations. It combines the tracked GKX
 W7-X zonal response artifacts with digitized stella/GENE Fig. 11 data from the
 González-Jerez et al. W7-X benchmark paper. The output is deliberately
 paper-facing but marked as an open audit until the residual and late-envelope
@@ -28,39 +28,39 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.artifacts.nonlinear_diagnostics import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.artifacts.io import (  # noqa: E402
     load_diagnostic_time_series,
 )
-from spectraxgk.core.grid import SpectralGrid, build_spectral_grid  # noqa: E402
-from spectraxgk.diagnostics import (  # noqa: E402
+from gkx.core.grid import SpectralGrid, build_spectral_grid  # noqa: E402
+from gkx.diagnostics import (  # noqa: E402
     fieldline_quadrature_weights,
     zonal_phi_line_kxt,
     zonal_phi_mode_kxt,
 )
-from spectraxgk.diagnostics.zonal_validation import (
+from gkx.diagnostics.zonal_validation import (
     kx_token,
     load_w7x_combined_trace_csv,
     reference_mean_trace,
     zonal_flow_response_metrics,
 )  # noqa: E402
-from spectraxgk.geometry import (  # noqa: E402
+from gkx.geometry import (  # noqa: E402
     apply_geometry_grid_defaults,
     ensure_flux_tube_geometry_data,
 )
-from spectraxgk.linear import build_linear_cache  # noqa: E402
-from spectraxgk.runtime import (  # noqa: E402
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.runtime import (  # noqa: E402
     _build_initial_condition,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.terms.assembly import compute_fields_cached  # noqa: E402
-from spectraxgk.workflows.runtime.config import RuntimeConfig  # noqa: E402
-from spectraxgk.workflows.runtime.artifacts import (  # noqa: E402
+from gkx.terms.assembly import compute_fields_cached  # noqa: E402
+from gkx.workflows.runtime.config import RuntimeConfig  # noqa: E402
+from gkx.workflows.runtime.artifacts import (  # noqa: E402
     run_runtime_nonlinear_with_artifacts,
 )
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # noqa: E402
+from gkx.workflows.runtime.toml import load_runtime_from_toml  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -86,16 +86,16 @@ def _parse_contract_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Digitized stella/GENE Fig. 11 inset residual CSV.",
     )
     parser.add_argument(
-        "--spectrax-summary",
+        "--gkx-summary",
         type=Path,
         default=ROOT / "docs" / "_static" / "w7x_zonal_response_panel.csv",
-        help="SPECTRAX-GK W7-X zonal summary CSV.",
+        help="GKX W7-X zonal summary CSV.",
     )
     parser.add_argument(
-        "--spectrax-traces",
+        "--gkx-traces",
         type=Path,
         default=ROOT / "docs" / "_static" / "w7x_zonal_response_panel.traces.csv",
-        help="Combined SPECTRAX-GK W7-X zonal trace CSV from response-panel mode.",
+        help="Combined GKX W7-X zonal trace CSV from response-panel mode.",
     )
     parser.add_argument(
         "--compare-csv",
@@ -151,7 +151,7 @@ def load_audit_rows(
     table = pd.read_csv(compare_csv)
     required = {
         "kx",
-        "spectrax_residual",
+        "gkx_residual",
         "reference_residual",
         "reference_min",
         "reference_max",
@@ -187,7 +187,7 @@ def load_audit_rows(
         rows.append(
             {
                 "kx": float(item["kx"]),
-                "spectrax_residual": float(item["spectrax_residual"]),
+                "gkx_residual": float(item["gkx_residual"]),
                 "reference_residual": ref,
                 "reference_min": float(item["reference_min"]),
                 "reference_max": float(item["reference_max"]),
@@ -213,7 +213,7 @@ def load_audit_rows(
 def contract_audit_figure(
     rows: list[dict[str, object]],
     reference_traces: pd.DataFrame,
-    spectrax_traces: Path,
+    gkx_traces: Path,
     *,
     overlay_kx: tuple[float, ...] = TRACE_OVERLAY_KX,
 ) -> plt.Figure:
@@ -246,11 +246,11 @@ def contract_audit_figure(
     )
     ax.plot(
         x,
-        [float(row["spectrax_residual"]) for row in rows],
+        [float(row["gkx_residual"]) for row in rows],
         marker="s",
         linewidth=2.2,
         color="#c2410c",
-        label="SPECTRAX-GK",
+        label="GKX",
     )
     ax.set_xticks(x, xlabels)
     ax.set_xlabel(r"$k_x \rho_i$")
@@ -279,7 +279,7 @@ def contract_audit_figure(
         width=width,
         color="#c2410c",
         alpha=0.78,
-        label="SPECTRAX-GK",
+        label="GKX",
     )
     ax.set_yscale("log")
     ax.set_xticks(x, xlabels)
@@ -292,7 +292,7 @@ def contract_audit_figure(
     for ax, this_kx in zip(axes[1, :], overlay_kx, strict=True):
         ref_t, ref_y = reference_mean_trace(reference_traces, this_kx)
         obs_t, obs_y = load_w7x_combined_trace_csv(
-            spectrax_traces, this_kx, normalized=True
+            gkx_traces, this_kx, normalized=True
         )
         ax.plot(ref_t, ref_y, color="#1d4e89", linewidth=2.0, label="digitized mean")
         ax.plot(
@@ -301,7 +301,7 @@ def contract_audit_figure(
             color="#c2410c",
             linewidth=1.7,
             alpha=0.92,
-            label="SPECTRAX-GK",
+            label="GKX",
         )
         ax.set_xlabel(r"$t v_{ti}/a$")
         ax.set_ylabel(r"$\phi_z/\phi_z(0)$")
@@ -351,8 +351,8 @@ def write_contract_metadata(
         "audit_png": _repo_relative(out_png),
         "reference_traces": _repo_relative(args.reference_traces),
         "reference_residuals": _repo_relative(args.reference_residuals),
-        "spectrax_summary": _repo_relative(args.spectrax_summary),
-        "spectrax_traces": _repo_relative(args.spectrax_traces),
+        "gkx_summary": _repo_relative(args.gkx_summary),
+        "gkx_traces": _repo_relative(args.gkx_traces),
         "compare_csv": _repo_relative(args.compare_csv),
         "rows": rows,
         "notes": (
@@ -379,7 +379,7 @@ def run_contract(argv: list[str] | None = None) -> int:
         envelope_atol=float(args.envelope_atol),
     )
     reference_traces = pd.read_csv(args.reference_traces)
-    fig = contract_audit_figure(rows, reference_traces, args.spectrax_traces)
+    fig = contract_audit_figure(rows, reference_traces, args.gkx_traces)
     args.out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out_png, dpi=240, bbox_inches="tight")
     fig.savefig(args.out_png.with_suffix(".pdf"), bbox_inches="tight")

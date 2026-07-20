@@ -3,14 +3,14 @@
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk import (
+from gkx import (
     CycloneBaseCase,
     GridConfig,
     LinearParams,
     integrate_linear_from_config,
 )
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
 
 
 def main() -> None:

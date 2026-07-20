@@ -116,7 +116,7 @@
     "reason": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence passed external-VMEC nonlinear grid-convergence gate"
   },
   "source_gate": "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
-  "spectrax": "docs/_static/external_vmec_dshape_nonlinear_t250_n64_pilot.traces.csv",
+  "gkx": "docs/_static/external_vmec_dshape_nonlinear_t250_n64_pilot.traces.csv",
   "tmax": 250.00604248046875,
   "tmin": 125.05303192138672,
   "window_policy": "highest_resolution_common_late_window_from_passed_external_vmec_grid_gate"

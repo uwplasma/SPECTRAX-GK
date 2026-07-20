@@ -16,9 +16,9 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.objectives.gradient_gates import linear_solver_geometry_gradient_report  # noqa: E402
-from spectraxgk.objectives.vmec_boozer_gradients import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.objectives.gradient_gates import linear_solver_geometry_gradient_report  # noqa: E402
+from gkx.objectives.vmec_boozer_gradients import (  # noqa: E402
     mode21_vmec_boozer_linear_frequency_gradient_report,
     mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
@@ -198,17 +198,17 @@ def write_solver_objective_gradient_artifacts(
         fig.suptitle(f"Solver-objective geometry-gradient gate: {status}")
     if kind == "mode21_vmec_boozer_nonlinear_window_gradient_gate":
         caption = (
-            "A reduced late-window heat-flux estimator is differentiated through vmec_jax state coefficients, "
-            "booz_xform_jax mode-21 Boozer geometry, and the SPECTRAX-GK linear-RHS eigenpair path."
+            "A reduced late-window heat-flux estimator is differentiated through vmex state coefficients, "
+            "booz_xform_jax mode-21 Boozer geometry, and the GKX linear-RHS eigenpair path."
         )
     elif kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
         caption = (
-            "Actual linear-RHS quasilinear observables are differentiated through vmec_jax state coefficients, "
+            "Actual linear-RHS quasilinear observables are differentiated through vmex state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
         )
     elif source_scope == "mode21_vmec_boozer_state":
         caption = (
-            "Actual linear-RHS eigenfrequency is differentiated through vmec_jax state coefficients, "
+            "Actual linear-RHS eigenfrequency is differentiated through vmex state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
         )
     else:

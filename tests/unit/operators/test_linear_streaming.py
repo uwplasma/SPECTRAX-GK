@@ -6,10 +6,10 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-import spectraxgk.terms as term_pkg
-from spectraxgk.core.velocity import hermite_ladder_coeffs
-from spectraxgk.terms.config import FieldState, TermConfig
-from spectraxgk.operators.linear.streaming import (
+import gkx.terms as term_pkg
+from gkx.core.velocity import hermite_ladder_coeffs
+from gkx.terms.config import FieldState, TermConfig
+from gkx.operators.linear.streaming import (
     _check_positive,
     abs_z_linked_fft,
     apply_hermite_v,

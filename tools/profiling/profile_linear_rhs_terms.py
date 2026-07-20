@@ -15,24 +15,25 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.linear import build_H, build_linear_cache
-from spectraxgk.operators.linear.params import _as_species_array
-from spectraxgk.runtime import (
+from gkx.geometry import apply_imported_geometry_grid_defaults
+from gkx.core.grid import build_spectral_grid
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.moments import build_H
+from gkx.operators.linear.params import _as_species_array
+from gkx.runtime import (
     _build_initial_condition,
     _select_nonlinear_mode_indices,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.terms.assembly import (
+from gkx.terms.assembly import (
     _rhs_field_views,
     assemble_rhs_cached_jit,
     compute_fields_cached,
 )
-from spectraxgk.terms.linear_terms import (
+from gkx.terms.linear_terms import (
     _hypercollision_kz_source,
     collisions_contribution,
     curvature_gradb_contribution,
@@ -43,7 +44,7 @@ from spectraxgk.terms.linear_terms import (
     mirror_contribution,
     linked_streaming_contribution,
 )
-from spectraxgk.operators.linear.streaming import abs_z_linked_fft, grad_z_linked_fft, shift_axis
+from gkx.operators.linear.streaming import abs_z_linked_fft, grad_z_linked_fft, shift_axis
 
 
 def _parse_args() -> argparse.Namespace:

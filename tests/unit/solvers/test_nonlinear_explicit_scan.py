@@ -6,10 +6,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics.analysis import estimate_observed_order
-from spectraxgk.terms.config import FieldState
-from spectraxgk.solvers.nonlinear.explicit import integrate_nonlinear_scan
-from spectraxgk.terms.nonlinear import (
+from gkx.diagnostics.analysis import estimate_observed_order
+from gkx.terms.config import FieldState
+from gkx.solvers.nonlinear.explicit import integrate_nonlinear_scan
+from gkx.terms.nonlinear import (
     exb_nonlinear_contribution,
     placeholder_nonlinear_contribution,
 )
@@ -217,7 +217,7 @@ def test_integrate_nonlinear_scan_k10_branch_is_finite_and_shape_preserving() ->
 
 
 def test_integrate_nonlinear_scan_show_progress_callback_path(monkeypatch) -> None:
-    from spectraxgk.utils import callbacks
+    from gkx.utils import callbacks
 
     callback_calls: list[int] = []
 

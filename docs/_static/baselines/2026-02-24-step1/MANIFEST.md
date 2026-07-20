@@ -8,7 +8,7 @@
 
 ```bash
 pytest -q --maxfail=1 --disable-warnings
-mypy src/spectraxgk
+mypy src/gkx
 python -m sphinx -W -b html docs docs/_build/html
 python tools/artifacts/make_tables.py --case cyclone --no-progress
 python tools/artifacts/make_tables.py --case etg --no-progress

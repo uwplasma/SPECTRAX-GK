@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.geometry.differentiable import observable_gradient_validation_report
+from gkx.geometry.differentiable import observable_gradient_validation_report
 
 
 def _x64_enabled() -> bool:

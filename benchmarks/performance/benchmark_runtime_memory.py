@@ -25,15 +25,15 @@ DEFAULT_PNG = ROOT / "docs" / "_static" / "runtime_memory_benchmark.png"
 DEFAULT_PDF = ROOT / "docs" / "_static" / "runtime_memory_benchmark.pdf"
 DEFAULT_SUMMARY = ROOT / "tools_out" / "runtime_memory_summary.json"
 DEFAULT_LOG_DIR = ROOT / "tools_out" / "runtime_memory_logs"
-BACKEND_ORDER = ("spectrax_cpu", "spectrax_gpu", "gx")
+BACKEND_ORDER = ("gkx_cpu", "gkx_gpu", "gx")
 BACKEND_LABELS = {
-    "spectrax_cpu": "SPECTRAX CPU",
-    "spectrax_gpu": "SPECTRAX GPU",
+    "gkx_cpu": "GKX CPU",
+    "gkx_gpu": "GKX GPU",
     "gx": "GX",
 }
 BACKEND_COLORS = {
-    "spectrax_cpu": "#1f4e79",
-    "spectrax_gpu": "#2e8b57",
+    "gkx_cpu": "#1f4e79",
+    "gkx_gpu": "#2e8b57",
     "gx": "#b35c1e",
 }
 CASE_ORDER = (

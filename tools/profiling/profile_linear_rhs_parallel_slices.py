@@ -85,7 +85,7 @@ def _block_until_ready(tree: Any) -> None:
 
 
 def _terms() -> Any:
-    from spectraxgk.linear import LinearTerms
+    from gkx.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=1.0,
@@ -103,7 +103,7 @@ def _terms() -> Any:
 
 
 def _streaming_terms() -> Any:
-    from spectraxgk.linear import LinearTerms
+    from gkx.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=1.0,
@@ -123,10 +123,11 @@ def _streaming_terms() -> Any:
 def _build_species_problem(*, nx: int, ny: int, nz: int, nl: int, nm: int):
     import jax.numpy as jnp
 
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SAlphaGeometry
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=nx, Ny=ny, Nz=nz, Lx=6.0, Ly=6.0, boundary="periodic")
@@ -195,8 +196,9 @@ def profile_linear_rhs_parallel_slices(
     """Time serial and velocity-sharded electrostatic linear-slices RHS calls."""
 
     import jax
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     platform_name = str(platform).lower()
     device_list = list(jax.devices(platform_name))[: int(requested_devices)]
@@ -249,7 +251,7 @@ def profile_linear_rhs_parallel_slices(
     serial_cache, serial_params = cache, params
     sharded_cache, sharded_params = cache, params
     if axis_name == "species":
-        from spectraxgk.solvers.linear.parallel_electrostatic import (
+        from gkx.solvers.linear.parallel_electrostatic import (
             prepare_electrostatic_species_inputs,
         )
 
@@ -365,7 +367,7 @@ def profile_linear_rhs_parallel_slices(
 
     integration: dict[str, object] | None = None
     if axis_name in {"species", "species_hermite"} and int(integration_steps) > 0:
-        from spectraxgk.linear import integrate_linear
+        from gkx.solvers.linear.integrators import integrate_linear
 
         def integrate(parallel):
             return integrate_linear(
@@ -503,7 +505,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")
@@ -654,7 +656,7 @@ def write_sweep_artifacts(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from spectraxgk.diagnostics.zonal_validation import (
+from gkx.diagnostics.zonal_validation import (
     kx_token,
     load_w7x_combined_trace_csv,
     load_w7x_trace_csv,

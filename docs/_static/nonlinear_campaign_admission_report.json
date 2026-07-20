@@ -72,7 +72,7 @@
       "value": 3
     }
   ],
-  "kind": "vmec_jax_nonlinear_campaign_admission_report",
+  "kind": "vmex_nonlinear_campaign_admission_report",
   "next_action": "launch a bounded multi-control optimizer campaign from the admitted landscape direction, with matched baseline/candidate t=[350,700] replicated nonlinear audits before promotion",
   "passed": true,
   "policy": {

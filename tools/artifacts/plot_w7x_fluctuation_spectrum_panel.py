@@ -18,11 +18,11 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_NONLINEAR = Path(
-    "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc"
+    "tools_out/final_nonlinear_audit/w7x_gkx_current_adaptive_t200.out.nc"
 )
 DEFAULT_GATE_SUMMARY = Path("docs/_static/nonlinear_w7x_gate_summary.json")
 DEFAULT_OUT = Path("docs/_static/w7x_fluctuation_spectrum_panel.png")

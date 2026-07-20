@@ -6,7 +6,7 @@ Time integration
 
 The linear solver supports explicit Euler, RK2, and RK4 updates inside a JAX
 ``scan`` loop, enabling JIT compilation and differentiability of the entire time
-history. The time integrator lives in ``spectraxgk.linear.integrate_linear`` and
+history. The time integrator lives in ``gkx.solvers.linear.integrators.integrate_linear`` and
 is configured via the ``method`` argument. RK4 is used in the Cyclone harness.
 
 To stabilize higher-order Hermite-Laguerre scans, two additional options are
@@ -24,7 +24,7 @@ available:
   streaming-dominated stiffness, ``implicit_preconditioner="hermite-line"``
   applies a Hermite streaming line solve (tridiagonal in ``m`` at fixed
   :math:`k_z`) and can substantially reduce GMRES iterations. The reusable
-  tridiagonal algebra is provided by SOLVAX; SPECTRAX-GK constructs the
+  tridiagonal algebra is provided by SOLVAX; GKX constructs the
   gyrokinetic coefficients and linked-chain layout. CPU execution uses a
   deterministic Thomas recurrence, while accelerator execution uses the fused
   backend selected by SOLVAX.

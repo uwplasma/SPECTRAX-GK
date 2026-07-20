@@ -27,7 +27,7 @@
     "omega_mean": 0.28106183,
     "omega_std": 0.014363426
   },
-  "spectraxgk": {
+  "gkx": {
     "source_revision": "a1cb71751b43fd3c0aec91c3e0c50bfb6492dc7b",
     "device": "NVIDIA RTX A4000",
     "n_ky_advanced": 1,
@@ -66,8 +66,8 @@
     "omega_relative": 0.05
   },
   "notes": [
-    "The wall times are not a speedup comparison because the reference run advanced 12 ky modes and the SPECTRAX-GK run advanced one.",
-    "Projected-mode fitting gave a 23% low growth rate on the same SPECTRAX-GK trace; the benchmark-aligned midplane observable closes that diagnostic mismatch.",
+    "The wall times are not a speedup comparison because the reference run advanced 12 ky modes and the GKX run advanced one.",
+    "Projected-mode fitting gave a 23% low growth rate on the same GKX trace; the benchmark-aligned midplane observable closes that diagnostic mismatch.",
     "The corrected combined scan retains high-ky linear modes outside the nonlinear dealias band; its cold timing remains diagnostic-only until a matched warm/cold protocol is recorded."
   ]
 }

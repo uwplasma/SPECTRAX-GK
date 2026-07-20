@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare GX KBM linear outputs against SPECTRAX-GK."""
+"""Compare GX KBM linear outputs against GKX."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.diagnostics.analysis import (
+from gkx.diagnostics.analysis import (
     ModeSelection,
     extract_eigenfunction,
     extract_mode_time_series,
@@ -23,13 +23,13 @@ from spectraxgk.diagnostics.analysis import (
     windowed_growth_rate_from_omega_series,
     select_ky_index,
 )
-from spectraxgk.benchmarking.shared import KBM_KRYLOV_DEFAULT
-from spectraxgk.runtime import run_runtime_linear
-from spectraxgk.diagnostics.analysis import branch_continuity_metrics
-from spectraxgk.diagnostics.validation_gates import branch_continuity_gate_report, gate_report_to_dict
-from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml, load_toml
+from gkx.benchmarking.shared import KBM_KRYLOV_DEFAULT
+from gkx.runtime import run_runtime_linear
+from gkx.diagnostics.analysis import branch_continuity_metrics
+from gkx.diagnostics.validation_gates import branch_continuity_gate_report, gate_report_to_dict
+from gkx.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.workflows.runtime.toml import load_runtime_from_toml, load_toml
 
 LATE_PROJECT_WINDOW_FRACTION = 0.3
 LATE_PROJECT_MIN_POINTS = 80
@@ -525,7 +525,7 @@ def _split_mode_method_policy(mode_method: str) -> tuple[str, str]:
 
 
 def _benchmark_solver_for_candidate(solver_name: str) -> str:
-    """Map comparison-candidate labels to canonical SPECTRAX-GK solver keys."""
+    """Map comparison-candidate labels to canonical GKX solver keys."""
 
     return "explicit_time" if solver_name == "gx_time" else solver_name
 
@@ -913,7 +913,7 @@ def _candidate_row(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Compare GX KBM output against SPECTRAX-GK.")
+    parser = argparse.ArgumentParser(description="Compare GX KBM output against GKX.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
     parser.add_argument(
         "--gx-big",
@@ -928,7 +928,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--steps",
         type=int,
         default=None,
-        help="Number of SPECTRAX time steps. Defaults to the GX reference horizon rounded up by --dt.",
+        help="Number of GKX time steps. Defaults to the GX reference horizon rounded up by --dt.",
     )
     parser.add_argument("--method", type=str, default="rk4")
     parser.add_argument("--solver", type=str, default="gx_time")
@@ -1021,7 +1021,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         default="svd",
         choices=["svd", "snapshot"],
-        help="Method used to extract SPECTRAX eigenfunctions from time histories.",
+        help="Method used to extract GKX eigenfunctions from time histories.",
     )
     parser.add_argument("--eigen-tmin", type=float, default=None)
     parser.add_argument("--eigen-tmax", type=float, default=None)

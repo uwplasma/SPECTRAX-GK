@@ -6,9 +6,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.solvers.nonlinear.imex as imex_module
-import spectraxgk.solvers.nonlinear.imex_diagnostics as imex_diagnostics
-from spectraxgk.solvers.nonlinear.imex import (
+import gkx.solvers.nonlinear.imex as imex_module
+import gkx.solvers.nonlinear.imex_diagnostics as imex_diagnostics
+from gkx.solvers.nonlinear.imex import (
     advance_imex_nonlinear_state,
     imex_fixed_point_guess,
     integrate_cached_imex_scan,
@@ -18,7 +18,7 @@ from spectraxgk.solvers.nonlinear.imex import (
     run_imex_diagnostic_scan,
     solve_imex_step,
 )
-from spectraxgk.terms.config import FieldState
+from gkx.terms.config import FieldState
 
 
 def test_imex_diagnostic_helpers_have_canonical_owner() -> None:
@@ -516,7 +516,7 @@ def test_integrate_cached_imex_scan_owns_cached_scan_policy(monkeypatch) -> None
         return jnp.asarray(0.0, dtype=jnp.float32)
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
+        "gkx.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
         lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
     )
 

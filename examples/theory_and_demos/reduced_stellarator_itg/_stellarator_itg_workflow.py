@@ -1,6 +1,6 @@
 """Explicit workflow helpers for the stellarator ITG optimization examples.
 
-The public package keeps :func:`spectraxgk.optimize_stellarator_itg` as the
+The public package keeps :func:`gkx.optimize_stellarator_itg` as the
 compact API.  The examples use this module instead so readers can see the same
 steps used in the VMEC-JAX ``QA_optimization.py`` script: choose editable
 problem constants, assemble a constrained objective, run the optimizer, audit
@@ -18,7 +18,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk import (
+from gkx import (
     STELLARATOR_ITG_OBSERVABLE_NAMES,
     STELLARATOR_ITG_PARAMETER_NAMES,
     StellaratorITGOptimizationConfig,
@@ -156,7 +156,7 @@ def run_stellarator_itg_adam(
     report_stride = max(1, int(config.steps) // 10)
 
     if progress:
-        print("\nAssembled SPECTRAX-GK reduced stellarator ITG objective:")
+        print("\nAssembled GKX reduced stellarator ITG objective:")
         print(f"  objective:        {objective_kind}")
         print(f"  target aspect:    {config.target_aspect:.6g}")
         print(f"  target iota:      {config.target_iota:.6g}")
@@ -342,7 +342,7 @@ def compare_scripted_stellarator_itg_objectives(
         "production_nonlinear_optimization_claim": False,
         "baseline_scope": (
             "reduced max-mode-1 QA controls; solved-boundary baseline should be the final WOUT "
-            "from vmec_jax/examples/optimization/QA_optimization.py or the constraints-only VMEC-JAX driver"
+            "from vmex/examples/optimization/QA_optimization.py or the constraints-only VMEX driver"
         ),
         "parameter_names": list(STELLARATOR_ITG_PARAMETER_NAMES),
         "observable_names": list(STELLARATOR_ITG_OBSERVABLE_NAMES),

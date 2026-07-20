@@ -1,7 +1,7 @@
 Saved Outputs and Restart Files
 ===============================
 
-SPECTRAX-GK supports two saved-output modes:
+GKX supports two saved-output modes:
 
 - lightweight prefix-based JSON/CSV sidecars for quick solver runs,
 - nonlinear NetCDF restart bundles for parity, post-processing, and restart.
@@ -30,7 +30,7 @@ Nonlinear NetCDF bundle
 -----------------------
 
 When the nonlinear output target ends in ``.out.nc`` (recommended) or another
-``.nc`` suffix, SPECTRAX-GK writes three coordinated files:
+``.nc`` suffix, GKX writes three coordinated files:
 
 - ``case.out.nc``
 - ``case.big.nc``
@@ -78,7 +78,7 @@ inspection and comparison:
 ^^^^^^^^^^^^^^^^
 
 The restart sidecar stores the nonlinear Hermite-Laguerre state in the packed
-restart layout together with the final time. SPECTRAX-GK can reload this file
+restart layout together with the final time. GKX can reload this file
 directly through either:
 
 - the explicit ``[init] init_file`` path, or

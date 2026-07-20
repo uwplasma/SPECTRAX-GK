@@ -2,9 +2,9 @@
 """Build a VMEC/Boozer-perturbed nonlinear startup FD audit.
 
 This is a bounded startup-path audit.  It starts from the existing mode-21
-``vmec_jax -> booz_xform_jax`` geometry bridge, perturbs one VMEC state
+``vmex -> booz_xform_jax`` geometry bridge, perturbs one VMEC state
 coefficient, materializes the resulting sampled geometry to temporary NetCDF
-files, and runs compact SPECTRAX-GK nonlinear startup windows at
+files, and runs compact GKX nonlinear startup windows at
 ``x = base +/- step`` plus a repeated base point.  Passing this gate validates
 the finite-difference plumbing from VMEC/Boozer geometry perturbations into
 short nonlinear diagnostics.  It is not a transport-average, promoted
@@ -34,22 +34,22 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.config import (
+from gkx.config import (
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )  # noqa: E402
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.runtime import run_runtime_nonlinear  # noqa: E402
-from spectraxgk.workflows.runtime.config import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.runtime import run_runtime_nonlinear  # noqa: E402
+from gkx.workflows.runtime.config import (  # noqa: E402
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
-from spectraxgk.objectives.vmec_boozer_gradients import (
+from gkx.objectives.vmec_boozer_gradients import (
     _mode21_vmec_boozer_linear_context,
 )  # noqa: E402
 
@@ -625,7 +625,7 @@ def main(argv: list[str] | None = None) -> int:
         "fprim": float(args.fprim),
         "init_amp": float(args.init_amp),
     }
-    with tempfile.TemporaryDirectory(prefix="spectrax_vmec_boozer_nl_fd_") as tmp:
+    with tempfile.TemporaryDirectory(prefix="gkx_vmec_boozer_nl_fd_") as tmp:
         workdir = Path(tmp)
         runs = [
             run_vmec_boozer_window(

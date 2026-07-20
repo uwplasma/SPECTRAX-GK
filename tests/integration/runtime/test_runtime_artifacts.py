@@ -8,22 +8,21 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics.analysis import ModeSelection
-from spectraxgk.config import GridConfig, TimeConfig
-from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
-from spectraxgk.geometry import FluxTubeGeometryData
-from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
-import spectraxgk.workflows.runtime.artifacts as runtime_artifacts
-import spectraxgk.artifacts.spectral_layout as spectral_layout
-import spectraxgk.artifacts.nonlinear_netcdf as nonlinear_netcdf
-import spectraxgk.artifacts.nonlinear_netcdf_diagnostics as nonlinear_netcdf_diagnostics
-import spectraxgk.artifacts as artifact_package
-import spectraxgk.artifacts.io as artifact_io
-import spectraxgk.artifacts.linear as artifact_linear
-import spectraxgk.artifacts.nonlinear as artifact_nonlinear
-import spectraxgk.artifacts.nonlinear_diagnostics as artifact_nonlinear_diag
-from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeOutputConfig
-from spectraxgk.workflows.runtime.artifacts import (
+from gkx.diagnostics.analysis import ModeSelection
+from gkx.config import GridConfig, TimeConfig
+from gkx.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
+from gkx.geometry import FluxTubeGeometryData
+from gkx.runtime import RuntimeLinearResult, RuntimeNonlinearResult
+import gkx.workflows.runtime.artifacts as runtime_artifacts
+import gkx.artifacts.spectral_layout as spectral_layout
+import gkx.artifacts.nonlinear_netcdf as nonlinear_netcdf
+import gkx.artifacts as artifact_package
+import gkx.artifacts.io as artifact_io
+import gkx.artifacts.io as artifact_linear
+import gkx.artifacts.io as artifact_nonlinear
+import gkx.artifacts.io as artifact_nonlinear_diag
+from gkx.workflows.runtime.config import RuntimeConfig, RuntimeOutputConfig
+from gkx.workflows.runtime.artifacts import (
     _ensure_parent,
     _artifact_base,
     _condense_kx,
@@ -73,12 +72,12 @@ from spectraxgk.workflows.runtime.artifacts import (
     write_runtime_linear_artifacts,
     write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.artifacts.io import (
+from gkx.artifacts.io import (
     validate_finite_array,
     validate_finite_runtime_result,
 )
-from spectraxgk.workflows.runtime.diagnostic_arrays import concat_runtime_diagnostics
-from spectraxgk.workflows.runtime.orchestration_artifacts import (
+from gkx.workflows.runtime.diagnostic_arrays import concat_runtime_diagnostics
+from gkx.workflows.runtime.orchestration_artifacts import (
     resolve_nonlinear_artifact_policy,
     run_runtime_nonlinear_artifact_handoff,
 )
@@ -171,10 +170,6 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert (
         runtime_artifacts._write_input_parameters_group
         is nonlinear_netcdf._write_input_parameters_group
-    )
-    assert (
-        nonlinear_netcdf._write_diagnostics_group
-        is nonlinear_netcdf_diagnostics._write_diagnostics_group
     )
     assert (
         runtime_artifacts._write_nonlinear_netcdf_outputs
@@ -940,7 +935,7 @@ def test_runtime_artifact_root_metadata_and_active_field() -> None:
     assert int(root.vars["nx"].values) == 7
     assert int(root.vars["ntheta"].values) == 8
     assert int(root.vars["nperiod"].values) == 1
-    assert root.vars["code_info"].attrs["value"] == "spectrax-gk"
+    assert root.vars["code_info"].attrs["value"] == "gkx"
 
     field = np.arange(5 * 7 * 2, dtype=np.float32).reshape(5, 7, 2)
     active = _dealiased_spectral_field(field, ky_axis=0, kx_axis=1)
@@ -1001,26 +996,26 @@ def test_runtime_artifact_geometry_and_input_group_writers(
         physics=SimpleNamespace(beta=0.02),
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.apply_geometry_grid_defaults",
+        "gkx.artifacts.nonlinear_netcdf.apply_geometry_grid_defaults",
         lambda _geom, grid_cfg: grid_cfg,
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_spectral_grid", lambda _cfg: grid
+        "gkx.artifacts.nonlinear_netcdf.build_spectral_grid", lambda _cfg: grid
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_geometry",
+        "gkx.artifacts.nonlinear_netcdf.build_runtime_geometry",
         lambda _cfg: object(),
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.ensure_flux_tube_geometry_data",
+        "gkx.artifacts.nonlinear_netcdf.ensure_flux_tube_geometry_data",
         lambda _geom, _theta: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.real_fft_ordered_kx",
+        "gkx.artifacts.nonlinear_netcdf.real_fft_ordered_kx",
         lambda arr: np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.real_fft_unique_ky",
+        "gkx.artifacts.nonlinear_netcdf.real_fft_unique_ky",
         lambda arr: np.asarray([0.0, 0.3], dtype=np.float32),
     )
 
@@ -1094,7 +1089,7 @@ def test_runtime_artifact_geometry_writer_applies_imported_grid_defaults(
         physics=SimpleNamespace(beta=0.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_geometry",
+        "gkx.artifacts.nonlinear_netcdf.build_runtime_geometry",
         lambda _cfg: geom,
     )
 
@@ -1121,26 +1116,26 @@ def test_runtime_artifact_particle_moments(monkeypatch) -> None:
         kperp2=np.ones((2, 4, 3), dtype=np.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.apply_geometry_grid_defaults",
+        "gkx.artifacts.nonlinear_netcdf.apply_geometry_grid_defaults",
         lambda _geom, grid_cfg: grid_cfg,
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_spectral_grid", lambda _grid: grid
+        "gkx.artifacts.nonlinear_netcdf.build_spectral_grid", lambda _grid: grid
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_geometry",
+        "gkx.artifacts.nonlinear_netcdf.build_runtime_geometry",
         lambda _cfg: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.ensure_flux_tube_geometry_data",
+        "gkx.artifacts.nonlinear_netcdf.ensure_flux_tube_geometry_data",
         lambda _geom, _theta: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_linear_params",
+        "gkx.artifacts.nonlinear_netcdf.build_runtime_linear_params",
         lambda _cfg, **_kwargs: object(),
     )
     monkeypatch.setattr(
-        "spectraxgk.artifacts.nonlinear_netcdf.build_linear_cache",
+        "gkx.artifacts.nonlinear_netcdf.build_linear_cache",
         lambda *_args, **_kwargs: cache,
     )
 
@@ -1357,7 +1352,7 @@ def test_write_runtime_nonlinear_artifacts_writes_nonlinear_netcdf_bundle(
         assert int(root.variables["nhermite"][()]) == 8
         assert int(root.variables["nlaguerre"][()]) == 4
         assert int(root.variables["nspecies"][()]) == 1
-        assert root.variables["code_info"].getncattr("value") == "spectrax-gk"
+        assert root.variables["code_info"].getncattr("value") == "gkx"
         assert root.dimensions["kx"].size == 5
         assert root.dimensions["ky"].size == 3
         assert "Phi2_t" in root.groups["Diagnostics"].variables
@@ -1407,7 +1402,7 @@ def test_write_runtime_nonlinear_artifacts_writes_nonlinear_netcdf_bundle(
         assert "time" in root.variables
 
     with Dataset(paths["big"], "r") as root:
-        assert root.variables["code_info"].getncattr("value") == "spectrax-gk"
+        assert root.variables["code_info"].getncattr("value") == "gkx"
         assert "Phi" in root.groups["Diagnostics"].variables
         assert "PhiXY" in root.groups["Diagnostics"].variables
         assert "Density" in root.groups["Diagnostics"].variables
@@ -1516,11 +1511,11 @@ def test_run_runtime_nonlinear_with_artifacts_uses_restart_if_exists(
         return {"out": str(out_path), "restart": str(restart_path)}
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear",
         _fake_run_runtime_nonlinear,
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
+        "gkx.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
         _fake_write_runtime_nonlinear_artifacts,
     )
 
@@ -1661,11 +1656,11 @@ def test_run_runtime_nonlinear_with_artifacts_keeps_adaptive_steps_none(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear",
         _fake_run_runtime_nonlinear,
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
+        "gkx.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
         lambda *_args, **_kwargs: {"out": str(out_path)},
     )
 
@@ -1716,7 +1711,7 @@ def test_run_runtime_nonlinear_with_artifacts_forwards_live_output_options(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear",
         _fake_run_runtime_nonlinear,
     )
 
@@ -1771,11 +1766,11 @@ def test_run_runtime_nonlinear_with_artifacts_rejects_nonfinite_chunk(
         return {"out": str(out_path)}
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear",
         _fake_run_runtime_nonlinear,
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
+        "gkx.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
         _fake_write,
     )
 
@@ -1932,7 +1927,7 @@ def test_run_runtime_nonlinear_with_artifacts_append_preserves_loaded_netcdf_sch
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear",
         _fake_run_runtime_nonlinear,
     )
 
@@ -2043,19 +2038,19 @@ def test_run_runtime_nonlinear_with_artifacts_history_and_restart_paths(
     captured = {"writes": 0}
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.load_nonlinear_netcdf_diagnostics",
+        "gkx.workflows.runtime.artifacts.load_nonlinear_netcdf_diagnostics",
         lambda _path: cumulative,
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear",
+        "gkx.workflows.runtime.artifacts.run_runtime_nonlinear",
         lambda *_args, **_kwargs: result_chunk,
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts._concat_runtime_diagnostics",
+        "gkx.workflows.runtime.artifacts._concat_runtime_diagnostics",
         lambda diags: diags[-1],
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
+        "gkx.workflows.runtime.artifacts.write_runtime_nonlinear_artifacts",
         lambda *_args, **_kwargs: (
             captured.__setitem__("writes", captured["writes"] + 1) or {"out": str(out)}
         ),

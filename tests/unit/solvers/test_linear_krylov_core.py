@@ -8,24 +8,20 @@ import jax.numpy as jnp
 import pytest
 import solvax
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    linear_terms_to_term_config,
-)
-import spectraxgk.solvers.linear.krylov as lk
-import spectraxgk.solvers.linear.krylov_algorithms as ka
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
+import gkx.solvers.linear.krylov as lk
+import gkx.solvers.linear.krylov_algorithms as ka
 
 
 def test_published_solvax_contract_matches_consumed_interfaces() -> None:
     """Keep the numerical dependency within its downstream-tested release line."""
 
     release = tuple(int(part) for part in version("solvax").split(".")[:3])
-    assert (0, 7, 3) <= release < (0, 8, 0)
+    assert (0, 8, 6) <= release < (0, 9, 0)
     for name in ("gmres", "linear_solve", "tridiagonal_solve", "chunked_jacfwd"):
         assert callable(getattr(solvax, name))
 

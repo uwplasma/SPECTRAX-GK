@@ -61,7 +61,7 @@ score.
        calibration remain future gates.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
-     - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
+     - The ``vmex -> booz_xform_jax -> GKX`` bridge is validated
        for equal-arc field-line parity where the current ``mboz=nboz=21``
        parity artifact passes QH, QI, and shaped-pressure finite-beta rows.
        The fixed-resolution QI row now passes after the Boozer half-mesh
@@ -162,7 +162,7 @@ Do not make these claims from the current artifacts:
   candidate comparisons fail the ``4%`` reduction gate: growth gives only
   ``0.60%`` reduction (``z=0.26``), while quasilinear and nonlinear-window give
   ``-0.49%`` (``z=-0.19``) and ``-0.25%`` (``z=-0.09``), respectively.
-- converged nonlinear transport gradients through ``vmec_jax`` and
+- converged nonlinear transport gradients through ``vmex`` and
   ``booz_xform_jax``;
 - launching nonlinear-gradient campaigns directly from admitted VMEC-state
   controls without a separate state-to-input mapping artifact;
@@ -248,8 +248,8 @@ README claims, or manuscript claims.
        ``nonlinear_gradient_state_control_short_bracket_launch.*``,
        ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
        ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
-       ``vmec_jax_transport_gradient_diagnostic.json``,
-       ``vmec_jax_transport_gradient_line_search.*``,
+       ``vmex_transport_gradient_diagnostic.json``,
+       ``vmex_transport_gradient_line_search.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
@@ -261,13 +261,15 @@ README claims, or manuscript claims.
        gradients, direct VMEC-state launches, or optimized-equilibrium nonlinear
        audits beyond the selected QA candidate documented below.
    * - Scope guardrails
-     - ``technical_release_status.json``,
-       ``parallelization_completion_status.*``,
-       ``release_readiness.json``, ``manuscript_readiness_status.*``,
-       ``open_research_lane_status.*``, and
-       ``w7x_tem_extension_status.*``
-     - These panels record what is closed, deferred, partial, or open; they do
-       not promote the underlying deferred physics lanes by themselves.
+     - ``benchmarks/references/gkx_1_7_release_contract.json``,
+       ``technical_release_status.json``, ``release_readiness.json``, and
+       ``w7x_tem_extension_status.json``
+     - The frozen contract records release-scoped claims and baseline API and
+       performance evidence. It also release-gates canonical numeric
+       fingerprints for the promoted nonlinear, KBM branch, collision,
+       restart, geometry, derivative, and optimization references, so textual
+       renaming cannot hide a numerical change. It does not promote deferred
+       physics by itself.
    * - Performance and parallelization
      - ``runtime_memory_benchmark.*``,
        ``independent_ky_scan_scaling_large.*``,
@@ -302,12 +304,12 @@ Quasilinear model-selection state:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``6.49``.
 - ``tools/release/check_nonlinear_transport_gates.py convergence`` and
-  ``spectraxgk.diagnostics.transport_windows`` provide the reusable late-window
+  ``gkx.diagnostics.transport_windows`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
   guardrail over existing traces, not a substitute for new long nonlinear
   simulations.
-- ``spectraxgk.diagnostics.transport_windows.nonlinear_window_ensemble_report`` provides
+- ``gkx.diagnostics.transport_windows.nonlinear_window_ensemble_report`` provides
   the next guardrail for replicated windows: seed, initial-condition, timestep,
   or restart variants must have individually passed late-window reports and
   mutually consistent late means before a nonlinear turbulent-flux optimization
@@ -343,12 +345,6 @@ Quasilinear model-selection state:
   three matched baseline-to-optimized audits pass with positive
   uncertainty-separated heat-flux reductions. This is scoped candidate
   evidence, not a broad multi-surface nonlinear transport-optimization claim.
-- ``tools/artifacts/build_baseline_optimized_nonlinear_audit.py`` now records the matched
-  QA no-ESS reference to optimized QA/ESS comparison. The tracked
-  ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes
-  with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
-  SEM separation. This is a scoped finite-transform VMEC campaign comparison,
-  not a broad multi-surface stellarator optimization claim.
 - ``tools/release/check_nonlinear_optimization_gates.py gradient-evidence`` is the stricter
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
@@ -372,14 +368,6 @@ Quasilinear model-selection state:
   Until a paired post-transient artifact passes all response, asymmetry,
   conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
   evidence remains explicitly unpromoted.
-- ``tools/artifacts/build_nonlinear_gradient_evidence.py finite-difference`` is the paired
-  long-window promotion builder for that missing evidence. It takes the
-  finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated
-  nonlinear-window ensemble JSON files, computes the central finite-difference
-  heat-flux gradient, propagates ensemble SEM into a gradient-uncertainty gate,
-  writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
-  response, forward/backward asymmetry, condition number, and all three window
-  uncertainty gates pass.
 - Future perturbation refreshes must use distinct artifact slugs rather than
   overwriting the tracked failed candidate. For example, a new coefficient or
   amplitude campaign should write a slug such as
@@ -389,76 +377,12 @@ Quasilinear model-selection state:
   promote the result only if the central finite-difference artifact passes
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
-- ``tools/campaigns/design_nonlinear_gradient.py rank-candidates`` ranks failed
-  central finite-difference candidates without promoting them. The current
-  ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` summary
-  compares the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` campaigns
-  and recommends an overdetermined least-squares/profile-gradient campaign next
-  because the best single-control candidates have complementary locality and
-  uncertainty failures.
-- ``tools/campaigns/design_nonlinear_gradient.py followup-plan`` turns completed central-FD
-  artifacts into a bounded follow-up prescription. For the completed
-  overdetermined QA/ESS campaign it writes
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``:
-  add only two new matched nominal-timestep ``RBC(1,1)`` seed replicas per
-  state, because ``RBC(1,1)`` is local and response-resolved but slightly too
-  uncertain. It refuses more replicas for the nonlocal ``ZBS(1,1)`` bracket
-  and the unresolved ``ZBS(1,0)`` response.
-- ``tools/campaigns/design_nonlinear_gradient.py bracket-sweep`` is the bounded
-  follow-up for a same-control perturbation-amplitude sweep. It writes
-  JSON/CSV/PNG sidecars and an optional PDF from completed central
-  finite-difference artifacts and recommends whether to add replicas,
-  shrink/enlarge the bracket, or switch controls. It is deliberately not a
-  promotion checker; it only promotes when one of the supplied long-window
-  central-FD artifacts already passes all production gates. It now fails closed
-  for mixed-control inputs, and the tracked ``RBC(1,1)`` amplitude sweep
-  confirms that the current larger bracket worsens locality instead of closing
-  the nonlinear turbulence-gradient gate.
-- ``tools/campaigns/design_nonlinear_gradient.py overdetermined-campaign`` is the
-  concrete launch-contract writer for that next campaign shape. The current tracked
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``
-  uses the optimized-QA/ESS baseline input and prepares ``ZBS(1,1)``,
-  ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
-  same ``t=[450,900]`` analysis window. This artifact is planning/provenance
-  only; it does not promote a nonlinear turbulence-gradient claim.
-- ``tools/release/check_nonlinear_optimization_gates.py overdetermined-gradient`` and
-  ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` make that
-  launch contract executable. The current status artifact,
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
-  records that all three VMEC-JAX re-equilibrated controls are ready for
-  runtime, but none has completed the required nine long-window nonlinear
-  outputs or central-FD/ranking gates yet. This keeps the broader gradient
-  claim blocked until real post-transient outputs exist. The status check now
-  requires each runtime NetCDF to reach the analysis-window endpoint, not just
-  exist on disk, so in-progress files remain blocked.
-- ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` is the
-  matching fail-closed post-runtime driver. It runs each nested campaign's
-  output, ensemble, and central-FD gates, then runs the overdetermined
-  candidate ranking and final status checker before any release promotion.
-- ``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` writes a
-  launch-contract for a smoother composite VMEC boundary direction. The
-  tracked
-  ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` applies
-  a 2% descent-oriented ``ZBS(1,1)``, ``ZBS(1,0)``, ``RBC(1,1)`` direction and
-  records the finite-difference normalization by coefficient-vector norm. This
-  is not nonlinear turbulence-gradient evidence until the generated VMEC states
-  are re-equilibrated and passed through the long-window nonlinear FD gate.
-- ``tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
-  launch-contract writer for the same lane. Given explicit baseline,
-  plus-perturbation, and minus-perturbation VMEC files, it writes the matched
-  fixed-step nonlinear TOML ladders, per-state ensemble commands, the central
-  finite-difference gate command, and the final evidence-check command. It
-  fails closed before writing production launch contracts if any VMEC file is
-  missing, if the same path is reused for more than one state, or if the three
-  files have byte-identical SHA256 contents. The only override is
-  ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
-  manifest flag and must not be used for production turbulence-gradient claims.
-- ``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient`` is the upstream
-  boundary-gradient launch helper. It writes matched ``baseline``,
-  ``plus_delta``, and ``minus_delta`` VMEC input files for one explicit
-  ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient and records the ``vmec_jax`` commands
-  that must be run before the resulting ``wout`` files can enter the
-  nonlinear-gradient campaign writer.
+
+- The tracked QA/ESS campaign is complete negative evidence, not an unfinished
+  launch plan: all required long-window runtime outputs exist, but no boundary
+  control passes every finite-difference gate. ``ZBS(1,1)`` is nonlocal,
+  ``ZBS(1,0)`` is variance limited, and increasing the ``RBC(1,1)``
+  amplitude worsens asymmetry.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. On the expanded saturation sweep,
   the linear-weight fit is the least-bad simple rule with mean held-out
@@ -591,6 +515,10 @@ Differentiable-geometry state:
 
 Parallelization and performance state:
 
+- The current-branch representative linear/nonlinear refresh admits two local
+  CPU rows and passes CPU/GPU numerical checks. Its office-GPU timing rows are
+  explicitly blocked by measured device contention, so this refresh does not
+  promote a new speed claim.
 - ``docs/_static/independent_ky_scan_scaling_large.json`` and
   ``docs/_static/quasilinear_uq_ensemble_scaling_large.json`` support
   production independent-work parallelization for scans and ensembles.
@@ -632,12 +560,10 @@ The current manuscript/readme scope intentionally defers:
 - experimental W7-X fluctuation-spectrum claims through diagnostic transfer
   functions.
 
-These are tracked in ``docs/_static/manuscript_readiness_status.json``,
-``docs/_static/open_research_lane_status.json``, and
-``docs/_static/w7x_tem_extension_status.json``. In the narrower manuscript
-readiness report, W7-X zonal recurrence and TEM/kinetic-electron extension are
-``deferred``. In the broader research tracker, W7-X zonal recurrence remains
-``open`` and W7-X fluctuation/TEM remains ``partial``. The W7-X
+These release-scope decisions are frozen in
+``benchmarks/references/gkx_1_7_release_contract.json``; detailed W7-X extension
+state remains in ``docs/_static/w7x_tem_extension_status.json``. W7-X zonal
+recurrence and TEM/kinetic-electron extension are explicitly deferred. The W7-X
 fluctuation-spectrum panel is a validated simulation diagnostic only; it is not
 an experimental density-spectrum validation.
 
@@ -652,8 +578,7 @@ Before tagging a new public release:
    that ``coverage-wide-shard-manifest.json`` has labeled data for every wide
    coverage shard.
 3. Confirm README and this page agree with
-   ``docs/_static/manuscript_readiness_status.json`` and
-   ``docs/_static/open_research_lane_status.json``.
+   ``benchmarks/references/gkx_1_7_release_contract.json``.
 4. Confirm runtime/performance claims point to fresh profiler artifacts for
    the exact backend, device count, problem size, and identity tolerance being
    claimed.

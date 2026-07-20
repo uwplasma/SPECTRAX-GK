@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-import spectraxgk
-from spectraxgk.diagnostics import quasilinear_model_selection as model_selection_inputs
-from spectraxgk.diagnostics.quasilinear_model_selection import (
+import gkx
+from gkx.diagnostics import quasilinear_model_selection as model_selection_inputs
+from gkx.diagnostics.quasilinear_model_selection import (
     _required_candidate_metrics,
     build_quasilinear_model_selection_status,
     build_quasilinear_model_selection_status_from_paths,
@@ -97,7 +97,7 @@ def test_model_selection_status_promotes_scoped_candidate_not_absolute_flux() ->
     )
 
     assert (
-        spectraxgk.build_quasilinear_model_selection_status
+        gkx.build_quasilinear_model_selection_status
         is build_quasilinear_model_selection_status
     )
     assert status["passed"] is True
@@ -156,7 +156,7 @@ def test_model_selection_status_path_wrapper_preserves_source_artifacts(
     assert status["passed"] is True
     assert status["calibration_reports"][0]["artifact"] == str(calibration)
     assert (
-        spectraxgk.build_quasilinear_model_selection_status_from_paths
+        gkx.build_quasilinear_model_selection_status_from_paths
         is build_quasilinear_model_selection_status_from_paths
     )
 
@@ -522,7 +522,7 @@ def test_model_selection_fails_closed_for_supplied_failed_optimized_audit() -> N
 
 
 def test_model_selection_helpers_are_exported_at_package_top_level() -> None:
-    import spectraxgk as sgk
+    import gkx as sgk
 
     status = sgk.build_quasilinear_model_selection_status(
         dataset_sufficiency=_selection_extra_dataset_payload(),

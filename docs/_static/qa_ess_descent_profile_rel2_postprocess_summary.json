@@ -43,7 +43,7 @@
   ],
   "dry_run": false,
   "kind": "nonlinear_gradient_manifest_postprocess_summary",
-  "manifest": "/home/rjorge/tmp/spectrax-profile-465a353/tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/gradient_campaign_manifest.json",
+  "manifest": "/home/rjorge/tmp/gkx-profile-465a353/tools_out/profile_direction_nonlinear_gradient_campaign/qa_ess_descent_profile_rel2/nonlinear_campaign/gradient_campaign_manifest.json",
   "missing_expected_outputs": [],
   "passed": false,
   "results": [

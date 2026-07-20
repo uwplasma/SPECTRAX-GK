@@ -1,7 +1,7 @@
 {
   "claim_level": "multi_equilibrium_reduced_linear_quasilinear_and_nonlinear_window_estimator_gradient_gate_not_production_nonlinear_optimization",
   "kind": "vmec_boozer_gradient_holdout_matrix",
-  "notes": "This matrix checks differentiability from vmec_jax state coefficients through booz_xform_jax mode-21 equal-arc geometry into SPECTRAX-GK linear and quasilinear solver observables plus a reduced nonlinear-window estimator. It does not validate converged nonlinear-window turbulence gradients or optimized-equilibrium nonlinear transport.",
+  "notes": "This matrix checks differentiability from vmex state coefficients through booz_xform_jax mode-21 equal-arc geometry into GKX linear and quasilinear solver observables plus a reduced nonlinear-window estimator. It does not validate converged nonlinear-window turbulence gradients or optimized-equilibrium nonlinear transport.",
   "passed": true,
   "rows": [
     {
@@ -23,7 +23,7 @@
         "omega": true
       },
       "passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+      "path": "/Users/rogeriojorge/local/GKX/docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
       "source_scope": "mode21_vmec_boozer_state",
       "surface_stencil_width": null
     },
@@ -52,7 +52,7 @@
         "omega": true
       },
       "passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+      "path": "/Users/rogeriojorge/local/GKX/docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
       "source_scope": "mode21_vmec_boozer_state",
       "surface_stencil_width": null
     },
@@ -87,7 +87,7 @@
         "omega": true
       },
       "passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+      "path": "/Users/rogeriojorge/local/GKX/docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
       "source_scope": "mode21_vmec_boozer_state",
       "surface_stencil_width": 3
     },
@@ -110,7 +110,7 @@
         "omega": true
       },
       "passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_li383_solver_frequency_gradient_gate.json",
+      "path": "/Users/rogeriojorge/local/GKX/docs/_static/vmec_boozer_li383_solver_frequency_gradient_gate.json",
       "source_scope": "mode21_vmec_boozer_state",
       "surface_stencil_width": null
     },
@@ -139,7 +139,7 @@
         "omega": true
       },
       "passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_li383_quasilinear_gradient_gate.json",
+      "path": "/Users/rogeriojorge/local/GKX/docs/_static/vmec_boozer_li383_quasilinear_gradient_gate.json",
       "source_scope": "mode21_vmec_boozer_state",
       "surface_stencil_width": null
     },
@@ -174,7 +174,7 @@
         "omega": true
       },
       "passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
+      "path": "/Users/rogeriojorge/local/GKX/docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
       "source_scope": "mode21_vmec_boozer_state",
       "surface_stencil_width": null
     }

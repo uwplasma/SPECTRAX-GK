@@ -1,9 +1,10 @@
 import jax.numpy as jnp
 
-from spectraxgk.config import CycloneBaseCase
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, integrate_linear
+from gkx.config import CycloneBaseCase
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.params import LinearParams
+from gkx.solvers.linear.integrators import integrate_linear
 
 
 def main():

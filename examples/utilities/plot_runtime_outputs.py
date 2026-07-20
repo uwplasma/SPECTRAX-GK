@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Plot saved SPECTRAX-GK runtime outputs."""
+"""Plot saved GKX runtime outputs."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from spectraxgk.artifacts.plotting import plot_saved_output
+from gkx.artifacts.plotting import plot_saved_output
 
 
 def build_parser() -> argparse.ArgumentParser:

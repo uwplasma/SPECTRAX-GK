@@ -60,12 +60,6 @@ def load_artifact_tool(script_name: str) -> ModuleType:
     return load_tool_script("artifacts", script_name)
 
 
-def load_campaign_tool(script_name: str) -> ModuleType:
-    """Load a ``tools/campaigns`` script directly from the checkout."""
-
-    return load_tool_script("campaigns", script_name)
-
-
 def load_release_tool(script_name: str) -> ModuleType:
     """Load a ``tools/release`` script directly from the checkout."""
 

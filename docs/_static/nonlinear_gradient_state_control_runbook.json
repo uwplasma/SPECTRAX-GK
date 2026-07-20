@@ -147,7 +147,7 @@
   ],
   "mapping_protocol": [
     "select perturbable VMEC input coefficients or profile directions",
-    "solve baseline/plus/minus equilibria with vmec_jax",
+    "solve baseline/plus/minus equilibria with vmex",
     "measure the induced VMEC-state response in the admitted state-control basis",
     "accept the mapping only if the local Jacobian is conditioned and residual-bounded",
     "only then launch checked short-bracket nonlinear-gradient screens"

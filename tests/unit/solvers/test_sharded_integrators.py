@@ -5,12 +5,12 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.parallel.integrators import (
+from gkx.parallel.integrators import (
     integrate_linear_sharded,
     integrate_nonlinear_sharded,
 )
-from spectraxgk.parallel import integrators as integrator_module
-from spectraxgk.terms.config import FieldState
+from gkx.parallel import integrators as integrator_module
+from gkx.terms.config import FieldState
 
 
 def test_integrate_linear_sharded_rejects_nonpositive_steps() -> None:
@@ -27,14 +27,14 @@ def test_integrate_linear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
         calls["rhs"] += 1
         return jnp.ones_like(G), None
 
-    monkeypatch.setattr("spectraxgk.parallel.integrators.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("gkx.parallel.integrators.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("gkx.parallel.integrators.pjit", lambda fn, **kwargs: fn)
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.jax.lax.with_sharding_constraint",
+        "gkx.parallel.integrators.jax.lax.with_sharding_constraint",
         lambda state, sharding: calls.__setitem__("shard", calls["shard"] + 1) or state,
     )
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.jax.device_put",
+        "gkx.parallel.integrators.jax.device_put",
         lambda state, sharding: calls.__setitem__("put", calls["put"] + 1) or state,
     )
 
@@ -55,8 +55,8 @@ def test_integrate_linear_sharded_no_sharding_path(monkeypatch) -> None:
         calls["rhs"] += 1
         return jnp.ones_like(G), None
 
-    monkeypatch.setattr("spectraxgk.parallel.integrators.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("gkx.parallel.integrators.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("gkx.parallel.integrators.pjit", lambda fn, **kwargs: fn)
 
     G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
     out = integrate_linear_sharded(
@@ -101,15 +101,15 @@ def test_integrate_nonlinear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
         return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.nonlinear_rhs_cached", fake_rhs
+        "gkx.parallel.integrators.nonlinear_rhs_cached", fake_rhs
     )
-    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("gkx.parallel.integrators.pjit", lambda fn, **kwargs: fn)
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.jax.lax.with_sharding_constraint",
+        "gkx.parallel.integrators.jax.lax.with_sharding_constraint",
         lambda state, sharding: calls.__setitem__("shard", calls["shard"] + 1) or state,
     )
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.jax.device_put",
+        "gkx.parallel.integrators.jax.device_put",
         lambda state, sharding: calls.__setitem__("put", calls["put"] + 1) or state,
     )
 
@@ -156,9 +156,9 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(
         return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.nonlinear_rhs_cached", fake_rhs
+        "gkx.parallel.integrators.nonlinear_rhs_cached", fake_rhs
     )
-    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("gkx.parallel.integrators.pjit", lambda fn, **kwargs: fn)
 
     G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
     G_final, fields_t = integrate_nonlinear_sharded(
@@ -196,9 +196,9 @@ def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
         )
 
     monkeypatch.setattr(
-        "spectraxgk.parallel.integrators.nonlinear_rhs_cached", fake_rhs
+        "gkx.parallel.integrators.nonlinear_rhs_cached", fake_rhs
     )
-    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("gkx.parallel.integrators.pjit", lambda fn, **kwargs: fn)
 
     G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
     out = integrate_nonlinear_sharded(

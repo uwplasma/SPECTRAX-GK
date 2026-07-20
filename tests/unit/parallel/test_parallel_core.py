@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from importlib import import_module
-import json
-from pathlib import Path
 
 from support.paths import REPO_ROOT
 
@@ -15,10 +13,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk.parallel as parallel
-import spectraxgk.parallel.batch as parallel_batch
-import spectraxgk.parallel.independent as parallel_independent
+import gkx
+import gkx.parallel as parallel
+import gkx.parallel.batch as parallel_batch
+import gkx.parallel.independent as parallel_independent
 
 
 def test_parallel_public_api_exports_are_stable() -> None:
@@ -33,17 +31,17 @@ def test_parallel_public_api_exports_are_stable() -> None:
         "parallel_identity_report",
     )
 
-    assert set(public_names) <= set(spectraxgk.__all__)
+    assert set(public_names) <= set(gkx.__all__)
     assert set(public_names) <= set(parallel.__all__)
     for name in public_names:
-        assert getattr(spectraxgk, name) is getattr(parallel, name)
+        assert getattr(gkx, name) is getattr(parallel, name)
 
 
 def test_parallel_lazy_registry_matches_owner_exports() -> None:
     """Keep wheel-safe lazy exports synchronized with their numerical owners."""
 
     for module_name, expected_names in parallel._MODULE_EXPORTS.items():
-        owner = import_module(f"spectraxgk.parallel.{module_name}")
+        owner = import_module(f"gkx.parallel.{module_name}")
         assert tuple(owner.__all__) == expected_names
 
 
@@ -516,7 +514,7 @@ def test_independent_ensemble_provenance_gate_rejects_empty_and_bad_workloads() 
 
 
 def test_independent_map_identity_helpers_are_exported_at_package_top_level() -> None:
-    import spectraxgk as sgk
+    import gkx as sgk
 
     assert (
         sgk.IndependentEnsembleProvenanceReport
@@ -560,12 +558,12 @@ def test_cpu_gpu_short_window_gate_matches_within_tolerance() -> None:
     from dataclasses import replace
     from pathlib import Path
 
-    if os.environ.get("SPECTRAXGK_DEVICE_PARITY", "").strip() not in {
+    if os.environ.get("GKX_DEVICE_PARITY", "").strip() not in {
         "1",
         "true",
         "yes",
     }:
-        pytest.skip("Set SPECTRAXGK_DEVICE_PARITY=1 to enable CPU/GPU parity gate.")
+        pytest.skip("Set GKX_DEVICE_PARITY=1 to enable CPU/GPU parity gate.")
 
     try:
         cpu_devices = jax.devices("cpu")
@@ -582,7 +580,7 @@ def test_cpu_gpu_short_window_gate_matches_within_tolerance() -> None:
         pytest.skip("No GPU backend detected for JAX.")
 
     from support.paths import load_repo_script
-    from spectraxgk.runtime import run_runtime_nonlinear
+    from gkx.runtime import run_runtime_nonlinear
 
     restart_helpers = load_repo_script(
         Path("tests/integration/runtime/test_restart_gate.py"),
@@ -621,8 +619,8 @@ def test_cpu_gpu_short_window_gate_matches_within_tolerance() -> None:
 
 # ---- test_sharding.py ----
 
-import spectraxgk.parallel.state as sharding_mod
-from spectraxgk.parallel.state import resolve_state_sharding
+import gkx.parallel.state as sharding_mod
+from gkx.parallel.state import resolve_state_sharding
 
 
 def _state_5d():
@@ -768,7 +766,7 @@ def test_mesh_from_devices_uses_visible_devices_and_returns_none_for_one_device(
 
 # ---- test_parallel_decomposition.py ----
 
-from spectraxgk.parallel.decomposition import (
+from gkx.parallel.decomposition import (
     DecompositionContract,
     ReconstructionIdentityReport,
     ShardAssignment,
@@ -777,11 +775,6 @@ from spectraxgk.parallel.decomposition import (
     reconstruct_serial,
     serial_reconstruction_identity_report,
     shard_sequence,
-)
-from tools.artifacts.build_parallelization_completion_status import (
-    build_decomposition_status as build_status,
-    write_decomposition_csv_artifact as write_csv_artifact,
-    write_decomposition_json_artifact as write_json_artifact,
 )
 
 
@@ -1073,40 +1066,8 @@ def test_manual_bad_assignment_report_can_expose_claim_scoped_identity_failure()
     assert report.reconstructed_indices == (0, 2, 1)
 
 
-def test_parallel_decomposition_status_summarizes_existing_artifacts(
-    tmp_path: Path,
-) -> None:
-    status = build_status(ROOT)
-    lanes = {lane["lane"]: lane for lane in status["lanes"]}
-
-    assert status["kind"] == "parallel_decomposition_status"
-    assert status["passed"] is True
-    assert status["production_independent_lanes"] == 2
-    assert status["diagnostic_nonlinear_lanes"] == 1
-    assert "Deterministic decomposition-contract status only" in status["claim_scope"]
-    assert (
-        lanes["independent_ky_scan"]["claim_level"] == "production_independent_batching"
-    )
-    assert lanes["uq_ensemble"]["claim_level"] == "production_independent_batching"
-    assert (
-        lanes["diagnostic_nonlinear_domain"]["claim_level"]
-        == "diagnostic_nonlinear_domain_partition"
-    )
-    assert all(lane["reconstruction_identity_passed"] for lane in lanes.values())
-    assert all(lane["claim_separation_passed"] for lane in lanes.values())
-
-    prefix = tmp_path / "parallel_decomposition_status"
-    paths = {
-        **write_json_artifact(status, prefix),
-        **write_csv_artifact(status, prefix),
-    }
-
-    assert json.loads(Path(paths["json"]).read_text(encoding="utf-8"))["passed"] is True
-    assert "claim_level" in Path(paths["csv"]).read_text(encoding="utf-8")
-
-
 def test_parallel_decomposition_contracts_are_exported_at_package_top_level() -> None:
-    import spectraxgk as sgk
+    import gkx as sgk
 
     contract = sgk.build_independent_portfolio_decomposition(
         2,

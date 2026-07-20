@@ -1,7 +1,7 @@
 [metadata]
 schema_version = 1
 title = "Package architecture policy"
-layout_authority = "docs/architecture_refactor_plan.rst"
+layout_authority = "plan.md"
 status = "active"
 
 [root_prefix_policy]
@@ -10,7 +10,7 @@ blocked_prefixes = [
   "nonlinear_",
   "linear_",
   "solver_",
-  "vmec_jax_",
+  "vmex_",
   "quasilinear_",
   "benchmark_",
   "stellarator_",
@@ -19,26 +19,32 @@ allowed_root_prefix_modules = []
 
 [package_policy]
 required_domain_packages = [
-  "spectraxgk.artifacts",
-  "spectraxgk.core",
-  "spectraxgk.diagnostics",
-  "spectraxgk.geometry",
-  "spectraxgk.objectives",
-  "spectraxgk.operators",
-  "spectraxgk.operators.linear",
-  "spectraxgk.operators.nonlinear",
-  "spectraxgk.parallel",
-  "spectraxgk.solvers",
-  "spectraxgk.solvers.linear",
-  "spectraxgk.solvers.nonlinear",
-  "spectraxgk.solvers.time",
-  "spectraxgk.workflows",
-  "spectraxgk.workflows.runtime",
+  "gkx.artifacts",
+  "gkx.core",
+  "gkx.diagnostics",
+  "gkx.geometry",
+  "gkx.objectives",
+  "gkx.operators",
+  "gkx.operators.linear",
+  "gkx.operators.nonlinear",
+  "gkx.parallel",
+  "gkx.solvers",
+  "gkx.solvers.linear",
+  "gkx.solvers.nonlinear",
+  "gkx.solvers.time",
+  "gkx.workflows",
+  "gkx.workflows.runtime",
 ]
 required_docs = [
-  "docs/architecture_refactor_plan.rst",
-  "docs/code_structure.rst",
-  "docs/differentiable_refactor_plan.rst",
+  "plan.md",
+]
+target_domain_packages = [
+  "gkx.physics",
+  "gkx.geometry",
+  "gkx.numerics",
+  "gkx.solve",
+  "gkx.optimize",
+  "gkx.io",
 ]
 
 [topology_policy]
@@ -47,11 +53,11 @@ description = "Track the consolidation plan without breaking current CI before f
 
 [[topology_policy.counts]]
 name = "installable_source_python_files"
-path = "src/spectraxgk"
+path = "src/gkx"
 pattern = "*.py"
 recursive = true
-baseline = 223
-target = 223
+baseline = 220
+target = 45
 
 [[topology_policy.counts]]
 name = "test_python_files"
@@ -59,7 +65,7 @@ path = "tests"
 pattern = "*.py"
 recursive = true
 baseline = 95
-target = 95
+target = 36
 
 [[topology_policy.counts]]
 name = "tool_python_files"
@@ -67,7 +73,15 @@ path = "tools"
 pattern = "*.py"
 recursive = true
 baseline = 95
-target = 95
+target = 0
+
+[[topology_policy.counts]]
+name = "developer_script_python_files"
+path = "scripts"
+pattern = "*.py"
+recursive = true
+baseline = 15
+target = 12
 
 
 [[topology_policy.counts]]
@@ -99,4 +113,51 @@ public_facades = [
   "quasilinear.py",
   "runtime.py",
 ]
-exceptions = []
+
+[[complexity_policy.exceptions]]
+path = "artifacts/nonlinear_netcdf.py"
+baseline_lines = 1069
+target_lines = 1000
+reason = "One NetCDF schema owner keeps dimensions, geometry, diagnostics, restart, and final-field variables consistent; reduce helper repetition without splitting the schema again."
+
+[[complexity_policy.exceptions]]
+path = "artifacts/io.py"
+baseline_lines = 1088
+target_lines = 1000
+reason = "One runtime I/O owner keeps summaries, tables, restart packing, and diagnostic reload consistent; reduce repeated serializers without restoring format-specific modules."
+
+[line_budget_policy]
+mode = "no_regression_until_target"
+description = "Track real code deletion rather than file reshuffling."
+
+[[line_budget_policy.counts]]
+name = "installable_source_python_lines"
+path = "src/gkx"
+pattern = "*.py"
+recursive = true
+baseline = 87847
+target = 45000
+
+[[line_budget_policy.counts]]
+name = "test_python_lines"
+path = "tests"
+pattern = "*.py"
+recursive = true
+baseline = 96202
+target = 55000
+
+[[line_budget_policy.counts]]
+name = "tool_python_lines"
+path = "tools"
+pattern = "*.py"
+recursive = true
+baseline = 97346
+target = 0
+
+[[line_budget_policy.counts]]
+name = "developer_script_python_lines"
+path = "scripts"
+pattern = "*.py"
+recursive = true
+baseline = 25000
+target = 18000

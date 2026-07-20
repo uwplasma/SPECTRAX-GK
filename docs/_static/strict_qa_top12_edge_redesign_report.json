@@ -24,7 +24,7 @@
       "value": 18
     }
   ],
-  "kind": "vmec_jax_nonlinear_transport_audit_redesign_report",
+  "kind": "vmex_nonlinear_transport_audit_redesign_report",
   "matched_comparison_case": "strict_qa_top12_edge_matched_nonlinear_transport",
   "matched_comparison_passed": false,
   "next_action": "redesign the reduced transport objective with the recommended multi-surface, multi-field-line, multi-ky sample set; rerun projected admission; then repeat the matched long-window nonlinear audit",

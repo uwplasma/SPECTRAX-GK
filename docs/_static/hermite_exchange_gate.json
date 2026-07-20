@@ -131,7 +131,7 @@
       "upper_reference_real": 0.0
     }
   ],
-  "source": "spectraxgk.parallel.velocity.hermite_neighbor_shard_map",
+  "source": "gkx.parallel.velocity.hermite_neighbor_shard_map",
   "state_shape": [
     2,
     8,

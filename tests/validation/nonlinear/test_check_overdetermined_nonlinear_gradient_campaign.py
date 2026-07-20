@@ -117,7 +117,7 @@ def _manifest(
                 "expected_wout_files": wouts,
                 "expected_nonlinear_campaign_manifest": str(nested_manifest),
                 "expected_fd_artifact": str(fd),
-                "vmec_run_commands": {"baseline": "vmec_jax input.baseline"},
+                "vmec_run_commands": {"baseline": "vmex input.baseline"},
                 "nonlinear_campaign_command_after_vmec_runs": (
                     f"python tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py --out-dir {nested_manifest.parent}"
                 ),

@@ -17,17 +17,17 @@ from typing import Any, Mapping
 import matplotlib
 import numpy as np
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.artifacts.plotting import set_plot_style
-from spectraxgk.runtime import RuntimeLinearScanResult, run_runtime_scan
-from spectraxgk.workflows.runtime.config import (
+from gkx.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from gkx.artifacts.plotting import set_plot_style
+from gkx.runtime import RuntimeLinearScanResult, run_runtime_scan
+from gkx.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 matplotlib.use("Agg")
@@ -175,7 +175,7 @@ def build_parallel_ky_scan_gate(
     return _json_clean(
         {
             "case": "Cyclone ITG linear ky-batch scan",
-            "source": "SPECTRAX-GK real linear solver; serial ky_batch=1 vs fixed-shape ky_batch>1",
+            "source": "GKX real linear solver; serial ky_batch=1 vs fixed-shape ky_batch>1",
             "physics_anchor": "Cyclone Base Case ITG linear scan",
             "ky_values": ky_values.tolist(),
             "grid": {"Nx": nx, "Ny": ny, "Nz": nz, "Nl": nlaguerre, "Nm": nhermite},
@@ -352,7 +352,7 @@ def _timed_scan_model(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.parallel import batch_map
+    from gkx.parallel import batch_map
 
     ky_jax = jnp.asarray(
         ky_values,
@@ -410,7 +410,7 @@ def build_logical_cpu_parallel_scan_gate(
 ) -> dict[str, object]:
     """Compare serial and logical-CPU device-batched independent scans."""
 
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     devices = _select_devices(requested_devices)
     serial_config = RuntimeParallelConfig(
@@ -466,7 +466,7 @@ def build_logical_cpu_parallel_scan_gate(
     return _json_clean(
         {
             "case": "Logical-CPU independent ky scan",
-            "source": "JAX-native tiny non-Hermitian linear scan model through spectraxgk.batch_map",
+            "source": "JAX-native tiny non-Hermitian linear scan model through gkx.batch_map",
             "claim_scope": "parallel interface and numerical identity gate, not a gyrokinetic physics validation",
             "ky_values": np.asarray(ky_values, dtype=float),
             "serial_parallel_config": serial_config.to_dict(),
@@ -494,7 +494,7 @@ def write_logical_cpu_parallel_scan_artifacts(summary: dict[str, object], out_pr
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

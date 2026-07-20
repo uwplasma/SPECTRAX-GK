@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a bounded nonlinear startup-response finite-difference audit.
 
-This tool intentionally audits a narrow plumbing path: a real SPECTRAX-GK
+This tool intentionally audits a narrow plumbing path: a real GKX
 nonlinear Cyclone runtime is run at ``R/LTi = base +/- step`` plus a repeated
 base point, but only for a compact startup window.  The output checks that this
 startup-window heat-flux response is finite, repeatable, conditioned, and has a
@@ -24,15 +24,15 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.config import (
+from gkx.config import (
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )  # noqa: E402
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.runtime import run_runtime_nonlinear  # noqa: E402
-from spectraxgk.workflows.runtime.config import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.runtime import run_runtime_nonlinear  # noqa: E402
+from gkx.workflows.runtime.config import (  # noqa: E402
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,

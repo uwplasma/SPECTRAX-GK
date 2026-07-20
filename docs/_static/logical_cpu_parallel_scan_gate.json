@@ -113,5 +113,5 @@
     "strategy": "serial",
     "strict_identity": true
   },
-  "source": "JAX-native tiny non-Hermitian linear scan model through spectraxgk.batch_map"
+  "source": "JAX-native tiny non-Hermitian linear scan model through gkx.batch_map"
 }

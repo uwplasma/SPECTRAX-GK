@@ -5,17 +5,17 @@ import json
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk.diagnostics.validation_gates as validation_gates
-from spectraxgk.diagnostics.analysis import (
+import gkx
+import gkx.diagnostics.validation_gates as validation_gates
+from gkx.diagnostics.analysis import (
     BranchContinuationMetrics,
     LateTimeLinearMetrics,
     NonlinearHeatFluxConvergenceMetrics,
     NonlinearWindowMetrics,
     ObservedOrderMetrics,
 )
-from spectraxgk.diagnostics.modes import EigenfunctionComparisonMetrics
-from spectraxgk.diagnostics.validation_gates import (
+from gkx.diagnostics.modes import EigenfunctionComparisonMetrics
+from gkx.diagnostics.validation_gates import (
     GateReport,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
@@ -30,13 +30,13 @@ from spectraxgk.diagnostics.validation_gates import (
     observed_order_gate_report,
     zonal_response_gate_report,
 )
-from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
+from gkx.diagnostics.zonal_validation import zonal_flow_response_metrics
 
 
 def test_validation_gate_facade_points_to_focused_modules() -> None:
-    import spectraxgk.diagnostics.analysis as metric_analysis
-    import spectraxgk.diagnostics.modes as mode_analysis
-    import spectraxgk.diagnostics.validation_gates as gates
+    import gkx.diagnostics.analysis as metric_analysis
+    import gkx.diagnostics.modes as mode_analysis
+    import gkx.diagnostics.validation_gates as gates
 
     assert LateTimeLinearMetrics is metric_analysis.LateTimeLinearMetrics
     assert NonlinearWindowMetrics is metric_analysis.NonlinearWindowMetrics
@@ -47,7 +47,7 @@ def test_validation_gate_facade_points_to_focused_modules() -> None:
 
 
 def test_validation_gate_primitives_are_public_and_owned_by_diagnostics() -> None:
-    assert spectraxgk.evaluate_scalar_gate is evaluate_scalar_gate
+    assert gkx.evaluate_scalar_gate is evaluate_scalar_gate
     metrics = zonal_flow_response_metrics(
         np.linspace(0.0, 2.0, 8), np.linspace(1.0, 0.6, 8)
     )

@@ -3,11 +3,11 @@
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.solvers.time.diffrax import integrate_linear_diffrax
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.solvers.time.diffrax import integrate_linear_diffrax
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.params import LinearParams
 
 
 def main() -> None:

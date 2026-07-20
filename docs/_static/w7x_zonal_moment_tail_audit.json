@@ -5,7 +5,7 @@
   "gate_index_include": false,
   "hermite_tail_fraction": 0.125,
   "laguerre_tail_fraction": 0.25,
-  "notes": "This is an open diagnostic audit, not a validation gate. It checks whether the late W7-X zonal-response envelope mismatch is accompanied by high-Hermite or high-Laguerre free-energy content in existing SPECTRAX-GK outputs. Large tail fractions indicate a velocity-space recurrence / moment-closure hypothesis to test before changing the literature normalization contract.",
+  "notes": "This is an open diagnostic audit, not a validation gate. It checks whether the late W7-X zonal-response envelope mismatch is accompanied by high-Hermite or high-Laguerre free-energy content in existing GKX outputs. Large tail fractions indicate a velocity-space recurrence / moment-closure hypothesis to test before changing the literature normalization contract.",
   "reference": "Gonzalez-Jerez et al., J. Plasma Phys. 88, 905880310 (2022), W7-X test 4",
   "rows": [
     {

@@ -12,8 +12,8 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.terms.config import FieldState
-from spectraxgk.terms.config import TermConfig
+from gkx.terms.config import FieldState
+from gkx.terms.config import TermConfig
 
 
 def _load_sharding_tool_module():
@@ -120,7 +120,7 @@ def test_profile_nonlinear_sharding_source_contract_is_machine_readable(
     assert (
         "tools/profiling/profile_nonlinear_sharding.py" in contract["profile_command"]
     )
-    assert {"python", "spectraxgk", "jax", "jaxlib", "numpy"} <= set(
+    assert {"python", "gkx", "jax", "jaxlib", "numpy"} <= set(
         contract["software_versions"]
     )
     assert all(contract["software_versions"].values())
@@ -361,7 +361,7 @@ def test_nonlinear_sharding_sweep_subcommand_selects_fastest_identity_candidate(
         "source_artifact": "/tmp/profile.json",
         "software_versions": {
             "python": "3.11.0",
-            "spectraxgk": "test",
+            "gkx": "test",
             "jax": "0.test",
             "jaxlib": "0.test",
             "numpy": "2.test",
@@ -403,7 +403,7 @@ def test_nonlinear_sharding_sweep_subcommand_selects_fastest_identity_candidate(
     )
     assert row["profile_command_argv"][-2:] == ["--sharding", "kx"]
     assert row["source_artifact"] == "/tmp/profile.json"
-    assert row["software_versions"]["spectraxgk"] == "test"
+    assert row["software_versions"]["gkx"] == "test"
     assert row["timing_warmup_repeat"] == {"warmups": 1, "repeats": 3}
     assert row["profile_backend"] == "gpu"
     assert row["profile_device_count"] == 2

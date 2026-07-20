@@ -1,7 +1,7 @@
 Parallelization policy
 ======================
 
-SPECTRAX-GK parallelization claims are separated by workload class and by the
+GKX parallelization claims are separated by workload class and by the
 identity gates that currently exist. Treat this page as the short policy; the
 long artifact history remains in :doc:`performance` and runnable examples remain
 in :doc:`examples`.
@@ -59,14 +59,14 @@ Production-ready parallelism is currently scoped to independent solver calls:
 - finite-difference and sensitivity batches;
 - UQ and ensemble workloads.
 
-Use ``spectraxgk.ky_scan_batches`` and ``spectraxgk.batch_map`` for JAX-array
-workloads, and ``spectraxgk.independent_map`` for file-backed Python tasks.
+Use ``gkx.ky_scan_batches`` and ``gkx.batch_map`` for JAX-array
+workloads, and ``gkx.independent_map`` for file-backed Python tasks.
 These helpers preserve serial ordering and restrict communication to result
 aggregation. Any timing claim from this path must be paired with a serial
 numerical-identity gate for the reported observables, such as ``gamma``,
 ``omega``, quasilinear weights, or covariance summaries.
 
-For UQ and optimization portfolios, ``spectraxgk.independent_ensemble_provenance_gate``
+For UQ and optimization portfolios, ``gkx.independent_ensemble_provenance_gate``
 is the compact production-readiness check. It runs the same member function
 serially and through ``independent_map``, verifies numerical identity and result
 ordering, checks that oversubscribed worker requests clip to the ensemble size,
@@ -103,7 +103,7 @@ The release status artifact combines the production scaling evidence and the
 diagnostic decomposition gates into one machine-readable claim boundary:
 
 .. image:: _static/parallelization_completion_status.png
-   :alt: SPECTRAX-GK parallelization closure status
+   :alt: GKX parallelization closure status
    :align: center
 
 ``docs/_static/parallelization_completion_status.json`` reports the release
@@ -117,20 +117,9 @@ clipping, exception metadata, and deterministic reconstruction. Whole-state
 nonlinear sharding and FFT-axis decomposition remain diagnostic, not production
 nonlinear speedup claims.
 
-Regenerate the closure status after refreshing any scaling artifact:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_parallelization_completion_status.py
-
-The lower-level decomposition-contract status is generated separately. It is
-useful when editing orchestration code because it checks deterministic shard
+The lower-level decomposition-contract status checks deterministic shard
 assignment, serial reconstruction identity, and claim-level separation without
 rerunning large profiles.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_parallelization_completion_status.py decomposition
 
 .. image:: _static/parallel_decomposition_status.png
    :alt: Parallel decomposition contract status
@@ -223,9 +212,9 @@ benchmark nonlinear conservation checks, accepted turbulent transport-window
 physics, or any speedup claim.
 
 The package also exposes
-``spectraxgk.operators.nonlinear.parallel.nonlinear_spectral_rhs_identity_gate``,
-``spectraxgk.operators.nonlinear.parallel.logical_decomposed_nonlinear_spectral_rhs``,
-and ``spectraxgk.operators.nonlinear.parallel.nonlinear_spectral_integrator_identity_gate``
+``gkx.operators.nonlinear.parallel.nonlinear_spectral_rhs_identity_gate``,
+``gkx.operators.nonlinear.parallel.logical_decomposed_nonlinear_spectral_rhs``,
+and ``gkx.operators.nonlinear.parallel.nonlinear_spectral_integrator_identity_gate``
 for focused tests. They are useful because they exercise field/bracket/RHS and
 fixed-step dataflow instead of only layout round trips. They remain fail-closed
 and diagnostic-only: logical tiles are reconstructed for identity validation,

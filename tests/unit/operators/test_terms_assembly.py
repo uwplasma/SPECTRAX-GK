@@ -4,12 +4,13 @@ import numpy as np
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.config import GridConfig
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.terms import assembly as assembly_mod
-from spectraxgk.terms.assembly import (
+from gkx.config import GridConfig
+from gkx.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
+from gkx.terms import assembly as assembly_mod
+from gkx.terms.assembly import (
     assemble_rhs,
     assemble_rhs_cached,
     assemble_rhs_cached_electrostatic_jit,
@@ -17,7 +18,7 @@ from spectraxgk.terms.assembly import (
     assemble_rhs_terms_cached,
     compute_fields_cached,
 )
-from spectraxgk.terms.config import FieldState, TermConfig
+from gkx.terms.config import FieldState, TermConfig
 
 
 def test_assemble_rhs_terms_sum_matches_total() -> None:

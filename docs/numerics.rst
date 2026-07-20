@@ -17,38 +17,38 @@ Algorithm mapping (numerics → code)
 The core numerical algorithms and their implementation entry points are:
 
 - **Hermite–Laguerre pseudo-spectral expansion**:
-  :mod:`spectraxgk.core.velocity`.
+  :mod:`gkx.core.velocity`.
 - **Gyroaverage / polarization**:
-  :func:`spectraxgk.core.velocity.J_l_all`,
-  :func:`spectraxgk.linear.quasineutrality_phi`.
+  :func:`gkx.core.velocity.J_l_all`,
+  :func:`gkx.operators.linear.moments.quasineutrality_phi`.
 - **Centered periodic derivative in z**:
-  :func:`spectraxgk.linear.grad_z_periodic`.
+  :func:`gkx.operators.linear.moments.grad_z_periodic`.
 - **Hermite ladder streaming**:
-  :func:`spectraxgk.linear.streaming_term`.
+  :func:`gkx.operators.linear.moments.streaming_term`.
 - **Curvature / grad-B / mirror couplings**:
-  :func:`spectraxgk.linear.linear_rhs_cached`,
-  :func:`spectraxgk.geometry.SAlphaGeometry.drift_components`,
-  :func:`spectraxgk.geometry.SAlphaGeometry.bgrad`.
+  :func:`gkx.operators.linear.rhs.linear_rhs_cached`,
+  :func:`gkx.geometry.SAlphaGeometry.drift_components`,
+  :func:`gkx.geometry.SAlphaGeometry.bgrad`.
 - **Diamagnetic drive**:
-  :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
+  :func:`gkx.operators.linear.moments.diamagnetic_drive_coeffs`.
 - **Time integration (explicit RK, IMEX)**:
-  :func:`spectraxgk.linear.integrate_linear`.
+  :func:`gkx.solvers.linear.integrators.integrate_linear`.
 - **CFL-controlled RK4 (adaptive step control, streaming diagnostics)**:
-  :func:`spectraxgk.integrate_linear_explicit`
-  (implemented in :func:`spectraxgk.solvers.time.explicit.integrate_linear_explicit`).
+  :func:`gkx.integrate_linear_explicit`
+  (implemented in :func:`gkx.solvers.time.explicit.integrate_linear_explicit`).
 - **Diffrax integration (explicit/implicit/IMEX)**:
-  :func:`spectraxgk.solvers.time.integrate_linear_diffrax`,
-  :func:`spectraxgk.solvers.time.integrate_nonlinear_diffrax`.
+  :func:`gkx.solvers.time.integrate_linear_diffrax`,
+  :func:`gkx.solvers.time.integrate_nonlinear_diffrax`.
 - **Config-driven runner**:
-  :func:`spectraxgk.solvers.time.runners.integrate_linear_from_config`.
+  :func:`gkx.solvers.time.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
-  :func:`spectraxgk.linear.integrate_linear`.
+  :func:`gkx.solvers.linear.integrators.integrate_linear`.
 - **Structured Hermite-line solves and bounded-memory Jacobians**:
   `SOLVAX <https://github.com/uwplasma/SOLVAX>`_ provides the reusable
-  tridiagonal and autodiff primitives; SPECTRAX-GK retains physical layout,
+  tridiagonal and autodiff primitives; GKX retains physical layout,
   coefficients, tolerances, and acceptance policy.
 - **Nonlinear IMEX (implicit linear + explicit nonlinear)**:
-  :func:`spectraxgk.nonlinear.integrate_nonlinear`.
+  :func:`gkx.solvers.nonlinear.state_integration.integrate_nonlinear`.
 
 JAX execution model
 -------------------
@@ -56,13 +56,13 @@ JAX execution model
 The implementation leverages the following JAX primitives:
 
 - **JIT compilation**: ``jax.jit`` is used in
-  :func:`spectraxgk.linear.integrate_linear` to stage time-stepping
+  :func:`gkx.solvers.linear.integrators.integrate_linear` to stage time-stepping
   kernels.
 - **Loop fusion**: ``jax.lax.scan`` drives the time integration loop.
 - **FFT grids**: ``jax.numpy.fft.fftfreq`` is used in
-  :func:`spectraxgk.core.grid.build_spectral_grid`.
+  :func:`gkx.core.grid.build_spectral_grid`.
 - **Sparse Krylov solver**: ``solvax.gmres`` is used for implicit linear and
-  nonlinear IMEX time steps through one shared SPECTRAX-GK policy adapter.
+  nonlinear IMEX time steps through one shared GKX policy adapter.
   Nonlinear IMEX reverse mode wraps the tolerance-controlled solve with
   ``solvax.linear_solve``. Its implicit-function VJP solves the transposed
   linear system instead of differentiating dynamic GMRES iterations; plain and
@@ -74,7 +74,7 @@ The implementation leverages the following JAX primitives:
   route because its branch-continuity gate has not passed with the replacement.
 - **Backend-aware Hermite line solve**: ``solvax.tridiagonal_solve`` uses a
   deterministic Thomas recurrence on CPU and the fused JAX/vendor path on
-  accelerators. SPECTRAX-GK moves only the Hermite system axis; all remaining
+  accelerators. GKX moves only the Hermite system axis; all remaining
   dimensions are independent line-solve columns.
 - **Memory-bounded sensitivities**: ``solvax.chunked_jacfwd`` underlies the
   geometry gradient report when ``jacobian_chunk_size`` is set. Chunking
@@ -84,17 +84,17 @@ The implementation leverages the following JAX primitives:
   checked against finite differences.
 - **Stencil operations**: ``jax.numpy.roll`` and ``jax.numpy.pad`` implement
   the centered ``z`` derivative and Hermite/Laguerre ladder couplings in
-  :func:`spectraxgk.linear.grad_z_periodic`,
-  :func:`spectraxgk.linear.streaming_term`,
-  :func:`spectraxgk.linear.apply_hermite_v`,
-  :func:`spectraxgk.linear.apply_laguerre_x`.
+  :func:`gkx.operators.linear.moments.grad_z_periodic`,
+  :func:`gkx.operators.linear.moments.streaming_term`,
+  :func:`gkx.operators.linear.moments.apply_hermite_v`,
+  :func:`gkx.operators.linear.moments.apply_laguerre_x`.
 
 These links are clickable in the HTML docs via the ``viewcode`` extension.
 
 Structured solver dependency contract
 -------------------------------------
 
-SPECTRAX-GK requires ``solvax>=0.7.3,<0.8``. Version 0.7.3 is the current
+GKX requires ``solvax>=0.7.3,<0.8``. Version 0.7.3 is the current
 admitted release because its complex Krylov and structured-solve interfaces
 pass the downstream linear, IMEX, geometry-gradient, and implicit-objective
 suite on the current JAX stack. The release also retains current-JAX
@@ -102,7 +102,7 @@ linear-transpose compatibility, complex CPU/GPU tridiagonal identity gates,
 and strict type information. Generic numerical
 algebra lives in SOLVAX; gyrokinetic state layout, linked-boundary assembly,
 preconditioner coefficients, eigenbranch tracking, transport windows, and
-physics gates remain in SPECTRAX-GK.
+physics gates remain in GKX.
 
 The admitted migration covers the Hermite-line tridiagonal solve,
 memory-chunked geometry Jacobians, and implicit linear/nonlinear time-step
@@ -138,24 +138,24 @@ The linear solver supports:
   implicit derivative, so the gradient does not depend on the number of Krylov
   iterations except through primal/transpose solve accuracy.
 
-These are all implemented in :func:`spectraxgk.linear.integrate_linear` and
+These are all implemented in :func:`gkx.solvers.linear.integrators.integrate_linear` and
 share the cached operator data assembled by
-:func:`spectraxgk.linear.build_linear_cache`.
+:func:`gkx.operators.linear.cache_builder.build_linear_cache`.
 
 Diffrax integration
 -------------------
 
 Diffrax-backed solvers are available via
-:func:`spectraxgk.solvers.time.integrate_linear_diffrax` and
-:func:`spectraxgk.solvers.time.integrate_nonlinear_diffrax`. Explicit
+:func:`gkx.solvers.time.integrate_linear_diffrax` and
+:func:`gkx.solvers.time.integrate_nonlinear_diffrax`. Explicit
 solvers (e.g., ``Tsit5``) and implicit/IMEX solvers (e.g., ``KenCarp``) are
 supported. Progress reporting is disabled by default; enable it by setting
 ``TimeConfig.progress_bar=True`` (or ``progress_bar=True`` in the integrator
 call). Diffrax currently emits a warning when evolving complex-valued states;
 the solvers still run, but treat this as experimental behavior.
 
-Use :class:`spectraxgk.config.TimeConfig` and
-:func:`spectraxgk.solvers.time.runners.integrate_linear_from_config` to select diffrax
+Use :class:`gkx.config.TimeConfig` and
+:func:`gkx.solvers.time.runners.integrate_linear_from_config` to select diffrax
 integration from input configuration without changing call sites. By default,
 ``TimeConfig`` enables diffrax with a fixed-step Dopri8 solver; set
 ``use_diffrax=False`` to force the built-in fixed-step integrators.
@@ -185,7 +185,7 @@ an optional mode through ``TimeConfig.use_diffrax=True``.
 
 Adaptive differentiation is an explicit API policy rather than an accidental
 property of the controller. For a low-dimensional tangent direction, call
-:func:`spectraxgk.solvers.time.integrate_linear_diffrax` with
+:func:`gkx.solvers.time.integrate_linear_diffrax` with
 ``derivative_mode="forward"``. This selects native JAX rules and supports a
 JVP through the accepted adaptive trajectory. The release gate uses a nonzero
 thermodynamic-drive tangent: it agrees with a centered finite difference to
@@ -202,7 +202,7 @@ Nonlinear FFT bracket
 ---------------------
 
 The nonlinear :math:`E\times B` term is evaluated pseudospectrally using
-FFT-based derivatives in the perpendicular plane. By default SPECTRAX-GK uses
+FFT-based derivatives in the perpendicular plane. By default GKX uses
 the compressed real-FFT path (``TimeConfig.compressed_real_fft = true``), which computes
 gradients from the Nyquist-compressed (``N_y/2+1``) spectrum using the
 benchmark-compatible compressed wavenumber layout: non-negative ``k_y`` (including positive
@@ -212,7 +212,7 @@ axis when ``N_x`` is even. The result is then expanded back to full
 memory traffic. Set ``compressed_real_fft = false`` to use the full complex FFT bracket
 instead.
 
-For electromagnetic nonlinear runs, SPECTRAX-GK stacks the gyro-averaged
+For electromagnetic nonlinear runs, GKX stacks the gyro-averaged
 potentials ``J0*phi``, ``J0*apar``, and the ``bpar`` correction into a single
 FFT batch. This collapses multiple rFFT/iFFT passes into one pipeline per
 step and reuses the same real-space gradients for all channels.
@@ -229,7 +229,7 @@ Equilibrium-flow shearing coordinates
 --------------------------------------
 
 The validated coordinate kernel
-:func:`spectraxgk.operators.nonlinear.projection.advance_shearing_coordinates`
+:func:`gkx.operators.nonlinear.projection.advance_shearing_coordinates`
 follows a shearing wave according to
 
 .. math::
@@ -260,7 +260,7 @@ The integer nearest-mode decision is piecewise constant and therefore uses a
 stopped tangent. Continuous effective wavenumbers and phases remain
 differentiable between the measure-zero remap events. This kernel is not yet a
 shipped equilibrium-flow-shear model. The periodic/linked-boundary cache updater
-:func:`spectraxgk.operators.linear.cache_builder.update_linear_cache_for_sheared_kx`
+:func:`gkx.operators.linear.cache_builder.update_linear_cache_for_sheared_kx`
 already rebuilds :math:`k_\perp^2`, drift frequencies, gyroaverages, Bessel
 tables, field-solve inputs, bracket multipliers, and hyperdiffusion from the
 two-dimensional effective :math:`k_x` grid. Its zero-shear arrays and complete
@@ -280,7 +280,7 @@ the row-relative :math:`k_x` mesh. Direct full/compressed bracket, JAX-tangent,
 three-step state, and heat-flux gates agree within ``2e-5`` relative tolerance.
 The
 research function
-:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared` verifies zero-shear
+:func:`gkx.solvers.nonlinear.state_integration.integrate_nonlinear_sheared` verifies zero-shear
 trajectory identity and cumulative full-step remapping. Its midpoint RK2 and
 three-stage Heun RK3 routes evaluate each RHS in the correctly remapped stage
 coordinate basis and return each derivative to the step basis before combining
@@ -330,7 +330,7 @@ redundant RHS evaluation per step without altering the Runge--Kutta tableau;
 the state-only path remains separate so it never computes fields solely for
 reuse.
 
-:func:`spectraxgk.nonlinear.integrate_nonlinear_sheared_transport` records the
+:func:`gkx.solvers.nonlinear.state_integration.integrate_nonlinear_sheared_transport` records the
 canonical per-species gyro-Bohm heat flux at every accepted step. It uses
 the same flux-surface quadrature and transport kernel as production nonlinear
 diagnostics and evaluates that kernel with the instantaneous sheared cache. The
@@ -357,7 +357,7 @@ versus single-scan identity gate covers the absolute shearing basis, state, and
 heat-flux trace.
 
 Treatment effects are evaluated with
-:func:`spectraxgk.matched_nonlinear_transport_report`, not by comparing two
+:func:`gkx.matched_nonlinear_transport_report`, not by comparing two
 instantaneous chaotic traces. The baseline and treatment first pass independent
 post-transient finite-sample, running-mean drift, terminal-mean, block count,
 and conservative SEM gates. Only then is the relative mean reduction reported;
@@ -390,7 +390,7 @@ also reproduces the full-complex state and heat-flux trace with the canonical
 compressed bracket. A subsequent source audit localized a time-discretization
 difference: the external adaptive RK3 route advances shear once with the
 previous step size before selecting the next ``dt`` and holds that coordinate
-basis fixed across all RK stages. SPECTRAX-GK advances accepted physical time
+basis fixed across all RK stages. GKX advances accepted physical time
 and evaluates each stage in its exact shearing basis. The ``-0.084%`` result is
 therefore negative cross-discretization evidence, not a model-identical parity
 failure. Linked-boundary and fixed-step IMEX implementation gates now pass.
@@ -439,11 +439,11 @@ schemes.
 Performance tuning
 ------------------
 
-SPECTRAX-GK includes several performance-oriented options that preserve
+GKX includes several performance-oriented options that preserve
 end-to-end JAX differentiability:
 
 - **Streaming growth-rate fits**: use
-  :func:`spectraxgk.solvers.time.integrate_linear_diffrax_streaming`
+  :func:`gkx.solvers.time.integrate_linear_diffrax_streaming`
   to compute ``(gamma, omega)`` online without storing time series. This reduces
   memory pressure during long scans. The streaming fit supports ``phi`` or
   density moments via ``fit_signal`` and uses a fixed ``tmin/tmax`` window.
@@ -551,8 +551,8 @@ end-to-end JAX differentiability:
   high-residual mode.
 - **Reusable IMEX operators**: nonlinear IMEX runs can prebuild and reuse the
   matrix-free linear operator with
-  :func:`spectraxgk.nonlinear.build_nonlinear_imex_operator` and pass it to
-  :func:`spectraxgk.nonlinear.integrate_nonlinear_imex_cached` via
+  :func:`gkx.operators.nonlinear.policies.build_nonlinear_imex_operator` and pass it to
+  :func:`gkx.solvers.nonlinear.state_integration.integrate_nonlinear_imex_cached` via
   ``implicit_operator``. When ``apar=bpar=0``, the IMEX fixed-point and
   post-step field paths use the same electrostatic compiled linear-RHS route as
   the explicit nonlinear RHS, avoiding unused electromagnetic Hamiltonian
@@ -588,7 +588,7 @@ Custom collision operators
 The shipped conserving long-wavelength model is independently exposed as
 ``drift_kinetic_dougherty_contribution``. It implements Appendix C, equation
 (C6), of `Frei, Hoffmann & Ricci (2022)
-<https://doi.org/10.1017/S0022377822000344>`_ in SPECTRAX-GK's
+<https://doi.org/10.1017/S0022377822000344>`_ in GKX's
 Hermite--Laguerre ordering. The test suite verifies exact agreement between
 that equation-level kernel and the production finite-Larmor-radius operator at
 ``b=0``, its density/momentum/thermal null moments, non-positive quadratic
@@ -1235,7 +1235,7 @@ matrix-free, rotate between oscillator and Hermite--Laguerre bases, and project
 roundoff-level particle, momentum, and energy defects. Generic separable
 Kronecker contractions and differentiable constrained solves belong in
 `SOLVAX <https://github.com/uwplasma/SOLVAX>`_; gyrokinetic normalization,
-species coupling, and Landau physics remain SPECTRAX-GK responsibilities. Any
+species coupling, and Landau physics remain GKX responsibilities. Any
 implementation must reproduce manufactured dense low-order tensors, quadrature
 refinement, Maxwellian stationarity, conservation, entropy production,
 isotropic relaxation, two-species equilibration, JVP/VJP checks, and measured
@@ -1338,14 +1338,14 @@ Putting the pieces together, the linear operator is assembled from:
 - **Grad-B drift**: ``gb_d`` coupling across :math:`\ell\pm1`.
 - **Diamagnetic drive**: :math:`\omega_*` energy-weighted source in ``m=0,2``.
 
-Operator toggles start from :class:`spectraxgk.linear.LinearTerms` and are
-converted into one canonical :class:`spectraxgk.terms.TermConfig` through
-:func:`spectraxgk.linear.linear_terms_to_term_config`. The same modular RHS
+Operator toggles start from :class:`gkx.operators.linear.params.LinearTerms` and are
+converted into one canonical :class:`gkx.terms.TermConfig` through
+:func:`gkx.operators.linear.params.linear_terms_to_term_config`. The same modular RHS
 path is then used by fixed-step linear integrators, diffrax integrators,
 Krylov operator applications, and nonlinear IMEX linear solves.
 
-The RHS is assembled in :mod:`spectraxgk.terms` via
-:func:`spectraxgk.terms.assemble_rhs_cached`, which sums per-term kernels
+The RHS is assembled in :mod:`gkx.terms` via
+:func:`gkx.terms.assemble_rhs_cached`, which sums per-term kernels
 (streaming, mirror, drifts, diamagnetic drive, collisions, hyper-collisions,
 and end damping). This keeps the physics core branch-free and easier to extend,
 while preserving JAX differentiability and performance.
@@ -1360,8 +1360,8 @@ Electrostatic runs solve quasineutrality for :math:`\phi` with optional
 Boltzmann response (``tau_e``). Electromagnetic runs solve the coupled
 quasineutrality/perpendicular-Ampere system for :math:`(\phi, B_\parallel)` and
 then compute :math:`A_\parallel` from parallel Ampere’s law. The implementation
-is in :mod:`spectraxgk.terms.fields` and is called from
-:func:`spectraxgk.terms.assemble_rhs_cached`.
+is in :mod:`gkx.terms.fields` and is called from
+:func:`gkx.terms.assemble_rhs_cached`.
 
 Normalization control
 ---------------------
@@ -1383,7 +1383,7 @@ The diamagnetic drive is written in the standard energy form,
 where :math:`\omega_* = k_y R/L_n`, :math:`\eta_i = (R/L_T)/(R/L_n)`, and
 :math:`\mathcal{E}_{\ell m}` is the Hermite–Laguerre energy operator applied to
 the basis. The coefficients are generated by
-:func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
+:func:`gkx.operators.linear.moments.diamagnetic_drive_coeffs`.
 
 Time integration
 ----------------

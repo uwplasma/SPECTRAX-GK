@@ -151,15 +151,15 @@ def build_profile(
     trace_device_count: int | None,
     hlo_prefix: Path | None,
 ) -> dict[str, Any]:
-    from spectraxgk.operators.nonlinear.device_z import (
+    from gkx.operators.nonlinear.device_z import (
         _device_z_pencil_shard_map_rhs_fn,
     )
-    from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
+    from gkx.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
         deterministic_nonlinear_spectral_state,
         device_z_pencil_fft_batch_pressure_model,
         device_z_pencil_nonlinear_spectral_transport_window_identity_gate,
     )
-    from spectraxgk.operators.nonlinear.spectral_core import (
+    from gkx.operators.nonlinear.spectral_core import (
         _host_staged_array_for_sharding,
         _serial_nonlinear_spectral_rhs,
     )
@@ -501,11 +501,11 @@ def build_rhs_profile(
     duplicating a second executable script.
     """
 
-    from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
+    from gkx.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
         deterministic_nonlinear_spectral_state,
         device_z_pencil_nonlinear_spectral_rhs,
     )
-    from spectraxgk.operators.nonlinear.spectral_core import (
+    from gkx.operators.nonlinear.spectral_core import (
         _pencil_nonlinear_spectral_rhs,
         _serial_nonlinear_spectral_rhs,
     )
@@ -678,7 +678,7 @@ def _write_rhs_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]
+    from gkx.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     out_json = out_prefix.with_suffix(".json")
@@ -752,7 +752,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]
+    from gkx.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     out_json = out_prefix.with_suffix(".json")

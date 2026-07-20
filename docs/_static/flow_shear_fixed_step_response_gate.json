@@ -692,7 +692,7 @@
   "conclusion": {
     "input_file_exposure_allowed": false,
     "promotion_gate_passed": false,
-    "reason": "The SPECTRAX-GK windows are not stationary and show a 4.82% increase; the independently stationary comparison windows show a 24.82% increase. The predeclared suppression and uncertainty gates fail.",
+    "reason": "The GKX windows are not stationary and show a 4.82% increase; the independently stationary comparison windows show a 24.82% increase. The predeclared suppression and uncertainty gates fail.",
     "scope": "This rejects the weak-shear fixed-step suppression claim. It does not reject the already gated coordinate, remap, operator, integrator, or derivative identities."
   },
   "configuration": {
@@ -740,7 +740,7 @@
       "docs/_static/flow_shear_fixed_step_response_gate.csv"
     ]
   },
-  "spectrax_gk": {
+  "gkx_gk": {
     "baseline_window": {
       "case": "flow_shear_fixed_imex_baseline",
       "claim_level": "nonlinear_holdout_window_metadata_not_simulation_claim",

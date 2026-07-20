@@ -1,6 +1,6 @@
 {
   "case_name": "nfp4_QH_warm_start",
-  "claim_scope": "full vmec_jax state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> SPECTRAX-GK linear-RHS eigenfrequency gradient",
+  "claim_scope": "full vmex state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> GKX linear-RHS eigenfrequency gradient",
   "eigenpair_gate": {
     "ad_supported": true,
     "atol": 0.02,

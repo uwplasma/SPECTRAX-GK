@@ -18,7 +18,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 SPLIT_COLORS = {
@@ -381,7 +381,7 @@ def build_report_parser() -> argparse.ArgumentParser:
 
 
 def _run_report(argv: list[str] | None = None) -> int:
-    from spectraxgk.diagnostics.quasilinear_calibration import (
+    from gkx.diagnostics.quasilinear_calibration import (
         calibration_point_from_spectrum_and_nonlinear_window,
         quasilinear_calibration_report,
         write_quasilinear_calibration_report,

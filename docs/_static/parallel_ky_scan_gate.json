@@ -63,7 +63,7 @@
   ],
   "serial_batch": 1,
   "serial_elapsed_s": 3.121920625009807,
-  "source": "SPECTRAX-GK real linear solver; serial ky_batch=1 vs fixed-shape ky_batch>1",
+  "source": "GKX real linear solver; serial ky_batch=1 vs fixed-shape ky_batch>1",
   "time": {
     "dt": 0.02,
     "sample_stride": 2,

@@ -12,11 +12,11 @@ import tracemalloc
 import jax
 import jax.numpy as jnp
 
-from spectraxgk.config import CycloneBaseCase
-from spectraxgk.solvers.time.diffrax_linear import integrate_linear_diffrax
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache, integrate_linear
+from gkx.config import CycloneBaseCase
+from gkx.solvers.time.diffrax_linear import integrate_linear_diffrax
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.linear import LinearParams, build_linear_cache, integrate_linear
 
 
 def _block(tree):

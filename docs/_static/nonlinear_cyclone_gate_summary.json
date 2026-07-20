@@ -73,7 +73,7 @@
   },
   "gx": "tools_out/cyclone_long_audit/cyclone_salpha_adiabatic_electrons_omega_t400.out.nc",
   "source": "GX nonlinear diagnostics",
-  "spectrax": "tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
+  "gkx": "tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
   "summary": [
     {
       "final_rel": -0.1266124885533909,

@@ -6,7 +6,7 @@
   },
   "builder": "tools/artifacts/build_vmec_boozer_aggregate_objective_gate.py second-equilibrium",
   "case_name": "li383_low_res",
-  "claim_scope": "second-equilibrium reduced aggregate VMEC/Boozer/SPECTRAX-GK finite-difference and one-parameter line-search gate at mboz=nboz>=21; not a nonlinear turbulent transport optimization claim",
+  "claim_scope": "second-equilibrium reduced aggregate VMEC/Boozer/GKX finite-difference and one-parameter line-search gate at mboz=nboz>=21; not a nonlinear turbulent transport optimization claim",
   "coverage": {
     "alphas": [
       0.0
@@ -49,12 +49,12 @@
     "base_value": 9.788411723486012,
     "case_name": "li383_low_res",
     "central_derivative": -131581.3127201526,
-    "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/SPECTRAX-GK objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
+    "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/GKX objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
     "curvature_abs": 8.976729253440396e-05,
     "curvature_ratio": 0.0034110957961531064,
     "finite_difference_consistent": true,
     "finite_values": true,
-    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.li383_low_res",
+    "input_path": "/Users/rogeriojorge/local/vmex/examples/data/input.li383_low_res",
     "kind": "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
     "max_curvature_ratio": 5.0,
     "minus_objective_table": [
@@ -152,7 +152,7 @@
       }
     ],
     "source_scope": "mode21_vmec_boozer_state_multi_point",
-    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_li383_low_res.nc"
+    "wout_path": "/Users/rogeriojorge/local/vmex/examples/data/wout_li383_low_res.nc"
   },
   "finite_difference_summary": {
     "base_value": 9.788411723486012,
@@ -168,7 +168,7 @@
   "line_search_report": {
     "accepted_steps": 1,
     "case_name": "li383_low_res",
-    "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
+    "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/GKX linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
     "final_delta": 1e-08,
     "final_objective": 9.787095473427266,
     "history": [

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark lineax GMRES against the current JAX GMRES path on a SPECTRAX implicit linear solve."""
+"""Benchmark lineax GMRES against the current JAX GMRES path on a GKX implicit linear solve."""
 
 from __future__ import annotations
 
@@ -13,17 +13,17 @@ import lineax as lx
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
     _build_initial_condition,
 )
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
-from spectraxgk.solvers.linear.implicit import _build_implicit_operator
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.linear import LinearParams, LinearTerms, build_linear_cache
+from gkx.solvers.linear.implicit import _build_implicit_operator
 
 
 def build_parser() -> argparse.ArgumentParser:

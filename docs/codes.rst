@@ -1,7 +1,7 @@
 Related Codes
 =============
 
-SPECTRAX-GK is a clean JAX implementation with explicit benchmark contracts.
+GKX is a clean JAX implementation with explicit benchmark contracts.
 Other codes are used as independent references for equations, diagnostics,
 geometry conventions, validation cases, and performance expectations.
 
@@ -11,7 +11,7 @@ Comparison-code roles
 GX [GX]_
   The closest algorithmic and parity reference. GX uses a
   Fourier-Hermite-Laguerre formulation and GPU-native kernels. For
-  SPECTRAX-GK, GX is most useful for Cyclone, KBM, W7-X, HSX, nonlinear
+  GKX, GX is most useful for Cyclone, KBM, W7-X, HSX, nonlinear
   transport, velocity-space convergence, and performance/scaling comparisons.
   Source-level audits should inform tests and diagnostics, not copy
   implementation.
@@ -19,18 +19,18 @@ GX [GX]_
 stella and GENE [GENE]_
   The W7-X benchmark between stella and GENE defines the strongest public
   stellarator validation ladder: multiple flux tubes, linear ITG/TEM scans,
-  zonal-flow response, and nonlinear ITG heat fluxes. SPECTRAX-GK should use
+  zonal-flow response, and nonlinear ITG heat fluxes. GKX should use
   this ladder for paper-level W7-X claims.
 
 GENE, ORB5, and XGC
   Verification literature around these codes motivates tying equation
-  verification and numerical verification together. Relevant SPECTRAX-GK tests
+  verification and numerical verification together. Relevant GKX tests
   should include reduced-equation limits, observed order, conservation or
   free-energy behavior, and electromagnetic/KBM benchmark observables.
 
 VMEC and Boozer-coordinate tools
   File-based VMEC geometry remains an important compatibility path. The planned
-  differentiable path should use ``vmec_jax`` in memory, and add
+  differentiable path should use ``vmex`` in memory, and add
   ``booz_xform_jax`` when Boozer-coordinate quantities are required.
 
 DESC, SIMSOPT, TORAX, Equinox, and Lineax
@@ -45,7 +45,7 @@ Each comparison must be traceable:
 
 - reference code, paper, or dataset;
 - exact input file and geometry source;
-- generated SPECTRAX-GK artifact;
+- generated GKX artifact;
 - comparison script;
 - fit/window policy;
 - numeric gate;
@@ -77,7 +77,7 @@ Implementation lessons carried forward
 --------------------------------------
 
 Source-code audits of comparison projects have led to concrete engineering
-targets for SPECTRAX-GK:
+targets for GKX:
 
 - keep geometry contracts explicit and testable;
 - precompute and reuse cacheable linear pieces;

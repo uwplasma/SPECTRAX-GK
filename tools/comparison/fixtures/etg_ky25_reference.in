@@ -1,5 +1,5 @@
 # GX input for ETG (CBC) at ky*rho_i = 25.
-# Matches SPECTRAX-GK ETGBaseCase geometry/gradients with adiabatic ions.
+# Matches GKX ETGBaseCase geometry/gradients with adiabatic ions.
 
 debug = false
 

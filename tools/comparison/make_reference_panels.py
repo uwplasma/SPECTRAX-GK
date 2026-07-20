@@ -219,7 +219,7 @@ def _plot_secondary(ax: Axes, df: pd.DataFrame, title: str) -> None:
     modes = [f"({row.ky:.2f},{row.kx:+.2f})" for row in df.itertuples(index=False)]
     x = np.arange(len(modes), dtype=float)
     ax.plot(x, np.asarray(df["gamma_gx"], dtype=float), marker="o", linewidth=2.0, label="γ reference")
-    ax.plot(x, np.asarray(df["gamma_sp"], dtype=float), marker="s", linewidth=2.0, linestyle="--", label="γ SPECTRAX")
+    ax.plot(x, np.asarray(df["gamma_sp"], dtype=float), marker="s", linewidth=2.0, linestyle="--", label="γ GKX")
     ax.set_title(title, fontsize=14, fontweight="bold")
     ax.set_ylabel("gamma")
     ax.set_xticks(x)
@@ -243,14 +243,14 @@ def _plot_secondary(ax: Axes, df: pd.DataFrame, title: str) -> None:
 def _plot_linear_metric(ax: Axes, df: pd.DataFrame, *, metric: str, title: str) -> None:
     ky = np.asarray(df["ky"], dtype=float)
     reference = np.asarray(df[f"{metric}_gx"], dtype=float)
-    spectrax = np.asarray(df[metric], dtype=float)
+    gkx = np.asarray(df[metric], dtype=float)
     ax.plot(ky, reference, marker="o", linewidth=2.2, color="#111111", label="reference")
-    ax.plot(ky, spectrax, marker="s", linewidth=2.2, color="#d1495b", linestyle="--", label="SPECTRAX")
+    ax.plot(ky, gkx, marker="s", linewidth=2.2, color="#d1495b", linestyle="--", label="GKX")
     ax.set_title(title, fontsize=13, fontweight="bold")
     ax.set_xlabel(r"$k_y \rho_i$")
     ax.set_ylabel(metric)
     ax.grid(True, alpha=0.25)
-    rel = _mean_rel(spectrax, reference, floor_fraction=1.0e-12)
+    rel = _mean_rel(gkx, reference, floor_fraction=1.0e-12)
     ax.text(
         0.03,
         0.97,

@@ -1,5 +1,5 @@
 {
-  "claim_scope": "actual_linear_rhs_solver_objectives; not yet a full vmec_jax_to_booz_xform_jax_to_solver gradient claim",
+  "claim_scope": "actual_linear_rhs_solver_objectives; not yet a full vmex_to_booz_xform_jax_to_solver gradient claim",
   "eigenpair_gate": {
     "ad_supported": true,
     "atol": 0.002,

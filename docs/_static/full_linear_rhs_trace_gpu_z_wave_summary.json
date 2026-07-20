@@ -33,7 +33,7 @@
   "phi_norm": 0.06516452878713608,
   "repeats": 5,
   "rhs_norm": 0.16460475325584412,
-  "source": "spectraxgk.linear.linear_rhs_cached",
+  "source": "gkx.linear.linear_rhs_cached",
   "state": "z_wave",
   "trace_dir": null,
   "warm_seconds": 0.005149016156792641,

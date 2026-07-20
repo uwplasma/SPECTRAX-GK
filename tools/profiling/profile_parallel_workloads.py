@@ -122,8 +122,8 @@ def args_global_omega_atol() -> float:
 
 
 def _run_solver_chunk(args: argparse.Namespace) -> dict[str, Any]:
-    from spectraxgk.runtime import run_runtime_scan
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.runtime import run_runtime_scan
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
 
     ky = np.asarray(args.worker_ky, dtype=float)
     base_cfg, _ = load_runtime_from_toml(
@@ -356,7 +356,7 @@ def run_independent_ky_sweep(args: argparse.Namespace) -> dict[str, Any]:
     ky_values = np.asarray(args.ky, dtype=float)
     rows: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(
-        prefix="spectraxgk-independent-ky-scaling-"
+        prefix="gkx-independent-ky-scaling-"
     ) as tmp_name:
         tmp = Path(tmp_name)
         for device_count in list(args.devices):
@@ -439,7 +439,7 @@ def run_independent_ky_sweep(args: argparse.Namespace) -> dict[str, Any]:
 def _quasilinear_reduced_observables(
     ky: np.ndarray, gamma: np.ndarray, omega: np.ndarray
 ) -> dict[str, Any]:
-    from spectraxgk.quasilinear import quasilinear_feature_objective
+    from gkx.diagnostics.quasilinear_transport import quasilinear_feature_objective
 
     ky_arr = np.asarray(ky, dtype=float)
     gamma_arr = np.asarray(gamma, dtype=float)
@@ -467,8 +467,8 @@ def _quasilinear_reduced_observables(
 
 
 def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
-    from spectraxgk.runtime import run_runtime_scan
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.runtime import run_runtime_scan
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
 
     gradients = np.asarray(args.worker_gradients, dtype=float)
     ky = np.asarray(args.ky, dtype=float)
@@ -730,7 +730,7 @@ def _quasilinear_identity_metrics(
 def run_quasilinear_uq_sweep(args: argparse.Namespace) -> dict[str, Any]:
     gradients = np.asarray(args.gradients, dtype=float)
     rows: list[dict[str, Any]] = []
-    with tempfile.TemporaryDirectory(prefix="spectraxgk-ql-uq-scaling-") as tmp_name:
+    with tempfile.TemporaryDirectory(prefix="gkx-ql-uq-scaling-") as tmp_name:
         tmp = Path(tmp_name)
         for device_count in args.devices:
             rows.append(
@@ -822,7 +822,7 @@ def _write_scaling_plot(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

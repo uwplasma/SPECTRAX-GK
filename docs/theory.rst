@@ -10,7 +10,7 @@ mapping, see :doc:`operators`.
 Gyrokinetic ordering
 --------------------
 
-SPECTRAX-GK targets the low-frequency, strongly magnetized regime where the
+GKX targets the low-frequency, strongly magnetized regime where the
 characteristic fluctuation frequency is small compared to the ion cyclotron
 frequency. In this limit, the phase-space dynamics can be reduced to a
 five-dimensional gyrokinetic system for the non-adiabatic part of the
@@ -27,7 +27,7 @@ benchmark commonly used in gyrokinetic validation studies. [Dimits00]_
 
 The default boundary condition is a linked (twist-and-shift) flux tube, so the
 parallel derivative couples Fourier modes across adjacent :math:`k_x` indices.
-For non-twisting flux tubes (NTFT), SPECTRAX-GK employs an ``m0`` and
+For non-twisting flux tubes (NTFT), GKX employs an ``m0`` and
 ``deltaKx`` formulation compatible with GX, which modifies the effective
 :math:`k_\perp` and drift terms using the same twist factor and linking indices.
 
@@ -56,7 +56,7 @@ by Mandell, Dorland & Landreman (2017). [MDL17]_
 Field solve and gyrokinetic variable
 ------------------------------------
 
-SPECTRAX-GK supports electrostatic and electromagnetic linear closures. For
+GKX supports electrostatic and electromagnetic linear closures. For
 electrostatic runs, quasineutrality is solved in Fourier space for
 :math:`\phi`, with an optional adiabatic response controlled by
 :math:`\tau_e = T_i/T_e`:
@@ -128,7 +128,7 @@ including a separate coupling in :math:`m=2` for temperature-gradient drive.
 Field-aligned streaming representation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To maintain compatibility with audited reference benchmarks, SPECTRAX-GK supports
+To maintain compatibility with audited reference benchmarks, GKX supports
 applying the parallel derivative to a gyrokinetic variable that includes the
 explicit field terms but omits the full :math:`H_{\ell m}` correction at
 ``m>1``. This is achieved by defining
@@ -148,7 +148,7 @@ Nonlinear E×B and flutter terms
 -------------------------------
 
 The nonlinear gyrokinetic equation adds the :math:`E\times B` bracket and the
-electromagnetic flutter coupling. In SPECTRAX-GK the nonlinear contribution is
+electromagnetic flutter coupling. In GKX the nonlinear contribution is
 
 .. math::
 
@@ -173,7 +173,7 @@ through
 
 so the nonlinear operator naturally splits into :math:`E\times B`,
 :math:`B_\parallel`, and flutter contributions. The implementation in
-:mod:`spectraxgk.terms.nonlinear` supports standard gyrokinetic normalization:
+:mod:`gkx.terms.nonlinear` supports standard gyrokinetic normalization:
 gradients are computed with FFTs in :math:`x,y`, the bracket is evaluated in
 real space, and the result is filtered by the de-alias mask before returning to
 spectral space.

@@ -12,10 +12,10 @@ import numpy as np
 import pytest
 from scipy.special import eval_genlaguerre, eval_laguerre, j0, jv
 
-from spectraxgk.config import GridConfig
-from spectraxgk.core.extension_points import CollisionContext
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.core.velocity import (
+from gkx.config import GridConfig
+from gkx.operators.collision import CollisionContext
+from gkx.core.grid import build_spectral_grid
+from gkx.core.velocity import (
     J_l_all,
     associated_bessel_laguerre_coefficients,
     bessel_laguerre_kernels,
@@ -23,22 +23,21 @@ from spectraxgk.core.velocity import (
     laguerre_gyroaverage_neighbors,
     sum_Jl2,
 )
-from spectraxgk.diagnostics.analysis import fit_growth_rate
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    integrate_linear,
-    linear_rhs_cached,
-)
-from spectraxgk.operators import hermite_streaming
-from spectraxgk.operators.linear import (
+from gkx.diagnostics.analysis import fit_growth_rate
+from gkx.geometry import SAlphaGeometry
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.operators.linear.rhs import linear_rhs_cached
+from gkx.solvers.linear.integrators import integrate_linear
+from gkx.operators import hermite_streaming
+from gkx.operators.linear import (
     apply_collision_moment_matrix,
     apply_finite_wavelength_coulomb_moment_operator,
     apply_multispecies_collision_moment_matrix,
     assemble_drift_kinetic_improved_sugama_matrix,
     assemble_drift_kinetic_sugama_matrix,
+    COLLISION_OPERATOR_NAMES,
+    collision_operator_from_config,
     DriftKineticMomentCollisionOperator,
     EqualSpeciesFiniteWavelengthCoulombOperator,
     EqualSpeciesFiniteWavelengthSugamaOperator,
@@ -53,19 +52,19 @@ from spectraxgk.operators.linear import (
     parallel_electric_field_source,
     solve_driven_collision_response,
 )
-from spectraxgk.operators.linear.dissipation import (
+from gkx.operators.linear.dissipation import (
     collision_quadratic_rate,
     collisions_contribution,
     multispecies_collision_invariant_rates,
 )
-from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.terms.config import FieldState, TermConfig
-from spectraxgk.terms.linear_terms import (
+from gkx.terms.assembly import assemble_rhs_cached
+from gkx.terms.config import FieldState, TermConfig
+from gkx.terms.linear_terms import (
     drift_kinetic_coulomb_six_moment_contribution,
     drift_kinetic_sugama_six_moment_contribution,
 )
-from spectraxgk.runtime import run_runtime_scan
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from gkx.runtime import run_runtime_scan
+from gkx.workflows.runtime.toml import load_runtime_from_toml
 
 
 def test_streaming_zero_kpar() -> None:
@@ -201,8 +200,8 @@ def test_reduced_sugama_current_recovers_high_charge_limit() -> None:
 
 
 def test_linear_operator_package_reexports_streaming_kernel() -> None:
-    from spectraxgk.operators.linear import hermite_streaming as package_streaming
-    from spectraxgk.operators.linear.moments import hermite_streaming as streaming_impl
+    from gkx.operators.linear import hermite_streaming as package_streaming
+    from gkx.operators.linear.moments import hermite_streaming as streaming_impl
 
     assert hermite_streaming is package_streaming
     assert package_streaming is streaming_impl
@@ -1172,16 +1171,112 @@ def test_improved_sugama_pair_matches_published_equal_and_unequal_coefficients()
     assert improved_error / original_error < 0.41
 
 
+def test_drift_kinetic_collision_operators_obey_h_theorem_and_conserve_density() -> None:
+    # Physics-limit benchmark for the promoted single-species drift-kinetic
+    # collision operators (Coulomb, Sugama, improved Sugama) in the
+    # Hermite-Laguerre moment basis. Each operator C acts as dG/dt = C @ G on
+    # the eight lowest moments, and must satisfy the collision-operator
+    # invariants regardless of the closure it approximates:
+    #
+    #   (i)  H-theorem / entropy production: the symmetrized moment matrix is
+    #        negative semi-definite, so the quadratic free-energy rate
+    #        <G, C G> <= 0 for every perturbation (collisions dissipate, never
+    #        amplify, free energy).
+    #   (ii) Density is an exact collisional invariant: the density moment is
+    #        neither produced (row 0 = 0) nor acted upon (column 0 = 0), i.e.
+    #        a Maxwellian density perturbation sits in the operator's null
+    #        space.
+    #   (iii) The non-conserved moments are genuinely damped (a strictly
+    #        negative part of the spectrum), so the operator is not trivially
+    #        zero.
+    for name in ("coulomb", "sugama", "improved_sugama"):
+        matrix = np.asarray(load_collision_moment_matrix(name), dtype=float)
+        assert matrix.shape == (8, 8), name
+        symmetric = 0.5 * (matrix + matrix.T)
+        eigenvalues = np.linalg.eigvalsh(symmetric)
+        # (i) H-theorem: no growing free-energy direction.
+        assert float(eigenvalues.max()) < 1.0e-10, name
+        # (iii) real dissipation of the damped moments.
+        assert float(eigenvalues.min()) < -0.1, name
+        # (ii) density (moment 0) is an exact two-sided collisional invariant.
+        np.testing.assert_allclose(matrix[0, :], 0.0, atol=1.0e-12)
+        np.testing.assert_allclose(matrix[:, 0], 0.0, atol=1.0e-12)
+
+
+def test_collision_operator_from_config_selects_validates_and_stays_dissipative() -> None:
+    # TOML ``collision_operator`` selection: the diagonal defaults resolve to
+    # None (the linear RHS keeps its built-in Lenard-Bernstein term, re-enabled
+    # exactly when collision_operator is None), the moment-matrix names build a
+    # dense drift-kinetic operator, and an unknown name is rejected. The
+    # selected operators must remain physically valid (H-theorem).
+    from gkx.config import TimeConfig
+
+    assert TimeConfig().collision_operator == "none"
+    density = jnp.asarray([1.0])
+    mass = jnp.asarray([1.0])
+    temperature = jnp.asarray([1.0])
+
+    assert (
+        collision_operator_from_config(
+            "none", density=density, mass=mass, temperature=temperature
+        )
+        is None
+    )
+    # Case/whitespace-insensitive; alias for the built-in diagonal term.
+    assert (
+        collision_operator_from_config(
+            "  Lenard_Bernstein ", density=density, mass=mass, temperature=temperature
+        )
+        is None
+    )
+
+    for name in ("sugama", "improved_sugama"):
+        operator = collision_operator_from_config(
+            name, density=density, mass=mass, temperature=temperature
+        )
+        assert isinstance(operator, DriftKineticMomentCollisionOperator)
+        # Single species -> (Ns, Ns, 8, 8) ordered-pair moment matrix.
+        assert operator.matrix.shape == (1, 1, 8, 8)
+        block = np.asarray(operator.matrix).reshape(8, 8)
+        eigenvalues = np.linalg.eigvalsh(0.5 * (block + block.T))
+        # H-theorem preserved (tolerance covers float32 eigenvalue noise ~2e-8;
+        # any real growing direction would be O(0.1)).
+        assert float(eigenvalues.max()) < 1.0e-6, name
+        assert float(eigenvalues.min()) < -0.1, name
+
+    assert set(COLLISION_OPERATOR_NAMES) == {
+        "none",
+        "lenard_bernstein",
+        "sugama",
+        "improved_sugama",
+    }
+    with pytest.raises(ValueError, match="collision_operator must be one of"):
+        collision_operator_from_config(
+            "bogus", density=density, mass=mass, temperature=temperature
+        )
+
+
 def test_improved_sugama_multispecies_matrix_conserves_and_differentiates() -> None:
-    density = jnp.asarray([1.3, 0.7], dtype=jnp.float32)
-    mass = jnp.asarray([2.0, 1.0], dtype=jnp.float32)
-    temperature = jnp.asarray([1.2, 0.8], dtype=jnp.float32)
+    # Run the differentiability check in the ambient precision.  The central
+    # finite difference below is a float-precision-limited reference: with
+    # float32 inputs, catastrophic cancellation in ``f(t+h) - f(t-h)`` floors
+    # its accuracy near a few 1e-3 regardless of ``h``, which cannot certify
+    # the (exact) JVP once x64 makes the AD tangent itself exact.  Under x64 we
+    # therefore promote the inputs to float64 and shrink the step so the FD
+    # reference is genuinely accurate; under float32 we keep the historical
+    # step/tolerance that already balanced truncation against rounding noise.
+    x64_enabled = bool(jax.config.jax_enable_x64)
+    real_dtype = jnp.float64 if x64_enabled else jnp.float32
+    complex_dtype = jnp.complex128 if x64_enabled else jnp.complex64
+    density = jnp.asarray([1.3, 0.7], dtype=real_dtype)
+    mass = jnp.asarray([2.0, 1.0], dtype=real_dtype)
+    temperature = jnp.asarray([1.2, 0.8], dtype=real_dtype)
     matrix = jax.jit(assemble_drift_kinetic_improved_sugama_matrix)(
         density, mass, temperature
     )
     state = (
-        jnp.arange(16, dtype=jnp.float32).reshape(2, 2, 4, 1, 1, 1) + 0.13j
-    ).astype(jnp.complex64)
+        jnp.arange(16, dtype=real_dtype).reshape(2, 2, 4, 1, 1, 1) + 0.13j
+    ).astype(complex_dtype)
     contribution = apply_multispecies_collision_moment_matrix(state, matrix)
     rates = multispecies_collision_invariant_rates(
         contribution, density=density, mass=mass, temperature=temperature
@@ -1200,19 +1295,25 @@ def test_improved_sugama_multispecies_matrix_conserves_and_differentiates() -> N
         < 0.0
     )
 
-    direction = jnp.asarray([0.15, -0.08], dtype=jnp.float32)
+    direction = jnp.asarray([0.15, -0.08], dtype=real_dtype)
 
     def response(values):
         operator = assemble_drift_kinetic_improved_sugama_matrix(density, mass, values)
         return apply_multispecies_collision_moment_matrix(state, operator)
 
     tangent = jax.jvp(response, (temperature,), (direction,))[1]
-    step = jnp.asarray(1.0e-3, dtype=jnp.float32)
+    # x64 (the authoritative CI precision) certifies the JVP tightly; the
+    # float32 local path is FD-rounding limited to a ~3e-3 plateau here, so its
+    # tolerance reflects that floor rather than sitting on the failure edge.
+    fd_step = 2.0e-5 if x64_enabled else 1.0e-3
+    fd_rtol = 5.0e-4 if x64_enabled else 5.0e-3
+    fd_atol = 5.0e-6 if x64_enabled else 5.0e-3
+    step = jnp.asarray(fd_step, dtype=real_dtype)
     finite_difference = (
         response(temperature + step * direction)
         - response(temperature - step * direction)
     ) / (2.0 * step)
-    np.testing.assert_allclose(tangent, finite_difference, rtol=1.5e-3, atol=1.5e-3)
+    np.testing.assert_allclose(tangent, finite_difference, rtol=fd_rtol, atol=fd_atol)
 
     equal_temperature = jnp.ones_like(temperature)
     equal_matrix = assemble_drift_kinetic_improved_sugama_matrix(

@@ -1,3 +1,0 @@
-objective,passed,n_samples,initial_objective,final_objective,absolute_reduction,relative_reduction,initial_central_derivative,initial_update_direction,accepted_steps,max_steps,initial_delta,final_delta,stop_reason
-growth,True,2,0.3041009317429306,0.3039503792073248,0.00015055253560580795,0.0004950742332255541,-15014.542291328647,positive_delta,1,1,0.0,1e-08,max_steps
-quasilinear_flux,True,2,0.8870403732948899,0.8850873757682598,0.0019529975266301403,0.00220170083056736,195473.1214762512,negative_delta,1,1,0.0,-1e-08,max_steps

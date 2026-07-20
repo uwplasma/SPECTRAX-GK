@@ -10,9 +10,9 @@ from support.paths import load_artifact_tool
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk.diagnostics.quasilinear_calibration as qlc
-from spectraxgk.diagnostics.quasilinear_calibration import (
+import gkx
+import gkx.diagnostics.quasilinear_calibration as qlc
+from gkx.diagnostics.quasilinear_calibration import (
     QuasilinearCalibrationPoint,
     apply_heat_flux_scale,
     calibration_point_from_nonlinear_window_summary,
@@ -22,7 +22,7 @@ from spectraxgk.diagnostics.quasilinear_calibration import (
     quasilinear_calibration_report,
     write_quasilinear_calibration_report,
 )
-from spectraxgk.diagnostics.transport_windows import (
+from gkx.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     nonlinear_window_convergence_report,
 )
@@ -52,7 +52,7 @@ def _valid_window_stats(case: str = "holdout") -> dict:
 def test_quasilinear_calibration_report_tracks_train_holdout_claim_level(
     tmp_path: Path,
 ) -> None:
-    assert spectraxgk.QuasilinearCalibrationPoint is QuasilinearCalibrationPoint
+    assert gkx.QuasilinearCalibrationPoint is QuasilinearCalibrationPoint
     points = [
         QuasilinearCalibrationPoint(
             case="cyclone_ky0p2",
@@ -184,10 +184,10 @@ def test_quasilinear_calibration_report_can_fit_one_train_scale() -> None:
     ]
 
     scale_fit = fit_train_heat_flux_scale(points)
-    assert spectraxgk.fit_train_heat_flux_scale is fit_train_heat_flux_scale
+    assert gkx.fit_train_heat_flux_scale is fit_train_heat_flux_scale
     assert scale_fit["scale"] == pytest.approx(4.0)
     scaled = apply_heat_flux_scale(points, scale=scale_fit["scale"])
-    assert spectraxgk.apply_heat_flux_scale is apply_heat_flux_scale
+    assert gkx.apply_heat_flux_scale is apply_heat_flux_scale
     assert scaled[0].predicted_heat_flux == pytest.approx(1.0)
     assert scaled[0].raw_predicted_heat_flux == pytest.approx(0.25)
     assert scaled[0].calibration_scale == pytest.approx(4.0)
@@ -368,7 +368,7 @@ def test_calibration_point_from_nonlinear_window_summary(tmp_path: Path) -> None
         json.dumps(
             {
                 "case": "cyclone_window",
-                "spectrax": str(diag),
+                "gkx": str(diag),
                 "tmin": 0.5,
                 "tmax": 2.0,
             }
@@ -515,7 +515,7 @@ def test_calibration_point_from_nonlinear_netcdf_window_summary(tmp_path: Path) 
         json.dumps(
             {
                 "case": "w7x_window",
-                "spectrax": str(diag),
+                "gkx": str(diag),
                 "tmin": 0.5,
                 "tmax": 2.0,
             }
@@ -582,7 +582,7 @@ def test_calibration_point_from_nonlinear_netcdf_window_validation(
         )
     summary = tmp_path / "summary.json"
     summary.write_text(
-        json.dumps({"spectrax": str(diag), "tmin": 0.5, "tmax": 2.0}), encoding="utf-8"
+        json.dumps({"gkx": str(diag), "tmin": 0.5, "tmax": 2.0}), encoding="utf-8"
     )
 
     es = calibration_point_from_nonlinear_window_summary(
@@ -624,7 +624,7 @@ def test_calibration_point_from_nonlinear_netcdf_window_validation(
         )
     mismatch_summary = tmp_path / "mismatch_summary.json"
     mismatch_summary.write_text(
-        json.dumps({"spectrax": str(mismatch)}), encoding="utf-8"
+        json.dumps({"gkx": str(mismatch)}), encoding="utf-8"
     )
     with pytest.raises(ValueError, match="first dimension"):
         calibration_point_from_nonlinear_window_summary(
@@ -646,7 +646,7 @@ def test_calibration_point_from_nonlinear_netcdf_window_validation(
             :, :, :
         ] = np.ones((3, 2, 2))
     rank3_summary = tmp_path / "rank3_summary.json"
-    rank3_summary.write_text(json.dumps({"spectrax": str(rank3)}), encoding="utf-8")
+    rank3_summary.write_text(json.dumps({"gkx": str(rank3)}), encoding="utf-8")
     with pytest.raises(ValueError, match="must have shape"):
         calibration_point_from_nonlinear_window_summary(
             rank3_summary,
@@ -666,7 +666,7 @@ def test_calibration_point_from_nonlinear_netcdf_window_validation(
         )
     no_window_summary = tmp_path / "no_window_summary.json"
     no_window_summary.write_text(
-        json.dumps({"spectrax": str(no_window), "tmin": 0.0, "tmax": 1.0}),
+        json.dumps({"gkx": str(no_window), "tmin": 0.0, "tmax": 1.0}),
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="no finite heat-flux samples"):
@@ -688,7 +688,7 @@ def test_integrated_quasilinear_flux_from_spectrum_and_window_point(
     )
     summed = integrated_quasilinear_flux_from_spectrum(spectrum)
     assert (
-        spectraxgk.integrated_quasilinear_flux_from_spectrum
+        gkx.integrated_quasilinear_flux_from_spectrum
         is integrated_quasilinear_flux_from_spectrum
     )
     assert summed["estimate"] == pytest.approx(7.0)
@@ -702,7 +702,7 @@ def test_integrated_quasilinear_flux_from_spectrum_and_window_point(
     diag.write_text("t,heat_flux\n0.0,2.0\n1.0,4.0\n", encoding="utf-8")
     summary = tmp_path / "summary.json"
     summary.write_text(
-        json.dumps({"case": "c", "spectrax": str(diag)}), encoding="utf-8"
+        json.dumps({"case": "c", "gkx": str(diag)}), encoding="utf-8"
     )
 
     point = calibration_point_from_spectrum_and_nonlinear_window(
@@ -769,7 +769,7 @@ def test_calibration_summary_ingestion_validates_csv_windows_and_relative_paths(
     summaries.mkdir()
     summary = summaries / "summary.json"
     summary.write_text(
-        json.dumps({"case": "relative", "spectrax": "../diag.csv"}), encoding="utf-8"
+        json.dumps({"case": "relative", "gkx": "../diag.csv"}), encoding="utf-8"
     )
 
     point = calibration_point_from_nonlinear_window_summary(
@@ -795,7 +795,7 @@ def test_calibration_summary_ingestion_validates_csv_windows_and_relative_paths(
     missing_t.write_text("heat_flux\n1.0\n", encoding="utf-8")
     summary_missing_t = tmp_path / "summary_missing_t.json"
     summary_missing_t.write_text(
-        json.dumps({"spectrax": str(missing_t)}), encoding="utf-8"
+        json.dumps({"gkx": str(missing_t)}), encoding="utf-8"
     )
     with pytest.raises(ValueError, match="'t' column"):
         calibration_point_from_nonlinear_window_summary(
@@ -809,7 +809,7 @@ def test_calibration_summary_ingestion_validates_csv_windows_and_relative_paths(
     no_window.write_text("t,heat_flux\n0.0,nan\n1.0,nan\n", encoding="utf-8")
     summary_no_window = tmp_path / "summary_no_window.json"
     summary_no_window.write_text(
-        json.dumps({"spectrax": str(no_window), "tmin": 0.0, "tmax": 1.0}),
+        json.dumps({"gkx": str(no_window), "tmin": 0.0, "tmax": 1.0}),
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="no finite heat-flux samples"):
@@ -833,7 +833,7 @@ def test_build_calibration_report_tool_can_generate_point_from_artifacts(
     diag.write_text("t,heat_flux\n0.0,4.0\n1.0,6.0\n", encoding="utf-8")
     summary = tmp_path / "summary.json"
     summary.write_text(
-        json.dumps({"case": "generated", "spectrax": str(diag)}), encoding="utf-8"
+        json.dumps({"case": "generated", "gkx": str(diag)}), encoding="utf-8"
     )
     out = tmp_path / "report.json"
 
@@ -917,7 +917,7 @@ def test_calibration_point_from_nonlinear_window_summary_rejects_unsupported_sou
 
     summary = tmp_path / "summary.json"
     summary.write_text(
-        json.dumps({"case": "c", "spectrax": str(missing_col)}), encoding="utf-8"
+        json.dumps({"case": "c", "gkx": str(missing_col)}), encoding="utf-8"
     )
     with pytest.raises(ValueError):
         calibration_point_from_nonlinear_window_summary(
@@ -929,7 +929,7 @@ def test_calibration_point_from_nonlinear_window_summary_rejects_unsupported_sou
 
     txt_summary = tmp_path / "summary_txt.json"
     txt_summary.write_text(
-        json.dumps({"case": "c", "spectrax": str(tmp_path / "run.txt")}),
+        json.dumps({"case": "c", "gkx": str(tmp_path / "run.txt")}),
         encoding="utf-8",
     )
     with pytest.raises(NotImplementedError):

@@ -1,5 +1,5 @@
 {
-  "claim_scope": "real VMEC-JAX/SPECTRAX-GK tracked optimization evidence; reduced objectives are diagnostic/model-development quantities unless matched long-window nonlinear audits pass",
+  "claim_scope": "real VMEC-JAX/GKX tracked optimization evidence; reduced objectives are diagnostic/model-development quantities unless matched long-window nonlinear audits pass",
   "kind": "qa_itg_optimization_readme_panel",
   "matched_projected_candidate": {
     "absolute_reduction": 0.32509294381594955,
@@ -10,13 +10,13 @@
   "output": "docs/_static/qa_itg_optimization_summary_panel.png",
   "selected_landscape_candidate": null,
   "sources": {
-    "geometry_png": "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png",
+    "geometry_png": "docs/_static/vmex_qa_solved_boundary_boozer_panel.png",
     "landscape_admission_json": "docs/_static/vmec_boundary_transport_landscape_rbc11_full_admission.json",
     "landscape_admission_present": false,
     "landscape_csv": "docs/_static/vmec_boundary_transport_landscape_rbc11_full.csv",
     "landscape_json": "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json",
-    "matched_nonlinear_json": "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
+    "matched_nonlinear_json": "docs/_static/vmex_qa_projected_weight_0p001_matched_comparison.json",
     "matched_nonlinear_present": true,
-    "sweep_json": "docs/_static/vmec_jax_qa_full_sweep_panel.json"
+    "sweep_json": "docs/_static/vmex_qa_full_sweep_panel.json"
   }
 }

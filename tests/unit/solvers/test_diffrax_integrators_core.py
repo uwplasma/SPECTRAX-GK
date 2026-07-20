@@ -8,14 +8,14 @@ import pytest
 diffrax = pytest.importorskip("diffrax")
 pytest.importorskip("equinox")
 
-from spectraxgk.diagnostics.analysis import ModeSelection, ModeSelectionBatch
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.solvers.time import (
+from gkx.diagnostics.analysis import ModeSelection, ModeSelectionBatch
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.solvers.time import (
     integrate_linear_diffrax,
     integrate_linear_diffrax_streaming,
     integrate_nonlinear_diffrax,
 )
-from spectraxgk.solvers.time.diffrax_core import (
+from gkx.solvers.time.diffrax_core import (
     _adjoint,
     _density_from_G_cached,
     _is_imex_solver,
@@ -27,11 +27,11 @@ from spectraxgk.solvers.time.diffrax_core import (
     _stepsize_controller,
     _unpack_complex_state,
 )
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams
-from spectraxgk.core.species import Species, build_linear_params
-from spectraxgk.terms.config import TermConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.params import LinearParams
+from gkx.operators.linear.params import Species, build_linear_params
+from gkx.terms.config import TermConfig
 from dataclasses import replace
 import jax
 
@@ -159,7 +159,7 @@ def test_diffrax_helper_functions() -> None:
 
 
 def test_require_diffrax_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    import spectraxgk.solvers.time.diffrax_core as di
+    import gkx.solvers.time.diffrax_core as di
 
     monkeypatch.setattr(di, "dfx", None)
     monkeypatch.setattr(di, "eqx", None)
@@ -177,7 +177,7 @@ def test_pack_unpack_complex_state_roundtrip() -> None:
 
 def test_density_from_G_cached_all_branches() -> None:
     grid, geom, params, G5 = _tiny_diffrax_setup(nx=1, ny=2, nz=4)
-    from spectraxgk.linear import build_linear_cache
+    from gkx.operators.linear.cache_builder import build_linear_cache
 
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
     out5 = _density_from_G_cached(G5, cache, density_species_index=None)

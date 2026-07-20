@@ -5,22 +5,22 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics.analysis import ModeSelection
-from spectraxgk.benchmarking.shared import (
+from gkx.diagnostics.analysis import ModeSelection
+from gkx.benchmarking.shared import (
     LinearRunResult,
     LinearScanResult,
 )
-from spectraxgk.workflows.linear import run_linear_scan, run_scan_and_mode
-from spectraxgk.diagnostics.modes import (
+from gkx.workflows.linear import run_linear_scan, run_scan_and_mode
+from gkx.diagnostics.modes import (
     compare_eigenfunctions,
     load_eigenfunction_reference_bundle,
     normalize_eigenfunction,
     phase_align_eigenfunction,
     save_eigenfunction_reference_bundle,
 )
-from spectraxgk.artifacts.nonlinear_diagnostics import load_diagnostic_time_series
-from spectraxgk.artifacts.spectral_layout import infer_triple_dealiased_ny
-from spectraxgk.diagnostics.analysis import (
+from gkx.artifacts.io import load_diagnostic_time_series
+from gkx.artifacts.spectral_layout import infer_triple_dealiased_ny
+from gkx.diagnostics.analysis import (
     BranchContinuationMetrics,
     LateTimeLinearMetrics,
     NonlinearHeatFluxConvergenceMetrics,
@@ -31,13 +31,13 @@ from spectraxgk.diagnostics.analysis import (
     nonlinear_heat_flux_convergence_metrics,
     windowed_nonlinear_metrics,
 )
-from spectraxgk.diagnostics.growth_windows import (
+from gkx.diagnostics.growth_windows import (
     _analytic_signal,
     _explicit_time_window,
     _leading_window,
     late_time_window,
 )
-from spectraxgk.diagnostics.validation_gates import (
+from gkx.diagnostics.validation_gates import (
     GateReport,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
@@ -52,10 +52,10 @@ from spectraxgk.diagnostics.validation_gates import (
     observed_order_gate_report,
     zonal_response_gate_report,
 )
-from spectraxgk.diagnostics.modes import EigenfunctionComparisonMetrics
-from spectraxgk.diagnostics import SimulationDiagnostics
-from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
-from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
+from gkx.diagnostics.modes import EigenfunctionComparisonMetrics
+from gkx.diagnostics import SimulationDiagnostics
+from gkx.diagnostics.zonal_validation import zonal_flow_response_metrics
+from gkx.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 
 def test_normalize_eigenfunction_uses_nearest_zero() -> None:
@@ -255,7 +255,7 @@ def test_linear_metrics_gate_report_uses_growth_and_frequency() -> None:
         tmin=5.0,
         tmax=10.0,
         nsamples=20,
-        signal_source="spectrax",
+        signal_source="gkx",
     )
 
     report = linear_metrics_gate_report(
@@ -792,19 +792,19 @@ def test_run_scan_and_mode_uses_selected_ky_and_fit_window(monkeypatch) -> None:
         return run
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.extract_mode_time_series",
+        "gkx.workflows.linear.extract_mode_time_series",
         lambda phi_t, sel, method: np.array([1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j]),
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.fit_growth_rate_auto",
+        "gkx.workflows.linear.fit_growth_rate_auto",
         lambda t, signal, **kwargs: (0.5, -0.1, 0.25, 1.75),
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.extract_eigenfunction",
+        "gkx.workflows.linear.extract_eigenfunction",
         lambda phi_t, t, selection, z, method, tmin, tmax: np.array([1.0, 2.0, 3.0]),
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.build_spectral_grid",
+        "gkx.workflows.linear.build_spectral_grid",
         lambda _grid: SimpleNamespace(z=np.array([-1.0, 0.0, 1.0])),
     )
     cfg = SimpleNamespace(grid=object())
@@ -849,11 +849,11 @@ def test_run_scan_and_mode_short_trace_skips_fit(monkeypatch) -> None:
     )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.build_spectral_grid",
+        "gkx.workflows.linear.build_spectral_grid",
         lambda _grid: SimpleNamespace(z=np.array([-1.0, 1.0])),
     )
     monkeypatch.setattr(
-        "spectraxgk.workflows.linear.extract_eigenfunction",
+        "gkx.workflows.linear.extract_eigenfunction",
         lambda *args, **kwargs: np.array([1.0, -1.0]),
     )
 

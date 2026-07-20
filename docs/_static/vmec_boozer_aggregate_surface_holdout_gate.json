@@ -4,7 +4,7 @@
   "blockers": [],
   "builder": "tools/artifacts/build_vmec_boozer_aggregate_holdout_gate.py surface",
   "case_name": "nfp4_QH_warm_start",
-  "claim_scope": "true surface_index-heldout reduced aggregate VMEC/Boozer/SPECTRAX-GK line-search split; this is reduced growth/quasilinear objective evidence, not a nonlinear turbulent transport claim",
+  "claim_scope": "true surface_index-heldout reduced aggregate VMEC/Boozer/GKX line-search split; this is reduced growth/quasilinear objective evidence, not a nonlinear turbulent transport claim",
   "final_delta": 1e-08,
   "heldout_final_objective": 0.7202268145538959,
   "heldout_final_report": {
@@ -34,12 +34,12 @@
     "base_value": 0.7202268145538959,
     "case_name": "nfp4_QH_warm_start",
     "central_derivative": -33055.52052581984,
-    "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/SPECTRAX-GK objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
+    "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/GKX objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
     "curvature_abs": 1.6421904732943915e-05,
     "curvature_ratio": 0.0024839882221967553,
     "finite_difference_consistent": true,
     "finite_values": true,
-    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
+    "input_path": "/Users/rogeriojorge/local/vmex/examples/data/input.nfp4_QH_warm_start",
     "kind": "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
     "max_curvature_ratio": 5.0,
     "minus_objective_table": [
@@ -137,7 +137,7 @@
       }
     ],
     "source_scope": "mode21_vmec_boozer_state_multi_point",
-    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
+    "wout_path": "/Users/rogeriojorge/local/vmex/examples/data/wout_nfp4_QH_warm_start.nc"
   },
   "heldout_initial_objective": 0.720557454021897,
   "heldout_initial_report": {
@@ -167,12 +167,12 @@
     "base_value": 0.720557454021897,
     "case_name": "nfp4_QH_warm_start",
     "central_derivative": -33071.935410084465,
-    "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/SPECTRAX-GK objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
+    "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/GKX objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
     "curvature_abs": 1.6408848676596755e-05,
     "curvature_ratio": 0.0024807814349433696,
     "finite_difference_consistent": true,
     "finite_values": true,
-    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
+    "input_path": "/Users/rogeriojorge/local/vmex/examples/data/input.nfp4_QH_warm_start",
     "kind": "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
     "max_curvature_ratio": 5.0,
     "minus_objective_table": [
@@ -270,7 +270,7 @@
       }
     ],
     "source_scope": "mode21_vmec_boozer_state_multi_point",
-    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
+    "wout_path": "/Users/rogeriojorge/local/vmex/examples/data/wout_nfp4_QH_warm_start.nc"
   },
   "heldout_passed": true,
   "heldout_relative_reduction": 0.0004588662099816408,
@@ -326,7 +326,7 @@
   "training_report": {
     "accepted_steps": 1,
     "case_name": "nfp4_QH_warm_start",
-    "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
+    "claim_scope": "curvature-gated one-parameter line search for an aggregated VMEC/Boozer/GKX linear/quasilinear objective; not a multi-parameter or nonlinear turbulent transport optimization claim",
     "final_delta": 1e-08,
     "final_objective": 0.8035154074860971,
     "history": [

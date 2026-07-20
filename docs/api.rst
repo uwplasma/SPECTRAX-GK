@@ -4,234 +4,222 @@ API Reference
 Public API Registry
 -------------------
 
-The top-level ``spectraxgk`` package remains the stable user-facing facade.
+The top-level ``gkx`` package remains the stable user-facing facade.
 Implementation ownership lives in the domain modules below; the compact API
 registry lazily re-exports promoted symbols without keeping one re-export file
 per domain. Advanced users should import from the owning domain modules when
 they need implementation-specific extension points.
 
-.. automodule:: spectraxgk.api
+.. automodule:: gkx.api
    :members:
    :exclude-members: KrylovConfig
    :no-index:
 
-Core Refactor Contracts
------------------------
+Collision Operator Interface
+----------------------------
 
-.. automodule:: spectraxgk.core.contracts
-   :members:
-
-Core Extension Points
----------------------
-
-.. automodule:: spectraxgk.core.extension_points
+.. automodule:: gkx.operators.collision
    :members:
 
 Velocity-Space Core
 -------------------
 
-.. automodule:: spectraxgk.core.velocity
+.. automodule:: gkx.core.velocity
    :members:
 
 Geometry
 --------
 
-.. automodule:: spectraxgk.geometry
+.. automodule:: gkx.geometry
    :members:
    :no-index:
 
 Geometry Core
 -------------
 
-.. automodule:: spectraxgk.geometry.core
+.. automodule:: gkx.geometry.core
    :members:
    :private-members:
 
 Analytic Geometry
 -----------------
 
-.. automodule:: spectraxgk.geometry.analytic
+.. automodule:: gkx.geometry.analytic
    :members:
    :private-members:
 
 Flux-Tube Geometry
 ------------------
 
-.. automodule:: spectraxgk.geometry.flux_tube
+.. automodule:: gkx.geometry.flux_tube
    :members:
    :private-members:
 
 Miller EIK Generation
 ---------------------
 
-.. automodule:: spectraxgk.geometry.miller_eik
+.. automodule:: gkx.geometry.miller_eik
    :members:
    :private-members:
 
 VMEC EIK Generation
 -------------------
 
-.. automodule:: spectraxgk.geometry.vmec_eik
+.. automodule:: gkx.geometry.vmec_eik
    :members:
    :private-members:
 
 Differentiable Geometry
 -----------------------
 
-.. automodule:: spectraxgk.geometry.differentiable
+.. automodule:: gkx.geometry.differentiable
    :members:
 
 Differentiable Geometry Backend Discovery
 -----------------------------------------
 
-.. automodule:: spectraxgk.geometry.backend_discovery
+.. automodule:: gkx.geometry.backend_discovery
    :members:
    :private-members:
 
 Differentiable Flux-Tube Contract
 ---------------------------------
 
-.. automodule:: spectraxgk.geometry.flux_tube_contract
+.. automodule:: gkx.geometry.flux_tube_contract
    :members:
    :private-members:
 
 Differentiable Geometry AD Checks
 ---------------------------------
 
-.. automodule:: spectraxgk.geometry.autodiff_checks
+.. automodule:: gkx.geometry.autodiff_checks
    :members:
    :private-members:
 
 Differentiable Geometry Sensitivity
 -----------------------------------
 
-.. automodule:: spectraxgk.geometry.sensitivity
+.. automodule:: gkx.geometry.sensitivity
    :members:
    :private-members:
 
 Differentiable Boozer Bridge
 ----------------------------
 
-.. automodule:: spectraxgk.geometry.booz_xform_bridge
+.. automodule:: gkx.geometry.booz_xform_bridge
    :members:
    :private-members:
 
 Differentiable VMEC-State Sensitivity
 -------------------------------------
 
-.. automodule:: spectraxgk.geometry.vmec_state_sensitivity
+.. automodule:: gkx.geometry.vmec_state_sensitivity
    :members:
    :private-members:
 
 Differentiable VMEC Boozer Core
 -------------------------------
 
-.. automodule:: spectraxgk.geometry.vmec_boozer_core
+.. automodule:: gkx.geometry.vmec_boozer_core
    :members:
    :private-members:
 
 Differentiable VMEC Boozer Constants
 ------------------------------------
 
-.. automodule:: spectraxgk.geometry.vmec_boozer_constants
+.. automodule:: gkx.geometry.vmec_boozer_constants
    :members:
    :private-members:
 
 Differentiable VMEC Flux-Tube Reports
 -------------------------------------
 
-.. automodule:: spectraxgk.geometry.vmec_flux_tube_reports
+.. automodule:: gkx.geometry.vmec_flux_tube_reports
    :members:
    :private-members:
 
 Differentiable VMEC Tensor Mapping
 ----------------------------------
 
-.. automodule:: spectraxgk.geometry.vmec_tensor_mapping
+.. automodule:: gkx.geometry.vmec_tensor_mapping
    :members:
    :private-members:
 
 Differentiable Geometry Numerics
 --------------------------------
 
-.. automodule:: spectraxgk.geometry.numerics
+.. automodule:: gkx.geometry.numerics
    :members:
    :private-members:
 
 Grids
 -----
 
-.. automodule:: spectraxgk.core.grid
+.. automodule:: gkx.core.grid
    :members:
 
-Species
--------
+Species and Linear Parameters
+-----------------------------
 
-.. automodule:: spectraxgk.core.species
-   :members:
+.. automodule:: gkx.operators.linear.params
+   :members: Species, build_linear_params
 
 Operators
 ---------
 
-.. automodule:: spectraxgk.operators
+.. automodule:: gkx.operators
    :members:
 
 Linear Operators
 ----------------
 
-.. automodule:: spectraxgk.operators.linear
-
-Linear
-------
-
-.. automodule:: spectraxgk.linear
-   :members:
+.. automodule:: gkx.operators.linear
 
 Linear Linked Boundaries
 ------------------------
 
-.. automodule:: spectraxgk.operators.linear.linked
+.. automodule:: gkx.operators.linear.linked
    :members:
    :private-members:
 
 Linear Cache
 ------------
 
-.. automodule:: spectraxgk.operators.linear.cache_model
+.. automodule:: gkx.operators.linear.cache_model
    :members:
    :no-index:
 
-.. automodule:: spectraxgk.operators.linear.cache_arrays
+.. automodule:: gkx.operators.linear.cache_arrays
    :members:
    :private-members:
    :no-index:
 
-.. automodule:: spectraxgk.operators.linear.cache_builder
+.. automodule:: gkx.operators.linear.cache_builder
    :members:
    :no-index:
 
 Linear Collisions
 -----------------
 
-.. automodule:: spectraxgk.operators.linear.collisions
+.. automodule:: gkx.operators.linear.collisions
    :members:
    :no-index:
 
-.. automodule:: spectraxgk.operators.linear.collision_tables
+.. automodule:: gkx.operators.linear.collision_tables
    :members:
    :no-index:
 
 Linear Moments
 --------------
 
-.. automodule:: spectraxgk.operators.linear.moments
+.. automodule:: gkx.operators.linear.moments
    :members:
    :private-members:
 
 Linear Parameters
 -----------------
 
-.. automodule:: spectraxgk.operators.linear.params
+.. automodule:: gkx.operators.linear.params
    :members:
    :private-members:
    :no-index:
@@ -239,99 +227,88 @@ Linear Parameters
 Linear RHS
 ----------
 
-.. automodule:: spectraxgk.operators.linear.rhs
+.. automodule:: gkx.operators.linear.rhs
    :members:
 
 Linear Dissipation
 ------------------
 
-.. automodule:: spectraxgk.operators.linear.dissipation
+.. automodule:: gkx.operators.linear.dissipation
    :members:
    :private-members:
 
 Linear Implicit Solvers
 -----------------------
 
-.. automodule:: spectraxgk.solvers.linear.implicit
+.. automodule:: gkx.solvers.linear.implicit
    :members:
    :private-members:
 
 Linear Integrators
 ------------------
 
-.. automodule:: spectraxgk.solvers.linear.integrators
+.. automodule:: gkx.solvers.linear.integrators
    :members:
    :private-members:
 
 Linear Diagnostic Integration
 -----------------------------
 
-.. automodule:: spectraxgk.solvers.linear.integrator_diagnostics
+.. automodule:: gkx.solvers.linear.integrator_diagnostics
    :members:
    :private-members:
 
 Linear Parallel RHS
 -------------------
 
-.. automodule:: spectraxgk.solvers.linear.parallel
+.. automodule:: gkx.solvers.linear.parallel
    :members:
    :private-members:
 
 Linear Parallel Policy
 ----------------------
 
-.. automodule:: spectraxgk.solvers.linear.parallel_common
+.. automodule:: gkx.solvers.linear.parallel_common
    :members:
    :private-members:
 
 Linear Parallel Streaming
 -------------------------
 
-.. automodule:: spectraxgk.solvers.linear.parallel_streaming
+.. automodule:: gkx.solvers.linear.parallel_streaming
    :members:
    :private-members:
 
 Linear Parallel Electrostatic Slices
 ------------------------------------
 
-.. automodule:: spectraxgk.solvers.linear.parallel_electrostatic
+.. automodule:: gkx.solvers.linear.parallel_electrostatic
    :members:
    :private-members:
 
 Linear Krylov Solvers
 ---------------------
 
-.. automodule:: spectraxgk.solvers.linear.krylov
+.. automodule:: gkx.solvers.linear.krylov
    :members:
    :private-members:
 
 Linear Eigenmode Solver Internals
 ---------------------------------
 
-``spectraxgk.solvers.linear.krylov`` owns ``KrylovConfig`` and the public
+``gkx.solvers.linear.krylov`` owns ``KrylovConfig`` and the public
 status-reporting wrapper, while the focused helper modules below own operator
 application, branch selection, shift-invert preconditioning, and Arnoldi iterations.
 
-.. automodule:: spectraxgk.solvers.linear.eigen_operator
+.. automodule:: gkx.solvers.linear.krylov_algorithms
    :members:
    :private-members:
    :no-index:
-
-.. automodule:: spectraxgk.solvers.linear.krylov_algorithms
-   :members:
-   :private-members:
-   :no-index:
-
-Nonlinear
----------
-
-.. automodule:: spectraxgk.nonlinear
-   :members:
 
 Nonlinear Diagnostics
 ---------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.diagnostics
+.. automodule:: gkx.operators.nonlinear.diagnostics
    :members:
    :private-members:
    :no-index:
@@ -339,21 +316,21 @@ Nonlinear Diagnostics
 Nonlinear Diagnostic State
 --------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.diagnostic_state
+.. automodule:: gkx.operators.nonlinear.diagnostic_state
    :members:
    :private-members:
 
 Nonlinear Collision Split Helpers
 ---------------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.collisions
+.. automodule:: gkx.operators.nonlinear.collisions
    :members:
    :private-members:
 
 Nonlinear Helpers
 -----------------
 
-.. automodule:: spectraxgk.operators.nonlinear.policies
+.. automodule:: gkx.operators.nonlinear.policies
    :members:
    :private-members:
    :no-index:
@@ -361,42 +338,42 @@ Nonlinear Helpers
 Nonlinear Projection Helpers
 ----------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.projection
+.. automodule:: gkx.operators.nonlinear.projection
    :members:
    :private-members:
 
 Nonlinear RHS
 -------------
 
-.. automodule:: spectraxgk.operators.nonlinear.rhs
+.. automodule:: gkx.operators.nonlinear.rhs
    :members:
    :private-members:
 
 Nonlinear Bracket Kernels
 -------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.brackets
+.. automodule:: gkx.operators.nonlinear.brackets
    :members:
    :private-members:
 
 Nonlinear Term Assembly
 -----------------------
 
-.. automodule:: spectraxgk.terms.nonlinear
+.. automodule:: gkx.terms.nonlinear
    :members:
    :private-members:
 
 Nonlinear Explicit Step
 -----------------------
 
-.. automodule:: spectraxgk.solvers.nonlinear.explicit
+.. automodule:: gkx.solvers.nonlinear.explicit
    :members:
    :private-members:
 
 Nonlinear State Integration
 ---------------------------
 
-.. automodule:: spectraxgk.solvers.nonlinear.state_integration
+.. automodule:: gkx.solvers.nonlinear.state_integration
    :members:
    :private-members:
    :no-index:
@@ -404,14 +381,14 @@ Nonlinear State Integration
 Nonlinear Diagnostic Drivers
 ----------------------------
 
-.. automodule:: spectraxgk.solvers.nonlinear.diagnostics
+.. automodule:: gkx.solvers.nonlinear.diagnostics
    :members:
    :private-members:
 
 Nonlinear Diagnostic Integration
 --------------------------------
 
-.. automodule:: spectraxgk.solvers.nonlinear.diagnostic_integration
+.. automodule:: gkx.solvers.nonlinear.diagnostic_integration
    :members:
    :private-members:
    :no-index:
@@ -419,710 +396,569 @@ Nonlinear Diagnostic Integration
 Nonlinear IMEX
 --------------
 
-.. automodule:: spectraxgk.solvers.nonlinear.imex
+.. automodule:: gkx.solvers.nonlinear.imex
    :members:
    :private-members:
 
 Explicit Time Integrators
 -------------------------
 
-.. automodule:: spectraxgk.solvers.time.explicit
+.. automodule:: gkx.solvers.time.explicit
    :members:
    :private-members:
 
 Explicit Step Kernels
 ---------------------
 
-.. automodule:: spectraxgk.solvers.time.explicit_steps
+.. automodule:: gkx.solvers.time.explicit_steps
    :members:
    :private-members:
 
 Explicit Diagnostic Integrators
 -------------------------------
 
-.. automodule:: spectraxgk.solvers.time.explicit_diagnostics
+.. automodule:: gkx.solvers.time.explicit_diagnostics
    :members:
    :private-members:
 
 Explicit CFL Policy
 -------------------
 
-.. automodule:: spectraxgk.solvers.time.explicit_cfl
+.. automodule:: gkx.solvers.time.explicit_cfl
    :members:
    :private-members:
 
 Diffrax Time Integrators
 ------------------------
 
-.. automodule:: spectraxgk.solvers.time.diffrax_core
+.. automodule:: gkx.solvers.time.diffrax_core
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.solvers.time.diffrax_linear
+.. automodule:: gkx.solvers.time.diffrax_linear
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.solvers.time.diffrax_streaming
+.. automodule:: gkx.solvers.time.diffrax_streaming
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.solvers.time.diffrax_nonlinear
+.. automodule:: gkx.solvers.time.diffrax_nonlinear
    :members:
    :private-members:
 
 Config-Driven Time Runners
 --------------------------
 
-.. automodule:: spectraxgk.solvers.time.runners
+.. automodule:: gkx.solvers.time.runners
    :members:
    :private-members:
 
 Runtime Execution Dispatch
 --------------------------
 
-.. automodule:: spectraxgk.workflows.runtime.execution
+.. automodule:: gkx.workflows.runtime.execution
    :members:
    :private-members:
 
 Nonlinear Replicate Diagnostics
 -------------------------------
 
-.. automodule:: spectraxgk.diagnostics.nonlinear_replicates
-   :members:
-
-Nonlinear Replicate Follow-Up
------------------------------
-
-.. automodule:: tools.campaigns.nonlinear_replicate_followup
+.. automodule:: gkx.diagnostics.nonlinear_replicates
    :members:
 
 Nonlinear Transport Optimization Diagnostics
 --------------------------------------------
 
-.. automodule:: spectraxgk.diagnostics.nonlinear_transport_optimization
+.. automodule:: gkx.diagnostics.nonlinear_transport_optimization
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Diagnostics
 ---------------------------------------
 
-.. automodule:: spectraxgk.diagnostics.nonlinear_gradient_evidence
+.. automodule:: gkx.diagnostics.nonlinear_gradient_evidence
    :members:
    :private-members:
 
-Nonlinear Gradient Campaign Follow-Up Tools
--------------------------------------------
+Nonlinear Gradient Statistics
+-----------------------------
 
-.. automodule:: tools.campaigns.nonlinear_gradient_followup
+.. automodule:: gkx.diagnostics.nonlinear_gradient_statistics
    :members:
    :private-members:
 
 Benchmarks
 ----------
 
-.. automodule:: spectraxgk.benchmarks
+.. automodule:: gkx.benchmarking.shared
    :members:
    :no-index:
 
 Validation Gates
 ----------------
 
-.. automodule:: spectraxgk.diagnostics.validation_gates
+.. automodule:: gkx.diagnostics.validation_gates
    :members:
 
 Autodiff Validation
 -------------------
 
-.. automodule:: spectraxgk.objectives.autodiff_validation
+.. automodule:: gkx.objectives.autodiff_validation
    :members:
 
 Parallelization
 ---------------
 
-.. automodule:: spectraxgk.parallel
+.. automodule:: gkx.parallel
    :members:
 
 Parallel Identity Reports
 -------------------------
 
-.. automodule:: spectraxgk.parallel.identity
+.. automodule:: gkx.parallel.identity
    :members:
    :private-members:
 
 Parallel Batch Mapping
 ----------------------
 
-.. automodule:: spectraxgk.parallel.batch
+.. automodule:: gkx.parallel.batch
    :members:
    :private-members:
 
 Parallel Independent Tasks
 --------------------------
 
-.. automodule:: spectraxgk.parallel.independent
+.. automodule:: gkx.parallel.independent
    :members:
    :private-members:
 
 Nonlinear Parallel Spectral Core
 --------------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.spectral_core
+.. automodule:: gkx.operators.nonlinear.spectral_core
    :members:
    :private-members:
 
 Nonlinear Domain Decomposition
 ------------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.domain_decomposition
+.. automodule:: gkx.operators.nonlinear.domain_decomposition
    :members:
    :private-members:
 
 Nonlinear Parallel Device-Z Core
 --------------------------------
 
-.. automodule:: spectraxgk.operators.nonlinear.device_z
+.. automodule:: gkx.operators.nonlinear.device_z
    :members:
    :private-members:
 
 Velocity Sharding Plans
 -----------------------
 
-.. automodule:: spectraxgk.parallel.velocity
+.. automodule:: gkx.parallel.velocity
    :members:
    :no-index:
 
-.. automodule:: spectraxgk.parallel.velocity_plan
+.. automodule:: gkx.parallel.velocity_plan
    :members:
 
-.. automodule:: spectraxgk.parallel.velocity_hermite
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.parallel.velocity_streaming
+.. automodule:: gkx.parallel.velocity_hermite
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.parallel.velocity_drive
+.. automodule:: gkx.parallel.velocity_streaming
+   :members:
+   :private-members:
+
+.. automodule:: gkx.parallel.velocity_drive
    :members:
    :private-members:
 
 State Sharding Policy
 ---------------------
 
-.. automodule:: spectraxgk.parallel.state
+.. automodule:: gkx.parallel.state
    :members:
 
 Sharded Integrators
 -------------------
 
-.. automodule:: spectraxgk.parallel.integrators
+.. automodule:: gkx.parallel.integrators
    :members:
 
 Zonal Validation
 ----------------
 
-.. automodule:: spectraxgk.diagnostics.zonal_validation
+.. automodule:: gkx.diagnostics.zonal_validation
    :members:
 
 Zonal Flow Objectives
 ---------------------
 
-.. automodule:: spectraxgk.objectives.zonal
+.. automodule:: gkx.objectives.zonal
    :members:
 
 Analysis
 --------
 
-.. automodule:: spectraxgk.diagnostics.analysis
+.. automodule:: gkx.diagnostics.analysis
    :members:
    :no-index:
 
 Mode Diagnostics
 ----------------
 
-.. automodule:: spectraxgk.diagnostics.modes
+.. automodule:: gkx.diagnostics.modes
    :members:
 
 Growth-Rate Diagnostics
 -----------------------
 
-.. automodule:: spectraxgk.diagnostics.growth_rates
-   :members:
-   :private-members:
-
-Growth-Rate Fit Kernels
------------------------
-
-.. automodule:: spectraxgk.diagnostics.growth_fit
+.. automodule:: gkx.diagnostics.growth_rates
    :members:
    :private-members:
 
 Growth-Rate Fit Windows
 -----------------------
 
-.. automodule:: spectraxgk.diagnostics.growth_windows
+.. automodule:: gkx.diagnostics.growth_windows
    :members:
-
-Runtime Output Plots
---------------------
-
-.. automodule:: spectraxgk.artifacts.runtime_plots
-   :members:
-   :private-members:
-
-Benchmark And Scan Plots
-------------------------
-
-.. automodule:: spectraxgk.artifacts.benchmark_plots
-   :members:
-
-Diagnostic Plots
-----------------
-
-.. automodule:: spectraxgk.artifacts.diagnostic_plots
-   :members:
-   :private-members:
 
 Zonal Response Plots
 --------------------
 
-.. automodule:: spectraxgk.artifacts.zonal_plots
+.. automodule:: gkx.artifacts.zonal_plots
    :members:
 
-Plotting Facade
----------------
+Publication Plotting
+--------------------
 
-.. automodule:: spectraxgk.artifacts.plotting
+.. automodule:: gkx.artifacts.plotting
    :members:
    :no-index:
 
 Config
 ------
 
-.. automodule:: spectraxgk.config
+.. automodule:: gkx.config
    :members:
 
 Normalization
 -------------
 
-.. automodule:: spectraxgk.diagnostics.normalization
+.. automodule:: gkx.diagnostics.normalization
    :members:
 
-Energy Diagnostics
-------------------
+Moment And Energy Diagnostics
+-----------------------------
 
-.. automodule:: spectraxgk.diagnostics.energy
+.. automodule:: gkx.diagnostics.moments
    :members:
    :private-members:
 
 Transport Diagnostics
 ---------------------
 
-.. automodule:: spectraxgk.diagnostics.transport
-   :members:
-   :private-members:
-
-Resolved Diagnostics
---------------------
-
-.. automodule:: spectraxgk.diagnostics.resolved
+.. automodule:: gkx.diagnostics.transport
    :members:
    :private-members:
 
 Runtime Config
 --------------
 
-.. automodule:: spectraxgk.workflows.runtime.config
+.. automodule:: gkx.workflows.runtime.config
    :members:
 
 Runtime Startup
 ---------------
 
-.. automodule:: spectraxgk.workflows.runtime.startup
+.. automodule:: gkx.workflows.runtime.startup
    :members:
    :private-members:
 
 Runtime Policies
 ----------------
 
-.. automodule:: spectraxgk.workflows.runtime.policies
+.. automodule:: gkx.workflows.runtime.policies
    :members:
    :private-members:
 
 Runtime Diagnostics
 -------------------
 
-.. automodule:: spectraxgk.workflows.runtime.diagnostics
+.. automodule:: gkx.workflows.runtime.diagnostics
    :members:
    :private-members:
 
 Runtime Diagnostic Arrays
 -------------------------
 
-.. automodule:: spectraxgk.workflows.runtime.diagnostic_arrays
+.. automodule:: gkx.workflows.runtime.diagnostic_arrays
    :members:
    :private-members:
 
 Runtime Initial Conditions
 --------------------------
 
-.. automodule:: spectraxgk.workflows.runtime.initial_conditions
+.. automodule:: gkx.workflows.runtime.initial_conditions
    :members:
    :private-members:
 
 Runtime Phi Initializer
 -----------------------
 
-.. automodule:: spectraxgk.workflows.runtime.initial_phi
+.. automodule:: gkx.workflows.runtime.initial_phi
    :members:
    :private-members:
 
 Runtime Chunks
 --------------
 
-.. automodule:: spectraxgk.workflows.runtime.chunks
+.. automodule:: gkx.workflows.runtime.chunks
    :members:
    :private-members:
 
 Runtime Results
 ---------------
 
-.. automodule:: spectraxgk.workflows.runtime.results
+.. automodule:: gkx.workflows.runtime.results
    :members:
    :private-members:
 
 Runtime Orchestration
 ---------------------
 
-.. automodule:: spectraxgk.workflows.runtime.orchestration_scan
+.. automodule:: gkx.workflows.runtime.orchestration_scan
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.workflows.runtime.orchestration_artifacts
+.. automodule:: gkx.workflows.runtime.orchestration_artifacts
    :members:
    :private-members:
 
 Runtime Commands
 ----------------
 
-.. automodule:: spectraxgk.workflows.runtime.commands
+.. automodule:: gkx.workflows.runtime.commands
    :members:
    :private-members:
 
 Runtime TOML Inputs
 -------------------
 
-.. automodule:: spectraxgk.workflows.runtime.toml
+.. automodule:: gkx.workflows.runtime.toml
    :members:
    :private-members:
 
 Runtime Artifact Package
 ------------------------
 
-.. automodule:: spectraxgk.artifacts
+.. automodule:: gkx.artifacts
    :members:
 
 Runtime Artifact IO
 -------------------
 
-.. automodule:: spectraxgk.artifacts.io
-   :members:
-   :private-members:
-
-Runtime Restart Artifacts
--------------------------
-
-.. automodule:: spectraxgk.artifacts.restart
-   :members:
-   :private-members:
-
-Runtime Artifact Linear Writers
--------------------------------
-
-.. automodule:: spectraxgk.artifacts.linear
-   :members:
-   :private-members:
-
-Runtime Artifact Nonlinear Writers
-----------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear
+.. automodule:: gkx.artifacts.io
    :members:
    :private-members:
 
 NetCDF Spectral Layout
 ----------------------
 
-.. automodule:: spectraxgk.artifacts.spectral_layout
+.. automodule:: gkx.artifacts.spectral_layout
    :members:
    :private-members:
 
-Nonlinear Output NetCDF Geometry
---------------------------------
+Nonlinear Output NetCDF
+-----------------------
 
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_geometry
+.. automodule:: gkx.artifacts.nonlinear_netcdf
    :members:
    :private-members:
-
-Nonlinear Output NetCDF Field Writer
-------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_fields
-   :members:
-   :private-members:
-
-Nonlinear Output NetCDF Diagnostics Writer
-------------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_diagnostics
-   :members:
-   :private-members:
-
-Nonlinear Output NetCDF Facade
-------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf
-   :members:
-   :private-members:
-
-Runtime Artifact Nonlinear Diagnostics
---------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_diagnostics
-   :members:
-   :private-members:
-
-Quasilinear Transport Facade
-----------------------------
-
-.. automodule:: spectraxgk.quasilinear
-   :members:
-   :no-index:
 
 Quasilinear Transport Diagnostics
 ---------------------------------
 
-.. automodule:: spectraxgk.diagnostics.quasilinear_transport
+.. automodule:: gkx.diagnostics.quasilinear_transport
    :members:
 
 Quasilinear Calibration
 -----------------------
 
-.. automodule:: spectraxgk.diagnostics.quasilinear_calibration
+.. automodule:: gkx.diagnostics.quasilinear_calibration
    :members:
    :private-members:
 
 Quasilinear Nonlinear-Window Gates
 ----------------------------------
 
-.. automodule:: spectraxgk.diagnostics.transport_windows
+.. automodule:: gkx.diagnostics.transport_windows
    :members:
    :private-members:
 
 Quasilinear Model Selection
 ---------------------------
 
-.. automodule:: spectraxgk.diagnostics.quasilinear_model_selection
+.. automodule:: gkx.diagnostics.quasilinear_model_selection
    :members:
 
 Solver Eigen Objectives
 -----------------------
 
-.. automodule:: spectraxgk.objectives.eigen
+.. automodule:: gkx.objectives.eigen
    :members:
 
 Solver Objective Core
 ---------------------
 
-.. automodule:: spectraxgk.objectives.core
+.. automodule:: gkx.objectives.core
    :members:
 
 Solver Objective Sampling
 -------------------------
 
-.. automodule:: spectraxgk.objectives.sampling
+.. automodule:: gkx.objectives.sampling
    :members:
 
 Solver Geometry Objectives
 --------------------------
 
-.. automodule:: spectraxgk.objectives.geometry
+.. automodule:: gkx.objectives.geometry
    :members:
    :private-members:
 
 Solver-Ready Gradient Gates
 ---------------------------
 
-.. automodule:: spectraxgk.objectives.gradient_gates
+.. automodule:: gkx.objectives.gradient_gates
    :members:
    :private-members:
 
 Solver VMEC/Boozer Gradient Gates
 ---------------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_boozer_gradients
+.. automodule:: gkx.objectives.vmec_boozer_gradients
    :members:
    :private-members:
 
 Solver VMEC/Boozer Objectives
 -----------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_boozer
+.. automodule:: gkx.objectives.vmec_boozer
    :members:
    :private-members:
 
 Solver VMEC/Boozer Finite-Difference Gates
 ------------------------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_boozer_fd
+.. automodule:: gkx.objectives.vmec_boozer_fd
    :members:
    :private-members:
 
 Solver VMEC/Boozer Line-Search Gates
 ------------------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_boozer_line_search
+.. automodule:: gkx.objectives.vmec_boozer_line_search
    :members:
    :private-members:
 
 Parallel Decomposition Contracts
 --------------------------------
 
-.. automodule:: spectraxgk.parallel.decomposition
+.. automodule:: gkx.parallel.decomposition
    :members:
-
-QA Low-Turbulence Model And Gates
----------------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_model
-   :members:
-   :private-members:
-
-QA Low-Turbulence Optimizer
----------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_optimizer
-   :members:
-
-QA Low-Turbulence Artifacts
----------------------------
-
-.. automodule:: spectraxgk.objectives.qa_low_turbulence_artifacts
-   :members:
-   :private-members:
 
 VMEC-JAX Transport Objective
 ----------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_transport
-   :members:
-   :no-index:
-
-VMEC-JAX Transport Configuration
---------------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_transport_config
-   :members:
-
-VMEC-JAX Transport Tables
--------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_transport_tables
+.. automodule:: gkx.objectives.vmec_transport
    :members:
    :private-members:
 
 VMEC-JAX Transport Branch Gates
 -------------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_transport_branch
+.. automodule:: gkx.objectives.vmec_transport_branch
    :members:
 
 VMEC-JAX Transport Admission
 ----------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_transport_admission
+.. automodule:: gkx.objectives.vmec_transport_admission
    :members:
    :private-members:
 
 Stellarator Transport Reports
 -----------------------------
 
-.. automodule:: spectraxgk.diagnostics.stellarator_transport_reports
+.. automodule:: gkx.diagnostics.stellarator_transport_reports
    :members:
    :private-members:
 
-VMEC-JAX Transport Gradient
----------------------------
+VMEC-JAX Transport Optimization
+-------------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_transport_gradient
+.. automodule:: gkx.objectives.vmec_transport_optimization
    :members:
 
 VMEC-JAX Boundary Chain
 -----------------------
 
-.. automodule:: spectraxgk.geometry.vmec_boundary_chain
-   :members:
-
-VMEC-JAX Transport Line Search
-------------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_transport_line_search
+.. automodule:: gkx.geometry.vmec_boundary_chain
    :members:
 
 VMEC-JAX Candidate Gates
 ------------------------
 
-.. automodule:: spectraxgk.objectives.vmec_candidate_admission
+.. automodule:: gkx.objectives.vmec_candidate_admission
    :members:
 
 Stellarator ITG Objectives
 --------------------------
 
-.. automodule:: spectraxgk.objectives.stellarator
+.. automodule:: gkx.objectives.stellarator
    :members:
    :no-index:
 
 Stellarator ITG Objective Tables
 --------------------------------
 
-.. automodule:: spectraxgk.objectives.stellarator_tables
+.. automodule:: gkx.objectives.stellarator_tables
    :members:
 
 Stellarator ITG Contracts
 -------------------------
 
-.. automodule:: spectraxgk.objectives.stellarator_contracts
+.. automodule:: gkx.objectives.stellarator_contracts
    :members:
 
 Stellarator Reduced ITG Model And Gates
 ---------------------------------------
 
-.. automodule:: spectraxgk.objectives.stellarator_reduced
+.. automodule:: gkx.objectives.stellarator_reduced
    :members:
    :private-members:
 
-Stellarator Objective Portfolio Contracts
------------------------------------------
+Stellarator Objective Portfolios
+--------------------------------
 
-.. automodule:: spectraxgk.objectives.portfolio_contracts
-   :members:
-
-Stellarator Objective Portfolio Sensitivity
--------------------------------------------
-
-.. automodule:: spectraxgk.objectives.portfolio_sensitivity
+.. automodule:: gkx.objectives.portfolio
    :members:
    :private-members:
 
-Stellarator Objective Portfolio Artifact Guards
------------------------------------------------
+Stellarator Objective Portfolio Guard
+-------------------------------------
 
-.. automodule:: spectraxgk.objectives.portfolio_artifacts
+.. automodule:: gkx.objectives.portfolio_guard
    :members:
    :private-members:
 
 Runtime Runner
 --------------
 
-.. automodule:: spectraxgk.runtime
+.. automodule:: gkx.runtime
    :members:

@@ -123,7 +123,7 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         path
         for module in validation["modules"]
         if module["module"]
-        in {"spectraxgk.parallel.__init__", "spectraxgk.parallel.state"}
+        in {"gkx.parallel.__init__", "gkx.parallel.state"}
         for path in module["artifact_paths"]
     }
 
@@ -446,7 +446,7 @@ def test_parallel_scaling_artifact_checker_accepts_profile_source_contract(
         "source_artifact": "docs/_static/profile.json",
         "software_versions": {
             "python": "3.11.0",
-            "spectraxgk": "test",
+            "gkx": "test",
             "jax": "0.test",
             "jaxlib": "0.test",
             "numpy": "2.test",
@@ -508,7 +508,7 @@ def test_parallel_scaling_artifact_checker_rejects_stale_profile_source_contract
         "source_artifact": "docs/_static/profile.json",
         "software_versions": {
             "python": "3.11.0",
-            "spectraxgk": "test",
+            "gkx": "test",
             "jax": "0.test",
             "jaxlib": "0.test",
             "numpy": "2.test",

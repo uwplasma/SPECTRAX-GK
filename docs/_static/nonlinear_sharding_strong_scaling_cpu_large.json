@@ -21,7 +21,7 @@
   "method": "rk2",
   "profiles": {
     "1": {
-      "_profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_1devices.json",
+      "_profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_1devices.json",
       "best_identity_preserving_candidate": {
         "engineering_speedup_median": 1.0781218405371065,
         "identity_gate_pass": true,
@@ -118,7 +118,7 @@
       "warmups": 1
     },
     "2": {
-      "_profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_2devices.json",
+      "_profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_2devices.json",
       "best_identity_preserving_candidate": {
         "engineering_speedup_median": 1.3998524510741943,
         "identity_gate_pass": true,
@@ -216,7 +216,7 @@
       "warmups": 1
     },
     "4": {
-      "_profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_4devices.json",
+      "_profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_4devices.json",
       "best_identity_preserving_candidate": {
         "engineering_speedup_median": 1.4849340947619287,
         "identity_gate_pass": true,
@@ -316,7 +316,7 @@
       "warmups": 1
     },
     "8": {
-      "_profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_8devices.json",
+      "_profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_8devices.json",
       "best_identity_preserving_candidate": {
         "engineering_speedup_median": 1.4566639590910255,
         "identity_gate_pass": true,
@@ -431,7 +431,7 @@
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_median_s": 5.455672431970015,
-      "profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_1devices.json",
+      "profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_1devices.json",
       "requested_devices": 1,
       "same_process_speedup": 1.0781218405371065,
       "serial_median_s": 5.881879603723064,
@@ -454,7 +454,7 @@
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_median_s": 4.109496616991237,
-      "profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_2devices.json",
+      "profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_2devices.json",
       "requested_devices": 2,
       "same_process_speedup": 1.3998524510741943,
       "serial_median_s": 5.752688911976293,
@@ -477,7 +477,7 @@
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_median_s": 3.918120753020048,
-      "profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_4devices.json",
+      "profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_4devices.json",
       "requested_devices": 4,
       "same_process_speedup": 1.4849340947619287,
       "serial_median_s": 5.818151093553752,
@@ -500,7 +500,7 @@
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_median_s": 3.981548748910427,
-      "profile_json": "/tmp/spectraxgk-nonlinear-scaling-bi3wq_iq/cpu_8devices.json",
+      "profile_json": "/tmp/gkx-nonlinear-scaling-bi3wq_iq/cpu_8devices.json",
       "requested_devices": 8,
       "same_process_speedup": 1.4566639590910255,
       "serial_median_s": 5.799778563901782,

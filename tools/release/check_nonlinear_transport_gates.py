@@ -30,15 +30,15 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.diagnostics.nonlinear_replicates import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.diagnostics.nonlinear_replicates import (  # noqa: E402
     NonlinearWindowEnsembleManifestConfig,
     nonlinear_window_ensemble_artifact_manifest,
 )
-from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
+from gkx.diagnostics.validation_gates import (  # noqa: E402
     matched_nonlinear_transport_report,
 )
-from spectraxgk.diagnostics.transport_windows import (  # noqa: E402
+from gkx.diagnostics.transport_windows import (  # noqa: E402
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
     nonlinear_window_convergence_from_csv,
@@ -124,7 +124,7 @@ def _read_output_tmax(path: Path) -> float | None:
     except Exception:
         pass
     try:
-        from spectraxgk.artifacts.nonlinear_netcdf_diagnostics import (  # noqa: PLC0415
+        from gkx.artifacts.io import (  # noqa: PLC0415
             load_nonlinear_netcdf_diagnostics,
         )
 
@@ -956,7 +956,7 @@ def build_convergence_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Window summary JSON containing a diagnostics source path.",
     )
-    parser.add_argument("--diagnostics-source", default="spectrax")
+    parser.add_argument("--diagnostics-source", default="gkx")
     parser.add_argument("--time-column", default="t")
     parser.add_argument("--value-column", default="heat_flux")
     parser.add_argument("--case", default=None)
@@ -1132,7 +1132,7 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(report["rows"])
     labels = [str(row["case"]) for row in rows]

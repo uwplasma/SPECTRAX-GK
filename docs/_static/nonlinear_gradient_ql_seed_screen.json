@@ -1210,7 +1210,7 @@
     }
   ],
   "passed": true,
-  "scope_note": "Rows describe vmec_jax state controls. They are not direct VMEC input-file RBC/ZBS coefficients unless a separate mapping artifact establishes that relation.",
+  "scope_note": "Rows describe vmex state controls. They are not direct VMEC input-file RBC/ZBS coefficients unless a separate mapping artifact establishes that relation.",
   "summary": {
     "admitted_control_count": 2,
     "artifact_count": 12,

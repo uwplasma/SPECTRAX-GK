@@ -54,7 +54,7 @@
   "phase_shift": -3.721936217820137e-06,
   "reference_bundle": "docs/_static/comparison/reference_modes/w7x_linear_reference_ky0p3000.npz",
   "relative_l2": 3.332895535477314e-05,
-  "spectrax_csv": "docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv",
+  "gkx_csv": "docs/_static/reference_modes/w7x_linear_gkx_ky0p3000.csv",
   "t_final": 2.0026769821172343,
   "validation_status": "closed"
 }

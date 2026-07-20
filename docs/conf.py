@@ -6,8 +6,8 @@ SRC_ROOT = os.path.join(PROJECT_ROOT, "src")
 sys.path.insert(0, SRC_ROOT)
 sys.path.insert(0, PROJECT_ROOT)
 
-project = "SPECTRAX-GK"
-author = "SPECTRAX-GK team"
+project = "GKX"
+author = "GKX team"
 
 extensions = [
     "sphinx.ext.autodoc",

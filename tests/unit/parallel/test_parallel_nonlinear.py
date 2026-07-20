@@ -9,9 +9,9 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-import spectraxgk.operators.nonlinear.parallel as nonlinear_parallel
-import spectraxgk.operators.nonlinear.domain_decomposition as nonlinear_parallel_domain
-from spectraxgk.operators.nonlinear.parallel import (
+import gkx.operators.nonlinear.parallel as nonlinear_parallel
+import gkx.operators.nonlinear.domain_decomposition as nonlinear_parallel_domain
+from gkx.operators.nonlinear.parallel import (
     NonlinearDomainDecompositionPlan,
     build_nonlinear_domain_decomposition_plan,
     deterministic_nonlinear_domain_state,
@@ -326,16 +326,16 @@ import json
 
 import numpy as np
 
-import spectraxgk
-import spectraxgk.operators.nonlinear.parallel_contracts_domain as nonlinear_parallel_contracts_domain
-import spectraxgk.operators.nonlinear.parallel_contracts_spectral as nonlinear_parallel_contracts_spectral
-import spectraxgk.operators.nonlinear.parallel_contracts_strategy as nonlinear_parallel_contracts_strategy
-import spectraxgk.operators.nonlinear.device_z as nonlinear_parallel_device_z
-import spectraxgk.operators.nonlinear.spectral_core as nonlinear_parallel_spectral_core
-import spectraxgk.operators.nonlinear.spectral_identity_integrator as spectral_identity_integrator
-import spectraxgk.operators.nonlinear.spectral_identity_reports as spectral_identity_reports
-import spectraxgk.operators.nonlinear.spectral_identity_rhs as spectral_identity_rhs
-from spectraxgk.operators.nonlinear.parallel import (
+import gkx
+import gkx.operators.nonlinear.parallel_contracts_domain as nonlinear_parallel_contracts_domain
+import gkx.operators.nonlinear.parallel_contracts_spectral as nonlinear_parallel_contracts_spectral
+import gkx.operators.nonlinear.parallel_contracts_strategy as nonlinear_parallel_contracts_strategy
+import gkx.operators.nonlinear.device_z as nonlinear_parallel_device_z
+import gkx.operators.nonlinear.spectral_core as nonlinear_parallel_spectral_core
+import gkx.operators.nonlinear.spectral_identity_integrator as spectral_identity_integrator
+import gkx.operators.nonlinear.spectral_identity_reports as spectral_identity_reports
+import gkx.operators.nonlinear.spectral_identity_rhs as spectral_identity_rhs
+from gkx.operators.nonlinear.parallel import (
     NonlinearDomainIdentityReport,
     NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
@@ -435,7 +435,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "release_ready_nonlinear_parallel_strategies",
     )
 
-    assert set(public_names) <= set(spectraxgk.__all__)
+    assert set(public_names) <= set(gkx.__all__)
     assert set(public_names) <= set(nonlinear_parallel.__all__)
     assert NonlinearParallelStrategy is nonlinear_parallel.NonlinearParallelStrategy
     assert (
@@ -487,7 +487,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         is nonlinear_parallel.NonlinearSpectralRHSIdentityReport
     )
     for name in public_names:
-        assert getattr(spectraxgk, name) is getattr(nonlinear_parallel, name)
+        assert getattr(gkx, name) is getattr(nonlinear_parallel, name)
 
 
 def test_nonlinear_parallel_facade_reexports_contract_objects() -> None:
@@ -1416,7 +1416,7 @@ def test_strategy_policy_separates_identity_physics_and_profiler_gates() -> None
 # ---- test_nonlinear_spectral_communication_gate.py ----
 
 
-from spectraxgk.operators.nonlinear.parallel import (
+from gkx.operators.nonlinear.parallel import (
     NonlinearSpectralIntegratorIdentityReport,
     deterministic_nonlinear_spectral_state,
     device_z_pencil_nonlinear_spectral_transport_window_identity_gate,

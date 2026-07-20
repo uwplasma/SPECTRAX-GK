@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk import (
+from gkx import (
     LinearValidationPanel,
     growth_fit_figure,
     linear_validation_figure,
@@ -13,7 +13,7 @@ from spectraxgk import (
     run_runtime_scan,
     scan_comparison_figure,
 )
-from spectraxgk.benchmarking.shared import load_cyclone_reference
+from gkx.benchmarking.shared import load_cyclone_reference
 
 
 CONFIG = Path("examples/linear/axisymmetric/cyclone.toml")

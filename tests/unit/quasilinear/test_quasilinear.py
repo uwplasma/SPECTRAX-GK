@@ -8,13 +8,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk.quasilinear as public_quasilinear
-from spectraxgk.diagnostics import quasilinear_transport
-from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import build_linear_cache, linear_terms_to_term_config
-from spectraxgk.quasilinear import (
+import gkx
+import gkx as public_quasilinear
+from gkx.diagnostics import quasilinear_transport
+from gkx.geometry import SAlphaGeometry, apply_geometry_grid_defaults
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import linear_terms_to_term_config
+from gkx.diagnostics.quasilinear_transport import (
     compute_quasilinear_from_linear_state,
     effective_kperp2,
     mixing_length_amplitude2_jax,
@@ -26,13 +27,13 @@ from spectraxgk.quasilinear import (
     shape_aware_power_law_objective,
     spectral_phi_weights,
 )
-from spectraxgk.runtime import (
+from gkx.runtime import (
     build_runtime_linear_params,
     build_runtime_linear_terms,
     run_runtime_linear,
     run_runtime_scan,
 )
-from spectraxgk.workflows.runtime.config import (
+from gkx.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,
@@ -78,10 +79,12 @@ def _tiny_linear_objects():
     return cfg, geom, grid, params, terms, cache, state
 
 
-def test_quasilinear_facade_exports_diagnostic_owner_objects() -> None:
-    """The public facade should stay stable while implementation ownership moves."""
+def test_top_level_api_exports_promoted_quasilinear_diagnostics() -> None:
+    """Promoted diagnostics resolve to their implementation-owner objects."""
 
-    for name in quasilinear_transport.__all__:
+    promoted = set(public_quasilinear.__all__) & set(quasilinear_transport.__all__)
+    assert promoted
+    for name in promoted:
         assert getattr(public_quasilinear, name) is getattr(quasilinear_transport, name)
 
 
@@ -222,7 +225,7 @@ def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
     )
     with pytest.raises(ValueError, match="features"):
         shape_aware_power_law_objective(jnp.asarray([0.1, 0.2]), ky, exponent=1.0)
-    assert spectraxgk.shape_aware_power_law_objective is shape_aware_power_law_objective
+    assert gkx.shape_aware_power_law_objective is shape_aware_power_law_objective
 
 
 def test_shape_aware_power_law_objective_clips_nonpositive_ky_reference() -> None:

@@ -13,7 +13,7 @@ import jax.numpy as jnp
 import jax
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarking.shared import (
+from gkx.benchmarking.shared import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -30,20 +30,16 @@ from spectraxgk.benchmarking.shared import (
     _build_initial_condition,
     _two_species_params,
 )
-from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, KBMBaseCase
-from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_H,
-    build_linear_cache,
-    linear_terms_to_term_config,
-)
-from spectraxgk.operators.linear.params import _as_species_array
-from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config
-from spectraxgk.terms.linear_terms import (
+from gkx.config import CycloneBaseCase, GeometryConfig, GridConfig, KBMBaseCase
+from gkx.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.workflows.runtime.toml import load_runtime_from_toml
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.moments import build_H
+from gkx.operators.linear.params import LinearParams, LinearTerms, linear_terms_to_term_config
+from gkx.operators.linear.params import _as_species_array
+from gkx.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config
+from gkx.terms.linear_terms import (
     collisions_contribution,
     curvature_gradb_contribution,
     diamagnetic_contribution,
@@ -52,9 +48,9 @@ from spectraxgk.terms.linear_terms import (
     mirror_contribution,
     linked_streaming_contribution,
 )
-from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
-from spectraxgk.terms.config import TermConfig
-from spectraxgk.core.species import build_linear_params
+from gkx.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
+from gkx.terms.config import TermConfig
+from gkx.operators.linear.params import build_linear_params
 
 try:
     from tools.comparison.compare_gx_imported_linear import (
@@ -186,7 +182,7 @@ def _manual_linear_contributions_from_fields(
 ):
     """Assemble linear term contributions using externally supplied fields.
 
-    GX term dumps are most useful when SPECTRAX evaluates the operator on the
+    GX term dumps are most useful when GKX evaluates the operator on the
     exact same ``G, phi, apar, bpar`` state rather than on a recomputed field
     solve. Keep this helper close to the comparison tool so tests can lock its
     argument/shape contract to the current linear-term APIs.
@@ -688,36 +684,36 @@ def run_compare(argv: list[str] | None = None) -> None:
             return arr_np[None, ...]
         return arr_np
 
-    spectrax_stream = _with_species(contrib["streaming"])
-    spectrax_mirror = _with_species(contrib["mirror"])
-    spectrax_curv = _with_species(contrib["curvature"])
-    spectrax_gradb = _with_species(contrib["gradb"])
-    spectrax_dia = _with_species(contrib["diamagnetic"])
-    spectrax_coll = _with_species(contrib["collisions"])
-    spectrax_hyper = _with_species(contrib["hypercollisions"])
+    gkx_stream = _with_species(contrib["streaming"])
+    gkx_mirror = _with_species(contrib["mirror"])
+    gkx_curv = _with_species(contrib["curvature"])
+    gkx_gradb = _with_species(contrib["gradb"])
+    gkx_dia = _with_species(contrib["diamagnetic"])
+    gkx_coll = _with_species(contrib["collisions"])
+    gkx_hyper = _with_species(contrib["hypercollisions"])
 
-    spectrax_linear = (
-        spectrax_mirror + spectrax_curv + spectrax_gradb + spectrax_dia + spectrax_coll
+    gkx_linear = (
+        gkx_mirror + gkx_curv + gkx_gradb + gkx_dia + gkx_coll
     )
 
-    _summary("streaming", gx_stream, spectrax_stream)
-    _summary("mirror", gx_mirror, spectrax_mirror)
-    _summary("curvature", gx_curv, spectrax_curv)
-    _summary("gradb", gx_gradb, spectrax_gradb)
-    _summary("diamag", gx_dia, spectrax_dia)
-    _summary("collisions", gx_coll, spectrax_coll)
+    _summary("streaming", gx_stream, gkx_stream)
+    _summary("mirror", gx_mirror, gkx_mirror)
+    _summary("curvature", gx_curv, gkx_curv)
+    _summary("gradb", gx_gradb, gkx_gradb)
+    _summary("diamag", gx_dia, gkx_dia)
+    _summary("collisions", gx_coll, gkx_coll)
     if gx_hyper_delta is not None:
-        _summary("hyper", gx_hyper_delta, spectrax_hyper)
-    _summary("linear_sum", gx_linear, spectrax_linear)
+        _summary("hyper", gx_hyper_delta, gkx_hyper)
+    _summary("linear_sum", gx_linear, gkx_linear)
     if phi_path.exists():
-        spectrax_phi = np.asarray(fields.phi)
-        spectrax_apar = np.asarray(fields.apar) if fields.apar is not None else None
-        spectrax_bpar = np.asarray(fields.bpar) if fields.bpar is not None else None
-        _summary("phi", phi, spectrax_phi)
-        if spectrax_apar is not None:
-            _summary("apar", apar, spectrax_apar)
-        if spectrax_bpar is not None:
-            _summary("bpar", bpar, spectrax_bpar)
+        gkx_phi = np.asarray(fields.phi)
+        gkx_apar = np.asarray(fields.apar) if fields.apar is not None else None
+        gkx_bpar = np.asarray(fields.bpar) if fields.bpar is not None else None
+        _summary("phi", phi, gkx_phi)
+        if gkx_apar is not None:
+            _summary("apar", apar, gkx_apar)
+        if gkx_bpar is not None:
+            _summary("bpar", bpar, gkx_bpar)
 
 
 def _case_config(name: str, args) -> tuple[object, object, int, float, float, float]:

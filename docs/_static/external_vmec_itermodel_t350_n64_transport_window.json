@@ -116,7 +116,7 @@
     "reason": "ITERModel external VMEC nonlinear t350 high-grid convergence passed external-VMEC nonlinear grid-convergence gate"
   },
   "source_gate": "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
-  "spectrax": "docs/_static/external_vmec_itermodel_nonlinear_t350_n64_pilot.traces.csv",
+  "gkx": "docs/_static/external_vmec_itermodel_nonlinear_t350_n64_pilot.traces.csv",
   "tmax": 350.0075378417969,
   "tmin": 175.054443359375,
   "window_policy": "highest_resolution_common_late_window_from_passed_external_vmec_grid_gate"

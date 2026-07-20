@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -31,11 +33,9 @@ REQUIRED_CI_SNIPPETS = (
     "codecov/codecov-action",
     "tools/release/check_parallel_scaling_artifacts.py",
     "tools/release/check_package_architecture_manifest.py",
-    "tools/release/check_package_architecture_manifest.py differentiable-refactor",
     "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
     "tools/release/check_quasilinear_promotion_guardrails.py",
     "tools/release/check_vmec_boozer_gates.py differentiability-claim",
-    "tools/artifacts/build_parallelization_completion_status.py",
     "tools/release/check_release_readiness.py technical-status",
     "tools/release/check_release_readiness.py",
     "rm -rf build dist",
@@ -53,22 +53,21 @@ REQUIRED_RELEASE_SNIPPETS = (
     "tools/release/check_repository_size_manifest.py",
     "tools/release/check_repository_size_manifest.py release-artifacts",
     "tools/release/check_package_architecture_manifest.py",
-    "tools/release/check_package_architecture_manifest.py differentiable-refactor",
     "tools/release/check_parallel_scaling_artifacts.py --performance-manifest-only",
     "tools/release/check_parallel_scaling_artifacts.py",
     "tools/release/check_quasilinear_promotion_guardrails.py",
     "tools/release/check_vmec_boozer_gates.py differentiability-claim",
-    "tools/artifacts/build_parallelization_completion_status.py",
     "tools/release/check_release_readiness.py technical-status",
     "tools/release/check_release_readiness.py",
     "rm -rf build dist",
 )
 REQUIRED_README_SNIPPETS = (
-    "pip install spectraxgk",
-    "spectraxgk",
+    "pip install gkx",
+    "gkx",
     "MIT",
 )
 REQUIRED_STATIC_ARTIFACTS = (
+    "benchmarks/references/gkx_1_7_release_contract.json",
     "docs/_static/runtime_memory_benchmark.png",
     "docs/_static/runtime_memory_summary_ship_refresh.json",
     "docs/_static/runtime_memory_results_ship_refresh.csv",
@@ -80,8 +79,6 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
     "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
     "docs/_static/technical_release_status.json",
-    "docs/_static/manuscript_readiness_status.json",
-    "docs/_static/open_research_lane_status.json",
     "docs/_static/w7x_tem_extension_status.json",
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
@@ -89,7 +86,6 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
     "docs/_static/nonlinear_spectral_communication_identity_gate.json",
-    "docs/_static/vmec_jax_qa_transport_optimization_status.json",
     "docs/_static/vmec_boundary_transport_landscape_admission.json",
     "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
     "docs/_static/nonlinear_campaign_admission_report.json",
@@ -97,9 +93,8 @@ REQUIRED_STATIC_ARTIFACTS = (
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
 TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
-OPTIMIZATION_STATUS_ARTIFACT = (
-    "docs/_static/vmec_jax_qa_transport_optimization_status.json"
-)
+RELEASE_CONTRACT_ARTIFACT = "benchmarks/references/gkx_1_7_release_contract.json"
+OPTIMIZATION_STATUS_ARTIFACT = RELEASE_CONTRACT_ARTIFACT
 REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
     "qa_baseline_gate_passed": True,
     "quasilinear_model_selection_passed": False,
@@ -144,18 +139,13 @@ REQUIRED_PRELAUNCH_GATE_ROWS = (
         "min_sample_count": 18.0,
     },
 )
-LANE_STATUS_ARTIFACTS = (
-    "docs/_static/manuscript_readiness_status.json",
-    "docs/_static/open_research_lane_status.json",
-    "docs/_static/w7x_tem_extension_status.json",
-)
 
 
 class ReleaseReadinessError(RuntimeError):
     """Raised when a release-readiness contract is not satisfied."""
 
 
-SOURCE_VERSION = REPO_ROOT / "src" / "spectraxgk" / "_version.py"
+SOURCE_VERSION = REPO_ROOT / "src" / "gkx" / "_version.py"
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 VERSION_RE = re.compile(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]\s*$")
 
@@ -271,8 +261,8 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
     "refactor_modularity": (
         EvidenceCheck(
             "architecture refactor plan",
-            "docs/architecture_refactor_plan.rst",
-            "authoritative refactor plan",
+            "plan.md",
+            "single implementation plan",
         ),
         EvidenceCheck(
             "package architecture manifest",
@@ -286,74 +276,73 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         ),
         EvidenceCheck(
             "operators package facade",
-            "src/spectraxgk/operators/__init__.py",
+            "src/gkx/operators/__init__.py",
             "hermite_streaming",
         ),
         EvidenceCheck(
             "linear operator package",
-            "src/spectraxgk/operators/linear/__init__.py",
+            "src/gkx/operators/linear/__init__.py",
             "build_linear_cache",
         ),
         EvidenceCheck(
             "linear solver package",
-            "src/spectraxgk/solvers/linear/__init__.py",
+            "src/gkx/solvers/linear/__init__.py",
             "KrylovConfig",
         ),
         EvidenceCheck(
             "nonlinear operator package",
-            "src/spectraxgk/operators/nonlinear/__init__.py",
+            "src/gkx/operators/nonlinear/__init__.py",
             "nonlinear_rhs_cached_impl",
         ),
         EvidenceCheck(
             "nonlinear solver package",
-            "src/spectraxgk/solvers/nonlinear/__init__.py",
+            "src/gkx/solvers/nonlinear/__init__.py",
             "solve_imex_step",
         ),
         EvidenceCheck(
             "runtime scan orchestration module",
-            "src/spectraxgk/workflows/runtime/orchestration_scan.py",
+            "src/gkx/workflows/runtime/orchestration_scan.py",
             "RuntimeScanDeps",
         ),
         EvidenceCheck(
             "runtime policy module",
-            "src/spectraxgk/workflows/runtime/policies.py",
+            "src/gkx/workflows/runtime/policies.py",
             "RuntimeIndependentParallelPlan",
         ),
         EvidenceCheck(
-            "linear cache builder", "src/spectraxgk/operators/linear/cache_builder.py"
+            "linear cache builder", "src/gkx/operators/linear/cache_builder.py"
         ),
         EvidenceCheck(
-            "linear moments module", "src/spectraxgk/operators/linear/moments.py"
+            "linear moments module", "src/gkx/operators/linear/moments.py"
         ),
         EvidenceCheck(
-            "linear params module", "src/spectraxgk/operators/linear/params.py"
+            "linear params module", "src/gkx/operators/linear/params.py"
         ),
         EvidenceCheck(
-            "linear parallel module", "src/spectraxgk/solvers/linear/parallel.py"
+            "linear parallel module", "src/gkx/solvers/linear/parallel.py"
         ),
         EvidenceCheck(
-            "nonlinear helper module", "src/spectraxgk/operators/nonlinear/policies.py"
+            "nonlinear helper module", "src/gkx/operators/nonlinear/policies.py"
         ),
         EvidenceCheck(
             "benchmark policy module",
-            "src/spectraxgk/benchmarking/shared.py",
+            "src/gkx/benchmarking/shared.py",
             "CYCLONE_KRYLOV_DEFAULT",
         ),
         EvidenceCheck(
-            "diagnostics channel module", "src/spectraxgk/diagnostics/channels.py"
+            "diagnostic moment kernels", "src/gkx/diagnostics/moments.py"
         ),
         EvidenceCheck(
             "coverage manifest",
             "tools/validation_coverage_manifest.toml",
-            "spectraxgk.workflows.runtime.orchestration_scan",
+            "gkx.workflows.runtime.orchestration_scan",
         ),
     ),
     "docs_release_hygiene": (
-        EvidenceCheck("readme install", "README.md", "pip install spectraxgk"),
-        EvidenceCheck("readme executable", "README.md", "spectraxgk"),
+        EvidenceCheck("readme install", "README.md", "pip install gkx"),
+        EvidenceCheck("readme executable", "README.md", "gkx"),
         EvidenceCheck("MIT license in README", "README.md", "MIT"),
         EvidenceCheck("release scope ledger", "docs/release_scope.rst", "Claim scope"),
-        EvidenceCheck("roadmap", "docs/roadmap.rst", "Release-ready"),
         EvidenceCheck("examples docs", "docs/examples.rst", "parallelization"),
         EvidenceCheck(
             "release workflow",
@@ -408,12 +397,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
             "shaped_tokamak_pressure",
         ),
-        EvidenceCheck(
-            "manuscript readiness", "docs/_static/manuscript_readiness_status.json"
-        ),
-        EvidenceCheck(
-            "open lane status", "docs/_static/open_research_lane_status.json"
-        ),
+        EvidenceCheck("frozen 1.7 release contract", RELEASE_CONTRACT_ARTIFACT),
         EvidenceCheck(
             "stellarator optimization docs",
             "docs/stellarator_optimization.rst",
@@ -448,7 +432,7 @@ def build_technical_release_status(root: Path = REPO_ROOT) -> dict[str, Any]:
         }
     overall = sum(scores) / max(len(scores), 1)
     return {
-        "kind": "spectraxgk_technical_release_status",
+        "kind": "gkx_technical_release_status",
         "root": str(root),
         "technical_release_completion_percent": overall,
         "target_percent": 98.0,
@@ -480,9 +464,9 @@ def read_project_version(root: Path = REPO_ROOT) -> str:
 
 
 def read_source_version(root: Path = REPO_ROOT) -> str:
-    """Return ``spectraxgk.__version__`` without importing the package."""
+    """Return ``gkx.__version__`` without importing the package."""
 
-    path = root / "src" / "spectraxgk" / "_version.py"
+    path = root / "src" / "gkx" / "_version.py"
     for line in path.read_text(encoding="utf-8").splitlines():
         match = VERSION_RE.match(line.strip())
         if match:
@@ -528,7 +512,7 @@ def validate_release_version(
     root: Path = REPO_ROOT,
     tag: str | None = None,
     require_tag: bool = False,
-    package: str = "spectraxgk",
+    package: str = "gkx",
     pypi_versions: Iterable[str] | None = None,
 ) -> dict[str, object]:
     """Validate package version, source version, optional tag, and PyPI uniqueness."""
@@ -538,7 +522,7 @@ def validate_release_version(
     source_version = read_source_version(root)
     if source_version != project_version:
         raise ReleaseVersionError(
-            f"src/spectraxgk/_version.py has {source_version!r}, "
+            f"src/gkx/_version.py has {source_version!r}, "
             f"but pyproject.toml has {project_version!r}"
         )
 
@@ -795,33 +779,226 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
     return failures
 
 
-def _lane_status_summary(root: Path) -> dict[str, Any]:
-    artifacts: dict[str, Any] = {}
-    for artifact in LANE_STATUS_ARTIFACTS:
-        payload = _read_json(root / artifact)
-        lane_key = "lanes" if "lanes" in payload else "rows"
-        lanes = payload.get(lane_key)
-        if not isinstance(lanes, list):
-            raise ReleaseReadinessError(f"{artifact} missing lanes/rows list")
-        artifacts[artifact] = {
-            "kind": payload.get("kind"),
-            "claim_scope": payload.get("claim_scope"),
-            "summary": payload.get("summary", {}),
-            "lane_source_key": lane_key,
-            "status_counts": _status_counts(lanes),
-            "lanes": [
-                {
-                    "lane": lane.get("lane"),
-                    "status": lane.get("status"),
-                    "claim_level": lane.get("claim_level"),
-                }
-                for lane in lanes
-                if isinstance(lane, dict)
-            ],
-        }
+def _canonical_json_sha256(payload: object) -> str:
+    encoded = json.dumps(
+        payload, allow_nan=False, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
-    manuscript = artifacts["docs/_static/manuscript_readiness_status.json"]
-    recomputed = _recomputed_active_summary(manuscript["lanes"])
+
+def _normalized_fingerprint_number(value: int | float) -> int | float | str:
+    if isinstance(value, int):
+        return value
+    if math.isnan(value):
+        return "NaN"
+    if math.isinf(value):
+        return "Infinity" if value > 0 else "-Infinity"
+    return value
+
+
+def _numeric_array_payload(value: object) -> object | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return _normalized_fingerprint_number(value)
+    if not isinstance(value, list):
+        return None
+    rows = [_numeric_array_payload(item) for item in value]
+    if any(row is None for row in rows):
+        return None
+    return rows
+
+
+def _numeric_json_fingerprints(payload: object) -> dict[str, object]:
+    scalars: dict[str, int | float | str] = {}
+    arrays: dict[str, object] = {}
+
+    def walk(value: object, path: str) -> None:
+        if isinstance(value, dict):
+            for key in sorted(value):
+                walk(value[key], f"{path}.{key}" if path else str(key))
+            return
+        if isinstance(value, list):
+            numeric = _numeric_array_payload(value)
+            if numeric is not None:
+                arrays[path or "$root"] = numeric
+                return
+            for index, item in enumerate(value):
+                walk(item, f"{path}[{index}]")
+            return
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return
+        scalars[path or "$root"] = _normalized_fingerprint_number(value)
+
+    walk(payload, "")
+    return {
+        "scalar_count": len(scalars),
+        "scalar_sha256": _canonical_json_sha256(scalars),
+        "array_count": len(arrays),
+        "array_sha256": _canonical_json_sha256(arrays),
+    }
+
+
+def build_frozen_output_fingerprint(
+    root: Path, relative_path: str
+) -> dict[str, object]:
+    path = root / relative_path
+    if not path.is_file():
+        raise ReleaseReadinessError(f"frozen output missing: {relative_path}")
+    report: dict[str, object] = {
+        "path": relative_path,
+        "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+    if path.suffix == ".json":
+        report.update(_numeric_json_fingerprints(_read_json(path)))
+    return report
+
+
+def _frozen_output_fingerprint_summary(
+    root: Path, release_contract: dict[str, Any]
+) -> dict[str, object]:
+    frozen = release_contract.get("frozen_output_fingerprints")
+    baseline = release_contract.get("baseline")
+    requires_fingerprints = isinstance(baseline, dict) and bool(baseline.get("git_tag"))
+    if not isinstance(frozen, dict):
+        if requires_fingerprints:
+            raise ReleaseReadinessError(
+                f"{RELEASE_CONTRACT_ARTIFACT} missing frozen_output_fingerprints"
+            )
+        return {"count": 0, "passed": True, "rows": []}
+    rows = frozen.get("entries")
+    if not isinstance(rows, list) or not rows:
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} has no frozen output fingerprint entries"
+        )
+    checked: list[dict[str, object]] = []
+    failures: list[str] = []
+    for index, expected in enumerate(rows):
+        if not isinstance(expected, dict) or not isinstance(expected.get("path"), str):
+            failures.append(f"entry {index}: invalid path")
+            continue
+        observed = build_frozen_output_fingerprint(root, str(expected["path"]))
+        fields = ["content_sha256"]
+        if str(expected["path"]).endswith(".json"):
+            # Textual provenance can change during a rename; the frozen contract
+            # protects numerical values and array layout rather than JSON formatting.
+            fields = ["scalar_count", "scalar_sha256", "array_count", "array_sha256"]
+        mismatches = [
+            field for field in fields if observed.get(field) != expected.get(field)
+        ]
+        if mismatches:
+            failures.append(f"{expected['path']}: {', '.join(mismatches)}")
+        checked.append(
+            {
+                "label": expected.get("label"),
+                **observed,
+                "passed": not mismatches,
+            }
+        )
+    if failures:
+        raise ReleaseReadinessError(
+            "frozen numerical output fingerprints changed: " + "; ".join(failures)
+        )
+    return {"count": len(checked), "passed": True, "rows": checked}
+
+
+def _lane_status_summary(root: Path) -> dict[str, Any]:
+    payload = _read_json(root / RELEASE_CONTRACT_ARTIFACT)
+    if payload.get("kind") != "gkx_1_7_frozen_release_contract":
+        raise ReleaseReadinessError(f"{RELEASE_CONTRACT_ARTIFACT} has an invalid kind")
+    lanes = payload.get("release_lanes")
+    if not isinstance(lanes, list) or not lanes:
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing release_lanes"
+        )
+    public_api = payload.get("public_api")
+    if not isinstance(public_api, dict) or not isinstance(
+        public_api.get("exports"), list
+    ):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing public_api.exports"
+        )
+    exports = public_api["exports"]
+    export_names = [row.get("name") for row in exports if isinstance(row, dict)]
+    if public_api.get("count") != len(exports) or len(set(export_names)) != len(
+        exports
+    ):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} public API count/names are inconsistent"
+        )
+    performance = payload.get("performance")
+    if not isinstance(performance, dict) or not isinstance(
+        performance.get("rows"), list
+    ):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing performance.rows"
+        )
+    performance_rows = performance["rows"]
+    if performance.get("row_count") != len(performance_rows):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} performance row count is inconsistent"
+        )
+    refresh = performance.get("representative_refresh")
+    if not isinstance(refresh, dict) or not isinstance(refresh.get("path"), str):
+        raise ReleaseReadinessError(
+            f"{RELEASE_CONTRACT_ARTIFACT} missing performance.representative_refresh"
+        )
+    refresh_path = str(refresh["path"])
+    refresh_payload = _read_json(root / refresh_path)
+    if refresh_payload.get("kind") != "gkx_representative_performance_refresh":
+        raise ReleaseReadinessError(f"{refresh_path} has an invalid kind")
+    workloads = refresh_payload.get("workloads")
+    summary = refresh_payload.get("summary")
+    if (
+        not isinstance(workloads, list)
+        or len(workloads) < 2
+        or not isinstance(summary, dict)
+    ):
+        raise ReleaseReadinessError(
+            f"{refresh_path} must contain at least two workloads and a summary"
+        )
+    cpu_rows = [row.get("cpu") for row in workloads if isinstance(row, dict)]
+    gpu_rows = [row.get("gpu") for row in workloads if isinstance(row, dict)]
+    cpu_admitted = sum(
+        isinstance(row, dict) and row.get("admitted") is True for row in cpu_rows
+    )
+    gpu_admitted = sum(
+        isinstance(row, dict) and row.get("admitted") is True for row in gpu_rows
+    )
+    gpu_blocked = sum(
+        isinstance(row, dict)
+        and row.get("admitted") is False
+        and bool(row.get("blocker"))
+        for row in gpu_rows
+    )
+    observed_refresh = {
+        "correctness_passed": all(
+            isinstance(row, dict)
+            and isinstance(row.get("correctness"), dict)
+            and row["correctness"].get("cpu_finite") is True
+            and row["correctness"].get("gpu_finite") is True
+            for row in workloads
+        ),
+        "cpu_rows_admitted": cpu_admitted,
+        "gpu_rows_admitted": gpu_admitted,
+        "gpu_rows_blocked": gpu_blocked,
+        "performance_claim_updated": bool(summary.get("performance_claim_updated")),
+    }
+    for field, value in observed_refresh.items():
+        if summary.get(field) != value or refresh.get(field) != value:
+            raise ReleaseReadinessError(
+                f"{refresh_path} has inconsistent representative-refresh field {field}"
+            )
+    if cpu_admitted < 2 or not observed_refresh["correctness_passed"]:
+        raise ReleaseReadinessError(
+            f"{refresh_path} does not admit the bounded CPU correctness/performance subset"
+        )
+    if observed_refresh["performance_claim_updated"] and gpu_admitted == 0:
+        raise ReleaseReadinessError(
+            f"{refresh_path} cannot update a performance claim without an admitted GPU row"
+        )
+    fingerprint_summary = _frozen_output_fingerprint_summary(root, payload)
+    recomputed = _recomputed_active_summary(lanes)
     active_fraction_closed = float(recomputed["active_fraction_closed"])
     release_scoped_incomplete = int(recomputed["n_incomplete"])
     target_passed = (
@@ -830,27 +1007,43 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
     )
     return {
         "target_fraction": TECHNICAL_COMPLETION_TARGET,
-        "source": "docs/_static/manuscript_readiness_status.json:lanes",
+        "source": f"{RELEASE_CONTRACT_ARTIFACT}:release_lanes",
         "active_fraction_closed": active_fraction_closed,
         "release_scoped_open_or_blocked": release_scoped_incomplete,
         "release_scoped_incomplete": release_scoped_incomplete,
         "recomputed_active_summary": recomputed,
         "passed": target_passed,
-        "status_artifacts": artifacts,
+        "status_artifacts": {
+            RELEASE_CONTRACT_ARTIFACT: {
+                "kind": payload.get("kind"),
+                "status_counts": _status_counts(lanes),
+                "public_api_count": len(exports),
+                "performance_row_count": len(performance_rows),
+                "representative_performance_refresh": observed_refresh,
+                "frozen_output_fingerprint_count": fingerprint_summary["count"],
+                "lanes": lanes,
+            }
+        },
+        "frozen_outputs": fingerprint_summary,
     }
 
 
 def _optimization_status_summary(root: Path) -> dict[str, Any]:
     payload = _read_json(root / OPTIMIZATION_STATUS_ARTIFACT)
-    summary = payload.get("summary")
+    policy = payload.get("optimization_policy")
+    if not isinstance(policy, dict):
+        raise ReleaseReadinessError(
+            f"{OPTIMIZATION_STATUS_ARTIFACT} missing optimization_policy object"
+        )
+    summary = policy.get("summary")
     if not isinstance(summary, dict):
         raise ReleaseReadinessError(
-            f"{OPTIMIZATION_STATUS_ARTIFACT} missing summary object"
+            f"{OPTIMIZATION_STATUS_ARTIFACT} optimization_policy missing summary object"
         )
-    prelaunch_gates = payload.get("prelaunch_gates")
+    prelaunch_gates = policy.get("prelaunch_gates")
     if not isinstance(prelaunch_gates, list):
         raise ReleaseReadinessError(
-            f"{OPTIMIZATION_STATUS_ARTIFACT} missing prelaunch_gates list"
+            f"{OPTIMIZATION_STATUS_ARTIFACT} optimization_policy missing prelaunch_gates list"
         )
 
     failed_flags = []
@@ -949,9 +1142,9 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     version_report = validate_release_version(root=root)
     project = _project_metadata(root)
-    if project["name"] != "spectraxgk":
-        failures.append("pyproject project.name must be 'spectraxgk'")
-    expected_scripts = {"spectraxgk", "spectrax-gk"}
+    if project["name"] != "gkx":
+        failures.append("pyproject project.name must be 'gkx'")
+    expected_scripts = {"gkx", "gkx"}
     missing_scripts = sorted(expected_scripts - set(project["scripts"]))
     if missing_scripts:
         failures.append(f"missing executable entry points: {missing_scripts}")
@@ -1020,7 +1213,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     except ReleaseReadinessError as exc:
         lane_status = {
             "target_fraction": TECHNICAL_COMPLETION_TARGET,
-            "source": "docs/_static/manuscript_readiness_status.json:lanes",
+            "source": f"{RELEASE_CONTRACT_ARTIFACT}:release_lanes",
             "active_fraction_closed": 0.0,
             "release_scoped_open_or_blocked": None,
             "release_scoped_incomplete": None,
@@ -1048,7 +1241,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         failures.append(str(exc))
 
     report = {
-        "kind": "spectraxgk_release_readiness",
+        "kind": "gkx_release_readiness",
         "root": str(root),
         "project": project,
         "version": version_report,
@@ -1101,7 +1294,7 @@ def build_version_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--package",
-        default="spectraxgk",
+        default="gkx",
         help="PyPI package name for duplicate checks.",
     )
     return parser

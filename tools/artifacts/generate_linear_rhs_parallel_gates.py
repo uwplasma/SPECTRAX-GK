@@ -65,7 +65,7 @@ def _linear_terms(
     gradb: float = 0.0,
     diamagnetic: float = 0.0,
 ) -> Any:
-    from spectraxgk.linear import LinearTerms
+    from gkx.operators.linear.params import LinearTerms
 
     return LinearTerms(
         streaming=streaming,
@@ -106,10 +106,11 @@ def build_problem(
 
     import jax.numpy as jnp
 
-    from spectraxgk.config import CycloneBaseCase, GridConfig
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.linear import LinearParams, build_linear_cache
+    from gkx.config import CycloneBaseCase, GridConfig
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import SAlphaGeometry
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.operators.linear.params import LinearParams
 
     cfg = CycloneBaseCase(
         grid=GridConfig(
@@ -165,7 +166,7 @@ def _device_list(requested_devices: int) -> list[Any]:
 
 
 def _velocity_plan(state: Any, devices: list[Any]) -> Any:
-    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
+    from gkx.parallel.velocity import build_velocity_sharding_plan
 
     return build_velocity_sharding_plan(
         state.shape, num_devices=len(devices), axes=("hermite",)
@@ -187,8 +188,8 @@ def build_linear_rhs_streaming_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached
-    from spectraxgk.parallel.velocity import periodic_streaming_shard_map
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.parallel.velocity import periodic_streaming_shard_map
 
     devices = _device_list(requested_devices)
     state, cache, params, grid, _geom = build_problem(
@@ -234,8 +235,8 @@ def build_linear_rhs_streaming_gate(
     return _json_clean(
         {
             "case": "Full linear-RHS streaming-only shard-map identity gate",
-            "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
+            "source": "gkx.parallel.velocity.periodic_streaming_shard_map",
+            "reference_source": "gkx.operators.linear.rhs.linear_rhs_cached with only streaming enabled",
             "claim_scope": "linear RHS identity gate with only streaming enabled, not a full-RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -277,9 +278,10 @@ def build_linear_rhs_streaming_electrostatic_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.parallel.velocity import build_velocity_sharding_plan
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     devices = _device_list(requested_devices)
     state, cache, params, grid = build_problem(
@@ -340,8 +342,8 @@ def build_linear_rhs_streaming_electrostatic_gate(
     return _json_clean(
         {
             "case": "Electrostatic streaming linear-RHS shard-map identity gate",
-            "source": "spectraxgk.linear.linear_rhs_parallel_cached backend=streaming_electrostatic",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
+            "source": "gkx.solvers.linear.parallel.linear_rhs_parallel_cached backend=streaming_electrostatic",
+            "reference_source": "gkx.operators.linear.rhs.linear_rhs_cached with only streaming enabled",
             "claim_scope": "streaming plus electrostatic field-solve call-graph identity, not a full-RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {
@@ -385,9 +387,10 @@ def build_linear_rhs_electrostatic_slices_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
-    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from gkx.operators.linear.rhs import linear_rhs_cached
+    from gkx.solvers.linear.parallel import linear_rhs_parallel_cached
+    from gkx.parallel.velocity import build_velocity_sharding_plan
+    from gkx.workflows.runtime.config import RuntimeParallelConfig
 
     devices = _device_list(requested_devices)
     state, cache, params, grid = build_problem(
@@ -456,8 +459,8 @@ def build_linear_rhs_electrostatic_slices_gate(
     return _json_clean(
         {
             "case": "Composed electrostatic linear-slices RHS identity gate",
-            "source": "spectraxgk.linear.linear_rhs_parallel_cached backend=electrostatic_linear_slices",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with streaming/mirror/curvature/gradB/diamagnetic enabled",
+            "source": "gkx.solvers.linear.parallel.linear_rhs_parallel_cached backend=electrostatic_linear_slices",
+            "reference_source": "gkx.operators.linear.rhs.linear_rhs_cached with streaming/mirror/curvature/gradB/diamagnetic enabled",
             "claim_scope": (
                 "single-species periodic electrostatic linear-RHS identity for the gated slices; "
                 "not a linked-boundary, collision, electromagnetic, nonlinear, or speedup claim"
@@ -562,7 +565,7 @@ def _evaluate_state(
     term_cfg: Any,
     candidates: tuple[str, ...] = ("collisions", "hypercollisions"),
 ) -> dict[str, Any]:
-    from spectraxgk.terms.assembly import assemble_rhs_cached, assemble_rhs_terms_cached
+    from gkx.terms.assembly import assemble_rhs_cached, assemble_rhs_terms_cached
 
     rhs, _fields, contrib = assemble_rhs_terms_cached(
         state,
@@ -706,18 +709,18 @@ def _add_zero_norm_args(parser: argparse.ArgumentParser) -> None:
 def _run_zero_norm_state_window(args: argparse.Namespace) -> int:
     import jax.numpy as jnp
 
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-    from spectraxgk.linear import build_linear_cache
-    from spectraxgk.runtime import (
+    from gkx.core.grid import build_spectral_grid
+    from gkx.geometry import apply_imported_geometry_grid_defaults
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.runtime import (
         _build_initial_condition,
         _select_nonlinear_mode_indices,
         build_runtime_geometry,
         build_runtime_linear_params,
         build_runtime_term_config,
     )
-    from spectraxgk.terms.assembly import assemble_rhs_cached
-    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+    from gkx.terms.assembly import assemble_rhs_cached
+    from gkx.workflows.runtime.toml import load_runtime_from_toml
 
     cfg, _ = load_runtime_from_toml(args.config)
     geom = build_runtime_geometry(cfg)
@@ -810,7 +813,7 @@ def _plot_abs_rows(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     m = np.asarray([row["m"] for row in rows], dtype=float)
@@ -853,7 +856,7 @@ def _plot_norm_rows(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     m = np.asarray([row["m"] for row in rows], dtype=float)

@@ -87,7 +87,7 @@
   "gx": "tools_out/cyclone_resolved_audit/cyclone_salpha_short.out.nc",
   "notes": "Short t=5 resolved diagnostic audit retained for debugging startup/resolved spectra; not a mature nonlinear transport-window release gate.",
   "source": "GX nonlinear diagnostics",
-  "spectrax": "tools_out/cyclone_resolved_audit/cyclone_nonlinear_spectrax_t5_gxshort_fixed_dt005_nocoll_cpu_diag.out.nc",
+  "gkx": "tools_out/cyclone_resolved_audit/cyclone_nonlinear_gkx_t5_gxshort_fixed_dt005_nocoll_cpu_diag.out.nc",
   "summary": [
     {
       "final_rel": 1.3111708597637566,

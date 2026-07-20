@@ -49,11 +49,11 @@ def test_resolve_manifest_path_handles_relative_and_env_paths(
 ) -> None:
     manifest_dir = tmp_path / "manifests"
     manifest_dir.mkdir()
-    monkeypatch.setenv("SPECTRAX_AUDIT_ROOT", str(tmp_path / "audit_root"))
+    monkeypatch.setenv("GKX_AUDIT_ROOT", str(tmp_path / "audit_root"))
 
     rel = _resolve_manifest_path("../configs/lane.toml", manifest_dir=manifest_dir)
     env_rel = _resolve_manifest_path(
-        "$SPECTRAX_AUDIT_ROOT/dumps", manifest_dir=manifest_dir
+        "$GKX_AUDIT_ROOT/dumps", manifest_dir=manifest_dir
     )
 
     assert rel == (tmp_path / "configs" / "lane.toml").resolve()

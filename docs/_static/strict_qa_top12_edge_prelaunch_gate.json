@@ -22,7 +22,7 @@
       "value": 18
     }
   ],
-  "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+  "kind": "vmex_reduced_nonlinear_audit_prelaunch_report",
   "metric_key": "nonlinear_window_heat_flux",
   "next_action": "do not launch an expensive nonlinear audit; increase reduced-objective margin or broaden the objective before spending GPU time",
   "nonlinear_policy": {

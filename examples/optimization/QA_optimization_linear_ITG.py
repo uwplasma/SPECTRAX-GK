@@ -2,7 +2,7 @@
 """Optimize quasi-axisymmetry plus a linear ITG growth-rate objective.
 
 This is VMEC-JAX's current ``QA_optimization.py`` workflow with one additional
-SPECTRAX-GK objective tuple. Edit the constants below and run without arguments.
+GKX objective tuple. Edit the constants below and run without arguments.
 The growth objective is traceable through the equilibrium and eigensolve, so the
 implicit-Jacobian optimization path is used.
 """
@@ -23,9 +23,9 @@ if len(sys.argv) > 1:
         f"unexpected arguments: {' '.join(sys.argv[1:])}; edit the constants"
     )
 
-import vmec_jax as vj  # noqa: E402
-from vmec_jax import optimize as opt  # noqa: E402
-from vmec_jax.core import turbulence as turb  # noqa: E402
+import vmex as vj  # noqa: E402
+from vmex import optimize as opt  # noqa: E402
+from vmex.core import turbulence as turb  # noqa: E402
 
 # Equilibrium and optimization controls: these match the current upstream QA example.
 INPUT_FILE = (
@@ -42,7 +42,7 @@ MAX_NFEV = 2000
 FTOL = 1.0e-6
 JAC = "implicit"
 USE_ESS = True
-if os.environ.get("VMEC_JAX_EXAMPLES_CI") == "1":
+if os.environ.get("VMEX_EXAMPLES_CI") == "1":
     MAX_MODE_SCHEDULE, MAX_NFEV, FTOL = (1,), 4, 1.0e-4
 
 # Fixed ITG flux tube and modest Hermite-Laguerre objective resolution.

@@ -1,6 +1,6 @@
 # VMEC-backed stellarator linear quasilinear transport diagnostic example.
 # Generate the self-contained QI equilibrium with:
-#   cd examples/vmec && vmec_jax input.nfp3_QI_fixed_resolution_final
+#   cd examples/vmec && vmex input.nfp3_QI_fixed_resolution_final
 # For exact W7-X validation, override geometry.vmec_file with the benchmark
 # W7-X wout. The runtime generates/reuses the VMEC-derived eik cache.
 # The uncalibrated mixing-length output is a model diagnostic and must be

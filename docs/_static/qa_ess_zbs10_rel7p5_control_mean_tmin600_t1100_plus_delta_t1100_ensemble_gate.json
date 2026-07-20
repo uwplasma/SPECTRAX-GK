@@ -81,8 +81,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.3956829318667031,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed34_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed34_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed34_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed34_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -92,8 +92,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.4454677050666782,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed35_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed35_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed35_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed35_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -103,8 +103,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.4768934865114302,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed36_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed36_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed36_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed36_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -114,8 +114,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.4805807431012388,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed37_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed37_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed37_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed37_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -125,8 +125,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.43102208955840837,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed38_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed38_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed38_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed38_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -136,8 +136,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.4229963552358165,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed39_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed39_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed39_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed39_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -147,8 +147,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.3138519411072153,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed40_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed40_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed40_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed40_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -158,8 +158,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.4288037094621948,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed41_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed41_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed41_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed41_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -169,8 +169,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.5674857020571371,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed42_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed42_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed42_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed42_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -180,8 +180,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.4828428522047039,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed43_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed43_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed43_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed43_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -191,8 +191,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.51850494873208,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed44_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed44_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed44_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed44_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -202,8 +202,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.21958633077791773,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed45_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed45_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed45_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed45_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -213,8 +213,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.38191917382845364,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed46_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed46_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed46_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed46_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -224,8 +224,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.40217391062434193,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed47_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed47_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed47_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed47_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -235,8 +235,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.3627741811540784,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed48_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed48_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed48_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed48_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -246,8 +246,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.5398972386245967,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed49_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed49_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed49_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed49_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -257,8 +257,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.2485523566160923,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed50_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed50_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed50_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed50_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -268,8 +268,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.43856911734248655,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed51_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed51_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed51_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed51_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -279,8 +279,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.23423825731039752,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed52_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed52_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed52_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed52_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -290,8 +290,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.5380386730296266,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed53_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed53_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed53_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed53_transport_window.json"
     },
     {
       "case": "qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicated_nonlinear_window",
@@ -301,8 +301,8 @@
       "passed": true,
       "promotion_ready": true,
       "sem": 0.32156335001254627,
-      "source_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed54_heat_flux_trace.csv",
-      "summary_artifact": "/home/rjorge/tmp/spectrax-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed54_transport_window.json"
+      "source_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed54_heat_flux_trace.csv",
+      "summary_artifact": "/home/rjorge/tmp/gkx-cv-23767e0/tools_out/control_variate_zbs10_rel7p5_t1100_extension/window_sensitivity_tmin600_t1100/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_plus_delta_replicates/qa_ess_zbs10_rel7p5_control_mean_plus_delta_nonlinear_t1100_n64_seed54_transport_window.json"
     }
   ],
   "statistics": {

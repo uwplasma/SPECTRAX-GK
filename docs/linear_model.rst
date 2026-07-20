@@ -1,7 +1,7 @@
 Linear Model And Derivations
 ============================
 
-This page records the exact linear model currently benchmarked in SPECTRAX-GK.
+This page records the exact linear model currently benchmarked in GKX.
 It is intended as the technical baseline for the nonlinear extension.
 
 Scope
@@ -81,7 +81,7 @@ These sparsity patterns are implemented as fused tensor kernels in the RHS.
 Gyroaverage and :math:`k_\perp`
 -------------------------------
 
-SPECTRAX-GK uses the Laguerre gyroaverage
+GKX uses the Laguerre gyroaverage
 
 .. math::
 

@@ -8,7 +8,7 @@
     "source": "replicated nonlinear-window extraction; convergence gate is stored separately"
   },
   "seed": 33,
-  "spectrax": "vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed33_heat_flux_trace.csv",
+  "gkx": "vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed33_heat_flux_trace.csv",
   "tmax": 1500.0,
   "tmin": 1100.0,
   "variant": {

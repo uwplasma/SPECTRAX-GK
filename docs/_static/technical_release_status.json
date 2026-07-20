@@ -1,6 +1,6 @@
 {
   "failed_required": [],
-  "kind": "spectraxgk_technical_release_status",
+  "kind": "gkx_technical_release_status",
   "lanes": {
     "ci_coverage_release": {
       "checks": [
@@ -66,7 +66,7 @@
           "passed": true,
           "path": "README.md",
           "required": true,
-          "snippet": "pip install spectraxgk"
+          "snippet": "pip install gkx"
         },
         {
           "exists": true,
@@ -74,7 +74,7 @@
           "passed": true,
           "path": "README.md",
           "required": true,
-          "snippet": "spectraxgk"
+          "snippet": "gkx"
         },
         {
           "exists": true,
@@ -91,14 +91,6 @@
           "path": "docs/release_scope.rst",
           "required": true,
           "snippet": "Claim scope"
-        },
-        {
-          "exists": true,
-          "name": "roadmap",
-          "passed": true,
-          "path": "docs/roadmap.rst",
-          "required": true,
-          "snippet": "Release-ready"
         },
         {
           "exists": true,
@@ -119,8 +111,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 7,
-      "required": 7
+      "passed_required": 6,
+      "required": 6
     },
     "parallelization_release_surface": {
       "checks": [
@@ -264,9 +256,9 @@
           "exists": true,
           "name": "architecture refactor plan",
           "passed": true,
-          "path": "docs/architecture_refactor_plan.rst",
+          "path": "plan.md",
           "required": true,
-          "snippet": "authoritative refactor plan"
+          "snippet": "single implementation plan"
         },
         {
           "exists": true,
@@ -288,7 +280,7 @@
           "exists": true,
           "name": "operators package facade",
           "passed": true,
-          "path": "src/spectraxgk/operators/__init__.py",
+          "path": "src/gkx/operators/__init__.py",
           "required": true,
           "snippet": "hermite_streaming"
         },
@@ -296,7 +288,7 @@
           "exists": true,
           "name": "linear operator package",
           "passed": true,
-          "path": "src/spectraxgk/operators/linear/__init__.py",
+          "path": "src/gkx/operators/linear/__init__.py",
           "required": true,
           "snippet": "build_linear_cache"
         },
@@ -304,7 +296,7 @@
           "exists": true,
           "name": "linear solver package",
           "passed": true,
-          "path": "src/spectraxgk/solvers/linear/__init__.py",
+          "path": "src/gkx/solvers/linear/__init__.py",
           "required": true,
           "snippet": "KrylovConfig"
         },
@@ -312,7 +304,7 @@
           "exists": true,
           "name": "nonlinear operator package",
           "passed": true,
-          "path": "src/spectraxgk/operators/nonlinear/__init__.py",
+          "path": "src/gkx/operators/nonlinear/__init__.py",
           "required": true,
           "snippet": "nonlinear_rhs_cached_impl"
         },
@@ -320,7 +312,7 @@
           "exists": true,
           "name": "nonlinear solver package",
           "passed": true,
-          "path": "src/spectraxgk/solvers/nonlinear/__init__.py",
+          "path": "src/gkx/solvers/nonlinear/__init__.py",
           "required": true,
           "snippet": "solve_imex_step"
         },
@@ -328,7 +320,7 @@
           "exists": true,
           "name": "runtime scan orchestration module",
           "passed": true,
-          "path": "src/spectraxgk/workflows/runtime/orchestration_scan.py",
+          "path": "src/gkx/workflows/runtime/orchestration_scan.py",
           "required": true,
           "snippet": "RuntimeScanDeps"
         },
@@ -336,7 +328,7 @@
           "exists": true,
           "name": "runtime policy module",
           "passed": true,
-          "path": "src/spectraxgk/workflows/runtime/policies.py",
+          "path": "src/gkx/workflows/runtime/policies.py",
           "required": true,
           "snippet": "RuntimeIndependentParallelPlan"
         },
@@ -344,7 +336,7 @@
           "exists": true,
           "name": "linear cache builder",
           "passed": true,
-          "path": "src/spectraxgk/operators/linear/cache_builder.py",
+          "path": "src/gkx/operators/linear/cache_builder.py",
           "required": true,
           "snippet": null
         },
@@ -352,7 +344,7 @@
           "exists": true,
           "name": "linear moments module",
           "passed": true,
-          "path": "src/spectraxgk/operators/linear/moments.py",
+          "path": "src/gkx/operators/linear/moments.py",
           "required": true,
           "snippet": null
         },
@@ -360,7 +352,7 @@
           "exists": true,
           "name": "linear params module",
           "passed": true,
-          "path": "src/spectraxgk/operators/linear/params.py",
+          "path": "src/gkx/operators/linear/params.py",
           "required": true,
           "snippet": null
         },
@@ -368,7 +360,7 @@
           "exists": true,
           "name": "linear parallel module",
           "passed": true,
-          "path": "src/spectraxgk/solvers/linear/parallel.py",
+          "path": "src/gkx/solvers/linear/parallel.py",
           "required": true,
           "snippet": null
         },
@@ -376,7 +368,7 @@
           "exists": true,
           "name": "nonlinear helper module",
           "passed": true,
-          "path": "src/spectraxgk/operators/nonlinear/policies.py",
+          "path": "src/gkx/operators/nonlinear/policies.py",
           "required": true,
           "snippet": null
         },
@@ -384,15 +376,15 @@
           "exists": true,
           "name": "benchmark policy module",
           "passed": true,
-          "path": "src/spectraxgk/benchmarking/shared.py",
+          "path": "src/gkx/benchmarking/shared.py",
           "required": true,
           "snippet": "CYCLONE_KRYLOV_DEFAULT"
         },
         {
           "exists": true,
-          "name": "diagnostics channel module",
+          "name": "diagnostic moment kernels",
           "passed": true,
-          "path": "src/spectraxgk/diagnostics/channels.py",
+          "path": "src/gkx/diagnostics/moments.py",
           "required": true,
           "snippet": null
         },
@@ -402,7 +394,7 @@
           "passed": true,
           "path": "tools/validation_coverage_manifest.toml",
           "required": true,
-          "snippet": "spectraxgk.workflows.runtime.orchestration_scan"
+          "snippet": "gkx.workflows.runtime.orchestration_scan"
         }
       ],
       "completion_percent": 100.0,
@@ -462,17 +454,9 @@
         },
         {
           "exists": true,
-          "name": "manuscript readiness",
+          "name": "frozen 1.7 release contract",
           "passed": true,
-          "path": "docs/_static/manuscript_readiness_status.json",
-          "required": true,
-          "snippet": null
-        },
-        {
-          "exists": true,
-          "name": "open lane status",
-          "passed": true,
-          "path": "docs/_static/open_research_lane_status.json",
+          "path": "benchmarks/references/gkx_1_7_release_contract.json",
           "required": true,
           "snippet": null
         },
@@ -495,12 +479,12 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 10,
-      "required": 10
+      "passed_required": 9,
+      "required": 9
     }
   },
   "passed": true,
-  "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
+  "root": "/Users/rogeriojorge/local/GKX",
   "scope": "Technical release readiness for CI, refactor, docs/release hygiene, parallelization artifacts, performance artifacts, and guardrails. Deferred manuscript physics lanes remain scoped separately.",
   "target_percent": 98.0,
   "technical_release_completion_percent": 100.0

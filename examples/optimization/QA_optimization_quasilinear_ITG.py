@@ -2,7 +2,7 @@
 """Optimize quasi-axisymmetry plus a quasilinear ITG heat-flux proxy.
 
 This is VMEC-JAX's current ``QA_optimization.py`` workflow with one additional
-SPECTRAX-GK objective tuple. Edit the constants below and run without arguments.
+GKX objective tuple. Edit the constants below and run without arguments.
 The proxy uses a dominant eigenvector, so current JAX requires finite-difference
 optimization (``JAC = None``). It is a screening objective, not absolute flux.
 """
@@ -23,9 +23,9 @@ if len(sys.argv) > 1:
         f"unexpected arguments: {' '.join(sys.argv[1:])}; edit the constants"
     )
 
-import vmec_jax as vj  # noqa: E402
-from vmec_jax import optimize as opt  # noqa: E402
-from vmec_jax.core import turbulence as turb  # noqa: E402
+import vmex as vj  # noqa: E402
+from vmex import optimize as opt  # noqa: E402
+from vmex.core import turbulence as turb  # noqa: E402
 
 INPUT_FILE = (
     Path(vj.__file__).resolve().parents[1] / "examples/data/input.minimal_seed_nfp2"
@@ -41,7 +41,7 @@ MAX_NFEV = 2000
 FTOL = 1.0e-6
 JAC = None
 USE_ESS = True
-if os.environ.get("VMEC_JAX_EXAMPLES_CI") == "1":
+if os.environ.get("VMEX_EXAMPLES_CI") == "1":
     MAX_MODE_SCHEDULE, MAX_NFEV, FTOL = (1,), 4, 1.0e-4
 
 SURFACE_INDEX = 7

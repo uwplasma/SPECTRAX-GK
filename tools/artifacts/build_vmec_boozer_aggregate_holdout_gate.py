@@ -2,7 +2,7 @@
 """Build VMEC/Boozer aggregate held-out line-search gate artifacts.
 
 The alpha and surface holdouts are one validation family: both train a reduced
-VMEC/Boozer/SPECTRAX-GK aggregate objective update, then audit it on samples not
+VMEC/Boozer/GKX aggregate objective update, then audit it on samples not
 used by the training split.  Keeping them in one command avoids one-script-per
 artifact drift while preserving separate alpha and surface evidence files.
 """
@@ -27,8 +27,8 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.objectives.vmec_boozer_line_search import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.objectives.vmec_boozer_line_search import (  # noqa: E402
     vmec_boozer_aggregate_line_search_holdout_report,
 )
 
@@ -225,7 +225,7 @@ def build_vmec_boozer_aggregate_alpha_holdout_payload(
     annotated["builder"] = f"{BUILDER} alpha"
     annotated["wall_seconds"] = time.perf_counter() - start
     annotated["claim_scope"] = (
-        "reduced aggregate VMEC/Boozer/SPECTRAX-GK line-search split with a "
+        "reduced aggregate VMEC/Boozer/GKX line-search split with a "
         "held-out field-line alpha; this is reduced growth/quasilinear "
         "objective evidence, not a nonlinear turbulent transport claim"
     )
@@ -338,7 +338,7 @@ def build_vmec_boozer_aggregate_surface_holdout_payload(
         "holdout_selected_ky_indices": [int(item) for item in holdout_ky_values],
     }
     annotated["claim_scope"] = (
-        "true surface_index-heldout reduced aggregate VMEC/Boozer/SPECTRAX-GK "
+        "true surface_index-heldout reduced aggregate VMEC/Boozer/GKX "
         "line-search split; this is reduced growth/quasilinear objective evidence, "
         "not a nonlinear turbulent transport claim"
     )

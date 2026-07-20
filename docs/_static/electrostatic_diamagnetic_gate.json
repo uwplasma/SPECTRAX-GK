@@ -57,7 +57,7 @@
       16
     ]
   },
-  "reference_source": "spectraxgk.linear.linear_rhs_cached with diamagnetic term only",
+  "reference_source": "gkx.linear.linear_rhs_cached with diamagnetic term only",
   "requested_devices": 2,
   "rows": [
     {
@@ -110,7 +110,7 @@
     }
   ],
   "rtol": 2e-06,
-  "source": "spectraxgk.parallel.velocity.diamagnetic_drive_shard_map",
+  "source": "gkx.parallel.velocity.diamagnetic_drive_shard_map",
   "state_shape": [
     2,
     8,

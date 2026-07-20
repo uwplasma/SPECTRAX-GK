@@ -7,22 +7,18 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diagnostics.transport import heat_flux_total
-from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
-from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
-from spectraxgk.solvers.time.explicit import _linear_frequency_bound
-from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.nonlinear import (
-    build_nonlinear_imex_operator,
-    integrate_nonlinear,
-    integrate_nonlinear_explicit_diagnostics,
-    integrate_nonlinear_explicit_diagnostics_state,
-    integrate_nonlinear_imex_cached,
-    prepare_nonlinear_explicit_diagnostics,
-)
-from spectraxgk.terms.config import TermConfig
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.diagnostics.transport import heat_flux_total
+from gkx.diagnostics.moments import fieldline_quadrature_weights
+from gkx.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
+from gkx.solvers.time.explicit import _linear_frequency_bound
+from gkx.core.grid import build_spectral_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams
+from gkx.operators.nonlinear.policies import build_nonlinear_imex_operator
+from gkx.solvers.nonlinear.diagnostic_integration import integrate_nonlinear_explicit_diagnostics, integrate_nonlinear_explicit_diagnostics_state, prepare_nonlinear_explicit_diagnostics
+from gkx.solvers.nonlinear.state_integration import integrate_nonlinear, integrate_nonlinear_imex_cached
+from gkx.terms.config import TermConfig
 
 pytestmark = pytest.mark.integration
 

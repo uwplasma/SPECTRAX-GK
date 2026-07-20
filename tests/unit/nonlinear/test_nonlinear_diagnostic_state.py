@@ -5,12 +5,12 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.operators.nonlinear.diagnostic_state import (
+from gkx.operators.nonlinear.diagnostic_state import (
     NonlinearDiagnosticKernels,
     compute_nonlinear_diagnostic_tuple,
     make_nonlinear_diagnostic_tuple_fn,
 )
-from spectraxgk.terms.config import FieldState
+from gkx.terms.config import FieldState
 
 
 def _array(value: float) -> jnp.ndarray:

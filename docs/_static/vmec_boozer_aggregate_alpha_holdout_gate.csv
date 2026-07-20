@@ -1,3 +1,0 @@
-split,passed,initial_objective,final_objective,relative_reduction,n_samples
-training,True,0.8870403732948899,0.8850873757682598,0.00220170083056736,2
-heldout,True,0.8983988622099819,0.8983380392726847,6.770148522620082e-05,2

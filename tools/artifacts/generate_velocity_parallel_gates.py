@@ -81,7 +81,7 @@ def build_hermite_exchange_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.parallel.velocity import (
+    from gkx.parallel.velocity import (
         build_velocity_sharding_plan,
         hermite_neighbor_reference,
         hermite_neighbor_shard_map,
@@ -136,7 +136,7 @@ def build_hermite_exchange_gate(
     return _json_clean(
         {
             "case": "Hermite ghost-exchange shard_map identity gate",
-            "source": "spectraxgk.parallel.velocity.hermite_neighbor_shard_map",
+            "source": "gkx.parallel.velocity.hermite_neighbor_shard_map",
             "claim_scope": "communication-kernel identity gate, not a nonlinear runtime speedup claim",
             "state_shape": shape,
             "requested_devices": int(requested_devices),
@@ -163,7 +163,7 @@ def build_velocity_field_reduce_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.parallel.velocity import (
+    from gkx.parallel.velocity import (
         build_velocity_sharding_plan,
         velocity_field_reduce_reference,
         velocity_field_reduce_shard_map,
@@ -215,7 +215,7 @@ def build_velocity_field_reduce_gate(
     return _json_clean(
         {
             "case": "Velocity-space field-reduction shard_map identity gate",
-            "source": "spectraxgk.parallel.velocity.velocity_field_reduce_shard_map",
+            "source": "gkx.parallel.velocity.velocity_field_reduce_shard_map",
             "claim_scope": "communication-kernel identity gate, not a nonlinear runtime speedup claim",
             "state_shape": shape,
             "reduction_axis": "hermite",
@@ -247,7 +247,7 @@ def build_hermite_streaming_ladder_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.parallel.velocity import (
+    from gkx.parallel.velocity import (
         build_velocity_sharding_plan,
         hermite_streaming_ladder_reference,
         hermite_streaming_ladder_shard_map,
@@ -307,7 +307,7 @@ def build_hermite_streaming_ladder_gate(
     return _json_clean(
         {
             "case": "Hermite streaming-ladder shard_map identity gate",
-            "source": "spectraxgk.parallel.velocity.hermite_streaming_ladder_shard_map",
+            "source": "gkx.parallel.velocity.hermite_streaming_ladder_shard_map",
             "claim_scope": "Hermite streaming communication/coefficient gate, not a nonlinear runtime speedup claim",
             "state_shape": shape,
             "vth": float(vth),
@@ -333,8 +333,8 @@ def build_hermite_streaming_ladder_gate(
 def _production_streaming_term(state: Any, *, kz: Any, vth: float) -> Any:
     import jax.numpy as jnp
 
-    from spectraxgk.core.velocity import hermite_ladder_coeffs
-    from spectraxgk.operators.linear.streaming import streaming_ladder_term
+    from gkx.core.velocity import hermite_ladder_coeffs
+    from gkx.operators.linear.streaming import streaming_ladder_term
 
     nm = int(state.shape[-4])
     sqrt_p, sqrt_m = hermite_ladder_coeffs(nm - 1)
@@ -362,7 +362,7 @@ def build_periodic_streaming_microkernel_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.parallel.velocity import (
+    from gkx.parallel.velocity import (
         build_velocity_sharding_plan,
         periodic_streaming_reference,
         periodic_streaming_shard_map,
@@ -425,8 +425,8 @@ def build_periodic_streaming_microkernel_gate(
     return _json_clean(
         {
             "case": "Periodic streaming microkernel shard_map identity gate",
-            "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
-            "reference_source": "spectraxgk.operators.linear.streaming.streaming_ladder_term",
+            "source": "gkx.parallel.velocity.periodic_streaming_shard_map",
+            "reference_source": "gkx.operators.linear.streaming.streaming_ladder_term",
             "claim_scope": "linear streaming microkernel identity gate, not a full RHS or nonlinear speedup claim",
             "state_shape": shape,
             "vth": float(vth),
@@ -471,7 +471,7 @@ def _plot_hermite(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     m = np.asarray([row["m"] for row in rows], dtype=float)
@@ -517,7 +517,7 @@ def _plot_reduce(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     ky = np.asarray([row["ky_index"] for row in rows], dtype=float)
@@ -563,7 +563,7 @@ def _plot_ladder(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     m = np.asarray([row["m"] for row in rows], dtype=float)
@@ -604,7 +604,7 @@ def _plot_periodic(summary: dict[str, object], paths: dict[str, Path]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.artifacts.plotting import set_plot_style
+    from gkx.artifacts.plotting import set_plot_style
 
     rows = list(summary["rows"])
     m = np.asarray([row["m"] for row in rows], dtype=float)

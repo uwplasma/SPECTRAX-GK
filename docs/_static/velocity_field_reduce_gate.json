@@ -167,7 +167,7 @@
     }
   ],
   "rtol": 1e-07,
-  "source": "spectraxgk.parallel.velocity.velocity_field_reduce_shard_map",
+  "source": "gkx.parallel.velocity.velocity_field_reduce_shard_map",
   "state_shape": [
     4,
     8,

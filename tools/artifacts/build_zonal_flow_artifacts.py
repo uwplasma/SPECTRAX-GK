@@ -18,29 +18,29 @@ import matplotlib.pyplot as plt  # noqa: E402
 import netCDF4 as nc  # noqa: E402
 import numpy as np  # noqa: E402
 
-from spectraxgk.artifacts.nonlinear_diagnostics import (  # noqa: E402
+from gkx.artifacts.io import (  # noqa: E402
     load_diagnostic_time_series,
 )
-from spectraxgk.artifacts.plotting import (  # noqa: E402
+from gkx.artifacts.plotting import (  # noqa: E402
     set_plot_style,
     zonal_flow_response_figure,
 )
-from spectraxgk.diagnostics.zonal_validation import (  # noqa: E402
+from gkx.diagnostics.zonal_validation import (  # noqa: E402
     zonal_flow_response_metrics,
 )
-from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
+from gkx.diagnostics.validation_gates import (  # noqa: E402
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,
 )
-from spectraxgk.objectives.zonal import (  # noqa: E402
+from gkx.objectives.zonal import (  # noqa: E402
     ZonalFlowObjectiveConfig,
     zonal_flow_objective_artifact_from_records,
 )
-from spectraxgk.workflows.runtime.artifacts import (  # noqa: E402
+from gkx.workflows.runtime.artifacts import (  # noqa: E402
     run_runtime_nonlinear_with_artifacts,
 )
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # noqa: E402
+from gkx.workflows.runtime.toml import load_runtime_from_toml  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SUMMARY = ROOT / "docs" / "_static" / "w7x_zonal_response_panel.csv"
@@ -378,11 +378,11 @@ def _build_collisional_zonal_problem(
 ) -> _CollisionalZonalProblem:
     """Build the common paper-geometry state used by every collision model."""
 
-    from spectraxgk.core.grid import build_spectral_grid
-    from spectraxgk.diagnostics.weights import fieldline_quadrature_weights
-    from spectraxgk.geometry import apply_geometry_grid_defaults
-    from spectraxgk.operators.linear.cache_builder import build_linear_cache
-    from spectraxgk.workflows.runtime.startup import (
+    from gkx.core.grid import build_spectral_grid
+    from gkx.diagnostics.moments import fieldline_quadrature_weights
+    from gkx.geometry import apply_geometry_grid_defaults
+    from gkx.operators.linear.cache_builder import build_linear_cache
+    from gkx.workflows.runtime.startup import (
         _build_initial_condition,
         build_runtime_geometry,
         build_runtime_linear_params,
@@ -469,8 +469,8 @@ def _integrate_collisional_zonal_trace(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.solvers.linear.integrators import integrate_linear
-    from spectraxgk.terms.assembly import compute_fields_cached
+    from gkx.solvers.linear.integrators import integrate_linear
+    from gkx.terms.assembly import compute_fields_cached
 
     initial_phi = compute_fields_cached(
         problem.initial,
@@ -580,10 +580,10 @@ def run_drift_kinetic_collisional_zonal_trace(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.operators.linear.collisions import (
+    from gkx.operators.linear.collisions import (
         DriftKineticMomentCollisionOperator,
     )
-    from spectraxgk.operators.linear.params import LinearTerms
+    from gkx.operators.linear.params import LinearTerms
 
     if model not in {"coulomb", "original_sugama", "improved_sugama"}:
         raise ValueError("unknown drift-kinetic collision model")
@@ -734,7 +734,7 @@ def reconstruct_collisional_zonal_velocity_sections(
 
     Frei, Ernst & Ricci (2022), equation (52), expands the perturbed
     distribution in physicists' Hermite and ordinary Laguerre polynomials.
-    SPECTRAX-GK stores the equivalent signed-Laguerre coefficients. The two
+    GKX stores the equivalent signed-Laguerre coefficients. The two
     cuts are evaluated at the outboard midplane and normalized independently,
     as required by the paper-facing comparison gate.
     """
@@ -827,11 +827,11 @@ def run_finite_wavelength_collisional_zonal_trace(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.operators.linear import (
+    from gkx.operators.linear import (
         EqualSpeciesFiniteWavelengthCoulombOperator,
         EqualSpeciesFiniteWavelengthSugamaOperator,
     )
-    from spectraxgk.operators.linear.params import LinearTerms
+    from gkx.operators.linear.params import LinearTerms
 
     if kx not in {0.1, 0.2}:
         raise ValueError("finite-wavelength zonal kx must be 0.1 or 0.2")

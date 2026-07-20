@@ -17,9 +17,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk
-import spectraxgk.objectives.autodiff_validation as adv
-from spectraxgk.objectives.autodiff_validation import (
+import gkx
+import gkx.objectives.autodiff_validation as adv
+from gkx.objectives.autodiff_validation import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
     covariance_diagnostics,
@@ -28,17 +28,14 @@ from spectraxgk.objectives.autodiff_validation import (
     isolated_eigenpair_observable_sensitivity_report,
     isolated_eigenvalue_sensitivity_report,
 )
-from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    linear_rhs_cached,
-)
-from spectraxgk.diagnostics import fieldline_quadrature_weights
-from spectraxgk.quasilinear import (
+from gkx.config import CycloneBaseCase, GridConfig
+from gkx.geometry import SAlphaGeometry
+from gkx.core.grid import build_spectral_grid, select_ky_grid
+from gkx.operators.linear.cache_builder import build_linear_cache
+from gkx.operators.linear.params import LinearParams, LinearTerms
+from gkx.operators.linear.rhs import linear_rhs_cached
+from gkx.diagnostics import fieldline_quadrature_weights
+from gkx.diagnostics.quasilinear_transport import (
     effective_kperp2,
     quasilinear_feature_objective,
     shape_aware_power_law_objective,
@@ -121,7 +118,7 @@ def _actual_linear_rhs_objective_functions():
 
 
 def test_covariance_diagnostics_reports_uq_and_sensitivity_metadata() -> None:
-    assert spectraxgk.covariance_diagnostics is covariance_diagnostics
+    assert gkx.covariance_diagnostics is covariance_diagnostics
     jac = np.array([[1.0, 0.2], [0.1, 0.8], [0.4, -0.3]])
     residual = np.array([1.0e-3, -2.0e-3, 1.5e-3])
 
@@ -210,11 +207,11 @@ def test_covariance_diagnostics_rejects_inconsistent_shapes() -> None:
 
 def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> None:
     assert (
-        spectraxgk.autodiff_finite_difference_report
+        gkx.autodiff_finite_difference_report
         is autodiff_finite_difference_report
     )
     assert (
-        spectraxgk.central_finite_difference_jacobian
+        gkx.central_finite_difference_jacobian
         is central_finite_difference_jacobian
     )
 
@@ -371,7 +368,7 @@ def test_shape_aware_power_law_objective_has_fd_checked_derivatives() -> None:
 
 def test_isolated_eigenvalue_sensitivity_report_tracks_branch_derivatives() -> None:
     assert (
-        spectraxgk.isolated_eigenvalue_sensitivity_report
+        gkx.isolated_eigenvalue_sensitivity_report
         is isolated_eigenvalue_sensitivity_report
     )
 
@@ -399,10 +396,10 @@ def test_isolated_eigenvalue_sensitivity_report_tracks_branch_derivatives() -> N
 
 
 def test_actual_linear_rhs_eigenvalue_derivative_gate() -> None:
-    """Gate AD through a tiny SPECTRAX-GK linear RHS dense fixture."""
+    """Gate AD through a tiny GKX linear RHS dense fixture."""
 
     assert (
-        spectraxgk.explicit_complex_operator_matrix is explicit_complex_operator_matrix
+        gkx.explicit_complex_operator_matrix is explicit_complex_operator_matrix
     )
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=4, Lx=6.0, Ly=6.0))
     grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
@@ -478,7 +475,7 @@ def test_actual_linear_rhs_eigenvalue_derivative_gate() -> None:
 def test_actual_linear_rhs_branch_objective_derivative_gate() -> None:
     """Gate a phase-invariant reduced quasilinear objective on the RHS branch."""
 
-    assert spectraxgk.isolated_eigenpair_observable_sensitivity_report is (
+    assert gkx.isolated_eigenpair_observable_sensitivity_report is (
         isolated_eigenpair_observable_sensitivity_report
     )
     matrix_fn, objective_fn = _actual_linear_rhs_objective_functions()
@@ -500,7 +497,7 @@ def test_actual_linear_rhs_branch_objective_derivative_gate() -> None:
 
 
 def test_implicit_eigenpair_observable_gate_matches_closed_form_branch() -> None:
-    assert spectraxgk.implicit_eigenpair_observable_sensitivity_report is (
+    assert gkx.implicit_eigenpair_observable_sensitivity_report is (
         implicit_eigenpair_observable_sensitivity_report
     )
 
@@ -778,10 +775,10 @@ def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
 
 # ---- test_solver_objective_gradients.py ----
 
-import spectraxgk.objectives.gradient_gates as gradient_gates
-import spectraxgk.objectives.sampling as sampling
-import spectraxgk.objectives.solver_vmec as solver_vmec
-from spectraxgk import (
+import gkx.objectives.gradient_gates as gradient_gates
+import gkx.objectives.sampling as sampling
+import gkx.objectives.solver_vmec as solver_vmec
+from gkx import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
     SolverScalarObjective,
@@ -815,13 +812,13 @@ from spectraxgk import (
     vmec_boozer_solver_objective_table_with_metadata_from_state,
     vmec_boozer_solver_objective_vector_from_state,
 )
-from spectraxgk.geometry.vmec_state_controls import _vmec_boozer_state_parameter_name
-from spectraxgk.objectives.geometry import (
+from gkx.geometry.vmec_state_controls import _vmec_boozer_state_parameter_name
+from gkx.objectives.geometry import (
     TINY_OBJECTIVE_NAMES,
     _objective_gate_rows,
     tiny_differentiable_objective_gradient_report,
 )
-from spectraxgk.objectives.vmec_boozer_gradients import (
+from gkx.objectives.vmec_boozer_gradients import (
     _reduced_nonlinear_window_metrics_from_linear_observables,
 )
 
@@ -836,7 +833,7 @@ def test_solver_ready_geometry_mapping_validates_contract() -> None:
         default_solver_geometry_design_params(), theta
     )
 
-    assert spectraxgk.solver_ready_geometry_mapping is solver_ready_geometry_mapping
+    assert gkx.solver_ready_geometry_mapping is solver_ready_geometry_mapping
     assert tuple(SOLVER_GEOMETRY_PARAMETER_NAMES) == (
         "bmag_ripple",
         "curvature_drift_scale",
@@ -923,7 +920,7 @@ def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None
     )
 
     assert (
-        spectraxgk.linear_solver_geometry_gradient_report
+        gkx.linear_solver_geometry_gradient_report
         is linear_solver_geometry_gradient_report
     )
     assert report["passed"] is True
@@ -943,7 +940,7 @@ def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None
 
 def test_solver_objective_vector_from_geometry_is_finite_and_exported() -> None:
     theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
-    geom = spectraxgk.flux_tube_geometry_from_mapping(
+    geom = gkx.flux_tube_geometry_from_mapping(
         solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta),
         validate_finite=False,
     )
@@ -957,7 +954,7 @@ def test_solver_objective_vector_from_geometry_is_finite_and_exported() -> None:
     )
 
     assert (
-        spectraxgk.solver_objective_vector_from_geometry
+        gkx.solver_objective_vector_from_geometry
         is solver_objective_vector_from_geometry
     )
     assert vector.shape == (len(SOLVER_OBJECTIVE_NAMES),)
@@ -971,9 +968,9 @@ def test_solver_objective_vector_from_geometry_is_finite_and_exported() -> None:
 def test_solver_scalar_objective_selector_aliases_and_errors() -> None:
     vector = jnp.asarray([1.0, -0.5, 2.0, 3.0, 4.0, 5.0])
 
-    assert spectraxgk.SolverScalarObjective is SolverScalarObjective
+    assert gkx.SolverScalarObjective is SolverScalarObjective
     assert (
-        spectraxgk.solver_scalar_objective_from_vector
+        gkx.solver_scalar_objective_from_vector
         is solver_scalar_objective_from_vector
     )
     assert float(
@@ -1023,7 +1020,7 @@ def test_dominant_real_eigenvalue_custom_vjp_matches_finite_difference() -> None
         minus = objective(params - step * eye[index])
         grad_fd.append(float((plus - minus) / (2.0 * step)))
 
-    assert spectraxgk.dominant_real_eigenvalue is dominant_real_eigenvalue
+    assert gkx.dominant_real_eigenvalue is dominant_real_eigenvalue
     assert np.all(np.isfinite(grad_ad))
     np.testing.assert_allclose(grad_ad, np.asarray(grad_fd), rtol=rtol, atol=atol)
 
@@ -1050,7 +1047,7 @@ def test_dominant_eigenvalue_branch_locality_report_accepts_isolated_branch() ->
     )
 
     assert (
-        spectraxgk.dominant_eigenvalue_branch_locality_report
+        gkx.dominant_eigenvalue_branch_locality_report
         is dominant_eigenvalue_branch_locality_report
     )
     assert report["passed"] is True
@@ -1108,7 +1105,7 @@ def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> No
     theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False, dtype=dtype)
 
     def objective(x: jnp.ndarray) -> jnp.ndarray:
-        geom = spectraxgk.flux_tube_geometry_from_mapping(
+        geom = gkx.flux_tube_geometry_from_mapping(
             solver_ready_geometry_mapping(x, theta),
             source_model="solver_growth_custom_vjp_gate",
             validate_finite=False,
@@ -1135,7 +1132,7 @@ def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> No
 
 def test_solver_linear_operator_matrix_matches_growth_rate_path() -> None:
     theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
-    geom = spectraxgk.flux_tube_geometry_from_mapping(
+    geom = gkx.flux_tube_geometry_from_mapping(
         solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta),
         validate_finite=False,
     )
@@ -1156,7 +1153,7 @@ def test_solver_linear_operator_matrix_matches_growth_rate_path() -> None:
     )
 
     assert (
-        spectraxgk.solver_linear_operator_matrix_from_geometry
+        gkx.solver_linear_operator_matrix_from_geometry
         is solver_linear_operator_matrix_from_geometry
     )
     assert matrix.shape == (4, 4)
@@ -1168,7 +1165,7 @@ def test_solver_linear_operator_matrix_matches_growth_rate_path() -> None:
 
 def test_solver_growth_rate_from_geometry_validates_small_grid_contracts() -> None:
     theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
-    geom = spectraxgk.flux_tube_geometry_from_mapping(
+    geom = gkx.flux_tube_geometry_from_mapping(
         solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta),
         source_model="solver_growth_contract_gate",
         validate_finite=False,
@@ -1190,7 +1187,7 @@ def test_solver_grid_options_from_ky_values_maps_physical_scan_to_fft_rows() -> 
     options = solver_grid_options_from_ky_values((0.1, 0.3, 0.5))
 
     assert (
-        spectraxgk.solver_grid_options_from_ky_values
+        gkx.solver_grid_options_from_ky_values
         is solver_grid_options_from_ky_values
     )
     assert options["selected_ky_indices"] == (1, 3, 5)
@@ -1262,7 +1259,7 @@ def test_solver_objective_branch_gradient_report_gates_public_evaluator() -> Non
     )
 
     assert (
-        spectraxgk.solver_objective_branch_gradient_report
+        gkx.solver_objective_branch_gradient_report
         is solver_objective_branch_gradient_report
     )
     assert report["passed"] is True
@@ -1315,7 +1312,7 @@ def test_vmec_boozer_solver_objective_vector_from_state_splits_options(
         n_laguerre=2,
     )
 
-    assert spectraxgk.vmec_boozer_solver_objective_vector_from_state is (
+    assert gkx.vmec_boozer_solver_objective_vector_from_state is (
         vmec_boozer_solver_objective_vector_from_state
     )
     assert np.asarray(vector).tolist() == list(range(len(SOLVER_OBJECTIVE_NAMES)))
@@ -1355,7 +1352,7 @@ def test_vmec_boozer_scalar_objective_from_state_uses_vector_selector(
     )
 
     assert (
-        spectraxgk.vmec_boozer_scalar_objective_from_state
+        gkx.vmec_boozer_scalar_objective_from_state
         is vmec_boozer_scalar_objective_from_state
     )
     assert float(value) == pytest.approx(6.0)
@@ -1396,7 +1393,7 @@ def test_vmec_boozer_solver_objective_table_samples_surfaces_alphas_and_ky(
         n_laguerre=2,
     )
 
-    assert spectraxgk.vmec_boozer_solver_objective_table_from_state is (
+    assert gkx.vmec_boozer_solver_objective_table_from_state is (
         vmec_boozer_solver_objective_table_from_state
     )
     assert np.asarray(table).shape == (8, len(SOLVER_OBJECTIVE_NAMES))
@@ -1451,7 +1448,7 @@ def test_vmec_boozer_solver_objective_table_with_metadata_accepts_torflux_and_ph
         n_laguerre=2,
     )
 
-    assert spectraxgk.vmec_boozer_solver_objective_table_with_metadata_from_state is (
+    assert gkx.vmec_boozer_solver_objective_table_with_metadata_from_state is (
         vmec_boozer_solver_objective_table_with_metadata_from_state
     )
     assert np.asarray(table).shape == (8, len(SOLVER_OBJECTIVE_NAMES))
@@ -1525,7 +1522,7 @@ def test_vmec_boozer_aggregate_scalar_objective_from_state_reductions(
         reduction="max",
     )
 
-    assert spectraxgk.vmec_boozer_aggregate_scalar_objective_from_state is (
+    assert gkx.vmec_boozer_aggregate_scalar_objective_from_state is (
         vmec_boozer_aggregate_scalar_objective_from_state
     )
     assert float(mean_value) == pytest.approx(7.0 / 3.0)
@@ -1555,25 +1552,25 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
 ) -> None:
     @dataclass(frozen=True)
     class FakeState:
-        Rcos: jnp.ndarray
+        R_cos: jnp.ndarray
 
-    fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
+    fake_state = FakeState(R_cos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
         solver_vmec,
-        "_load_vmec_jax_example_state_bundle",
+        "_load_vmex_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
             "input_path": "input.test",
             "wout_path": "wout.test",
             "state": fake_state,
-            "static": "static",
-            "indata": "indata",
+            "runtime": "runtime",
+            "inp": "inp",
             "wout": "wout",
         },
     )
 
     def fake_vector(state, *_args, **_kwargs):  # noqa: ANN001, ANN202
-        coeff = float(np.asarray(state.Rcos[2, 1]))
+        coeff = float(np.asarray(state.R_cos[2, 1]))
         return jnp.asarray([1.0 + 3.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0 + coeff])
 
     monkeypatch.setattr(
@@ -1589,7 +1586,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
         ntheta=4,
     )
 
-    assert spectraxgk.vmec_boozer_scalar_objective_finite_difference_report is (
+    assert gkx.vmec_boozer_scalar_objective_finite_difference_report is (
         vmec_boozer_scalar_objective_finite_difference_report
     )
     assert report["passed"] is True
@@ -1615,29 +1612,29 @@ def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_fam
 ) -> None:
     @dataclass(frozen=True)
     class FakeState:
-        Rcos: jnp.ndarray
-        Zsin: jnp.ndarray
+        R_cos: jnp.ndarray
+        Z_sin: jnp.ndarray
 
     fake_state = FakeState(
-        Rcos=jnp.zeros((5, 3), dtype=jnp.float32),
-        Zsin=jnp.zeros((5, 3), dtype=jnp.float32),
+        R_cos=jnp.zeros((5, 3), dtype=jnp.float32),
+        Z_sin=jnp.zeros((5, 3), dtype=jnp.float32),
     )
     monkeypatch.setattr(
         solver_vmec,
-        "_load_vmec_jax_example_state_bundle",
+        "_load_vmex_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
             "input_path": "input.test",
             "wout_path": "wout.test",
             "state": fake_state,
-            "static": "static",
-            "indata": "indata",
+            "runtime": "runtime",
+            "inp": "inp",
             "wout": "wout",
         },
     )
 
     def fake_vector(state, *_args, **_kwargs):  # noqa: ANN001, ANN202
-        coeff = float(np.asarray(state.Zsin[2, 1]))
+        coeff = float(np.asarray(state.Z_sin[2, 1]))
         return jnp.asarray([2.0 + 4.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0])
 
     monkeypatch.setattr(
@@ -1669,25 +1666,25 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
 ) -> None:
     @dataclass(frozen=True)
     class FakeState:
-        Rcos: jnp.ndarray
+        R_cos: jnp.ndarray
 
-    fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
+    fake_state = FakeState(R_cos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
         solver_vmec,
-        "_load_vmec_jax_example_state_bundle",
+        "_load_vmex_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
             "input_path": "input.multi",
             "wout_path": "wout.multi",
             "state": fake_state,
-            "static": "static",
-            "indata": "indata",
+            "runtime": "runtime",
+            "inp": "inp",
             "wout": "wout",
         },
     )
 
     def fake_table(state, *_args, **kwargs):  # noqa: ANN001, ANN202
-        coeff = float(np.asarray(state.Rcos[2, 1]))
+        coeff = float(np.asarray(state.R_cos[2, 1]))
         ky_indices = tuple(kwargs["selected_ky_indices"])
         rows = []
         metadata = []
@@ -1719,7 +1716,7 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
     )
 
     assert (
-        spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report
+        gkx.vmec_boozer_aggregate_scalar_objective_finite_difference_report
         is (vmec_boozer_aggregate_scalar_objective_finite_difference_report)
     )
     assert report["passed"] is True
@@ -1792,7 +1789,7 @@ def test_vmec_boozer_aggregate_scalar_objective_line_search_report_accepts_safe_
         ntheta=4,
     )
 
-    assert spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report is (
+    assert gkx.vmec_boozer_aggregate_scalar_objective_line_search_report is (
         vmec_boozer_aggregate_scalar_objective_line_search_report
     )
     assert report["passed"] is True
@@ -1881,7 +1878,7 @@ def test_vmec_boozer_aggregate_line_search_holdout_report_passes_split(
         min_holdout_improvement=0.01,
     )
 
-    assert spectraxgk.vmec_boozer_aggregate_line_search_holdout_report is (
+    assert gkx.vmec_boozer_aggregate_line_search_holdout_report is (
         vmec_boozer_aggregate_line_search_holdout_report
     )
     assert report["passed"] is True
@@ -1961,7 +1958,7 @@ def test_vmec_boozer_scalar_objective_line_search_report_accepts_safe_updates(
         ntheta=4,
     )
 
-    assert spectraxgk.vmec_boozer_scalar_objective_line_search_report is (
+    assert gkx.vmec_boozer_scalar_objective_line_search_report is (
         vmec_boozer_scalar_objective_line_search_report
     )
     assert report["passed"] is True
@@ -2063,18 +2060,18 @@ def test_objective_gate_rows_are_json_ready_and_gate_each_parameter() -> None:
 
 
 def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
-    assert spectraxgk.mode21_vmec_boozer_linear_frequency_gradient_report is (
+    assert gkx.mode21_vmec_boozer_linear_frequency_gradient_report is (
         mode21_vmec_boozer_linear_frequency_gradient_report
     )
-    assert spectraxgk.mode21_vmec_boozer_quasilinear_gradient_report is (
+    assert gkx.mode21_vmec_boozer_quasilinear_gradient_report is (
         mode21_vmec_boozer_quasilinear_gradient_report
     )
-    assert spectraxgk.mode21_vmec_boozer_nonlinear_window_gradient_report is (
+    assert gkx.mode21_vmec_boozer_nonlinear_window_gradient_report is (
         mode21_vmec_boozer_nonlinear_window_gradient_report
     )
     assert tuple(VMEC_BOOZER_STATE_PARAMETER_NAMES) == ("Rcos_mid_surface_m1",)
     assert (
-        spectraxgk.VMEC_BOOZER_STATE_PARAMETER_FAMILIES
+        gkx.VMEC_BOOZER_STATE_PARAMETER_FAMILIES
         is VMEC_BOOZER_STATE_PARAMETER_FAMILIES
     )
     assert tuple(VMEC_BOOZER_STATE_PARAMETER_FAMILIES) == (
@@ -2167,17 +2164,17 @@ def test_write_solver_objective_gradient_artifacts(tmp_path: Path) -> None:
 # ---- test_stellarator_objective_portfolio.py ----
 
 
-from spectraxgk.objectives.portfolio_artifacts import (
+from gkx.objectives.portfolio_guard import (
     ReducedPortfolioArtifactGuardConfig,
     reduced_portfolio_artifact_guard_report,
 )
-from spectraxgk.objectives.portfolio_contracts import (
+from gkx.objectives.portfolio import (
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
     validate_objective_portfolio_contract,
 )
-from spectraxgk.objectives.portfolio_sensitivity import (
+from gkx.objectives.portfolio import (
     objective_portfolio_sensitivity_report,
 )
 
@@ -2443,7 +2440,7 @@ def test_objective_portfolio_mean_and_max_reductions_are_explicit() -> None:
 
 
 def test_objective_portfolio_helpers_are_exported_at_package_top_level() -> None:
-    import spectraxgk as sgk
+    import gkx as sgk
 
     rows = jnp.ones((1, 1, 2, 2))
     contract = sgk.validate_objective_portfolio_contract(rows)
@@ -2465,8 +2462,8 @@ def test_objective_portfolio_helpers_are_exported_at_package_top_level() -> None
 
 # ---- test_stellarator_optimization.py ----
 
-import spectraxgk.objectives.stellarator as so
-from spectraxgk.objectives.stellarator import (
+import gkx.objectives.stellarator as so
+from gkx.objectives.stellarator import (
     OBSERVABLE_NAMES,
     PARAMETER_NAMES,
     StellaratorITGOptimizationConfig,
@@ -2512,8 +2509,8 @@ def _disable_optional_backend_discovery(monkeypatch) -> None:
         so,
         "discover_differentiable_geometry_backends",
         lambda: {
-            "vmec_jax_available": False,
-            "vmec_jax_boundary_api_available": False,
+            "vmex_available": False,
+            "vmex_boundary_api_available": False,
             "booz_xform_jax_available": False,
             "booz_xform_jax_api_available": False,
         },
@@ -2555,13 +2552,9 @@ def test_public_optimization_examples_exclude_reduced_synthetic_workflows() -> N
     assert "QA_optimization_linear_ITG.py" in names
     assert "QA_optimization_quasilinear_ITG.py" in names
     assert "QA_optimization_nonlinear_ITG.py" in names
-    assert "vmec_jax_qa_low_turbulence_optimization.py" not in names
     assert not any(name.startswith("stellarator_itg_") for name in names)
     assert "_stellarator_itg_plotting.py" not in names
     assert "compare_stellarator_itg_optimizations.py" not in names
-    assert (
-        REPO_ROOT / "tools" / "campaigns" / "vmec_jax_qa_low_turbulence_optimization.py"
-    ).exists()
 
 
 def test_public_optimization_examples_keep_editable_constant_style() -> None:
@@ -2582,42 +2575,20 @@ def test_public_optimization_examples_keep_editable_constant_style() -> None:
             assert "ALPHA = 0.0" in text
             assert "NTHETA = 24" in text
             assert "SELECTED_KY_INDEX = 1" in text
-        elif script.name == "QA_parameter_scan.py":
-            assert 'COEFFICIENT = "RBC(1,1)"' in text
-            assert 'FRACTIONS = "-0.75,-0.70,-0.65' in text
-            assert '0.65,0.70,0.75"' in text
-            assert 'SURFACES = "0.45,0.64,0.78"' in text
-            assert 'ALPHAS = "0.0,0.7853981633974483"' in text
-            assert 'KY_VALUES = "0.10,0.30,0.50"' in text
-        elif script.name == "QA_nonlinear_ITG_matched_audit.py":
-            assert "BASELINE_ENSEMBLE" in text
-            assert "OPTIMIZED_ENSEMBLE" in text
-            assert "MIN_RELATIVE_REDUCTION = 0.02" in text
-            assert "REQUIRE_UNCERTAINTY_SEPARATION = True" in text
-        elif script.name == "QA_nonlinear_ITG_transport_matrix.py":
-            assert "BASELINE_VMEC_FILE" in text
-            assert "CANDIDATE_VMEC_FILE" in text
-            assert 'SURFACES = "0.45,0.64,0.78"' in text
-            assert 'ALPHAS = "0.0,pi/4"' in text
-            assert 'KY_VALUES = "0.10,0.30,0.50"' in text
-            assert 'HORIZONS = "700,1100,1500"' in text
-            assert "WINDOW_TMIN = 1100.0" in text
-            assert "WINDOW_TMAX = 1500.0" in text
-            assert "GPU_SPLITS = 2" in text
         else:
             raise AssertionError(f"unexpected optimization example {script.name}")
 
 
 def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:
-    assert spectraxgk.STELLARATOR_ITG_PARAMETER_NAMES == PARAMETER_NAMES
-    assert spectraxgk.STELLARATOR_ITG_OBSERVABLE_NAMES == OBSERVABLE_NAMES
-    assert spectraxgk.optimize_stellarator_itg is optimize_stellarator_itg
+    assert gkx.STELLARATOR_ITG_PARAMETER_NAMES == PARAMETER_NAMES
+    assert gkx.STELLARATOR_ITG_OBSERVABLE_NAMES == OBSERVABLE_NAMES
+    assert gkx.optimize_stellarator_itg is optimize_stellarator_itg
     assert (
-        spectraxgk.stellarator_itg_density_gradient_scan
+        gkx.stellarator_itg_density_gradient_scan
         is stellarator_itg_density_gradient_scan
     )
     assert (
-        spectraxgk.stellarator_itg_residual_sensitivity_report
+        gkx.stellarator_itg_residual_sensitivity_report
         is stellarator_itg_residual_sensitivity_report
     )
 
@@ -2714,9 +2685,9 @@ def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(
         "nonlinear_trace": None,
         "config": asdict(cfg),
         "backend_info": {
-            "vmec_jax_available": True,
+            "vmex_available": True,
             "booz_xform_jax_available": True,
-            "vmec_jax_paths": ["/Users/tester/local/vmec_jax"],
+            "vmex_paths": ["/Users/tester/local/vmex"],
             "booz_xform_jax_paths": ["/Users/tester/local/booz_xform_jax"],
         },
         "claim_level": "reduced_linear_or_quasilinear_objective_optimization",
@@ -2729,7 +2700,7 @@ def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(
     written = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert "/Users/tester" not in out.with_suffix(".json").read_text(encoding="utf-8")
     assert written["backend_info"] == {
-        "vmec_jax_available": True,
+        "vmex_available": True,
         "booz_xform_jax_available": True,
     }
     assert out.with_suffix(".history.csv").exists()
@@ -2907,21 +2878,21 @@ def test_quasilinear_residual_sensitivity_report_checks_fd_and_conditioning() ->
 
 
 def test_stellarator_itg_sample_portfolio_is_rectangular_and_exported() -> None:
-    assert spectraxgk.StellaratorITGSampleSet is StellaratorITGSampleSet
+    assert gkx.StellaratorITGSampleSet is StellaratorITGSampleSet
     assert (
-        spectraxgk.stellarator_itg_sample_objective_table
+        gkx.stellarator_itg_sample_objective_table
         is stellarator_itg_sample_objective_table
     )
     assert (
-        spectraxgk.stellarator_itg_reduced_portfolio_objective
+        gkx.stellarator_itg_reduced_portfolio_objective
         is stellarator_itg_reduced_portfolio_objective
     )
     assert (
-        spectraxgk.stellarator_itg_portfolio_sensitivity_report
+        gkx.stellarator_itg_portfolio_sensitivity_report
         is stellarator_itg_portfolio_sensitivity_report
     )
     assert (
-        spectraxgk.stellarator_itg_portfolio_gate_payload
+        gkx.stellarator_itg_portfolio_gate_payload
         is stellarator_itg_portfolio_gate_payload
     )
 
@@ -3037,7 +3008,7 @@ def test_stellarator_itg_portfolio_gate_payload_is_json_ready() -> None:
     )
     assert payload["portfolio_report"]["scalar_gradient_gate"]["passed"] is True
     assert payload["portfolio_report"]["row_jacobian_gate"]["passed"] is True
-    assert "real vmec_jax" in payload["next_action"]
+    assert "real vmex" in payload["next_action"]
 
 
 def test_stellarator_itg_vmec_boozer_portfolio_wraps_real_table_contract(
@@ -3083,10 +3054,10 @@ def test_stellarator_itg_vmec_boozer_portfolio_wraps_real_table_contract(
         ntheta=8,
     )
 
-    assert spectraxgk.stellarator_itg_vmec_boozer_sample_objective_table_from_state is (
+    assert gkx.stellarator_itg_vmec_boozer_sample_objective_table_from_state is (
         stellarator_itg_vmec_boozer_sample_objective_table_from_state
     )
-    assert spectraxgk.stellarator_itg_vmec_boozer_portfolio_objective_from_state is (
+    assert gkx.stellarator_itg_vmec_boozer_portfolio_objective_from_state is (
         stellarator_itg_vmec_boozer_portfolio_objective_from_state
     )
     assert table.shape == (2, 2, 2, 2)
@@ -3232,7 +3203,7 @@ def test_compare_stellarator_itg_objectives_parallel_preserves_order(
 
 # ---- test_zonal_objective.py ----
 
-from spectraxgk.objectives.zonal import (
+from gkx.objectives.zonal import (
     ZONAL_FLOW_OBJECTIVE_NAMES,
     ZonalFlowObjectiveConfig,
     zonal_flow_objective_artifact_from_records,
@@ -3240,12 +3211,12 @@ from spectraxgk.objectives.zonal import (
     zonal_flow_objective_sensitivity_report,
     zonal_flow_reduced_objective,
 )
-from spectraxgk.objectives import zonal_records
-from spectraxgk.objectives.zonal_records import _finite_metric_tensor_from_records
+from gkx.objectives import zonal
+from gkx.objectives.zonal import _finite_metric_tensor_from_records
 
 
 def test_zonal_record_helpers_have_single_canonical_owner() -> None:
-    assert inspect.getmodule(_finite_metric_tensor_from_records) is zonal_records
+    assert inspect.getmodule(_finite_metric_tensor_from_records) is zonal
 
 
 def test_zonal_flow_objective_prefers_large_residual_and_low_damping() -> None:

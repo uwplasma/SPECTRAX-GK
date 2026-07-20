@@ -25,14 +25,14 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.objectives.sampling import (  # noqa: E402
+from gkx.artifacts.plotting import set_plot_style  # noqa: E402
+from gkx.objectives.sampling import (  # noqa: E402
     solver_grid_options_from_ky_values,
 )
-from spectraxgk.objectives.vmec_boozer_fd import (  # noqa: E402
+from gkx.objectives.vmec_boozer_fd import (  # noqa: E402
     vmec_boozer_aggregate_scalar_objective_finite_difference_report,
 )
-from spectraxgk.objectives.vmec_boozer_line_search import (  # noqa: E402
+from gkx.objectives.vmec_boozer_line_search import (  # noqa: E402
     vmec_boozer_aggregate_scalar_objective_line_search_report,
 )
 from tools.artifacts.build_solver_objective_gradient_gate import _json_clean  # noqa: E402
@@ -306,7 +306,7 @@ def write_vmec_boozer_aggregate_objective_artifacts(
         0.02,
         0.16,
         "Finite-difference sensitivity through the in-memory\n"
-        "VMEC/Boozer/SPECTRAX-GK value path. This is a\n"
+        "VMEC/Boozer/GKX value path. This is a\n"
         "multi-point reduced linear/QL objective gate, not a\n"
         "nonlinear turbulent transport optimization claim.",
         va="top",
@@ -852,7 +852,7 @@ def _annotate_payload(
     )
     annotated["claim_scope"] = (
         "bounded finite-difference sensitivity of a reduced linear/quasilinear "
-        "VMEC/Boozer/SPECTRAX-GK objective over multiple fixed field-line "
+        "VMEC/Boozer/GKX objective over multiple fixed field-line "
         "alphas and/or surfaces; not a nonlinear turbulent transport claim"
     )
     annotated["multi_point_coverage"] = {
@@ -997,7 +997,7 @@ def _fail_closed_payload(
         "case_name": str(case_name),
         "source_scope": "mode21_vmec_boozer_state_second_equilibrium_aggregate",
         "claim_scope": (
-            "second-equilibrium reduced aggregate VMEC/Boozer/SPECTRAX-GK "
+            "second-equilibrium reduced aggregate VMEC/Boozer/GKX "
             "finite-difference or line-search feasibility at mboz=nboz>=21; "
             "not a nonlinear turbulent transport optimization claim"
         ),
@@ -1128,7 +1128,7 @@ def build_vmec_boozer_second_equilibrium_aggregate_payload(
         "case_name": str(case_name),
         "source_scope": "mode21_vmec_boozer_state_second_equilibrium_aggregate",
         "claim_scope": (
-            "second-equilibrium reduced aggregate VMEC/Boozer/SPECTRAX-GK "
+            "second-equilibrium reduced aggregate VMEC/Boozer/GKX "
             "finite-difference and one-parameter line-search gate at mboz=nboz>=21; "
             "not a nonlinear turbulent transport optimization claim"
         ),

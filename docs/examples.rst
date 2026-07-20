@@ -36,11 +36,11 @@ VMEC-backed tokamak and stellarator cases
    ./generate_wouts.sh
    cd ../..
 
-   spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
-   spectraxgk run --config examples/nonlinear/axisymmetric/runtime_circular_vmec_nonlinear.toml
+   gkx run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
+   gkx run --config examples/nonlinear/axisymmetric/runtime_circular_vmec_nonlinear.toml
 
-   spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
-   spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
+   gkx run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
+   gkx run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
    python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --steps 200
    python examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py --steps 200
 
@@ -53,7 +53,7 @@ you need a fixed-step stability study.
 The bundled VMEC decks are self-contained examples. Exact HSX or W7-X
 validation should use the same TOMLs with ``--vmec-file`` pointing to the
 machine-specific benchmark WOUT. If you only need one local WOUT, run
-``vmec_jax input.NAME`` in ``examples/vmec`` instead of the full
+``vmex input.NAME`` in ``examples/vmec`` instead of the full
 ``generate_wouts.sh`` helper.
 
 The shipped nonlinear stellarator runtime TOMLs now also emit artifact bundles
@@ -85,14 +85,14 @@ lanes:
    python benchmarks/etg_linear_benchmark.py --outdir tools_out/etg
    python benchmarks/kbm_linear_comparison.py --output tools_out/kbm_linear_comparison.png
 
-   spectrax-gk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --out tools_out/cyclone_quasilinear
 
-   spectrax-gk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
-   spectrax-gk examples/linear/axisymmetric/cyclone.toml
+   gkx examples/linear/axisymmetric/cyclone.toml
 
 ``runtime_kbm.toml`` is retained as the canonical operator input for controlled
 comparison studies. Its experimental shift-invert path fails closed while the
@@ -122,7 +122,7 @@ the package helpers:
 .. code-block:: python
 
    import jax.numpy as jnp
-   import spectraxgk as sgk
+   import gkx as sgk
 
    ky = jnp.asarray([0.1, 0.2, 0.3, 0.4])
    chunks = sgk.ky_scan_batches(ky, n_batches=2)
@@ -167,7 +167,7 @@ For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
    python tools/artifacts/generate_parallel_identity_gate.py ky-scan
 
 .. figure:: _static/parallel_ky_scan_gate.png
-   :alt: SPECTRAX-GK ky-batch parallelization identity gate
+   :alt: GKX ky-batch parallelization identity gate
    :width: 100%
 
    Real Cyclone linear solver comparison between serial and fixed-shape
@@ -182,7 +182,7 @@ outputs, run:
    python tools/artifacts/generate_parallel_identity_gate.py logical-cpu --logical-devices 2
 
 .. figure:: _static/logical_cpu_parallel_scan_gate.png
-   :alt: SPECTRAX-GK logical CPU parallel scan identity gate
+   :alt: GKX logical CPU parallel scan identity gate
    :width: 100%
 
    Independent-scan interface gate for structured outputs. This validates the
@@ -197,7 +197,7 @@ the Hermite ghost exchange:
    python tools/artifacts/generate_velocity_parallel_gates.py hermite-exchange --logical-devices 2
 
 .. figure:: _static/hermite_exchange_gate.png
-   :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
+   :alt: GKX Hermite ghost-exchange identity gate
    :width: 100%
 
    ``shard_map`` nearest-neighbor exchange for Hermite moments. This validates
@@ -211,7 +211,7 @@ The paired field-reduction gate is:
    python tools/artifacts/generate_velocity_parallel_gates.py field-reduce --logical-devices 2
 
 .. figure:: _static/velocity_field_reduce_gate.png
-   :alt: SPECTRAX-GK velocity field-reduction identity gate
+   :alt: GKX velocity field-reduction identity gate
    :width: 100%
 
    ``shard_map`` reduction/broadcast over a Hermite mesh. This establishes the
@@ -225,7 +225,7 @@ The first production-field-solve reduction gate is:
    python tools/artifacts/generate_electrostatic_parallel_gates.py field-reduce --logical-devices 2
 
 .. figure:: _static/electrostatic_field_reduce_gate.png
-   :alt: SPECTRAX-GK electrostatic field-reduction identity gate
+   :alt: GKX electrostatic field-reduction identity gate
    :width: 100%
 
    Hermite-sharded ``m=0`` density reduction for the electrostatic
@@ -238,7 +238,7 @@ The Hermite streaming-ladder coefficient gate is:
    python tools/artifacts/generate_velocity_parallel_gates.py hermite-ladder --logical-devices 2
 
 .. figure:: _static/hermite_streaming_ladder_gate.png
-   :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
+   :alt: GKX Hermite streaming-ladder identity gate
    :width: 100%
 
    ``shard_map`` Hermite exchange plus the ``sqrt(m+1)`` / ``sqrt(m)``
@@ -253,7 +253,7 @@ The first electrostatic drift-slice gate is:
    python tools/artifacts/generate_electrostatic_parallel_gates.py drift --logical-devices 2
 
 .. figure:: _static/electrostatic_drift_gate.png
-   :alt: SPECTRAX-GK electrostatic drift-slice identity gate
+   :alt: GKX electrostatic drift-slice identity gate
    :width: 100%
 
    Hermite-sharded mirror and curvature/grad-B drift slices, including
@@ -267,7 +267,7 @@ The matching electrostatic diamagnetic-drive gate is:
    python tools/artifacts/generate_electrostatic_parallel_gates.py diamagnetic --logical-devices 2
 
 .. figure:: _static/electrostatic_diamagnetic_gate.png
-   :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
+   :alt: GKX electrostatic diamagnetic-drive identity gate
    :width: 100%
 
    Hermite-sharded electrostatic diamagnetic drive. The sharded route first
@@ -282,7 +282,7 @@ The periodic streaming microkernel gate adds that field-line derivative:
    python tools/artifacts/generate_velocity_parallel_gates.py periodic-streaming --logical-devices 2
 
 .. figure:: _static/periodic_streaming_microkernel_gate.png
-   :alt: SPECTRAX-GK periodic streaming microkernel identity gate
+   :alt: GKX periodic streaming microkernel identity gate
    :width: 100%
 
    Periodic spectral parallel derivative plus Hermite streaming ladder through
@@ -297,7 +297,7 @@ linear-RHS call graph with every non-streaming contribution disabled:
    python tools/artifacts/generate_linear_rhs_parallel_gates.py streaming --logical-devices 2
 
 .. figure:: _static/linear_rhs_streaming_gate.png
-   :alt: SPECTRAX-GK streaming-only linear RHS identity gate
+   :alt: GKX streaming-only linear RHS identity gate
    :width: 100%
 
    Streaming-only ``linear_rhs_cached`` comparison against the velocity-sharded
@@ -312,7 +312,7 @@ With a nonzero electrostatic response, use:
    python tools/artifacts/generate_linear_rhs_parallel_gates.py streaming-electrostatic --logical-devices 2
 
 .. figure:: _static/linear_rhs_streaming_electrostatic_gate.png
-   :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
+   :alt: GKX electrostatic streaming linear RHS identity gate
    :width: 100%
 
    Streaming plus electrostatic ``phi`` call-graph comparison. The field solve
@@ -327,7 +327,7 @@ For the composed electrostatic linear-slices backend, use:
    python tools/artifacts/generate_linear_rhs_parallel_gates.py electrostatic-slices --logical-devices 2
 
 .. figure:: _static/linear_rhs_electrostatic_slices_gate.png
-   :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
+   :alt: GKX composed electrostatic linear-slices identity gate
    :width: 100%
 
    Full opt-in electrostatic linear-slices call-graph comparison for
@@ -362,7 +362,7 @@ engineering sweep helper:
      --nl 4 --ny 32 --nz 128 --rtol 1e-5
 
 .. figure:: _static/linear_rhs_parallel_slices_sweep.png
-   :alt: SPECTRAX-GK electrostatic linear-slices parallelization sweep
+   :alt: GKX electrostatic linear-slices parallelization sweep
    :width: 100%
 
    Device-count and Hermite-resolution sweep for the opt-in electrostatic
@@ -395,7 +395,7 @@ One-shot nonlinear bundle write:
 
 .. code-block:: bash
 
-   spectrax-gk run-runtime-nonlinear \
+   gkx run-runtime-nonlinear \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --steps 200 \
      --out tools_out/cyclone_release.out.nc
@@ -435,13 +435,13 @@ the in-package backend and needs no external helper:
 .. code-block:: bash
 
    cd examples/vmec
-   vmec_jax input.NuhrenbergZille_1988_QHS
+   vmex input.NuhrenbergZille_1988_QHS
    cd ../..
-   export SPECTRAX_BOOZ_XFORM_JAX_PATH=/absolute/or/relative/booz_xform_jax
-   spectraxgk geometry vmec \
+   export GKX_BOOZ_XFORM_JAX_PATH=/absolute/or/relative/booz_xform_jax
+   gkx geometry vmec \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
-   spectraxgk geometry miller \
+   gkx geometry miller \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml
 
 Benchmark and scan helpers
@@ -465,11 +465,11 @@ matched rerun and branch-continuity analysis live in
 The kinetic-electron script loads
 ``examples/linear/axisymmetric/runtime_kinetic_electron.toml``. The same input
 can be run directly with
-``spectraxgk examples/linear/axisymmetric/runtime_kinetic_electron.toml``.
+``gkx examples/linear/axisymmetric/runtime_kinetic_electron.toml``.
 
 The TEM script loads ``examples/linear/axisymmetric/runtime_tem.toml``; users
 can run the same single-mode case directly with
-``spectraxgk examples/linear/axisymmetric/runtime_tem.toml``.
+``gkx examples/linear/axisymmetric/runtime_tem.toml``.
 
 Foundational demos
 ------------------
@@ -493,20 +493,18 @@ Differentiable optimization examples
 ------------------------------------
 
 The public optimization examples are actual VMEC-JAX QA stellarator workflows
-with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
+with one GKX transport tuple appended to the VMEC-JAX objective list:
 
 .. code-block:: bash
 
    python examples/optimization/QA_optimization_linear_ITG.py
    python examples/optimization/QA_optimization_quasilinear_ITG.py
    python examples/optimization/QA_optimization_nonlinear_ITG.py
-   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
-   python examples/optimization/QA_parameter_scan.py
 
 The three ``QA_optimization_*_ITG.py`` scripts intentionally mirror upstream
-``vmec_jax/examples/optimization/QA_optimization.py`` on the current
+``vmex/examples/optimization/QA_optimization.py`` on the current
 ``VmecInput``/``opt.least_squares`` API. They preserve its ``A=6`` and mean-
-``iota=0.42`` targets and add only one SPECTRAX-GK objective tuple. Keep the
+``iota=0.42`` targets and add only one GKX objective tuple. Keep the
 transport weight small until solved-equilibrium aspect, iota, and
 quasisymmetry gates pass. They are deliberately edited through top-level
 constants, not command-line arguments.
@@ -515,12 +513,6 @@ The linear-growth script uses VMEC-JAX's implicit Jacobian. The quasilinear
 and reduced nonlinear-window scripts use finite-difference outer Jacobians
 because their dominant-eigenvector weights do not yet have the required JAX
 derivative. None of these optimizer residuals is a saturated heat-flux claim.
-
-``QA_nonlinear_ITG_matched_audit.py`` is the production-evidence companion:
-after long SPECTRAX-GK nonlinear baseline/candidate campaigns finish, edit its
-ensemble paths and run it to build the matched reduction and uncertainty gate.
-It does not launch simulations and does not consume reduced/startup nonlinear
-optimizer residuals.
 
 Reduced synthetic scripts are kept outside ``examples/optimization`` as
 development diagnostics only:
@@ -532,8 +524,6 @@ development diagnostics only:
    python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py
    python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py
    python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
-   python tools/artifacts/build_qa_transport_validation_artifacts.py comparison --pdf
-   python tools/artifacts/build_qa_transport_validation_artifacts.py horizon-audit --pdf
 
 The portfolio gate writes JSON/PNG/PDF artifacts and checks scalar plus
 row-wise AD/finite-difference agreement for the same surface/alpha/``k_y``
@@ -544,24 +534,8 @@ reduced/model-development gate; it does not claim optimized nonlinear heat
 flux or calibrated saturated transport. Treat the JSON sidecar as the audit
 source; the PNG/PDF summarize the same sidecar for docs and review.
 
-The aspect-6 QA low-turbulence comparison tool writes
-``docs/_static/qa_low_turbulence_comparison.{json,png,pdf}`` plus CSV sidecars.
-It compares a quasisymmetry/aspect/iota-floor design with a design that adds a
-reduced nonlinear heat-flux envelope residual, then plots the fixed-``a/L_T``
-``Q_env`` versus ``a/L_n`` scan, fixed-gradient reduced-envelope traces,
-reduced LCFS surfaces colored by ``|B|``, and reduced Boozer-LCFS ``|B|`` maps.
-The trace is smooth by construction because it integrates
-``dE/dt = 2 gamma E - alpha E^2``; it should not be read as a turbulent
-nonlinear SPECTRAX-GK heat-flux time series. This is a reduced
-differentiability and visualization example; production nonlinear optimization
-still requires long post-transient transport-window audits.
-The companion time-horizon audit writes
-``docs/_static/qa_low_turbulence_time_horizon_audit.{json,csv,png,pdf}`` and
-shows that ``t v_ti/a = 400`` is already converged relative to the
-``t=1000`` reduced-envelope reference for the tracked designs.
-
 The production bridge now exposes the same portfolio layout for real
-``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` rows:
+``vmex -> booz_xform_jax -> GKX`` rows:
 ``stellarator_itg_vmec_boozer_sample_objective_table_from_state`` returns a
 ``(surface, alpha, ky, objective)`` table and
 ``stellarator_itg_vmec_boozer_portfolio_objective_from_state`` reduces it with
@@ -601,7 +575,7 @@ Secondary slab workflow
 
 .. code-block:: bash
 
-   python -m spectraxgk.cli run-runtime-linear \
+   python -m gkx.cli run-runtime-linear \
      --config benchmarks/runtime_secondary_slab.toml
 
    python benchmarks/secondary_slab_workflow.py
@@ -616,7 +590,7 @@ Full-GK ETG nonlinear pilot
 .. code-block:: bash
 
    python examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py --steps 200
-   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml --steps 200
+   JAX_ENABLE_X64=1 gkx examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml --steps 200
 
 This is the full-GK two-species ETG nonlinear pilot lane. The shipped
 contract now matches the audited short-window startup path: ``Lx = 1.25`` for the linked ETG box and

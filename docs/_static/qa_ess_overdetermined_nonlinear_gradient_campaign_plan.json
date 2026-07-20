@@ -1,5 +1,5 @@
 {
-  "baseline_input": "/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/input.final",
+  "baseline_input": "/Users/rogeriojorge/local/vmex/results/qa_opt/ess/input.final",
   "case": "qa_ess_profile_gradient",
   "claim_level": "multi_control_profile_gradient_launch_plan_not_simulation_claim",
   "control_count": 3,
@@ -24,9 +24,9 @@
       },
       "vmec_manifest": "tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1/vmec_boundary_perturbation_manifest.json",
       "vmec_run_commands": {
-        "baseline": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1 && vmec_jax input.qa_ess_profile_gradient_zbs_1_1_baseline",
-        "minus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1 && vmec_jax input.qa_ess_profile_gradient_zbs_1_1_minus_delta",
-        "plus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1 && vmec_jax input.qa_ess_profile_gradient_zbs_1_1_plus_delta"
+        "baseline": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1 && vmex input.qa_ess_profile_gradient_zbs_1_1_baseline",
+        "minus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1 && vmex input.qa_ess_profile_gradient_zbs_1_1_minus_delta",
+        "plus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_1 && vmex input.qa_ess_profile_gradient_zbs_1_1_plus_delta"
       }
     },
     {
@@ -49,9 +49,9 @@
       },
       "vmec_manifest": "tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0/vmec_boundary_perturbation_manifest.json",
       "vmec_run_commands": {
-        "baseline": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0 && vmec_jax input.qa_ess_profile_gradient_zbs_1_0_baseline",
-        "minus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0 && vmec_jax input.qa_ess_profile_gradient_zbs_1_0_minus_delta",
-        "plus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0 && vmec_jax input.qa_ess_profile_gradient_zbs_1_0_plus_delta"
+        "baseline": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0 && vmex input.qa_ess_profile_gradient_zbs_1_0_baseline",
+        "minus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0 && vmex input.qa_ess_profile_gradient_zbs_1_0_minus_delta",
+        "plus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/zbs_1_0 && vmex input.qa_ess_profile_gradient_zbs_1_0_plus_delta"
       }
     },
     {
@@ -74,9 +74,9 @@
       },
       "vmec_manifest": "tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1/vmec_boundary_perturbation_manifest.json",
       "vmec_run_commands": {
-        "baseline": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1 && vmec_jax input.qa_ess_profile_gradient_rbc_1_1_baseline",
-        "minus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1 && vmec_jax input.qa_ess_profile_gradient_rbc_1_1_minus_delta",
-        "plus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1 && vmec_jax input.qa_ess_profile_gradient_rbc_1_1_plus_delta"
+        "baseline": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1 && vmex input.qa_ess_profile_gradient_rbc_1_1_baseline",
+        "minus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1 && vmex input.qa_ess_profile_gradient_rbc_1_1_minus_delta",
+        "plus_delta": "cd tools_out/overdetermined_nonlinear_gradient_campaign/qa_ess_profile_gradient_refresh/rbc_1_1 && vmex input.qa_ess_profile_gradient_rbc_1_1_plus_delta"
       }
     }
   ],
@@ -116,7 +116,7 @@
     "recommendation": "use an overdetermined least-squares/profile-gradient campaign: current single-control candidates have complementary locality and uncertainty failures"
   },
   "promotion_contract": {
-    "candidate_ranking_command": "python3 tools/campaigns/design_nonlinear_gradient.py rank-candidates docs/_static/qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.json docs/_static/qa_ess_profile_gradient_zbs_1_0_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json --json-out docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json --campaign-context overdetermined_followup --fail-on-no-promotable",
+    "candidate_ranking_command": "python3 tools/artifacts/build_nonlinear_gradient_evidence.py rank-candidates docs/_static/qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.json docs/_static/qa_ess_profile_gradient_zbs_1_0_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json --json-out docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json --campaign-context overdetermined_followup --fail-on-no-promotable",
     "candidate_ranking_json": "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
     "claim_boundary": "This manifest only launches an overdetermined campaign. Production nonlinear turbulence-gradient evidence still requires real re-equilibrated VMEC files, matched long post-transient nonlinear replicates, per-control central-FD gates, and a ranking/evidence report with at least one control passing all locality and uncertainty gates.",
     "expected_fd_artifacts": [

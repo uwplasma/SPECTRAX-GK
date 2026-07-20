@@ -34,7 +34,7 @@
     0.2380952537059784,
     0.285714328289032
   ],
-  "nonlinear_netcdf": "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
+  "nonlinear_netcdf": "tools_out/final_nonlinear_audit/w7x_gkx_current_adaptive_t200.out.nc",
   "nonlinear_raw": [
     0.006149655751515569,
     0.019690428501411218,

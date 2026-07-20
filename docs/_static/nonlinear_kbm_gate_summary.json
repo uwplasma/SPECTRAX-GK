@@ -73,7 +73,7 @@
   },
   "gx": "tools_out/final_nonlinear_audit/kbm_gx_t100_dense.out.nc",
   "source": "GX nonlinear diagnostics",
-  "spectrax": "tools_out/final_nonlinear_audit/kbm_nonlinear_diag_t100.csv",
+  "gkx": "tools_out/final_nonlinear_audit/kbm_nonlinear_diag_t100.csv",
   "summary": [
     {
       "final_rel": -0.0421713057045188,

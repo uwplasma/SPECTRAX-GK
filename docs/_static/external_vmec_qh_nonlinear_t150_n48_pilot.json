@@ -26,7 +26,7 @@
     "passed": false,
     "reason": "feasibility pilot only; no external nonlinear transport acceptance gate is defined"
   },
-  "source": "tools_out/vmec_jax_qh_nonlinear_t150_n48_probe.out.nc",
+  "source": "tools_out/vmex_qh_nonlinear_t150_n48_probe.out.nc",
   "tmax": 150.00454711914062,
   "tmin": 0.05000000074505806,
   "wg_last": 280.2475280761719,

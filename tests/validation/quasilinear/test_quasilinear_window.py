@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import pytest
 
-from spectraxgk.diagnostics.transport_windows import (
+from gkx.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
     nonlinear_window_convergence_from_csv,
@@ -152,7 +152,7 @@ def test_terminal_subwindow_gate_blocks_cancelled_running_mean_drift() -> None:
 
 
 def test_nonlinear_window_ensemble_gate_accepts_seed_replicates() -> None:
-    import spectraxgk as sgk
+    import gkx as sgk
 
     assert sgk.NonlinearWindowEnsembleConfig is NonlinearWindowEnsembleConfig
     assert sgk.nonlinear_window_ensemble_report is nonlinear_window_ensemble_report
@@ -426,7 +426,7 @@ def test_nonlinear_window_csv_and_summary_loaders_cover_artifact_contracts(
         json.dumps(
             {
                 "case": "summary_case",
-                "spectrax": "diagnostics.csv",
+                "gkx": "diagnostics.csv",
                 "tmin": 50.0,
                 "tmax": 200.0,
             }
@@ -459,7 +459,7 @@ def test_nonlinear_window_csv_and_summary_loaders_cover_artifact_contracts(
         nonlinear_window_convergence_from_summary(bad_summary)
 
     txt_summary = tmp_path / "txt_summary.json"
-    txt_summary.write_text(json.dumps({"spectrax": "trace.txt"}), encoding="utf-8")
+    txt_summary.write_text(json.dumps({"gkx": "trace.txt"}), encoding="utf-8")
     (tmp_path / "trace.txt").write_text("not,csv\n", encoding="utf-8")
     with pytest.raises(NotImplementedError, match="diagnostics CSV"):
         nonlinear_window_convergence_from_summary(txt_summary)

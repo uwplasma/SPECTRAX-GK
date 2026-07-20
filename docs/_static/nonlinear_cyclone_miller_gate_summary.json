@@ -73,7 +73,7 @@
   },
   "gx": "tools_out/office_refresh_cyclone_miller.out.nc",
   "source": "GX nonlinear diagnostics",
-  "spectrax": "tools_out/office_refresh_cyclone_miller_t122.csv",
+  "gkx": "tools_out/office_refresh_cyclone_miller_t122.csv",
   "summary": [
     {
       "final_rel": 0.14079562855918157,

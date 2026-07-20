@@ -18,10 +18,10 @@ from typing import Any
 
 import numpy as np
 
-from spectraxgk.config import GeometryConfig  # type: ignore[import-untyped]
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # type: ignore[import-untyped]
-from spectraxgk.runtime import run_runtime_nonlinear  # type: ignore[import-untyped]
-from spectraxgk.workflows.runtime.config import RuntimeConfig  # type: ignore[import-untyped]
+from gkx.config import GeometryConfig  # type: ignore[import-untyped]
+from gkx.workflows.runtime.toml import load_runtime_from_toml  # type: ignore[import-untyped]
+from gkx.runtime import run_runtime_nonlinear  # type: ignore[import-untyped]
+from gkx.workflows.runtime.config import RuntimeConfig  # type: ignore[import-untyped]
 
 
 @dataclass(frozen=True)
@@ -82,7 +82,7 @@ DEFAULT_CASES: dict[str, CaseSpec] = {
         steps=3,
         dt=0.05,
         geometry_file=Path(
-            ".cache/spectrax/vmec_eik/HSX_QHS_vacuum_ns201_a6ec24c48834374f.eik.nc"
+            ".cache/gkx/vmec_eik/HSX_QHS_vacuum_ns201_a6ec24c48834374f.eik.nc"
         ),
         geometry_model="imported-netcdf",
     ),

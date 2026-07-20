@@ -6,14 +6,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from spectraxgk.config import (
+from gkx.config import (
     GeometryConfig,
     GridConfig,
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk import run_nonlinear_case, run_runtime_nonlinear
-from spectraxgk.workflows.runtime.config import (
+from gkx import run_nonlinear_case, run_runtime_nonlinear
+from gkx.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,

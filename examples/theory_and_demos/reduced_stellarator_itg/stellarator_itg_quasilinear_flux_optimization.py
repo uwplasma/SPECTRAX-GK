@@ -26,7 +26,7 @@ from _stellarator_itg_workflow import (  # noqa: E402
     run_stellarator_itg_adam,
     write_optional_portfolio_artifacts,
 )
-from spectraxgk import StellaratorITGOptimizationConfig  # noqa: E402
+from gkx import StellaratorITGOptimizationConfig  # noqa: E402
 
 
 OBJECTIVE_KIND = "quasilinear_flux"

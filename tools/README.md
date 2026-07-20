@@ -1,8 +1,8 @@
 # Tools
 
-This directory is for repository-maintenance entry points, not solver library
-code and not end-user examples. The refactor target is fewer than 100 Python
-scripts in `tools/`, organized by purpose.
+This directory contains temporary repository-maintenance entry points, not
+solver library code and not end-user examples. The GKX 2.0 target removes this
+tree in favor of at most 12 conventional commands under `scripts/`.
 
 ## Ownership Rules
 
@@ -42,7 +42,7 @@ than shipping it as part of the maintained repository.
 ## What Does Not Belong Here
 
 - Solver, geometry, diagnostic, objective, or artifact-library functionality.
-  Put that in `src/spectraxgk` only if it is promoted and reusable.
+  Put that in `src/gkx` only if it is promoted and reusable.
 - User tutorials. Put those in `examples/`.
 - Lightweight benchmark entry points and manifests. Put those in `benchmarks/`.
 - Test-only helpers. Put those under `tests/` fixtures or test packages.
@@ -73,5 +73,5 @@ count regresses upward. The final consolidation release should additionally run:
 python tools/release/check_package_architecture_manifest.py --require-topology-targets
 ```
 
-That strict mode fails until `tools/` contains fewer than 100 Python scripts and
-flat top-level tool scripts have been moved into purpose-specific folders.
+That strict mode fails until `tools/` is removed and the retained behavior is
+owned by at most 12 commands in `scripts/`.

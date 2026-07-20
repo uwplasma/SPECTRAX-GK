@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _stellarator_itg_plotting import write_portfolio_gate_artifacts  # noqa: E402
-from spectraxgk import (  # noqa: E402
+from gkx import (  # noqa: E402
     StellaratorITGOptimizationConfig,
     StellaratorITGSampleSet,
     default_stellarator_initial_params,

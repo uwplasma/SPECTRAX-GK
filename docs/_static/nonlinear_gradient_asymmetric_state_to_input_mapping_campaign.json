@@ -27,7 +27,7 @@
   ],
   "case": "qa_lowres_asymmetric_state_to_input_mapping",
   "claim_level": "lasym_true_state_to_input_mapping_launch_plan_not_mapping_evidence",
-  "coefficient_convention": "Candidate directions are explicit VMEC input coefficients. The stored vmec_m/vmec_n fields preserve the same index ordering used by vmec_jax.namelist.",
+  "coefficient_convention": "Candidate directions are explicit VMEC input coefficients. The stored vmec_m/vmec_n fields preserve the same index ordering used by vmex.namelist.",
   "input_directions": [
     {
       "baseline_value": 0.0,
@@ -57,9 +57,9 @@
       "vmec_m": 1,
       "vmec_n": 1,
       "vmec_run_commands": {
-        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
       }
     },
     {
@@ -90,9 +90,9 @@
       "vmec_m": 1,
       "vmec_n": 1,
       "vmec_run_commands": {
-        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
       }
     },
     {
@@ -123,9 +123,9 @@
       "vmec_m": 1,
       "vmec_n": 0,
       "vmec_run_commands": {
-        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
       }
     },
     {
@@ -156,9 +156,9 @@
       "vmec_m": 1,
       "vmec_n": 0,
       "vmec_run_commands": {
-        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+        "baseline": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "minus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+        "plus_delta": "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
       }
     }
   ],
@@ -170,28 +170,28 @@
     4
   ],
   "postprocess_protocol": [
-    "run vmec_jax for every LASYM=true baseline/plus/minus input deck listed in vmec_run_commands",
+    "run vmex for every LASYM=true baseline/plus/minus input deck listed in vmec_run_commands",
     "extract the admitted Rsin/Zcos VMEC-state controls from each solved equilibrium",
     "form the central finite-difference response matrix d(state_control)/d(RBS/ZBC coefficient)",
     "solve the least-squares state-to-input map and record condition number plus relative residual",
-    "only pass the mapping artifact to design_nonlinear_gradient_state_control_runbook.py if the map is finite, full row-rank, conditioned, and residual-bounded"
+    "use the mapping only when it is finite, full row-rank, conditioned, and residual-bounded"
   ],
   "ql_seed_screen": "docs/_static/nonlinear_gradient_ql_seed_screen.json",
   "rank_feasibility_precheck_passed": true,
   "ready_for_nonlinear_launch": false,
   "symmetry_branch": "LASYM=true asymmetric RBS/ZBC input controls",
   "vmec_run_commands": [
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
-    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmec_jax input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_1_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_rbs_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_baseline --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_plus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter",
+    "cd tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0 && vmex input.qa_lowres_asymmetric_state_to_input_mapping_zbc_1_0_minus_delta --outdir . --fast --max-iter 4200 --no-use-input-niter"
   ]
 }

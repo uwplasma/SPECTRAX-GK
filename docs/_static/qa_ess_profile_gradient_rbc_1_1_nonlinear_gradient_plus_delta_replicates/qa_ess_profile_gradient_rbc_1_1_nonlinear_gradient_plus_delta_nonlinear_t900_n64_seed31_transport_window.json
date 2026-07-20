@@ -8,7 +8,7 @@
     "source": "replicated nonlinear-window extraction; convergence gate is stored separately"
   },
   "seed": 31,
-  "spectrax": "qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed31_heat_flux_trace.csv",
+  "gkx": "qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_plus_delta_nonlinear_t900_n64_seed31_heat_flux_trace.csv",
   "tmax": 900.0,
   "tmin": 450.0,
   "variant": {

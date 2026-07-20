@@ -330,7 +330,7 @@ def _gradient_matrix_checks(
 
 
 def _bridge_checks(bridge: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
-    direct = _as_dict(bridge.get("vmec_jax_flux_tube_array_parity"))
+    direct = _as_dict(bridge.get("vmex_flux_tube_array_parity"))
     status = str(direct.get("status", ""))
     production_parity_passed = direct.get("production_parity_passed")
     interpretation = str(direct.get("interpretation", ""))
@@ -352,8 +352,8 @@ def _bridge_checks(bridge: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         "direct_interpretation_present": bool(interpretation),
         "direct_tensor_gap_explicitly_scoped": direct_gap_scoped,
         "equal_arc_checks": equal_arc_checks,
-        "vmec_jax_boozer_available": _bool(
-            _as_dict(bridge.get("vmec_jax_boozer_flux_tube")).get("available")
+        "vmex_boozer_available": _bool(
+            _as_dict(bridge.get("vmex_boozer_flux_tube")).get("available")
         ),
         "booz_xform_flux_tube_available": _bool(
             _as_dict(bridge.get("booz_xform_flux_tube")).get("available")
@@ -366,8 +366,8 @@ def _bridge_checks(bridge: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         value is True for value in equal_arc_checks.values()
     ):
         blockers.append("bridge_equal_arc_subcheck_failed")
-    if not checks["vmec_jax_boozer_available"]:
-        blockers.append("vmec_jax_boozer_bridge_unavailable")
+    if not checks["vmex_boozer_available"]:
+        blockers.append("vmex_boozer_bridge_unavailable")
     if not checks["booz_xform_flux_tube_available"]:
         blockers.append("booz_xform_flux_tube_bridge_unavailable")
     return checks, blockers
@@ -1235,7 +1235,7 @@ def _reduced_portfolio_guard_helpers():
     for path in (src, ROOT):
         if str(path) not in sys.path:
             sys.path.insert(0, str(path))
-    from spectraxgk.objectives.portfolio_artifacts import (
+    from gkx.objectives.portfolio_guard import (
         ReducedPortfolioArtifactGuardConfig,
         reduced_portfolio_artifact_guard_report,
     )
@@ -1445,7 +1445,7 @@ def build_high_grid_admission_payload(
     min_replicates: int = DEFAULT_MIN_REPLICATES,
     value_floor: float = DEFAULT_VALUE_FLOOR,
 ) -> dict[str, Any]:
-    from spectraxgk.diagnostics.validation_gates import (
+    from gkx.diagnostics.validation_gates import (
         evaluate_scalar_gate,
         gate_report,
         gate_report_to_dict,

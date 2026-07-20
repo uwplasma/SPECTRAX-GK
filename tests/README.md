@@ -1,6 +1,6 @@
 # Tests
 
-This tree protects the promoted SPECTRAX-GK product: solver physics, numerical
+This tree protects the promoted GKX product: solver physics, numerical
 methods, differentiability, executable workflows, release gates, and documented
 artifact schemas. It is not an archive of every historical branch or one-off
 tool wrapper.

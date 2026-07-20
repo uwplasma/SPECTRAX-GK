@@ -1,6 +1,6 @@
 {
   "case_name": "nfp4_QH_warm_start",
-  "claim_scope": "full vmec_jax state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> SPECTRAX-GK linear-RHS eigenpair -> reduced nonlinear-window estimator gradient",
+  "claim_scope": "full vmex state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> GKX linear-RHS eigenpair -> reduced nonlinear-window estimator gradient",
   "eigenpair_gate": {
     "ad_supported": true,
     "atol": 0.05,
@@ -93,7 +93,7 @@
   "n_hermite": 3,
   "n_laguerre": 2,
   "nboz": 21,
-  "next_action": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear SPECTRAX-GK window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
+  "next_action": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear GKX window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
   "nonlinear_window_config": {
     "dt": 0.18,
     "model": "smooth_logistic_heat_flux_envelope_from_linear_observables",

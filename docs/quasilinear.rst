@@ -1,7 +1,7 @@
 Quasilinear Transport
 =====================
 
-SPECTRAX-GK can compute quasilinear transport diagnostics from a linear
+GKX can compute quasilinear transport diagnostics from a linear
 eigenstate or late-time linear state. The implementation deliberately separates
 the exact linear diagnostic from any saturation model:
 
@@ -46,7 +46,7 @@ the exact selected mode metadata.
 Literature anchors and claim policy
 -----------------------------------
 
-The SPECTRAX-GK quasilinear layer follows the same separation used in modern
+The GKX quasilinear layer follows the same separation used in modern
 reduced gyrokinetic transport workflows:
 
 * the linear gyrokinetic eigenproblem determines growth rates, frequencies,
@@ -65,7 +65,7 @@ alone. SAT3 [Dudding22]_ and SAT3-NN [Sar26]_ are useful longer term targets
 because they use spectrum-aware, database-calibrated saturation information
 instead of a single uncalibrated mixing-length constant.
 
-For stellarator optimization, SPECTRAX-GK currently treats quasilinear fluxes as
+For stellarator optimization, GKX currently treats quasilinear fluxes as
 research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
 validated absolute nonlinear flux predictor. The current 12-case
@@ -140,7 +140,7 @@ the scoped transport and coverage gate: mean relative error is about ``0.280``,
 held-out mean relative error is about ``0.275``, maximum relative error is
 about ``0.575``, and interval coverage is ``10/10``. The core rank-screening
 metric remains borderline (full-core Spearman about ``0.745``, just below the
-``0.75`` gate). SPECTRAX-GK therefore ships this as a scoped core diagnostic
+``0.75`` gate). GKX therefore ships this as a scoped core diagnostic
 and optimization-screening tool, not as a universal nonlinear heat-flux
 predictor or runtime saturation law.
 
@@ -149,7 +149,7 @@ Executable usage
 
 .. code-block:: bash
 
-   spectraxgk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --out tools_out/cyclone_quasilinear
 
@@ -157,7 +157,7 @@ or enable the diagnostic for another linear runtime TOML:
 
 .. code-block:: bash
 
-   spectraxgk run-runtime-linear \
+   gkx run-runtime-linear \
      --config examples/linear/axisymmetric/cyclone.toml \
      --quasilinear \
      --ql-mode saturated \
@@ -172,7 +172,7 @@ preserving the serial ordering of the output spectrum:
 
 .. code-block:: bash
 
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --ky-values 0.1,0.2,0.3,0.4 \
      --quasilinear \
@@ -212,7 +212,7 @@ The shaped-tokamak Miller companion uses the same pattern, with the positive
 
 .. code-block:: bash
 
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_miller_quasilinear.toml \
      --ky-values 0.1,0.2,0.3,0.4,0.5 \
      --quasilinear \
@@ -246,14 +246,14 @@ eigenvector, and
 
 The sign convention above matches the runtime output: ``gamma`` is the growth
 rate and ``omega`` is the physical mode frequency reported by the executable.
-The operator is assembled by :mod:`spectraxgk.linear`,
-:mod:`spectraxgk.terms.assembly`, and the individual term modules under
-:mod:`spectraxgk.terms`.
+The operator is assembled by
+:mod:`gkx.terms.assembly` and the individual term modules under
+:mod:`gkx.terms`.
 
 Field solve and linear weights
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Given a linear state ``G``, SPECTRAX-GK first reconstructs fields with
+Given a linear state ``G``, GKX first reconstructs fields with
 ``compute_fields_cached``. In the currently validated electrostatic path the
 quasilinear diagnostic uses ``phi`` and sets ``A_parallel = B_parallel = 0``.
 Electromagnetic quasilinear channels remain disabled until the field-channel
@@ -293,10 +293,10 @@ density moment
 
 but it is zero for the one-ion adiabatic-electron cases because there is no
 kinetic electron species carrying particle transport. The implemented formulas
-live in :func:`spectraxgk.diagnostics.heat_flux_species`,
-:func:`spectraxgk.diagnostics.particle_flux_species`, and
+live in :func:`gkx.diagnostics.heat_flux_species`,
+:func:`gkx.diagnostics.particle_flux_species`, and
 ``_heat_flux_channel_contrib_species`` in
-:mod:`spectraxgk.diagnostics`.
+:mod:`gkx.diagnostics`.
 
 Amplitude normalization and effective scale
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -332,7 +332,7 @@ The default normalization is
    \sum_{k_x,k_y,z} w_{k_x,k_y,z} |\phi_{k_x,k_y}(z)|^2,
 
 with the same Hermitian and flux-tube weights used by
-:func:`spectraxgk.quasilinear.spectral_phi_weights`.
+:func:`gkx.diagnostics.quasilinear_transport.spectral_phi_weights`.
 
 Supported amplitude normalizations are:
 
@@ -376,7 +376,7 @@ comparisons [Parker23]_, SAT3/SAT3-NN-style spectrum-aware rules
 be used as a predictive absolute-flux model.
 
 The reduced objective helper
-``spectraxgk.quasilinear.quasilinear_feature_objective`` supports the same
+``gkx.diagnostics.quasilinear_transport.quasilinear_feature_objective`` supports the same
 diagnostic rules for differentiability tests from feature vectors
 ``[gamma, kperp_eff2, flux_weight]``. The fast suite checks the resulting
 Jacobians against central finite differences before these objectives are used
@@ -392,22 +392,22 @@ Implementation map
      - Source
      - Responsibility
    * - Quasilinear weights
-     - :mod:`spectraxgk.quasilinear`
+     - :mod:`gkx.diagnostics.quasilinear_transport`
      - phase/amplitude-invariant ``k_perp`` scale, heat and particle weights,
        and saturated outputs
    * - Diagnostic kernels
-     - :mod:`spectraxgk.diagnostics`
+     - :mod:`gkx.diagnostics`
      - heat, particle, field-energy, volume-factor, and resolved flux
        contractions shared by linear and nonlinear paths
    * - Runtime plumbing
-     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.workflows.runtime.artifacts`
+     - :mod:`gkx.runtime`, :mod:`gkx.workflows.runtime.artifacts`
      - single-run and scan execution, TOML/executable overrides, JSON/CSV
        artifact writing
    * - Input schema
-     - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.workflows.runtime.toml`
+     - :mod:`gkx.workflows.runtime.config`, :mod:`gkx.workflows.runtime.toml`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
-     - :mod:`spectraxgk.diagnostics.quasilinear_calibration`
+     - :mod:`gkx.diagnostics.quasilinear_calibration`
      - train/holdout/audit schemas, spectrum integration, nonlinear-window
        ingestion, scale fitting, and report scoring
    * - Plotting tools
@@ -415,7 +415,7 @@ Implementation map
        ``tools/artifacts/plot_quasilinear_calibration.py``
      - publication-facing spectrum and calibration figures
    * - Differentiability gates
-     - :mod:`spectraxgk.objectives.autodiff_validation`
+     - :mod:`gkx.objectives.autodiff_validation`
      - finite-difference checks, covariance diagnostics, dense operator
        fixtures, and implicit isolated-eigenpair sensitivities
 
@@ -461,9 +461,9 @@ For nonlinear calibration:
 Numerics and differentiability
 ------------------------------
 
-SPECTRAX-GK production linear solves remain matrix-free. Dense matrices are
+GKX production linear solves remain matrix-free. Dense matrices are
 only materialized in tiny validation fixtures through
-:func:`spectraxgk.objectives.autodiff_validation.explicit_complex_operator_matrix`.
+:func:`gkx.objectives.autodiff_validation.explicit_complex_operator_matrix`.
 
 Eigenvalue sensitivities use JAX derivatives of the matrix entries and the
 standard isolated-branch relation
@@ -499,7 +499,7 @@ observables use the implicit perturbation system
 
 The gauge condition ``w^\dagger \partial_i v = 0`` makes the derivative unique
 for phase-invariant observables. This path is now tested on a tiny
-SPECTRAX-GK linear-RHS fixture and compared against nearest-branch central
+GKX linear-RHS fixture and compared against nearest-branch central
 finite differences. Direct JAX differentiation through non-Hermitian
 eigenvectors is
 still explicitly guarded because JAX does not provide that JVP; the implicit
@@ -520,14 +520,14 @@ The fast test suite currently checks:
 * branch-isolated eigenvalue AD-vs-finite-difference checks, which are the
   lightweight gate used before differentiating full linear growth/frequency
   outputs.
-* a tiny dense SPECTRAX-GK linear-RHS fixture that materializes the otherwise
+* a tiny dense GKX linear-RHS fixture that materializes the otherwise
   matrix-free operator, disables the production custom-VJP field solve for
   forward-mode validation, and checks an isolated eigenvalue derivative against
   central finite differences.
 * an explicit guard showing that direct JAX differentiation through
   non-Hermitian eigenvectors is unsupported;
 * an implicit left/right eigenpair sensitivity gate for phase-invariant
-  eigenfunction observables, including a tiny SPECTRAX-GK linear-RHS
+  eigenfunction observables, including a tiny GKX linear-RHS
   quasilinear-style objective checked against finite differences.
 * a fast promotion guardrail that scans the calibration/model-selection JSON
   reports, conservative documentation wording, and the manuscript-readiness
@@ -588,13 +588,13 @@ Calibration reports
 -------------------
 
 Calibration artifacts should use
-``spectraxgk.diagnostics.quasilinear_calibration`` so training, holdout, and
+``gkx.diagnostics.quasilinear_calibration`` so training, holdout, and
 audit points carry the same schema. A report is promoted
 to ``calibrated_absolute_flux`` only when it contains at least one training
 point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
-``spectraxgk.diagnostics.transport_windows`` or
+``gkx.diagnostics.transport_windows`` or
 ``tools/release/check_nonlinear_transport_gates.py convergence`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
@@ -604,7 +604,7 @@ from an uncalibrated
 saturation rule.
 
 Replicated nonlinear windows should additionally be checked with
-``spectraxgk.diagnostics.transport_windows.nonlinear_window_ensemble_report`` before they
+``gkx.diagnostics.transport_windows.nonlinear_window_ensemble_report`` before they
 are used as seed, initial-condition, or timestep-robust transport evidence.
 The ensemble gate consumes already-built nonlinear-window convergence reports,
 requires each input window to be promotion-ready by default, and checks the
@@ -614,18 +614,7 @@ that several long nonlinear runs agree; it is not a substitute for actually
 running those long nonlinear simulations. The command-line artifact wrapper is
 ``tools/release/check_nonlinear_transport_gates.py ensemble``; it reads multiple window JSON
 reports and writes a JSON report plus an optional PNG summary for documentation
-or manuscript audit trails. For external-VMEC replicate campaigns the
-end-to-end extraction wrapper is
-``tools/artifacts/build_external_vmec_replicate_ensemble.py``: it reads the finished
-``*.out.nc`` files, extracts ``Diagnostics/HeatFlux_st`` into trace CSVs,
-writes transport-window summaries, convergence reports, readiness and ensemble
-JSON gates, and generates the publication-facing two-panel trace/uncertainty
-plot. This is the preferred path for new seed/timestep replicate evidence
-because it removes manual NetCDF-to-CSV and provenance-editing steps.
-The wrapper returns nonzero when readiness or ensemble gates fail.  Diagnostic
-landscape scans may pass ``--allow-failed-gates`` to finish collecting all
-points, but the produced JSON still records the failed gates and those points
-remain excluded from promotion claims.
+or manuscript audit trails.
 
 For a matched intervention such as equilibrium flow shear, first build one
 ``convergence`` report per trace and then run
@@ -707,7 +696,7 @@ absolute-flux claim.
 
 Existing nonlinear window summaries can be converted into calibration points
 with ``calibration_point_from_nonlinear_window_summary`` when the summary points
-to either a diagnostics CSV or a SPECTRAX-GK runtime NetCDF file. CSV inputs use
+to either a diagnostics CSV or a GKX runtime NetCDF file. CSV inputs use
 the ``t`` column and the selected heat-flux column, usually ``heat_flux``.
 NetCDF inputs use ``Grids/time`` and map ``heat_flux`` to
 ``Diagnostics/HeatFlux_st``; ``heat_flux_es``, ``heat_flux_apar``, and
@@ -816,15 +805,15 @@ Non-axisymmetric HSX holdout
 The first non-axisymmetric quasilinear calibration audit uses the same
 adiabatic-electron ITG setup as the tracked nonlinear window gate. The checked
 TOML points to a self-contained QHS VMEC deck generated locally by
-``vmec_jax``; exact HSX validation should override ``--vmec-file`` with the
+``vmex``; exact HSX validation should override ``--vmec-file`` with the
 machine-specific benchmark WOUT:
 
 .. code-block:: bash
 
    cd examples/vmec
-   vmec_jax input.NuhrenbergZille_1988_QHS
+   vmex input.NuhrenbergZille_1988_QHS
    cd ../..
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
      --Nl 4 --Nm 8 --solver time --dt 0.005 --steps 400 \
@@ -886,9 +875,9 @@ ignored local ``tools_out/*.eik.nc`` file:
 .. code-block:: bash
 
    cd examples/vmec
-   vmec_jax input.nfp3_QI_fixed_resolution_final
+   vmex input.nfp3_QI_fixed_resolution_final
    cd ../..
-   spectraxgk scan-runtime-linear \
+   gkx scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
      --Nl 4 --Nm 8 --solver time --dt 0.005 --steps 400 \
@@ -897,7 +886,7 @@ ignored local ``tools_out/*.eik.nc`` file:
      --no-progress
 
 The bundled command above regenerates the demo spectrum from the shipped QI
-VMEC input deck after ``vmec_jax`` creates
+VMEC input deck after ``vmex`` creates
 ``examples/vmec/wout_nfp3_QI_fixed_resolution_final.nc``. Exact W7-X
 validation should use the same TOML with ``--vmec-file`` pointing to the
 machine-specific benchmark WOUT; the benchmark WOUT itself is not shipped in
@@ -977,16 +966,6 @@ weight, and an absolute-growth mixing-length diagnostic that gives stable
 branches nonzero intensity. The last rule is included only as a diagnostic
 stress test; it is not a validated physical saturation rule.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_saturation_rule_sweep.py \
-     --workers 4 \
-     --out docs/_static/quasilinear_saturation_rule_sweep.png
-
-``--workers`` parallelizes the independent case-row extraction while preserving
-the same ordered report as the serial run. It does not change the underlying
-quasilinear spectra, nonlinear window summaries, or validation gates.
-
 .. image:: _static/quasilinear_saturation_rule_sweep.png
    :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
    :width: 100%
@@ -1034,12 +1013,6 @@ tracked figure uses ``--passed-shape-only`` for the exponent fit, so the
 failed Cyclone shape gate does not contaminate the shape correction used for
 the other geometries.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_saturation_rule_sweep.py shape-aware \
-     --passed-shape-only \
-     --out docs/_static/quasilinear_shape_aware_saturation.png
-
 .. image:: _static/quasilinear_shape_aware_saturation.png
    :alt: Shape-aware quasilinear saturation diagnostic
    :width: 100%
@@ -1075,16 +1048,6 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 * passes candidate-specific eligibility checks such as minimum training-set
   size relative to the number of fitted parameters and matrix conditioning.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_candidate_uncertainty.py \
-     --workers 4 \
-     --out docs/_static/quasilinear_candidate_uncertainty.png
-
-``--workers`` parallelizes the leave-one-geometry-out holdout rows. The JSON
-report records the worker count and the identity contract; the numerical
-acceptance remains the same as the serial report.
-
 .. image:: _static/quasilinear_candidate_uncertainty.png
    :alt: Quasilinear candidate uncertainty gate
    :width: 100%
@@ -1112,14 +1075,6 @@ coming from one geometry class or from the full portfolio? It consumes only the
 tracked uncertainty, screening, and saturation-rule JSON sidecars. It does not
 refit or promote a new model.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py error-anatomy \
-     --out docs/_static/quasilinear_error_anatomy.png || true
-
-The command exits nonzero while promotion remains blocked. That is intentional:
-this is a fail-closed diagnostic for model development.
-
 .. image:: _static/quasilinear_error_anatomy.png
    :alt: Quasilinear residual-anatomy gate
    :width: 100%
@@ -1144,15 +1099,6 @@ show it is not an artifact of one arbitrary ridge penalty. The regularization
 audit below reruns the same leave-one-geometry-out ``spectral_envelope_ridge``
 fit across a ridge-penalty sweep and records the best admissible setting.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_candidate_uncertainty.py regularization-sweep \
-     --no-pdf \
-     --out docs/_static/quasilinear_candidate_regularization_sweep.png || true
-
-The command exits nonzero when the promotion gate remains failed. That behavior
-is intentional: the artifact is a guardrail, not a promoted runtime model.
-
 .. image:: _static/quasilinear_candidate_regularization_sweep.png
    :alt: Quasilinear candidate regularization audit
    :width: 100%
@@ -1172,11 +1118,6 @@ artifacts only; it does not refit a model or add any unvalidated nonlinear
 points. It compares the admitted HSX, W7-X, CTH-like, and shaped-pressure
 nonlinear windows against the current quasilinear candidates, then records the
 present status of the QA and QH optimization families.
-
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py stellarator-usefulness \
-     --out docs/_static/quasilinear_stellarator_usefulness.png
 
 .. image:: _static/quasilinear_stellarator_usefulness.png
    :alt: Stellarator quasilinear usefulness summary
@@ -1202,7 +1143,7 @@ state can involve many subdominant and stable eigenmodes [Pueschel16]_, energy
 transfer to damped modes [Hegna18]_, and zonal-flow dynamics [Tiwari25]_. The
 QHS/QAS comparison in [McKinney19]_ likewise emphasizes that linear growth
 rates alone are a weak proxy for saturated heat flux across quasi-symmetric
-stellarators. The SPECTRAX-GK conclusion is therefore: quasilinear metrics are
+stellarators. The GKX conclusion is therefore: quasilinear metrics are
 useful for exploratory screening, differentiable optimization research, and
 model-development figures, but reliable absolute nonlinear heat-flux prediction
 for QA, QH, W7-X, and HSX requires more matched nonlinear holdouts and a richer
@@ -1218,11 +1159,6 @@ late-window heat flux. The screening gate below therefore scores each candidate
 with both absolute-error and rank/correlation metrics, while keeping absolute
 flux promotion disabled unless the stricter holdout-promotion requirements
 also pass.
-
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py screening-skill \
-     --out docs/_static/quasilinear_screening_skill.png
 
 .. image:: _static/quasilinear_screening_skill.png
    :alt: Quasilinear screening and rank-correlation skill
@@ -1268,11 +1204,6 @@ model fit is attempted. It requires:
   candidates;
 * passed downstream saturation-rule and uncertainty/skill gates.
 
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py dataset-sufficiency \
-     --out docs/_static/quasilinear_dataset_sufficiency.png
-
 .. image:: _static/quasilinear_dataset_sufficiency.png
    :alt: Quasilinear dataset-sufficiency promotion gate
    :width: 100%
@@ -1298,13 +1229,6 @@ uncertainty gate, and all tracked train/holdout calibration reports into one
 claim-boundary artifact. It is intentionally not another fit. It answers the
 reviewer-facing question: is there a positive scoped model-selection result,
 and are we still avoiding an absolute-flux overclaim?
-
-.. code-block:: bash
-
-   python tools/artifacts/plot_quasilinear_model_development.py model-selection-status \
-     --optimized-equilibrium-nonlinear-audit docs/_static/production_nonlinear_optimization_guard.json \
-     --require-optimized-equilibrium-nonlinear-audit \
-     --out docs/_static/quasilinear_model_selection_status.png
 
 .. image:: _static/quasilinear_model_selection_status.png
    :alt: Quasilinear model-selection status and claim-boundary guardrails
@@ -1343,11 +1267,6 @@ The holdout-gap report is the reviewer-facing companion to the model-selection
 status. It answers a different question: which currently tracked nonlinear
 windows are admitted, which candidate windows are excluded, and what exact
 data product is needed before absolute-flux promotion can be reconsidered?
-
-.. code-block:: bash
-
-   python tools/artifacts/build_quasilinear_holdout_gap_report.py \
-     --out docs/_static/quasilinear_holdout_gap_report.png
 
 .. image:: _static/quasilinear_holdout_gap_report.png
    :alt: Quasilinear holdout gap report and absolute-flux promotion blocker
@@ -1413,74 +1332,33 @@ useful negative audit evidence and a command-generation regression test; they
 are not nonlinear holdouts, are not used to refit the quasilinear calibration,
 and do not change the screening/absolute-flux promotion status above.
 
-External-VMEC next-holdout runbook
-----------------------------------
+External-VMEC holdout results
+-----------------------------
 
-The gap report intentionally stops at metadata ranking. The launch runbook
-turns that ranking plus the linear external-VMEC candidate screen into a
-reproducible next-run contract. It does not run simulations and does not
-promote an absolute-flux model; it records which nonlinear runs should be
-launched next, which grids and horizons should be used, and which acceptance
-gate must pass before a new point can enter the calibration set.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_external_vmec_holdout_runbook.py \
-     --out docs/_static/external_vmec_next_holdout_runbook.png
-
-.. image:: _static/external_vmec_next_holdout_runbook.png
-   :alt: External-VMEC nonlinear holdout launch runbook
-   :width: 100%
-
-The current runbook remains fail-closed for unchanged replays. The ITERModel
-preferred-family audit has now passed, so replaying the same
-``wout_ITERModel_reference.nc`` ladder would not create independent holdout
-leverage. The unchanged shaped-tokamak pressure case is also demoted because it
-is already admitted as a scoped high-grid holdout. Families with a recent
-failed external-VMEC convergence gate are demoted unless the rerun protocol is
-materially changed by changing the candidate and/or the nonlinear validation
-ladder. The previous modified-protocol QH attempt is now closed as negative
-evidence: ``nfp4_QH_warm_start`` has a weak but finite screened branch
-(``gamma = 0.022949`` at ``ky = 0.4762``), but the corrected staged
-``n64/n80``, ``dt=0.04`` ladder fails the relaxed 20% high-grid heat-flux gate
-at ``t=250``, ``t=450``, and ``t=700``. The final ``t=700`` common-window and
-least-window symmetric differences are about ``0.349`` and ``0.367``.
-
-.. code-block:: bash
-
-   python tools/artifacts/build_external_vmec_holdout_runbook.py \
-     --horizons 250,450,700 \
-     --grid n64:64:64:40:40 \
-     --grid n80:80:80:48:48 \
-     --dt 0.04 \
-     --out docs/_static/external_vmec_next_holdout_runbook.png
-
-The generated sidecar currently contains no launch command. That is intentional:
-after the QH failure, the next quasilinear-calibration holdout needs a genuinely
-independent VMEC candidate or a materially higher-resolution protocol with new
-grid/window/replicate acceptance evidence. This is a nonlinear holdout runbook,
-not transport validation or a quasilinear absolute-flux promotion.
+The tracked evidence keeps completed validation results rather than a generated
+campaign planner. ITERModel and shaped-pressure cases are already represented,
+and replaying them would not add independent holdout leverage. The modified QH
+ladder remains negative evidence: its weak finite branch
+(``gamma = 0.022949`` at ``ky = 0.4762``) was followed to ``t=700`` on
+``n64/n80`` with ``dt=0.04``, but the common- and least-window heat-flux
+differences, about ``0.349`` and ``0.367``, fail the relaxed 20% gate. The
+independent Solovev seed/timestep ensemble passes with mean heat flux ``1.409``
+and relative spread ``0.1599``. These high-grid admission and ensemble JSON
+artifacts are calibration evidence, not a universal absolute-flux promotion.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 
 The next quasilinear promotion attempt needs more matched nonlinear holdout
-windows, not more fit parameters. The local ``vmec_jax`` checkout includes a
+windows, not more fit parameters. The local ``vmex`` checkout includes a
 useful portfolio of small VMEC equilibria that can seed those future linear
 scans and nonlinear validation runs without adding the VMEC files to the
-SPECTRAX-GK repository. The inventory tool records file sizes, checksums,
+GKX repository. The inventory tool records file sizes, checksums,
 ``nfp``, resolution, aspect ratio, edge rotational transform, beta, and a
-selection score for follow-up cases:
+selection score for follow-up cases.
 
-.. code-block:: bash
-
-   VMEC_JAX_ROOT=/path/to/vmec_jax
-   python tools/artifacts/plot_vmec_jax_equilibrium_inventory.py \
-     --data-dir "$VMEC_JAX_ROOT/examples/data" \
-     --out docs/_static/vmec_jax_equilibrium_inventory.png
-
-.. image:: _static/vmec_jax_equilibrium_inventory.png
-   :alt: vmec_jax equilibrium inventory for future validation holdouts
+.. image:: _static/vmex_equilibrium_inventory.png
+   :alt: vmex equilibrium inventory for future validation holdouts
    :width: 100%
 
 The current inventory finds ``11`` local VMEC equilibria. The best immediate
@@ -1520,7 +1398,7 @@ physics scans:
      - ``-0.0669, -0.0562``
 
 These are **not** accepted quasilinear transport calibration points yet. Each
-candidate must first get a reproducible production-resolution SPECTRAX-GK
+candidate must first get a reproducible production-resolution GKX
 linear quasilinear scan, a matched nonlinear heat-flux window, and a passed
 nonlinear comparison/physics gate before entering the leave-one-out
 calibration reports above.
@@ -1537,11 +1415,11 @@ CTH-like reaches ``gamma = 0.0488`` at the same sampled ``ky``. The figures
 below are still linear-feasibility artifacts only; they motivate matched
 nonlinear windows but do not validate an absolute quasilinear saturation rule.
 
-.. image:: _static/quasilinear_vmec_jax_qh_linear_spectrum.png
+.. image:: _static/quasilinear_vmex_qh_linear_spectrum.png
    :alt: External nfp4 QH VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
-.. image:: _static/quasilinear_vmec_jax_cth_like_linear_spectrum.png
+.. image:: _static/quasilinear_vmex_cth_like_linear_spectrum.png
    :alt: External CTH-like VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
@@ -1584,37 +1462,15 @@ or absolute-flux calibration point.
    :width: 100%
 
 Solved VMEC optimization outputs use the same launch discipline. The screen
-below consumes runtime linear-scan spectra from solved ``vmec_jax`` WOUTs and
+consumes runtime linear-scan spectra from solved ``vmex`` WOUTs and
 blocks nonlinear launches unless growth, metric, and heat-flux weights are all
-finite and launchable:
-
-.. code-block:: bash
-
-   python tools/artifacts/build_nonlinear_transport_admission.py linear-screen \
-     --spectrum qa_nfp2_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qa_nfp2_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --spectrum qh_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qh_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --spectrum qp_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --spectrum qp_nfp4_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp4_mode5_ess_final_scan.quasilinear_spectrum.csv \
-     --out docs/_static/vmec_optimization_candidate_screen_gate.json
+finite and launchable. The tracked screen artifact is
+``docs/_static/vmec_optimization_candidate_screen_gate.json``.
 
 The current four-case CPU screen is fail-closed: ``qa_nfp2`` is marginal,
 ``qh_nfp3``/``qp_nfp4`` are stable, and ``qp_nfp3`` is rejected despite large
 fitted growth because sampled effective ``k_perp^2`` is non-positive. This is
 candidate triage, not nonlinear transport validation.
-
-Nonlinear follow-up configs for these external VMEC candidates should be
-generated with ``tools/campaigns/write_external_vmec_holdout_configs.py`` rather than by
-hand. The standard command writes matched ``48x48x32`` and ``64x64x40`` TOMLs
-for a ``t = 150`` initial run and a ``t = 250`` restart continuation, plus a
-JSON manifest containing the launch commands and restart-copy commands. This
-keeps every candidate on the same ITG/adiabatic-electron physics, dissipation,
-sampling, and output convention before the convergence gate decides whether
-the case is admissible. The next promotion step is replicated nonlinear
-transport evidence: use ``--seed-variant`` for distinct randomized initial
-conditions and ``--dt-variant`` for fixed-step sensitivity checks. The generated
-TOMLs carry explicit seed/timestep metadata so
-``tools/release/check_nonlinear_transport_gates.py readiness`` can fail closed until
-each admitted case has at least two passed seed and timestep windows.
 
 .. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png
    :alt: External D-shaped tokamak VMEC linear quasilinear feasibility spectrum
@@ -1917,7 +1773,7 @@ heat-flux-weight distribution is compared with the resolved nonlinear
 
    python tools/artifacts/plot_quasilinear_diagnostics.py shape-gate \
      --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
-     --nonlinear tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc \
+     --nonlinear tools_out/final_nonlinear_audit/w7x_gkx_current_adaptive_t200.out.nc \
      --out docs/_static/quasilinear_w7x_spectrum_shape_gate.png \
      --ql-column heat_flux_weight_total \
      --nonlinear-variable Diagnostics/HeatFlux_kyst \

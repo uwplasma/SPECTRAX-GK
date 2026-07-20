@@ -7,7 +7,7 @@
     "tmax": 350.0040283203125,
     "tmin": 175.02701416052878
   },
-  "csv": "/tmp/spectrax_cth_policy/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.csv",
+  "csv": "/tmp/gkx_cth_policy/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.csv",
   "gate_index_include": false,
   "gate_report": {
     "case": "CTH-like external VMEC modified-protocol t=350 full-grid convergence",
@@ -140,8 +140,8 @@
     "summary": "Nonlinear gyrokinetic heat-flux claims require finite late-time traces, statistically interpretable saturated windows, and resolution/convergence checks before a run is admitted as a calibration holdout."
   },
   "passed": false,
-  "pdf": "/tmp/spectrax_cth_policy/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.pdf",
-  "png": "/tmp/spectrax_cth_policy/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.png",
+  "pdf": "/tmp/gkx_cth_policy/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.pdf",
+  "png": "/tmp/gkx_cth_policy/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.png",
   "promotion_gate": {
     "passed": false,
     "reason": "CTH-like external VMEC modified-protocol t=350 full-grid convergence is finite but not grid/window converged enough for quasilinear calibration"
@@ -160,8 +160,8 @@
         "wphi_mean": 4.553348482471623,
         "wphi_std": 0.728288560236767
       },
-      "csv": "/tmp/spectrax_cth_policy/cth_like_modified_t350_n48_pilot.traces.csv",
-      "json": "/tmp/spectrax_cth_policy/cth_like_modified_t350_n48_pilot.json",
+      "csv": "/tmp/gkx_cth_policy/cth_like_modified_t350_n48_pilot.traces.csv",
+      "json": "/tmp/gkx_cth_policy/cth_like_modified_t350_n48_pilot.json",
       "label": "n48",
       "least_trending_window": {
         "heat_flux_coefficient_of_variation": 0.14981075850173675,
@@ -193,8 +193,8 @@
         "wphi_mean": 3.628613909629926,
         "wphi_std": 0.4034013196196372
       },
-      "csv": "/tmp/spectrax_cth_policy/cth_like_modified_t350_n64_pilot.traces.csv",
-      "json": "/tmp/spectrax_cth_policy/cth_like_modified_t350_n64_pilot.json",
+      "csv": "/tmp/gkx_cth_policy/cth_like_modified_t350_n64_pilot.traces.csv",
+      "json": "/tmp/gkx_cth_policy/cth_like_modified_t350_n64_pilot.json",
       "label": "n64",
       "least_trending_window": {
         "heat_flux_coefficient_of_variation": 0.11353310621627377,
@@ -226,8 +226,8 @@
         "wphi_mean": 3.2206665326471198,
         "wphi_std": 0.3572955943009788
       },
-      "csv": "/tmp/spectrax_cth_policy/cth_like_modified_t350_n80_pilot.traces.csv",
-      "json": "/tmp/spectrax_cth_policy/cth_like_modified_t350_n80_pilot.json",
+      "csv": "/tmp/gkx_cth_policy/cth_like_modified_t350_n80_pilot.traces.csv",
+      "json": "/tmp/gkx_cth_policy/cth_like_modified_t350_n80_pilot.json",
       "label": "n80",
       "least_trending_window": {
         "heat_flux_coefficient_of_variation": 0.09443808481519514,
