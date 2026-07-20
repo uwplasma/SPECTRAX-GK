@@ -754,13 +754,27 @@ application/inversion of the block-banded Hermite-Laguerre collision matrix.
 GKX uniform-figure default: ``src/gkx/artifacts/plotting.py::set_plot_style``.
 
 **Sequenced work:**
-1. **Multispecies finite-wavelength Coulomb coefficients (deep physics).**
-   Generalize the equal-species Frei (2021) finite-Larmor test/field/
-   polarization tables to species pairs a<->b (mass/temperature ratios,
-   Rosenbluth potentials at finite b). Reduce exactly to the existing
-   drift-kinetic multispecies Coulomb as b->0 and to the equal-species tables
-   for a==b. Validate: conservation (all pairs), H-theorem, Spitzer, and a
-   cross-check vs DKX/SFINCS. Feed ``TabulatedMultispeciesCollisionOperator``.
+1. **Multispecies finite-wavelength Coulomb coefficients.** SCOPE CORRECTED by
+   audit: the pair *physics already exists* --
+   ``build_finite_wavelength_coulomb_pair_tables(bessel_args, P, J, mass_ratio,
+   temperature_ratio)`` (in ``tools/artifacts/build_linear_validation_artifacts.py``)
+   computes the finite-Larmor Coulomb test/field matrices + 4 polarization
+   vectors for an unequal-species pair (sigma=mass ratio, tau=temperature
+   ratio; Frei 2021), and ``coulomb_drift_kinetic_moment_matrices`` gives the
+   b->0 limit. Only the *equal-species* table is tabulated for production
+   (``write_equal_species_finite_wavelength_coulomb_table``); unequal-species is
+   unvalidated. So #1 = (a) VALIDATE the unequal-species pair generation:
+   b->0 reduction to drift-kinetic multispecies Coulomb, a==b reduction to the
+   equal-species tables, cross-species momentum/energy conservation, H-theorem;
+   (b) ASSEMBLE the full multispecies table (all pairs + collision frequencies)
+   into the ``TabulatedMultispeciesCollisionOperator`` ``(target, source, kperp,
+   moment, moment)`` scaffold (already present); (c) PERFORMANCE -- the mpmath
+   generation is offline/slow, so pre-tabulate or accelerate (SOLVAX for the
+   solve). Independent cross-check: DKX ``dkx/collisions.py``
+   (``nu_d_hat_pitch_angle_scattering_v3`` species_factor
+   sqrt(T_A m_B/(T_B m_A)), ``_rosenbluth_potential_terms_v3`` shape
+   ``(S,S,nl,X,X)``, Fortran-parity validated). Design finalized by the
+   in-flight literature deep-dive.
 2. **Runtime wiring.** Add ``coulomb`` / ``finite_wavelength_coulomb`` to the
    ``collision_operator`` selector (``params.collision_operator_from_config``)
    and thread through the RHS (plumbing exists; drift-kinetic half done
