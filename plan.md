@@ -726,6 +726,64 @@ Use large coherent commits, each independently green:
   size-manifest + Sphinx ``-W`` gates. The generators are already GKX; only the
   render environment (office data + compression) is missing here.
 
+## Research-Grade Gyrokinetic Collision Operator Program (2026-07-19)
+
+Goal: a research-grade **multispecies finite-Larmor (gyrokinetic) Coulomb**
+collision operator, production-wired and benchmarked, for use in GKX
+gyrokinetic simulations, plus a comparison-driven README. This is a
+multi-session program; sequence and machinery below.
+
+**Current state (audited).** Drift-kinetic Coulomb is benchmarked at the
+operator-algebra level (conservation density/momentum/energy exact,
+H-theorem negative-semi-definite, Spitzer high-charge asymptote to 7.45%,
+converged at (P,J)=(20,5); Frei 2021 / Frei-Ernst-Ricci 2022 / Abel 2008).
+A finite-wavelength Coulomb operator EXISTS but is **equal-species only**
+(``EqualSpeciesFiniteWavelengthCoulombOperator``), scope
+``offline_operator_algebra_not_runtime_transport``, not runtime-selectable.
+Scaffolds already present: ``operators/linear/collision_tables.py`` holds
+``TabulatedMultispeciesCollisionOperator`` (applies a kperp-interpolated
+multispecies matrix) and the equal-species Coulomb/Sugama operators; the
+drift-kinetic *multispecies* Coulomb already assembles from
+density/mass/temperature arrays.
+
+**Machinery to use (per the request).** DKX = ``~/local/sfincs_jax`` (SFINCS
+multispecies Fokker-Planck/Coulomb operator) as the physics cross-check for
+the multispecies coefficients. SOLVAX = ``~/local/SOLVAX/src/solvax`` (banded
+LU ``lu_factor_banded``/``lu_solve_banded``, Krylov, implicit) for performant
+application/inversion of the block-banded Hermite-Laguerre collision matrix.
+GKX uniform-figure default: ``src/gkx/artifacts/plotting.py::set_plot_style``.
+
+**Sequenced work:**
+1. **Multispecies finite-wavelength Coulomb coefficients (deep physics).**
+   Generalize the equal-species Frei (2021) finite-Larmor test/field/
+   polarization tables to species pairs a<->b (mass/temperature ratios,
+   Rosenbluth potentials at finite b). Reduce exactly to the existing
+   drift-kinetic multispecies Coulomb as b->0 and to the equal-species tables
+   for a==b. Validate: conservation (all pairs), H-theorem, Spitzer, and a
+   cross-check vs DKX/SFINCS. Feed ``TabulatedMultispeciesCollisionOperator``.
+2. **Runtime wiring.** Add ``coulomb`` / ``finite_wavelength_coulomb`` to the
+   ``collision_operator`` selector (``params.collision_operator_from_config``)
+   and thread through the RHS (plumbing exists; drift-kinetic half done
+   ``d77cf1f6``). Runtime + differentiability tests.
+3. **Runnable example** demonstrating a collisional ITG/zonal run selecting
+   each operator.
+4. **Benchmarks + performance.** Runtime linear + nonlinear collisional
+   transport vs published (Frei/Jorge/Ricci); use SOLVAX banded/Krylov for the
+   collision solve; report accuracy + timing per operator. Nonlinear pieces are
+   office-GPU (ties task #7).
+
+**README + figures (Phase 5, task #9).** Operator-comparison section (Coulomb
+vs Sugama vs improved-Sugama vs Lenard-Bernstein vs Dougherty): what each
+captures, *why* they differ physically (pitch-angle vs energy scattering,
+conservation, collisionality regime), and how to select each in code/TOML.
+Reorganize figures uniformly via ``set_plot_style`` (fonts/sizes/dpi), add
+turbulence movies incl. **3D turbulence in tokamak and stellarator geometry**,
+compress every asset < 1 MB. Movies + nonlinear panels need the office GPU.
+
+**Close-out (after all green).** Merge the PR; rename the GitHub repo
+SPECTRAX-GK -> GKX (maintainer action, then ``git remote set-url``); user
+creates the PyPI ``gkx`` and Read the Docs projects.
+
 ## Dependency Migration: VMEC-JAX to VMEX
 
 The differentiable-VMEC dependency ``vmec_jax`` was renamed AND restructured to
