@@ -9,7 +9,8 @@ surfaces live in the source tree. It is meant to make refactoring safer by
 keeping the boundary between public APIs and internal implementation modules
 explicit.
 
-The long-term consolidation target is documented in the root ``plan.md``. New
+The long-term consolidation target is encoded in
+``tools/package_architecture_manifest.toml``. New
 refactor work should reduce package
 surface area by merging, deleting, or moving code out of the installable
 package. Add a new module only when it replaces multiple existing files or
@@ -677,8 +678,8 @@ source module with at least 2,000 non-comment source lines to have a direct
 manifest row, so large modules cannot be hidden under another owner's
 ``owned_modules`` list.
 
-The root ``plan.md`` is the authoritative migration plan, and
-``tools/package_architecture_manifest.toml`` enforces its topology and aggregate
+``tools/package_architecture_manifest.toml`` is the authoritative package-topology
+policy and enforces the module layout and aggregate
 line budgets. Differentiability, physics, parity, and performance requirements
 are acceptance gates in the root plan rather than a second migration ledger.
 
