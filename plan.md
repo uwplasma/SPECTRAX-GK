@@ -701,6 +701,30 @@ Use large coherent commits, each independently green:
   Do the offline regeneration as one consistent batch; fold the nonlinear
   panels into the office-GPU GX benchmark so the atlas is regenerated once,
   uniformly, rather than leaving mixed branding.
+- 2026-07-19 figure-suite regeneration attempt -> **VERIFIED it is an
+  office-GPU task, not offline.** Ran ``make_benchmark_atlas.py`` on the clean
+  tree: it produces a correctly GKX-branded atlas *title* and GKX *linear*
+  master panels (generators are renamed and work), but two hard blockers make a
+  clean offline finalization impossible, so the regeneration was reverted:
+  1. **Nonlinear GX panels are office-only.** The atlas composites committed
+     PNGs for the cyclone/kbm/w7x/hsx/miller nonlinear GX comparisons; only
+     ``cetg_reference_compare.csv`` carries committed nonlinear GKX+GX traces,
+     and ``tools_out`` (the office ``*.out.nc`` runs) is untracked. So those
+     five sub-panels keep their baked-in "GX vs SPECTRAX-GK" text -> the atlas
+     comes out mixed-branding here.
+  2. **Size gate.** Freshly rendered panels are ~4-5 MB (dpi=240) and trip
+     ``check_repository_size_manifest.py``
+     (``max_unlisted_tracked_file_bytes = 1_000_000``); the committed figures
+     were compressed to fit the private-repo media policy, so any regeneration
+     must add a compression pass.
+  **Office-GPU finalization recipe (one uniform pass):** on the office machine
+  with the GX ``*.out.nc`` runs present -> (a) regenerate the nonlinear
+  comparison sub-panels via ``tools/comparison/compare_gx_nonlinear.py`` (now
+  GKX-labeled), (b) run ``tools/artifacts/make_benchmark_atlas.py`` and the
+  standalone figure generators (collision/autodiff/quasilinear/QA/runtime),
+  (c) compress every regenerated PNG to < 1 MB, (d) verify GKX branding + the
+  size-manifest + Sphinx ``-W`` gates. The generators are already GKX; only the
+  render environment (office data + compression) is missing here.
 
 ## Dependency Migration: VMEC-JAX to VMEX
 
