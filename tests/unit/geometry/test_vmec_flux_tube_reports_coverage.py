@@ -819,11 +819,10 @@ def test_vmec_flux_tube_mapping_fn_wires_perturbation_into_mapping(monkeypatch) 
         }
         return "traced_state"
 
-    def fake_map(state, runtime, wout, *, surface_index, alpha, ntheta):  # noqa: ANN001, ANN202
+    def fake_map(state, runtime, *, surface_index, alpha, ntheta):  # noqa: ANN001, ANN202
         captured["map"] = {
             "state": state,
             "runtime": runtime,
-            "wout": wout,
             "surface_index": surface_index,
             "alpha": alpha,
             "ntheta": ntheta,
@@ -848,7 +847,6 @@ def test_vmec_flux_tube_mapping_fn_wires_perturbation_into_mapping(monkeypatch) 
     # The perturbed state is threaded into the mapping call alongside ctx handles.
     assert captured["map"]["state"] == "traced_state"
     assert captured["map"]["runtime"] == "R"
-    assert captured["map"]["wout"] == "W"
     assert captured["map"]["surface_index"] == 3
     assert captured["map"]["alpha"] == pytest.approx(0.25)
     assert isinstance(captured["map"]["alpha"], float)
@@ -915,11 +913,10 @@ def test_direct_vmec_flux_tube_geometry_builds_contract_from_mapping(
     mapping = _valid_flux_tube_mapping()
     captured: dict[str, object] = {}
 
-    def fake_map(state, runtime, wout, *, surface_index, alpha, ntheta):  # noqa: ANN001, ANN202
+    def fake_map(state, runtime, *, surface_index, alpha, ntheta):  # noqa: ANN001, ANN202
         captured.update(
             state=state,
             runtime=runtime,
-            wout=wout,
             surface_index=surface_index,
             alpha=alpha,
             ntheta=ntheta,
