@@ -21,7 +21,7 @@ def test_published_solvax_contract_matches_consumed_interfaces() -> None:
     """Keep the numerical dependency within its downstream-tested release line."""
 
     release = tuple(int(part) for part in version("solvax").split(".")[:3])
-    assert (0, 7, 3) <= release < (0, 8, 0)
+    assert (0, 8, 6) <= release < (0, 9, 0)
     for name in ("gmres", "linear_solve", "tridiagonal_solve", "chunked_jacfwd"):
         assert callable(getattr(solvax, name))
 
